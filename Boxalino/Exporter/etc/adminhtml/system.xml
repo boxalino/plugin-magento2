@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+        <!-- for add new tab in Magento2 system configuration section -->
+        <tab id="boxalino" translate="label" sortOrder="10">
+            <label>Boxalino</label>
+        </tab>
+        <!-- for create section -->
+        <section id="sleekaccordian" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Configuration</label>
+            <!-- Assign section to tab -->
+            <tab>boxalino</tab>
+            <resource>Boxalino_Exporter::configuration</resource>
+            <!-- create group for fields in section -->
+            <group id="parameters" translate="label" type="text" delault="1" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Parameters</label>
+                <!-- create text type field -->
+                <field id="slide_speed" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Var 1</label>
+                    <comment>e.g 800 .</comment>
+                    <validate>validate-number required-entry</validate>
+                </field>
+            </group>
+            <group id="aparameters" translate="label" type="text" delault="2" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Parameters 2</label>
+                <!-- create text type field -->
+                <field id="aslide_speed" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Var 2</label>
+                    <comment>e.g 800 .</comment>
+                    <validate>validate-number required-entry</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

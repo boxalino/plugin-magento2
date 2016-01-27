@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+<menu>
+    <add id="Boxalino_Exporter::customMenu" title="Boxalino" module="Boxalino_Exporter" sortOrder="500" parent="Magento_Backend::system" resource="Boxalino_Exporter::customMenu"/>
+    <add id="Boxalino_Exporter::sampleOne" title="Sample One" module="Boxalino_Exporter" sortOrder="100" parent="Boxalino_Exporter::customMenu" action="Boxalino/sampleOne" resource="Boxalino_Exporter::sampleOne"/>
+    <add id="Boxalino_Exporter::sampleTwo" title="Sample Two" module="Boxalino_Exporter" sortOrder="200" parent="Boxalino_Exporter::customMenu" action="Boxalino/sampleTwo" resource="Boxalino_Exporter::sampleTwo"/>
+</menu>
+</config>
