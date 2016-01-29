@@ -146,4 +146,66 @@ class BxIndexConfig
 	public function exportProductUrl($account) {
 		return true;
 	}
+	
+	protected function getFinalProperties($allProperties, $includes, $excludes, $requiredProperties=array()) {
+		foreach($includes as $k => $incl) {
+			if($incl == "") {
+				unset($includes[$k]);
+			}
+		}
+		
+		foreach($excludes as $k => $excl) {
+			if($excl == "") {
+				unset($excludes[$k]);
+			}
+		}
+		
+		if(sizeof($includes) > 0) {
+			foreach($includes as $incl) {
+				if(!in_array($incl, $allProperties)) {
+					throw new \Exception("requested include property $incl which is not part of all the properties provided");
+				}
+				
+				if(!in_array($incl, $requiredProperties)) {
+					$requiredProperties[] = $incl;
+				}
+			}
+			return $requiredProperties;
+		}
+		
+		foreach($excludes as $excl) {
+			if(!in_array($excl, $allProperties)) {
+				throw new \Exception("requested exclude property $excl which is not part of all the properties provided");
+			}
+			if(in_array($excl, $requiredProperties)) {
+				throw new \Exception("requested exclude property $excl which is part of the required properties and therefore cannot be excluded");
+			}
+		}
+		
+		$finalProperties = array();
+		foreach($allProperties as $p) {
+			if(!in_array($p, $excludes)) {
+				$finalProperties[] = $p;
+			}
+		}
+		return $finalProperties;
+	}
+	
+	public function getAccountProductsProperties($account, $allProperties, $requiredProperties=array()) {
+		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/products/include_properties'));
+		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/products/exclude_properties'));
+		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
+	}
+	
+	public function getAccountCustomersProperties($account, $allProperties, $requiredProperties=array()) {
+		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/include_properties'));
+		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/exclude_properties'));
+		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
+	}
+	
+	public function getAccountTransactionsProperties($account, $allProperties, $requiredProperties=array()) {
+		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/include_properties'));
+		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/exclude_properties'));
+		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
+	}
 }

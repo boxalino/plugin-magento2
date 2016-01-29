@@ -58,23 +58,51 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
-			<group id="customers" translate="label" type="text" delault="1" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+			<group id="products" translate="label" type="text" delault="1" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Products</label>
+                <!-- create text type field -->
+				<field id="include_properties" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of product properties to include in export</label>
+                    <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
+                </field>
+				<field id="exclude_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of product properties to exclude from export</label>
+                    <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of product properties to include is not empty.</comment>
+                </field>
+            </group>
+			<group id="customers" translate="label" type="text" delault="1" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customers</label>
                 <!-- create text type field -->
-                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of customer properties to include in export</label>
+                    <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
+                </field>
+				<field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of customer properties to exclude from export</label>
+                    <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of customer properties to include is not empty.</comment>
+                </field>
             </group>
-			<group id="transactions" translate="label" type="text" delault="1" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+			<group id="transactions" translate="label" type="text" delault="1" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Transactions</label>
                 <!-- create text type field -->
-                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of transaction properties to include in export</label>
+                    <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
+                </field>
+				<field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>List of transaction properties to exclude from export</label>
+                    <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of transaction properties to include is not empty.</comment>
+                </field>
             </group>
-			<group id="advanced" translate="label" type="text" delault="1" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+			<group id="advanced" translate="label" type="text" delault="1" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
 				<field id="export_server" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino export server</label>

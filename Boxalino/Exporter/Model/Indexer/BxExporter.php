@@ -95,18 +95,14 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$this->logger->info("bxLog: starting executeFull");
 		
 		$this->config = new BxIndexConfig($this->storeManager->getWebsites());
-		$this->logger->info("bxLog: retrieve index structure: " . $this->config->toString());
+		$this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
 		
 		foreach ($this->config->getAccounts() as $account) {
 			
 			$this->logger->info("bxLog: initialize files on account " . $account);
             $files = new BxFiles($this->filesystem, $this->logger, $account, $this->config);
-			
-			$bxDIXML = new BXDataIntelligenceXML($account, $files, $this->config);
 		
-			$this->logger->info('Preparing data for website start');
-		
-			$attributeValues = array();
+			$this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
 			$attributesValuesByName = array();
 			$categories = array();
 			$attributes = null;
@@ -114,44 +110,49 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				
 				$store = $this->config->getStore($account, $language);
 				
-				$this->logger->info('Start getStoreAttributes on store:' . $store->getId());
-				$attributes = $this->getStoreAttributes($store);
+				$this->logger->info('bxLog: Start getStoreAttributes for language . ' . $language . ' on store:' . $store->getId());
+				$attributes = $this->getStoreAttributes($account, $store);
 				
-				$this->logger->info('Start getStoreAttributesValues on store:' . $store->getId());
-				list($attributeValues, $attributesValuesByName) = $this->getStoreAttributesValues($attributes, $store, $language, $attributeValues, $attributesValuesByName);
+				$this->logger->info('bxLog: Start getStoreAttributesValues for language . ' . $language . ' on store:' . $store->getId());
+				$attributesValuesByName = $this->getStoreAttributesValues($account, $attributes, $store, $language, $attributesValuesByName);
 				
-				$this->logger->info('Start exportCategories on store:' . $store->getId());
+				$this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
 				$categories = $this->exportCategories($store, $language, $categories);
 			}
 			
+			$this->logger->info('bxLog: Export the customers, transactions and product files: ' . $account);
 			$customer_attributes = $this->exportCustomers($account, $files);
-			
 			$this->exportTransactions($account, $files);
+			$this->exportProducts($account, $files, $attributes, $attributesValuesByName, $categories);
 			
-			$this->exportProducts($account, $files, $attributes, $attributeValues, $attributesValuesByName, $categories);
+			$this->logger->info('bxLog: Remove unused attributes: ' . $account);
+			list($attributes, $attributesValuesByName) = $this->removeUnusedAttributes($attributes, $attributesValuesByName);
 			
-			$this->removeUnusedAttributes($attributes);
-			
+			$this->logger->info('bxLog: Prepare the final files: ' . $account);
 			$file = $files->prepareGeneralFiles($attributesValuesByName, $categories);
 			
+			$this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
+			$bxDIXML = new BXDataIntelligenceXML($account, $files, $this->config);
 			$bxDIXML->createXML($file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
-
+			
+			$this->logger->info('bxLog: Prepare ZIP file with all the data files: ' . $account);
 			$files->createZip($file . '.zip', $file . '.xml');
 			
-			$this->logger->info('Push files');
-            $files->pushXML($file, $this->indexType == 'delta');
-            $files->pushZip($file, $this->indexType == 'delta');
-			
-            $this->logger->info('Files pushed');
+			$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server: ' . $account);
+			$files->pushXML($file, $this->indexType == 'delta');
+            
+			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server: ' . $account);
+			$files->pushZip($file, $this->indexType == 'delta');
 			
             $this->_attrProdCount = array();
+			
+            $this->logger->info('bxLog: Finished account: ' . $account);
         }
 		
 		$this->logger->info("bxLog: finished executeFull");
 	}
 	
-	protected function removeUnusedAttributes($attributes) {
-		$this->logger->info('remove unused attributes - before');
+	protected function removeUnusedAttributes($attributes, $attributesValuesByName) {
 		foreach ($attributes as $k => $attr) {
 			if (
 				!isset($attributesValuesByName[$attr]) ||
@@ -161,10 +162,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				continue;
 			} else {
 				unset($attributesValuesByName[$attr]);
-				unset($this->_listOfAttributes[$k]);
+				unset($attributes[$k]);
 			}
 		}
-		$this->logger->info('remove unused attributes - after');
+		return array($attributes, $attributesValuesByName);
 	}
 
     /**
@@ -203,17 +204,17 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @description Merge default attributes with attributes added by user
      * @return void
      */
-    protected function getStoreAttributes($store)
+    protected function getStoreAttributes($account, $store)
     {
 		
 		$attributes = array();
 		foreach ($this->productHelper->getAttributes() as $attribute) {
-			$attributes[$attribute->getId()] = $attribute->getAttributeCode();
+			if ($attribute->getAttributeCode() != null && strlen($attribute->getAttributeCode()) > 0) {
+				$attributes[$attribute->getId()] = $attribute->getAttributeCode();
+			}
 		}
-		return $attributes;
 		
-		/*
-        $this->_listOfAttributes = array(
+		$requiredProperties = array(
             'entity_id',
             'name',
             'description',
@@ -227,29 +228,15 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             'visibility',
             'status'
         );
-
-        $attributes = array();
-
-        foreach (Mage::getResourceModel('catalog/product_attribute_collection')->getItems() as $at) {
-            $attributes[] = $at->getAttributeCode();
-        }
-
-        if (isset($this->_storeConfig['additional_attributes']) && $this->_storeConfig['additional_attributes'] != '') {
-            $fields = explode(',', $this->_storeConfig['additional_attributes']);
-            foreach ($fields as $field) {
-
-                if (!in_array($field, $attributes)) {
-                    Mage::throwException("Attribute \"$field\" doesn't exist, please update your additional_attributes setting in the Boxalino Exporter settings!");
-                }
-
-                if ($field != null && strlen($field) > 0) {
-                    $this->_listOfAttributes[] = $field;
-                }
-
-            }
-            unset($fields);
-        }*/
-
+		$filteredAttributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
+		
+		foreach($attributes as $k => $attribute) {
+			if(!in_array($attribute, $filteredAttributes)) {
+				unset($attributes[$k]);
+			}
+		}
+		
+		return $attributes;
     }
 	
 	
@@ -257,7 +244,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @description Get labels for all Attributes where is optionsId = optionValue
      * @return void
      */
-    protected function getStoreAttributesValues($attributeCodes, $store, $language, $attributeValues, $attributesValuesByName)
+    protected function getStoreAttributesValues($account, $attributeCodes, $store, $language, $attributesValuesByName)
     {	
         foreach ($this->productHelper->getAttributes() as $attribute) {
 			if(isset($attributeCodes[$attribute->getId()])) {
@@ -265,13 +252,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				foreach ($options as $option) {
                     if (!empty($option['value'])) {
 						
-						if(!isset($attributeValues[$store->getId()][$attribute->getAttributeCode()])) {
-							$attributeValues[$store->getId()][$attribute->getAttributeCode()] = array();
-						}
-						
-                        $attributeValues[$store->getId()][$attribute->getAttributeCode()][$option['value']] = $this->bxGeneral->escapeString($option['label']);
-
-                        $value = intval($option['value']);
+						$value = intval($option['value']);
                         $name = 'value_' . $language;
 						
                         if (!isset($attributesValuesByName[$attribute->getAttributeCode()])) {
@@ -289,7 +270,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             }
         }
 		
-		return array($attributeValues, $attributesValuesByName);
+		return $attributesValuesByName;
     }
 	
 	
@@ -798,7 +779,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @param array $languages language structure
      * @return void
      */
-    protected function exportProducts($account, $files, $attributes, $attributeValues, $attributesValuesByName, $transformedCategories)
+    protected function exportProducts($account, $files, $attributes, $attributesValuesByName, $transformedCategories)
     {
 		$languages = $this->config->getAccountLanguages($account);
 		
@@ -1266,7 +1247,5 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         $db = null;
 		
 		$files->closeFiles($tmpFiles);
-			
-		return array($transformedProducts, $transformedCategories);
 	}
 }
