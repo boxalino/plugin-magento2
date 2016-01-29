@@ -5,6 +5,7 @@ namespace Boxalino\Exporter\Model\Indexer;
 use Boxalino\Exporter\Helper\BxIndexStructure;
 use Boxalino\Exporter\Helper\BxFiles;
 use Boxalino\Exporter\Helper\BxGeneral;
+use Boxalino\Exporter\Helper\BxDataIntelligenceXML;
 
 use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
@@ -85,6 +86,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         exit;
     }
 
+	private $_attrProdCount = array();
     public function executeFull(){
 		
 		$this->indexType = "full";
@@ -97,83 +99,79 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		foreach ($indexStructure->getAccounts() as $account) {
 			
 			$this->logger->info("bxLog: initialize files on account " . $account);
-            $files = new BxFiles($this->filesystem, $account);
+            $files = new BxFiles($this->filesystem, $this->logger, $account);
 			
-			list($attributeValues, $attributesValuesByName, $categories) = $this->storeExport($account, $indexStructure, $files);
+			$bxDIXML = new BXDataIntelligenceXML($files);
+		
+			$this->logger->info('Preparing data for website start');
+		
+			$attributeValues = array();
+			$attributesValuesByName = array();
+			$categories = array();
+			$attributes = null;
+			foreach ($indexStructure->getAccountLanguages($account) as $language) {
+				
+				$store = $indexStructure->getStore($account, $language);
+				
+				$this->logger->info('Start getStoreAttributes on store:' . $store->getId());
+				$attributes = $this->getStoreAttributes($store);
+				
+				$this->logger->info('Start getStoreAttributesValues on store:' . $store->getId());
+				list($attributeValues, $attributesValuesByName) = $this->getStoreAttributesValues($attributes, $store, $language, $attributeValues, $attributesValuesByName);
+				
+				$this->logger->info('Start exportCategories on store:' . $store->getId());
+				$categories = $this->exportCategories($store, $language, $categories);
+			}
 			
-			continue;
+			$customer_attributes = $this->exportCustomers($account, $indexStructure, $files);
+			
+			$this->exportTransactions($account, $indexStructure, $files);
+			
+			$this->exportProducts($account, $indexStructure, $files, $attributes, $attributeValues, $attributesValuesByName, $categories);
+			
+			$this->removeUnusedAttributes($attributes);
+			
+			$file = $files->prepareGeneralFiles($account, $attributesValuesByName, $categories);
 
-            /*$this->logger->info('something with attributes - before');
-            foreach ($this->_listOfAttributes as $k => $attr) {
-                if (
-                    !isset($this->_attributesValuesByName[$attr]) ||
-                    (isset($this->_attrProdCount[$attr]) &&
-                        $this->_attrProdCount[$attr])
-                ) {
-                    continue;
-                } else {
-                    unset($this->_attributesValuesByName[$attr]);
-                    unset($this->_listOfAttributes[$k]);
-                }
-            }
-			$this->logger->info('something with attributes - after');
+			//Create xml
+			$bxDIXML->createXML($file . '.xml', $indexStructure->getAccountLanguages($account), $attributes, $attributesValuesByName, $customer_attributes, $files);
+
+			//Create zip
+			$files->createZip($file . '.zip', $file . '.xml');
 			
-            $file = $this->prepareFiles($data['categories'], $data['tags']);
+			$username = $account;
+			$password = "helloworld";
+			$isDev = false;
+			$isDelta = false;
+			$exportServer = '...';
             
 			$this->logger->info('Push files');
-            $this->pushXML($file);
-            $this->pushZip($file);
+            $files->pushXML($file, $account, $username, $password, $exportServer, $isDev, $isDelta);
+            $files->pushZip($file, $account, $username, $password, $exportServer, $isDev, $isDelta);
             $this->logger->info('Files pushed');
-
-            $this->_transformedCategories = array();
-            $this->_transformedTags = array();
-            $this->_transformedProducts = array();
-            $this->_categoryParent = array();
-            $this->_availableLanguages = array();
+			
             $this->_attrProdCount = array();
-            $this->_count = 0;*/
         }
 		
 		$this->logger->info("bxLog: finished executeFull");
 	}
 	
-	
-
-    /**
-     * @description generate the data for the language scope
-     * @param array $languages Array of languages to generate for this index
-     * @return array Data prepared for save to file
-     */
-    protected function storeExport($account, $indexStructure, $files)
-    {
-		$this->logger->info('Preparing data for website start');
-		
-		$attributeValues = array();
-		$attributesValuesByName = array();
-		$categories = array();
-		
-        foreach ($indexStructure->getAccountLanguages($account) as $language) {
-			
-			$store = $indexStructure->getStore($account, $language);
-			
-			$this->logger->info('Start getStoreAttributes on store:' . $store->getId());
-			$attributes = $this->getStoreAttributes($store);
-			
-			$this->logger->info('Start getStoreAttributesValues on store:' . $store->getId());
-			list($attributeValues, $attributesValuesByName) = $this->getStoreAttributesValues($attributes, $store, $language, $attributeValues, $attributesValuesByName);
-            
-			$this->logger->info('Start exportCategories on store:' . $store->getId());
-			$categories = $this->exportCategories($store, $language, $categories);
-        }
-		
-		$this->exportCustomers($account, $indexStructure, $files);
-		
-		$this->exportTransactions($account, $indexStructure, $files);
-		
-		//$this->exportProducts($account, $indexStructure, $files);
-
-        return array($attributeValues, $attributesValuesByName, $categories);
-    }
+	protected function removeUnusedAttributes($attributes) {
+		$this->logger->info('remove unused attributes - before');
+		foreach ($attributes as $k => $attr) {
+			if (
+				!isset($attributesValuesByName[$attr]) ||
+				(isset($this->_attrProdCount[$attr]) &&
+					$this->_attrProdCount[$attr])
+			) {
+				continue;
+			} else {
+				unset($attributesValuesByName[$attr]);
+				unset($this->_listOfAttributes[$k]);
+			}
+		}
+		$this->logger->info('remove unused attributes - after');
+	}
 
     /**
      * @description Preparing categories to export
@@ -536,6 +534,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         $customers = null;
 
         $this->logger->info('Customers - end of exporting');
+		
+		return $customer_attributes;
     }
 
     /**
@@ -798,4 +798,481 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
         $this->logger->info('Transactions - end of export');
     }
+
+    /**
+     * @description Preparing products to export
+     * @param array $languages language structure
+     * @return void
+     */
+    protected function exportProducts($account, $indexStructure, $files, $attributes, $attributeValues, $attributesValuesByName, $transformedCategories, $exportProductImages = true, $exportProductImageThumbnail = true, $exportProductUrl = true)
+    {
+		$languages = $indexStructure->getAccountLanguages($account);
+		
+		$transformedProducts = array();
+		
+        $this->logger->info('Products - start of export');
+        $attrs = $attributes;
+        $this->logger->info('Products - get info about attributes - before');
+
+        $db = $this->rs->getConnection();
+        $select = $db->select()
+            ->from(
+                array('main_table' => $this->rs->getTableName('eav_attribute')),
+                array(
+                    'attribute_id',
+                    'attribute_code',
+                    'backend_type',
+                )
+            )
+            ->joinInner(
+                array('additional_table' => $this->rs->getTableName('catalog_eav_attribute')),
+                'additional_table.attribute_id = main_table.attribute_id'
+            )
+            ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
+            ->where('main_table.attribute_code IN(?)', $attrs);
+
+        $this->logger->info('Products - connected to DB, built attribute info query');
+
+        $attrsFromDb = array(
+            'int' => array(),
+            'varchar' => array(),
+            'text' => array(),
+            'decimal' => array(),
+            'datetime' => array(),
+        );
+
+        foreach ($db->fetchAll($select) as $r) {
+            $type = $r['backend_type'];
+            if (isset($attrsFromDb[$type])) {
+                $attrsFromDb[$type][] = $r['attribute_id'];
+            }
+        }
+        $this->logger->info('Products - attributes preparing done');
+
+        $countMax = 1000000; //$this->_storeConfig['maximum_population'];
+        $localeCount = 0;
+
+        $limit = 1000; //$this->_storeConfig['export_chunk'];
+        $count = $limit;
+		$totalCount = 0;
+        $page = 1;
+        $header = true;
+
+        //prepare files
+		$tmpFiles = array_keys($attributesValuesByName);
+        $tmpFiles[] = 'categories';
+        $files->prepareProductFiles($tmpFiles, $exportProductImages, $exportProductImageThumbnail);
+		
+		$groupId = null; //$this->_storeConfig['groupId']
+
+        while ($count >= $limit) {
+            if ($countMax > 0 && $totalCount >= $countMax) {
+                break;
+            }
+
+            foreach ($languages as $lang) {
+				
+				$storeObject = $indexStructure->getStore($account, $lang);
+                $storeId = $storeObject->getId();
+                $storeBaseUrl = $storeObject->getBaseUrl();
+                $storeCode = $storeObject->getCode();
+
+                $this->logger->info('Products - fetch products - before');
+                $select = $db->select()
+                    ->from(
+                        array('e' => $this->rs->getTableName('catalog_product_entity'))
+                    )
+                    ->limit($limit, ($page - 1) * $limit);
+
+                //$this->_getIndexType() == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+
+                $this->logger->info('Products - fetch products - after');
+
+                $products = array();
+                $ids = array();
+                $count = 0;
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['entity_id']] = $r;
+                    $ids[] = $r['entity_id'];
+                    $products[$r['entity_id']]['website'] = array();
+                    $products[$r['entity_id']]['categories'] = array();
+                    $count++;
+                }
+
+                // we have to check for settings on the different levels: Store(View) & Global
+                $this->logger->info('Products - get attributes - before');
+                $columns = array(
+                    'entity_id',
+                    'attribute_id',
+                );
+                $joinCondition = $db->quoteInto('t_s.attribute_id = t_d.attribute_id AND t_s.entity_id = t_d.entity_id AND t_s.store_id = ?', $storeId);
+                $joinColumns = array('value' => 'IF(t_s.value_id IS NULL, t_d.value, t_s.value)');
+
+                $select1 = $db->select()
+                    ->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 't_d.attribute_id = ea.attribute_id', 'ea.attribute_code')
+                    ->where('t_d.store_id = ?', 0)
+                    //->where('t_d.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
+                    ->where('t_d.entity_id IN(?)', $ids);
+                $select2 = clone $select1;
+                $select3 = clone $select1;
+                $select4 = clone $select1;
+                $select5 = clone $select1;
+
+                $select1->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                        $columns
+                    )
+                    ->joinLeft(
+                        array('t_s' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                        $joinCondition,
+                        $joinColumns
+                    )
+                    ->where('t_d.attribute_id IN(?)', $attrsFromDb['varchar']);
+                $select2->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_text')),
+                        $columns
+                    )
+                    ->joinLeft(
+                        array('t_s' => $this->rs->getTableName('catalog_product_entity_text')),
+                        $joinCondition,
+                        $joinColumns
+                    )
+                    ->where('t_d.attribute_id IN(?)', $attrsFromDb['text']);
+                $select3->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_decimal')),
+                        $columns
+                    )
+                    ->joinLeft(
+                        array('t_s' => $this->rs->getTableName('catalog_product_entity_decimal')),
+                        $joinCondition,
+                        $joinColumns
+                    )
+                    ->where('t_d.attribute_id IN(?)', $attrsFromDb['decimal']);
+                $select4->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_int')),
+                        $columns
+                    )
+                    ->joinLeft(
+                        array('t_s' => $this->rs->getTableName('catalog_product_entity_int')),
+                        $joinCondition,
+                        $joinColumns
+                    )
+                    ->where('t_d.attribute_id IN(?)', $attrsFromDb['int']);
+                $select5->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_datetime')),
+                        $columns
+                    )
+                    ->joinLeft(
+                        array('t_s' => $this->rs->getTableName('catalog_product_entity_datetime')),
+                        $joinCondition,
+                        $joinColumns
+                    )
+                    ->where('t_d.attribute_id IN(?)', $attrsFromDb['datetime']);
+
+                $select = $db->select()->union(
+                    array($select1, $select2, $select3, $select4, $select5),
+                    \Magento\Framework\DB\Select::SQL_UNION_ALL
+                );
+
+                $select1 = null;
+                $select2 = null;
+                $select3 = null;
+                $select4 = null;
+                $select5 = null;
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['entity_id']][$r['attribute_code']] = $r['value'];
+                }
+                $this->logger->info('Products - get attributes - after');
+
+                $this->logger->info('Products - get stock  - before');
+                $select = $db->select()
+                    ->from(
+                        $this->rs->getTableName('cataloginventory_stock_status'),
+                        array(
+                            'product_id',
+                            'stock_status',
+                        )
+                    )
+                    ->where('stock_id = ?', 1)
+                    ->where('website_id = ?', 1)
+                    ->where('product_id IN(?)', $ids);
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['product_id']]['stock_status'] = $r['stock_status'];
+                }
+                $this->logger->info('Products - get stock  - after');
+
+                $this->logger->info('Products - get products from website - before');
+                $select = $db->select()
+                    ->from(
+                        $this->rs->getTableName('catalog_product_website'),
+                        array(
+                            'product_id',
+                            'website_id',
+                        )
+                    )
+                    ->where('product_id IN(?)', $ids);
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['product_id']]['website'][] = $r['website_id'];
+                }
+                $this->logger->info('Products - get products from website - after');
+
+                $this->logger->info('Products - get products connections - before');
+                $select = $db->select()
+                    ->from(
+                        $this->rs->getTableName('catalog_product_super_link'),
+                        array(
+                            'product_id',
+                            'parent_id',
+                        )
+                    )
+                    ->where('product_id IN(?)', $ids);
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['product_id']]['parent_id'] = $r['parent_id'];
+                }
+                $this->logger->info('Products - get products connections - after');
+
+                $this->logger->info('Products - get categories - before');
+                $select = $db->select()
+                    ->from(
+                        $this->rs->getTableName('catalog_category_product'),
+                        array(
+                            'product_id',
+                            'category_id',
+                        )
+                    )
+                    ->where('product_id IN(?)', $ids);
+                foreach ($db->fetchAll($select) as $r) {
+                    $products[$r['product_id']]['categories'][] = $r['category_id'];
+                }
+                $select = null;
+                $this->logger->info('Products - get categories - after');
+
+				$enterpriseEdition = false; //Mage::getEdition() == Mage::EDITION_ENTERPRISE
+                if ($enterpriseEdition) {
+                    $this->logger->info('Products - get EE URL key  - before');
+                    $select = $db->select()
+                        ->from(
+                            array('t_g' => $this->rs->getTableName('catalog_product_entity_url_key')),
+                            array('entity_id')
+                        )
+                        ->joinLeft(
+                            array('t_s' => $this->rs->getTableName('catalog_product_entity_url_key')),
+                            $db->quoteInto('t_s.attribute_id = t_g.attribute_id AND t_s.entity_id = t_g.entity_id AND t_s.store_id = ?', $storeId),
+                            array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
+                        )
+                        ->where('t_g.store_id = ?', 0)
+                        ->where('t_g.entity_id IN(?)', $ids);
+                    foreach ($db->fetchAll($select) as $r) {
+                        $products[$r['entity_id']]['url_key'] = $r['value'];
+                    }
+                    $this->logger->info('Products - get EE URL key  - after');
+                }
+                $ids = null;
+
+                foreach ($products as $product) {
+                    $this->logger->info('Products - start transform');
+
+                    if (count($product['website']) == 0) { // || !in_array($groupId, $product['website'])) {
+                        $product = null;
+                        continue;
+                    }
+
+                    $id = $product['entity_id'];
+                    $productParam = array();
+                    $haveParent = false;
+
+                    if (array_key_exists('parent_id', $product)) {
+                        $id = $product['parent_id'];
+                        $haveParent = true;
+                    }
+
+                    // apply special price time range
+                    if (
+                        !empty($product['special_price']) &&
+                        $product['price'] > $product['special_price'] && (
+                            !empty($product['special_from_date']) ||
+                            !empty($product['special_to_date'])
+                        )
+                    ) {
+                        $product['special_price'] = $product['price']; /*Mage_Catalog_Model_Product_Type_Price::calculateSpecialPrice(
+                            $product['price'],
+                            $product['special_price'],
+                            $product['special_from_date'],
+                            $product['special_to_date'],
+                            $storeObject
+                        );*/
+                    }
+
+                    foreach ($attrs as $attr) {
+                        $this->logger->info('Products - start attributes transform');
+
+                        if (isset($attributesValuesByName[$attr])) {
+
+                            $val = array_key_exists($attr, $product) ? $this->bxGeneral->escapeString($product[$attr]) : '';
+                            if ($val == null) {
+                                continue;
+                            }
+
+                            $attr = $this->bxGeneral->sanitizeFieldName($attr);
+
+                            $this->_attrProdCount[$attr] = true;
+
+                            // visibility as defined in Mage_Catalog_Model_Product_Visibility:
+                            // 4 - VISIBILITY_BOTH
+                            // 3 - VISIBILITY_IN_SEARCH
+                            // 2 - VISIBILITY_IN_CATALOG
+                            // 1 - VISIBILITY_NOT_VISIBLE
+                            // status as defined in Mage_Catalog_Model_Product_Status:
+                            // 2 - STATUS_DISABLED
+                            // 1 - STATUS_ENABLED
+                            if ($attr == 'visibility' || $attr == 'status') {
+                                $productParam[$attr . '_' . $lang] = $val;
+                            } else {
+								$files->addToCSV($attr, array($id, $val));
+                            }
+
+                            $val = null;
+                            continue;
+                        }
+
+                        $val = array_key_exists($attr, $product) ? $this->bxGeneral->escapeString($product[$attr]) : '';
+                        switch ($attr) {
+                            case 'category_ids':
+                                break;
+                            case 'description':
+                            case 'short_description':
+                            case 'name':
+                            case 'status':
+                                $productParam[$attr . '_' . $lang] = $val;
+                                break;
+                            default:
+                                $productParam[$attr] = $val;
+                                break;
+                        }
+                        $this->logger->info('Products - end attributes transform');
+
+                    }
+
+                    if ($haveParent) {
+                        $product = null;
+                        continue;
+                    }
+
+                    if (!isset($transformedProducts['products'][$id])) {
+                        if ($countMax > 0 && $totalCount >= $countMax) {
+                            $product = null;
+                            $products = null;
+                            break;
+                        }
+                        $productParam['entity_id'] = $id;
+                        $transformedProducts['products'][$id] = $productParam;
+
+                        // Add categories
+                        if (isset($product['categories']) && count($product['categories']) > 0) {
+                            foreach ($product['categories'] as $cat) {
+
+                                while ($cat != null) {
+									
+									$files->addToCSV('categories', array($id, $cat));
+                                    if (isset($transformedCategories[$cat]['parent_id'])) {
+                                        $cat = $transformedCategories[$cat]['parent_id'];
+                                    } else {
+                                        $cat = null;
+                                    }
+                                }
+                            }
+                        }
+                        $totalCount++;
+                        $localeCount++;
+
+                        // Add url to image cache
+                        if ($exportProductImages) {
+                            /*$_product = Mage::getModel('catalog/product')->load($id);
+                            $media_gallery = $_product->getMediaGallery();
+                            foreach ($media_gallery['images'] as $_image) {
+                                $url = $this->_helperImage->init($_product, 'image', $_image['file'])->__toString();
+                                $url_tbm = $this->_helperImage->init($_product, 'thumbnail', $_image['file'])->resize(100)->__toString();
+
+                                $this->_productsImages[] = array($id, $url);
+                                $this->_productsThumbnails[] = array($id, $url_tbm);
+                            }*/
+                        }
+
+                    } elseif (isset($transformedProducts['products'][$id])) {
+                        $transformedProducts['products'][$id] = array_merge($transformedProducts['products'][$id], $productParam);
+                    }
+
+                    // Add url to product for each languages
+                    if ($exportProductUrl) {
+                        if (array_key_exists('url_key', $product)) {
+                            $url_path = $product['url_key'] . '.html';
+                        } else {
+                            $url_path = $this->bxGeneral->rewrittenProductUrl(
+                                $id, $storeId
+                            );
+                        }
+                        $transformedProducts['products'][$id] = array_merge(
+                            $transformedProducts['products'][$id],
+                            array('default_url_' . $lang => (
+                                $storeBaseUrl . $url_path . '?___store=' . $storeCode
+                            ))
+                        );
+                    }
+
+                    $productParam = null;
+                    $product = null;
+
+                    ksort($transformedProducts['products'][$id]);
+                    $this->logger->info('Products - end transform');
+                }
+            }
+
+            if (isset($transformedProducts['products']) && count($transformedProducts['products']) > 0) {
+				
+				$this->logger->info('Products - validate names start');
+
+                $data = $transformedProducts['products'];
+
+                if ($header && count($data) > 0) {
+                    $data = array_merge(array(array_keys(end($data))), $data);
+                    $header = false;
+                }
+                $this->logger->info('Products - save to file');
+                $files->savePartToCsv('products.csv', $data);
+                $data = null;
+                $transformedProducts['products'] = null;
+                $transformedProducts['products'] = array();
+
+                if ($exportProductImages) {
+                    $this->logger->info('Products - save images');
+
+                    /*$d = $this->_productsImages;
+                    $this->savePartToCsv('product_cache_image_url.csv', $d);
+                    $d = null;
+
+                    $d = $this->_productsThumbnails;
+                    $this->savePartToCsv('product_cache_image_thumbnail_url.csv', $d);
+                    $d = null;
+                    $this->_productsImages = array();
+                    $this->_productsThumbnails = array();*/
+                }
+
+            }
+
+            $page++;
+
+            $products = null;
+
+        }
+
+        $attrFDB = null;
+        $attrsFromDb = null;
+        $attrs = null;
+        $transformedProducts = null;
+        $db = null;
+		
+		$files->closeFiles($tmpFiles);
+			
+		return array($transformedProducts, $transformedCategories);
+	}
 }
