@@ -36,6 +36,7 @@ class BxFiles
 	protected $_dir = null;
 	
 	private $account;
+	private $config;
 	
 	/**
      * @var \Magento\Framework\Filesystem
@@ -49,10 +50,11 @@ class BxFiles
 	
 	protected $bxGeneral;
 	
-	public function __construct($filesystem, $logger, $account) {
+	public function __construct($filesystem, $logger, $account, $config) {
 		$this->filesystem = $filesystem;
 		$this->logger = $logger;
 		$this->account = $account;
+		$this->config = $config;
 		
 		$this->bxGeneral = new BxGeneral();
 		
@@ -127,7 +129,7 @@ class BxFiles
 	
 	protected $_files = array();
 	private $filesMtM = array();
-	public function prepareProductFiles($files, $exportProductImages = true, $exportProductImageThumbnail = true) {
+	public function prepareProductFiles($files) {
 		
         foreach ($files as $attr) {
 
@@ -155,7 +157,7 @@ class BxFiles
 
         }
 
-        if ($exportProductImages) {
+        if ($this->config->exportProductImages($this->account)) {
             $file = 'product_cache_image_url.csv';
             if (!in_array($file, $this->_files)) {
                 $this->_files[] = $file;
@@ -165,7 +167,7 @@ class BxFiles
             fputcsv($fh, $h, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
         }
 
-        if ($exportProductImageThumbnail) {
+        if ($this->config->exportProductImageThumbnail($this->account)) {
             $file = 'product_cache_image_thumbnail_url.csv';
             if (!in_array($file, $this->_files)) {
                 $this->_files[] = $file;
@@ -206,7 +208,7 @@ class BxFiles
     /**
      * @description Preparing files to send
      */
-    public function prepareGeneralFiles($account, $attributesValuesByName, &$categories = null, &$tags = null, $productTags = null)
+    public function prepareGeneralFiles($attributesValuesByName, &$categories = null, &$tags = null, $productTags = null)
     {
 
         //Prepare attributes
@@ -241,7 +243,7 @@ class BxFiles
         //csvs done
 
         //Create name for file
-        $exportFile = $this->_dir . '/' . $account;
+        $exportFile = $this->_dir . '/' . $this->account;
         $csvFiles = array_filter($csvFiles);
 
         return $exportFile;
@@ -370,17 +372,17 @@ class BxFiles
         return $responseBody;
     }
 
-    public function pushXML($file, $account, $indexStructure, $isDelta=false)
+    public function pushXML($file, $isDelta=false)
     {
         $fields = array(
-            'username' => $indexStructure->getAccountUsername($account),
-            'password' => $indexStructure->getAccountPassword($account),
-            'account' => $account,
+            'username' => $this->config->getAccountUsername($this->account),
+            'password' => $this->config->getAccountPassword($this->account),
+            'account' => $this->account,
             'template' => 'standard_source',
             'xml' => file_get_contents($file . '.xml')
         );
 
-        $url = $this->getXMLSyncUrl($indexStructure->getAccountExportServer($account), $indexStructure->isAccountDev($account));
+        $url = $this->getXMLSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account));
         return $this->pushFile($fields, $url, 'xml', $isDelta);
 
     }
@@ -388,18 +390,18 @@ class BxFiles
     /**
      * @param $zip
      */
-    public function pushZip($file, $account, $indexStructure, $isDelta=false)
+    public function pushZip($file, $isDelta=false)
     {
         $fields = array(
-            'username' => $indexStructure->getAccountUsername($account),
-            'password' => $indexStructure->getAccountPassword($account),
-            'account' => $account,
-            'dev' => $indexStructure->isAccountDev($account) ? 'false' : 'true',
+            'username' => $this->config->getAccountUsername($this->account),
+            'password' => $this->config->getAccountPassword($this->account),
+            'account' => $this->account,
+            'dev' => $this->config->isAccountDev($this->account) ? 'false' : 'true',
             'delta' => $isDelta,
             'data' => $this->getCurlFile("$file.zip", "application/zip"),
         );
 
-        $url = $this->getZIPSyncUrl($indexStructure->getAccountExportServer($account), $indexStructure->isAccountDev($account));
+        $url = $this->getZIPSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account));
 
         return $this->pushFile($fields, $url, 'zip');
     }

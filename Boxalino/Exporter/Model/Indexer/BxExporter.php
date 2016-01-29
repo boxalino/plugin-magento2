@@ -2,7 +2,7 @@
 
 namespace Boxalino\Exporter\Model\Indexer;
 
-use Boxalino\Exporter\Helper\BxIndexStructure;
+use Boxalino\Exporter\Helper\BxindexConfig;
 use Boxalino\Exporter\Helper\BxFiles;
 use Boxalino\Exporter\Helper\BxGeneral;
 use Boxalino\Exporter\Helper\BxDataIntelligenceXML;
@@ -87,21 +87,22 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     }
 
 	private $_attrProdCount = array();
+	private $config = null;
     public function executeFull(){
 		
 		$this->indexType = "full";
 		
 		$this->logger->info("bxLog: starting executeFull");
 		
-		$indexStructure = new BxIndexStructure($this->storeManager->getWebsites());
-		$this->logger->info("bxLog: retrieve index structure: " . $indexStructure->toString());
+		$this->config = new BxIndexConfig($this->storeManager->getWebsites());
+		$this->logger->info("bxLog: retrieve index structure: " . $this->config->toString());
 		
-		foreach ($indexStructure->getAccounts() as $account) {
+		foreach ($this->config->getAccounts() as $account) {
 			
 			$this->logger->info("bxLog: initialize files on account " . $account);
-            $files = new BxFiles($this->filesystem, $this->logger, $account);
+            $files = new BxFiles($this->filesystem, $this->logger, $account, $this->config);
 			
-			$bxDIXML = new BXDataIntelligenceXML($files);
+			$bxDIXML = new BXDataIntelligenceXML($account, $files, $this->config);
 		
 			$this->logger->info('Preparing data for website start');
 		
@@ -109,9 +110,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$attributesValuesByName = array();
 			$categories = array();
 			$attributes = null;
-			foreach ($indexStructure->getAccountLanguages($account) as $language) {
+			foreach ($this->config->getAccountLanguages($account) as $language) {
 				
-				$store = $indexStructure->getStore($account, $language);
+				$store = $this->config->getStore($account, $language);
 				
 				$this->logger->info('Start getStoreAttributes on store:' . $store->getId());
 				$attributes = $this->getStoreAttributes($store);
@@ -123,23 +124,23 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				$categories = $this->exportCategories($store, $language, $categories);
 			}
 			
-			$customer_attributes = $this->exportCustomers($account, $indexStructure, $files);
+			$customer_attributes = $this->exportCustomers($account, $files);
 			
-			$this->exportTransactions($account, $indexStructure, $files);
+			$this->exportTransactions($account, $files);
 			
-			$this->exportProducts($account, $indexStructure, $files, $attributes, $attributeValues, $attributesValuesByName, $categories);
+			$this->exportProducts($account, $files, $attributes, $attributeValues, $attributesValuesByName, $categories);
 			
 			$this->removeUnusedAttributes($attributes);
 			
-			$file = $files->prepareGeneralFiles($account, $attributesValuesByName, $categories);
+			$file = $files->prepareGeneralFiles($attributesValuesByName, $categories);
 			
-			$bxDIXML->createXML($file . '.xml', $indexStructure->getAccountLanguages($account), $attributes, $attributesValuesByName, $customer_attributes, $files);
+			$bxDIXML->createXML($file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
 
 			$files->createZip($file . '.zip', $file . '.xml');
 			
 			$this->logger->info('Push files');
-            $files->pushXML($file, $account, $indexStructure, $this->indexType == 'delta');
-            $files->pushZip($file, $account, $indexStructure, $this->indexType == 'delta');
+            $files->pushXML($file, $this->indexType == 'delta');
+            $files->pushZip($file, $this->indexType == 'delta');
 			
             $this->logger->info('Files pushed');
 			
@@ -299,9 +300,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @return void
      *
      */
-    protected function exportCustomers($account, $indexStructure, $files)
+    protected function exportCustomers($account, $files)
     {
-		if(!$indexStructure->isCustomersExportEnabled($account)) {
+		if(!$this->config->isCustomersExportEnabled($account)) {
 			return;
 		}
 
@@ -601,10 +602,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @description Preparing transactions to export
      * @return void
      */
-    protected function exportTransactions($account, $indexStructure, $files)
+    protected function exportTransactions($account, $files)
     {
         // don't export transactions in delta sync or when disabled
-        if(!$indexStructure->isTransactionsExportEnabled($account)) {
+        if(!$this->config->isTransactionsExportEnabled($account)) {
 			return;
 		}
 
@@ -797,9 +798,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @param array $languages language structure
      * @return void
      */
-    protected function exportProducts($account, $indexStructure, $files, $attributes, $attributeValues, $attributesValuesByName, $transformedCategories, $exportProductImages = true, $exportProductImageThumbnail = true, $exportProductUrl = true)
+    protected function exportProducts($account, $files, $attributes, $attributeValues, $attributesValuesByName, $transformedCategories)
     {
-		$languages = $indexStructure->getAccountLanguages($account);
+		$languages = $this->config->getAccountLanguages($account);
 		
 		$transformedProducts = array();
 		
@@ -854,7 +855,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         //prepare files
 		$tmpFiles = array_keys($attributesValuesByName);
         $tmpFiles[] = 'categories';
-        $files->prepareProductFiles($tmpFiles, $exportProductImages, $exportProductImageThumbnail);
+        $files->prepareProductFiles($tmpFiles);
 		
 		$groupId = null; //$this->_storeConfig['groupId']
 
@@ -865,7 +866,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
             foreach ($languages as $lang) {
 				
-				$storeObject = $indexStructure->getStore($account, $lang);
+				$storeObject = $this->config->getStore($account, $lang);
                 $storeId = $storeObject->getId();
                 $storeBaseUrl = $storeObject->getBaseUrl();
                 $storeCode = $storeObject->getCode();
@@ -1179,7 +1180,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                         $localeCount++;
 
                         // Add url to image cache
-                        if ($exportProductImages) {
+                        if ($this->config->exportProductImages($account)) {
                             /*$_product = Mage::getModel('catalog/product')->load($id);
                             $media_gallery = $_product->getMediaGallery();
                             foreach ($media_gallery['images'] as $_image) {
@@ -1196,7 +1197,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     }
 
                     // Add url to product for each languages
-                    if ($exportProductUrl) {
+                    if ($this->config->exportProductUrl($account)) {
                         if (array_key_exists('url_key', $product)) {
                             $url_path = $product['url_key'] . '.html';
                         } else {
@@ -1236,7 +1237,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $transformedProducts['products'] = null;
                 $transformedProducts['products'] = array();
 
-                if ($exportProductImages) {
+                if ($this->config->exportProductImages($account)) {
                     $this->logger->info('Products - save images');
 
                     /*$d = $this->_productsImages;

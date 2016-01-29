@@ -4,26 +4,31 @@ namespace Boxalino\Exporter\Helper;
 
 class BxDataIntelligenceXML
 {
+	protected $account;
 	protected $files;
+	protected $config;
 	protected $bxGeneral;
 	
-	public function __construct($files) {
+	public function __construct($account, $files, $config) {
+		$this->account = $account;
 		$this->files = $files;
+		$this->config = $config;
 		$this->bxGeneral = new BxGeneral();
 	}
 	
-	public function createXML($name, $languages, $attributes, $attributesValuesByName, $customer_attributes, $files, $tags = null, $productTags = null, $exportCustomers = true, $exportTransactions = true, $exportProductImages = true, $exportProductImageThumbnail = true, $exportProductUrl = true) {
+	public function createXML($name, $attributes, $attributesValuesByName, $customer_attributes, $tags = null, $productTags = null) {
 		
 		$withTag = ($tags != null && $productTags != null) ? true : false;
+		$languages = $this->config->getAccountLanguages($this->account);
 		
 		$xml = new \SimpleXMLElement('<root/>');
 
-        $languages = $xml->addChild('languages');
+        $languagesXML = $xml->addChild('languages');
         $containers = $xml->addChild('containers');
 
         //languages
         foreach ($languages as $lang) {
-            $language = $languages->addChild('language');
+            $language = $languagesXML->addChild('language');
             $language->addAttribute('id', $lang);
         }
 
@@ -123,7 +128,7 @@ class BxDataIntelligenceXML
 
         //########################################################################
         // IMAGES
-        if ($exportProductImages) {
+        if ($this->config->exportProductImages($this->account)) {
 
             //categories & products images
             $source = $sources->addChild('source');
@@ -135,7 +140,7 @@ class BxDataIntelligenceXML
 
             $this->sxml_append_options($source);
         }
-        if ($exportProductImageThumbnail) {
+        if ($this->config->exportProductImageThumbnail($this->account)) {
 
             //categories & products images
             $source = $sources->addChild('source');
@@ -151,7 +156,7 @@ class BxDataIntelligenceXML
 
         //property
         $properties = $products->addChild('properties');
-        $props = $this->prepareProperties($attributes, $attributesValuesByName, $withTag, $exportCustomers, $exportTransactions, $exportProductImages, $exportProductImageThumbnail, $exportProductUrl);
+        $props = $this->prepareProperties($attributes, $attributesValuesByName, $withTag);
 
         foreach ($props as $prop) {
             if ($prop['id'] == 'entity_id') {
@@ -187,7 +192,7 @@ class BxDataIntelligenceXML
 
         //##################################
 
-        if ($exportCustomers) {
+        if ($this->config->isCustomersExportEnabled($this->account)) {
             $customers = $containers->addChild('container');
             $customers->addAttribute('id', 'customers');
             $customers->addAttribute('type', 'customers');
@@ -237,7 +242,7 @@ class BxDataIntelligenceXML
             }
         }
 
-        if ($exportTransactions) {
+        if ($this->config->isTransactionsExportEnabled($this->account)) {
             $transactions = $containers->addChild('container');
             $transactions->addAttribute('id', 'transactions');
             $transactions->addAttribute('type', 'transactions');
@@ -284,16 +289,18 @@ class BxDataIntelligenceXML
     /**
      * @return array
      */
-    protected function prepareProperties($attributes, $attributesValuesByName, $withTag, $exportCustomers = true, $exportTransactions = true, $exportProductImages = true, $exportProductImageThumbnail = true, $exportProductUrl = true)
+    protected function prepareProperties($attributes, $attributesValuesByName, $withTag)
     {
 
         $properties = array();
 
         $attrs = $attributes;
 
-        if ($exportProductUrl) {
+        if ($this->config->exportProductUrl($this->account)) {
             $attrs[] = 'default_url';
         }
+		
+		$doneId = false;
 
         foreach ($attrs as $attr) {
             // set property type
@@ -314,6 +321,7 @@ class BxDataIntelligenceXML
                     break;
                 case 'entity_id':
                     $ptype = 'id';
+					$doneId = true;
                     break;
                 case 'short_description':
                 case 'status':
@@ -395,7 +403,7 @@ class BxDataIntelligenceXML
         }
 
         //images
-        if ($exportProductImages) {
+        if ($this->config->exportProductImages($this->account)) {
             $properties[] = array(
                 'id' => 'cache_image_url',
                 'name' => 'cache_image_url', //property id
@@ -407,7 +415,7 @@ class BxDataIntelligenceXML
         }
 
         //images
-        if ($exportProductImageThumbnail) {
+        if ($this->config->exportProductImageThumbnail($this->account)) {
             $properties[] = array(
                 'id' => 'cache_image_thumbnail_url',
                 'name' => 'cache_image_thumbnail_url', //property id
@@ -428,6 +436,18 @@ class BxDataIntelligenceXML
             'has_lang' => false,
             'reference' => null
         );
+		
+		if(!$doneId) {
+			$properties[] = array(
+				'id' => 'product_id',
+				'name' => null,
+				'ptype' => 'id',
+				'type' => 'direct',
+				'field' => 'entity_id',
+				'has_lang' => false,
+				'reference' => null
+			);
+		}
 
         return $properties;
     }

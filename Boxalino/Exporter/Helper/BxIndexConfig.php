@@ -2,16 +2,16 @@
 
 namespace Boxalino\Exporter\Helper;
 
-class BxIndexStructure
+class BxIndexConfig
 {
-	private $indexStructure = array();
+	private $indexConfig = array();
 	
 	public function __construct($websites) {
 		$this->initialize($websites);
 	}
 	
 	public function initialize($websites) {
-		$this->indexStructure = array();
+		$this->indexConfig = array();
 		foreach($websites  as $website) {
 			foreach ($website->getGroups(true) as $group) {
 				foreach ($group->getStores() as $store) {
@@ -36,16 +36,16 @@ class BxIndexStructure
 							$language = $parts[0];
 						}
 						
-						if (!array_key_exists($account, $this->indexStructure)) {
-							$this->indexStructure[$account] = array();
+						if (!array_key_exists($account, $this->indexConfig)) {
+							$this->indexConfig[$account] = array();
 						}
 
-						if (array_key_exists($language, $this->indexStructure[$account])) {
+						if (array_key_exists($language, $this->indexConfig[$account])) {
 							throw new \Exception(
 								"Configuration error detected: Language '$language' can only be pushed to account '$account' once. Please review and correct your boxalino plugin's configuration, including the various configuration levels per website, store view, etc."
 							);
 						}
-						$this->indexStructure[$account][$language] = array(
+						$this->indexConfig[$account][$language] = array(
 							'website' => $website,
 							'group'   => $group,
 							'store'   => $store,
@@ -57,7 +57,7 @@ class BxIndexStructure
 	}
 	
 	public function getAccounts() {
-		return array_keys($this->indexStructure);
+		return array_keys($this->indexConfig);
 	}
 	
 	public function getAccountLanguages($account) {
@@ -70,8 +70,8 @@ class BxIndexStructure
 	}
 	
 	private function getAccountArray($account) {
-		if(isset($this->indexStructure[$account])) {
-			return $this->indexStructure[$account];
+		if(isset($this->indexConfig[$account])) {
+			return $this->indexConfig[$account];
 		}
 		throw new \Exception("Account is not defined: " . $account);
 	}
@@ -107,7 +107,7 @@ class BxIndexStructure
 	
 	public function toString() {
 		$lines = array();
-		foreach($this->indexStructure as $a => $vs) {
+		foreach($this->indexConfig as $a => $vs) {
 			$lines[] = $a . " - " . implode(',', array_keys($vs));
 		}
 		return implode('\n', $lines);
@@ -133,5 +133,17 @@ class BxIndexStructure
 	public function getAccountExportServer($account) {
 		$exportServer = $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/export_server');
 		return $exportServer == '' ? 'http://di1.bx-cloud.com' : $exportServer;
+	}
+	
+	public function exportProductImages($account) {
+		return true;
+	}
+	
+	public function exportProductImageThumbnail($account) {
+		return true;
+	}
+	
+	public function exportProductUrl($account) {
+		return true;
 	}
 }
