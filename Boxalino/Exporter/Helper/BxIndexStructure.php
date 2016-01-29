@@ -23,7 +23,7 @@ class BxIndexStructure
 						$account = $store->getConfig('bxGeneral/general/account_name');
 						
 						if($account == "") {
-							throw new Exception(
+							throw new \Exception(
 								"Configuration error detected: Boxalino Account Name cannot be null for any store where exporter is enabled."
 							);
 						}
@@ -41,7 +41,7 @@ class BxIndexStructure
 						}
 
 						if (array_key_exists($language, $this->indexStructure[$account])) {
-							throw new Exception(
+							throw new \Exception(
 								"Configuration error detected: Language '$language' can only be pushed to account '$account' once. Please review and correct your boxalino plugin's configuration, including the various configuration levels per website, store view, etc."
 							);
 						}
@@ -73,7 +73,7 @@ class BxIndexStructure
 		if(isset($this->indexStructure[$account])) {
 			return $this->indexStructure[$account];
 		}
-		throw new Exception("Account is not defined: " . $account);
+		throw new \Exception("Account is not defined: " . $account);
 	}
 	
 	private function getAccountFirstLanguageArray($account) {
@@ -81,7 +81,7 @@ class BxIndexStructure
 		foreach($accountArray as $l => $vals) {
 			return $vals;
 		}
-		throw new Exception("Account " . $account . " does not contain any language");
+		throw new \Exception("Account " . $account . " does not contain any language");
 	}
 	
 	private function getAccountLanguageArray($account, $language) {
@@ -89,7 +89,7 @@ class BxIndexStructure
 		if(isset($accountArray[$language])) {
 			return $accountArray[$language];
 		}
-		throw new Exception("Account " . $account . " does not contain a language " . $language);
+		throw new \Exception("Account " . $account . " does not contain a language " . $language);
 	}
 	
 	public function getFirstAccountStore($account) {
@@ -111,5 +111,27 @@ class BxIndexStructure
 			$lines[] = $a . " - " . implode(',', array_keys($vs));
 		}
 		return implode('\n', $lines);
+	}
+	
+	public function getAccountUsername($account) {
+		$username = $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/username');
+		return $username != "" ? $username : $account;
+	}
+	
+	public function getAccountPassword($account) {
+		$password = $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/password');
+		if($password == '') {
+			throw new \Exception("you must defined a password in Boxalino -> General configuration section");
+		}
+		return $password;
+	}
+	
+	public function isAccountDev($account) {
+		return $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/dev') != 1;
+	}
+	
+	public function getAccountExportServer($account) {
+		$exportServer = $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/export_server');
+		return $exportServer == '' ? 'http://di1.bx-cloud.com' : $exportServer;
 	}
 }

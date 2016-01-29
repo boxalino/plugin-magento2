@@ -132,22 +132,15 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$this->removeUnusedAttributes($attributes);
 			
 			$file = $files->prepareGeneralFiles($account, $attributesValuesByName, $categories);
-
-			//Create xml
+			
 			$bxDIXML->createXML($file . '.xml', $indexStructure->getAccountLanguages($account), $attributes, $attributesValuesByName, $customer_attributes, $files);
 
-			//Create zip
 			$files->createZip($file . '.zip', $file . '.xml');
 			
-			$username = $account;
-			$password = "helloworld";
-			$isDev = false;
-			$isDelta = false;
-			$exportServer = '...';
-            
 			$this->logger->info('Push files');
-            $files->pushXML($file, $account, $username, $password, $exportServer, $isDev, $isDelta);
-            $files->pushZip($file, $account, $username, $password, $exportServer, $isDev, $isDelta);
+            $files->pushXML($file, $account, $indexStructure, $this->indexType == 'delta');
+            $files->pushZip($file, $account, $indexStructure, $this->indexType == 'delta');
+			
             $this->logger->info('Files pushed');
 			
             $this->_attrProdCount = array();
@@ -599,7 +592,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     }
 	
 	protected function _getLastIndex() {
-		throw new Exception("_getLastIndex is not the delta process anymore");
+		throw new \Exception("_getLastIndex is not the delta process anymore");
 	}
 	
 	

@@ -10,7 +10,7 @@ class BxFiles
     const URL_XML_DEV = '/frontend/dbmind/en/dbmind/api/data/source/update?dev=true';
     const URL_ZIP = '/frontend/dbmind/en/dbmind/api/data/push';
     const URL_ZIP_DEV = '/frontend/dbmind/en/dbmind/api/data/push?dev=true';
-    public $exportServer = '';
+	
     public $XML_DELIMITER = ',';
     public $XML_ENCLOSURE = '"';
     public $XML_ENCLOSURE_TEXT = "&quot;"; // it's $XML_ENCLOSURE
@@ -264,7 +264,7 @@ class BxFiles
 
             foreach ($csvFiles as $f) {
                 if (!$zip->addFile($this->_dir . '/' . $f, $f)) {
-                    throw new Exception(
+                    throw new \Exception(
                         'Synchronization failure: Failed to add file "' .
                         $this->_dir . '/' . $f . '" to the zip "' .
                         $name . '". Please try again.'
@@ -273,7 +273,7 @@ class BxFiles
             }
 
             if (!$zip->addFile($xml, 'properties.xml')) {
-                throw new Exception(
+                throw new \Exception(
                     'Synchronization failure: Failed to add file "' .
                     $xml . '" to the zip "' .
                     $name . '". Please try again.'
@@ -281,14 +281,14 @@ class BxFiles
             }
 
             if (!$zip->close()) {
-                throw new Exception(
+                throw new \Exception(
                     'Synchronization failure: Failed to close the zip "' .
                     $name . '". Please try again.'
                 );
             }
 
         } else {
-            throw new Exception(
+            throw new \Exception(
                 'Synchronization failure: Failed to open the zip "' .
                 $name . '" for writing. Please check the permissions and try again.'
             );
@@ -344,21 +344,6 @@ class BxFiles
         return $error;
     }
 
-    public function pushXML($file, $account, $username, $password, $exportServer, $isDev=false, $isDelta=false)
-    {
-        $fields = array(
-            'username' => $username,
-            'password' => $password,
-            'account' => $account,
-            'template' => 'standard_source',
-            'xml' => file_get_contents($file . '.xml')
-        );
-
-        $url = $this->getXMLSyncUrl($exportServer, $isDev);
-        return $this->pushFile($fields, $url, 'xml', $isDelta);
-
-    }
-
     protected function pushFile($fields, $url, $type, $isDelta=false)
     {
         if ($isDelta && !in_array('products.csv', $this->_files)) {
@@ -379,27 +364,42 @@ class BxFiles
         curl_close($s);
         if (strpos($responseBody, 'Internal Server Error') !== false) {
             $this->logger->info($type . ' push error: ' . $responseBody);
-            Mage::throwException($this->getError($responseBody));;
+            throw new \Exception($this->getError($responseBody));;
         }
         $this->logger->info($type . ' pushed. Response: ' . $responseBody);
         return $responseBody;
     }
 
+    public function pushXML($file, $account, $indexStructure, $isDelta=false)
+    {
+        $fields = array(
+            'username' => $indexStructure->getAccountUsername($account),
+            'password' => $indexStructure->getAccountPassword($account),
+            'account' => $account,
+            'template' => 'standard_source',
+            'xml' => file_get_contents($file . '.xml')
+        );
+
+        $url = $this->getXMLSyncUrl($indexStructure->getAccountExportServer($account), $indexStructure->isAccountDev($account));
+        return $this->pushFile($fields, $url, 'xml', $isDelta);
+
+    }
+
     /**
      * @param $zip
      */
-    public function pushZip($file, $account, $username, $password, $exportServer, $isDev=false, $isDelta=false)
+    public function pushZip($file, $account, $indexStructure, $isDelta=false)
     {
         $fields = array(
-            'username' => $username,
-            'password' => $password,
+            'username' => $indexStructure->getAccountUsername($account),
+            'password' => $indexStructure->getAccountPassword($account),
             'account' => $account,
-            'dev' => $isDev ? 'false' : 'true',
+            'dev' => $indexStructure->isAccountDev($account) ? 'false' : 'true',
             'delta' => $isDelta,
             'data' => $this->getCurlFile("$file.zip", "application/zip"),
         );
 
-        $url = $this->getZIPSyncUrl($exportServer, $isDev);
+        $url = $this->getZIPSyncUrl($indexStructure->getAccountExportServer($account), $indexStructure->isAccountDev($account));
 
         return $this->pushFile($fields, $url, 'zip');
     }
@@ -410,7 +410,7 @@ class BxFiles
             if (class_exists('CURLFile')) {
                 return new \CURLFile($filename, $type);
             }
-        } catch(Exception $e) {}
+        } catch(\Exception $e) {}
         return "@$filename;type=$type";
     }
 }

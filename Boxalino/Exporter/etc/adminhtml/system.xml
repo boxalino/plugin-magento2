@@ -2,80 +2,99 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
     <system>
         <!-- for add new tab in Magento2 system configuration section -->
-        <tab id="boxalino" translate="label" sortOrder="0">
-            <label>Boxalino Extensions</label>
+        <tab id="boxalino" translate="label" sortOrder="10">
+            <label>Boxalino</label>
         </tab>
         <!-- for create section -->
-        <section id="boxalinoexporter" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="3">
+        <section id="bxGeneral" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
-            <label>Boxalino Exporter</label>
+            <label>General</label>
+            <!-- Assign section to tab -->
             <tab>boxalino</tab>
-            <resource>Boxalino_Exporter::config</resource>
-            <group id="export_data" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Export Data Configuration</label>
-
-                <!-- Fields -->
-                <field id="export_server" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
-                    <label>Export server</label>
-                    <comment>Set server where data will be exported</comment>
+            <resource>Boxalino_Exporter::configuration</resource>
+            <!-- create group for fields in section -->
+            <group id="general" translate="label" type="text" delault="1" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <!-- create text type field -->
+                <field id="account_name" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Boxalino account name</label>
+                    <comment>Please request your account with credentials by contacting support@boxalino.com</comment>
                 </field>
-                <field id="language" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="2">
-                    <label>Language</label>
-                    <comment>
-                         <![CDATA[Set language of your store view <br>Available: en, fr, de, it, es, zh, cz, ru]]>
-                    </comment>
+				<field id="password" translate="label comment" sortOrder="2" type="password" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Boxalino password</label>
+                    <comment>Please request your account with credentials by contacting support@boxalino.com</comment>
                 </field>
-                <field id="additional_attributes" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
-                    <label>Additional Attributes</label>
-                    <comment>Write here comma-separated names of attributes which you want to export</comment>
+				<field id="dev" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Dev</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Is the account a development account or a production account? (Yes=DEV, No=PROD)</comment>
                 </field>
-                <field id="export_product_url" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
-                    <label>Export products url</label>
+            </group>
+			<group id="advanced" translate="label" type="text" delault="1" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced</label>
+                <!-- create text type field -->
+                <field id="language" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Overwrite language</label>
+                    <comment>Optional: uses store's "general/locale/code" value by default</comment>
+                </field>
+				<field id="username" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Boxalino User name</label>
+                    <comment>Optional: leave empty to use account name as username (typical case)</comment>
+                </field>
+            </group>
+        </section>
+		<section id="bxExporter" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Exporter</label>
+            <!-- Assign section to tab -->
+            <tab>boxalino</tab>
+            <resource>Boxalino_Exporter::configuration</resource>
+            <!-- create group for fields in section -->
+            <group id="exporter" translate="label" type="text" delault="1" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="export_product_images" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
-                    <label>Export products images url</label>
+            </group>
+			<group id="customers" translate="label" type="text" delault="1" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Customers</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="export_product_images_thumbnail" type="select" showInWebsite="1" showInStore="0" showInDefault="1" sortOrder="6">
-                    <label>Export products thumbnail url</label>
+            </group>
+			<group id="transactions" translate="label" type="text" delault="1" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Transactions</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="maximum_population" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
-                    <label>Maximum amount of product to export</label>
-                    <comment>0=all</comment>
+            </group>
+			<group id="advanced" translate="label" type="text" delault="1" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced</label>
+				<field id="export_server" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Boxalino export server</label>
+                    <comment>Optional: http://di1.bx-cloud.com by default if left empty</comment>
                 </field>
-                <field id="export_categories" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
-                    <label>Export Categories</label>
+            </group>
+        </section>
+		<section id="bxSearch" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Search</label>
+            <!-- Assign section to tab -->
+            <tab>boxalino</tab>
+            <resource>Boxalino_Exporter::configuration</resource>
+            <!-- create group for fields in section -->
+            <group id="search" translate="label" type="text" delault="1" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="export_tags" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
-                    <label>Export Tags</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="export_customers" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
-                    <label>Export Customers</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="additional_customer_attributes" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
-                    <label>Additional Customer Attributes</label>
-                    <comment>Write here comma-separated names of customer attributes which you want to export</comment>
-                </field>
-                <field id="export_transactions" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="12">
-                    <label>Export Transaction</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="export_transactions_full" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="13">
-                    <label>Export Transactions Fully</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Usually you want to always incrementally export transactions, but if you want to export it fully, including very old historic transactions, you can enable this, run a full sync and disable it again.</comment>
-                </field>
-                <field id="additional_transactions_attributes" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="14">
-                    <label>Additional Transaction Attributes</label>
-                    <comment>By default personal customer data is not included in the transaction export, but you can enable the export of billing and shipping address properties here by adding them in this comma separated list.</comment>
-                </field>
-                <field id="export_chunk" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="15">
-                    <label>Chunk size</label>
                 </field>
             </group>
         </section>
