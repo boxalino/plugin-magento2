@@ -1,0 +1,358 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+        <!-- Boxalino Config Tab -->
+        <tab id="boxalino" translate="label" sortOrder="0">
+            <label>Boxalino</label>
+        </tab>
+        <!-- Boxalino General Configuration Section -->
+        <section id="Boxalino_General" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1">
+            <class>separator-top</class>
+            <label>Boxalino General Configuration</label>
+            <tab>boxalino</tab>
+            <resource>Boxalino_Frontend::config</resource>
+
+            <!-- Boxalino General Configuration Group -->
+            <group id="general" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1">
+                <label>Boxalino General Configuration</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1">
+                    <label>Enabled plugin</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="logs_saving" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="2">
+                    <label>Logs Saving</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="logs_saving_frontend" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="3">
+                    <label>Frontend Logs Saving</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="account_dev" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Development environment</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="domain" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Domain</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="host" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
+                    <label>Host</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="di_username" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
+                    <label>Data Intelligence Username</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="di_password" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
+                    <label>Data Intelligence Password</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="di_account" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
+                    <label>Data Intelligence Account</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="p13n_username" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
+                    <label>P13n Username</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="p13n_password" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
+                    <label>P13n Password</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="additional_fields" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="12">
+                    <label>Return additional fields</label>
+                    <comment><![CDATA[ Write here comma-separated names of fields from the Data Intelligence which should be returned with P13n response<br />
+                        Colon separate option: global (without language version), local (with language version)]]></comment>
+
+                </field>
+            </group>
+
+            <!-- Search Configuration Group -->
+            <group id="search" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1">
+                <label>Search Configuration</label>
+
+                <!-- Fields -->
+                <field id="quick_search" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Quick search</label>
+                </field>
+                <field id="quick_search_limit" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Quick search limit</label>
+                    <comment><![CDATA[ 0 = without limit, this should match your default page size for best performance ]]></comment>
+                </field>
+                <field id="advanced_search" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Advanced search</label>
+                </field>
+                <field id="advanced_search_limit" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Advanced search limit</label>
+                    <comment><![CDATA[ 0 = without limit, this should match your default page size for best performance ]]></comment>
+                </field>
+                <field id="autocomplete" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Autocomplete</label>
+                </field>
+
+                <field id="autocomplete_limit" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
+                    <label>Autocomplete limit</label>
+                </field>
+                <field id="autocomplete_products_limit" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
+                    <label>Autocomplete products limit</label>
+                </field>
+                <field id="entity_id" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
+                    <label>Id field name</label>
+                </field>
+            </group>
+
+            <!-- Autocomplete View Group-->
+            <group id="autocomplete_html" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                <label>Autocomplete View</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable Magento logic</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="items" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Mapping fields</label>
+                    <comment><![CDATA[ Write here comma-separated names of fields which you want to use in autocomplete (for example: title)<br />
+                            Colon separate name of attribute (left), from field name (right). <br/> Example: color:product_color<br />
+                            <strong>Important</strong>: fields for product name and product url can't be change (title for product name, and url for product url ]]>
+                    </comment>
+                </field>
+            </group>
+
+            <!-- Autocomplete Categories Configuration Group -->
+            <group id="autocomplete_extra" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                <label>Autocomplete Categories Configuration</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable autocomplete categories</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enabled_for_all" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Display for all term</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[ If no, then display categories for the first term only. <br /> If yes, then display categories for all terms. ]]></comment>
+                </field>
+                <field id="items" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Number of categories per term</label>
+                </field>
+                <field id="sort" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Sorting by products quantity</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[ If yes, then sort by number of products. ]]></comment>
+                </field>
+                <field id="products" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Enable product preview for categories</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <!-- Search Suggestions Configuration Group -->
+            <group id="search_suggestions" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                <label>Search Suggestions Configuration</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable search suggestion</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Minimum for range</label>
+                    <comment><![CDATA[ Display suggestion, when quantity of products is fewer than this value ]]></comment>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Maximum for range</label>
+                    <comment><![CDATA[ Display suggestion, when quantity of products is more than this value ]]></comment>
+                </field>
+                <field id="display" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum number of suggestions</label>
+                </field>
+                <field id="sort" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Sorting by products quantity</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[ If no, then sort by name ]]></comment>
+                </field>
+            </group>
+
+            <!-- Search Relaxation Configuration Group -->
+            <group id="search_relaxation" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                <label>Search Relaxation Configuration</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable search relaxation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Maximum for quantity of products</label>
+                    <comment><![CDATA[ Display relaxation, when quantity of products is less than this value ]]></comment>
+                </field>
+                <field id="relaxations" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Maximum of relaxations</label>
+                </field>
+                <field id="products" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum of products for relaxation</label>
+                </field>
+            </group>
+
+            <!-- Filters Configuration Group -->
+            <group id="search_relaxation" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="6">
+                <label>Filters Configuration</label>
+
+                <!-- Fields -->
+                <field id="left_filters_enable" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable filters (left side)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="left_filters_multioption" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Left filters multioption</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="left_filters_normal" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Normal filters (left side)</label>
+                    <comment><![CDATA[ Write here comma-separated names of fields which you want to use as filters (for example: manufacturer)<br />
+                        Colon separate name of field (left) from option (middle), and order (right). <br/> For order: 0 - alphabetical, 1 - count ]]></comment>
+                </field>
+                <field id="left_filters_normal_title" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="4">
+                    <label>Normal filters titles (left side)</label>
+                    <comment>Write here comma-separated titles which should be displayed on page (in same order as names of fields)</comment>
+                </field>
+                <field id="top_filters_enable" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Enable top filters</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="top_filters_multioption" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
+                    <label>Top filters multioption</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="top_filters" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
+                    <label>Top filters</label>
+                    <comment>Write here comma-separated names of fields which you want to use as top filters</comment>
+                </field>
+                <field id="top_filters_title" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="8">
+                    <label>Top filters titles</label>
+                    <comment>Write here comma-separated titles which should be displayed on page (in same order as names of fields)</comment>
+                </field>
+            </group>
+
+            <!-- Tracking Group -->
+            <group id="tracker" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="7">
+                <label>Tracking</label>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Enable plugin</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="track_sales" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Enable Sales Tracking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="analytics" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Enable Analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="charset" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Character encoding</label>
+                </field>
+            </group>
+
+            <!-- jQuery Configuration Group -->
+            <group id="jquery" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
+                <label>jQuery Configuration</label>
+
+                <!-- Fields -->
+                <field id="jquery_file" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Load jQuery File</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="noconflict_file" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Load jQuery noConflict File</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+
+        <!-- Boxalino Recommendation Section -->
+        <section id="Boxalino_Recommendation" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="2">
+            <class>separator-top</class>
+            <label>Boxalino Recommendation</label>
+            <tab>boxalino</tab>
+            <resource>Boxalino_Frontend::config</resource>
+
+            <!-- Cart Configuration -->
+            <group id="cart" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="0">
+                <label>Cart Configuration</label>
+                <comment><![CDATA[ Widget configuration for recommendation on basket page. ]]></comment>
+
+                <!-- Fields -->
+                <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Widgets enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Widget name</label>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Minimum recommendations</label>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum recommendations</label>
+                </field>
+                <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Scenario</label>
+                </field>
+            </group>
+
+            <!-- Related Configuration -->
+            <group id="related" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                <label>Related Configuration</label>
+                <comment><![CDATA[ Widget configuration for related recommendation on product page. ]]></comment>
+
+                <!-- Fields -->
+                <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Widgets enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Widget name</label>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Minimum recommendations</label>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum recommendations</label>
+                </field>
+                <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Scenario</label>
+                </field>
+            </group>
+
+            <!-- Upsell Configuration -->
+            <group id="upsell" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                <label>Upsell Configuration</label>
+                <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
+
+                <!-- Fields -->
+                <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Widgets enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Widget name</label>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Minimum recommendations</label>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum recommendations</label>
+                </field>
+                <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Scenario</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
