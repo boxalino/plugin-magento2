@@ -165,9 +165,7 @@ class BxFiles
             $fh = fopen($this->_dir . '/' . $file, 'a');
             $h = array('entity_id', 'cache_image_url');
             fputcsv($fh, $h, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
-        }
-
-        if ($this->config->exportProductImageThumbnail($this->account)) {
+			
             $file = 'product_cache_image_thumbnail_url.csv';
             if (!in_array($file, $this->_files)) {
                 $this->_files[] = $file;

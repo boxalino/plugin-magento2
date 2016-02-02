@@ -69,6 +69,16 @@
                     <label>List of product properties to exclude from export</label>
                     <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of product properties to include is not empty.</comment>
                 </field>
+				<field id="export_images" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Enable export product images</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Optional: Export image and thumbnail image urls (not required if standard usage of search and recommendations in Magento, as Magento renders the images itself).</comment>
+                </field>
+				<field id="export_url" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
+                    <label>Enable export product urls</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Optional: Export product urls (not required if standard usage of search and recommendations  in Magento, as Magento renders the url itself).</comment>
+                </field>
             </group>
 			<group id="customers" translate="label" type="text" delault="1" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customers</label>

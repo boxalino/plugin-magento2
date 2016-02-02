@@ -139,9 +139,7 @@ class BxDataIntelligenceXML
             $source->addChild('itemIdColumn')->addAttribute('value', 'entity_id');
 
             $this->sxml_append_options($source);
-        }
-        if ($this->config->exportProductImageThumbnail($this->account)) {
-
+			
             //categories & products images
             $source = $sources->addChild('source');
             $source->addAttribute('type', 'item_data_file');
@@ -412,10 +410,7 @@ class BxDataIntelligenceXML
                 'field' => 'cache_image_url', //field colummn
                 'has_lang' => false,
             );
-        }
-
-        //images
-        if ($this->config->exportProductImageThumbnail($this->account)) {
+			
             $properties[] = array(
                 'id' => 'cache_image_thumbnail_url',
                 'name' => 'cache_image_thumbnail_url', //property id

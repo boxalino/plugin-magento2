@@ -136,15 +136,11 @@ class BxIndexConfig
 	}
 	
 	public function exportProductImages($account) {
-		return true;
-	}
-	
-	public function exportProductImageThumbnail($account) {
-		return true;
+		return $this->getFirstAccountStore($account)->getConfig('bxExporter/products/export_images') == 1;
 	}
 	
 	public function exportProductUrl($account) {
-		return true;
+		return $this->getFirstAccountStore($account)->getConfig('bxExporter/products/export_url') == 1;
 	}
 	
 	protected function getFinalProperties($allProperties, $includes, $excludes, $requiredProperties=array()) {

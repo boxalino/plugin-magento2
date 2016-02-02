@@ -11,6 +11,11 @@ use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Block\Product\Context;
+
 use \Psr\Log\LoggerInterface;
 
 class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface{
@@ -40,10 +45,78 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      */
     protected $bxGeneral;
 	
-	protected $categoryCollection;
+	/**
+     * @var \Magento\Catalog\Model\ResourceModel\Category\Collection
+     */
+    protected $categoryCollection;
+	
+	/**
+     * @var \Magento\Framework\App\DeploymentConfig
+     */
+    protected $deploymentConfig;
+	
+	/**
+     * @var Magento\Catalog\Model\ProductFactory;
+     */
+    protected $productFactory;
+	
+	/**
+     * @var Magento\Catalog\Helper\Image;
+     */
+    protected $_imageHelper;
+	
+	/**
+     * @var Magento\Catalog\Block\Product\Context;
+     */
+    protected $context;
+	
+	/**
+     * @var \Magento\Framework\App\ResourceConnection
+     */
 	protected $rs;
 	
-	protected $indexType;
+	/**
+	* @var Magento\Framework\App\ProductMetadata
+	*/
+	protected $productMetaData;
+	
+	/**
+	* @var Magento\Catalog\Model\Product\Type\Price
+	*/
+	private $typePrice;
+	
+	/**
+	* the list of ids to update, do a full export in case the delta is array is empty
+	*/
+	protected $deltaIds = array();
+	
+	/**
+	* @var Boxalino\Exporter\Helper\BxIndexConfig : containing the access to the configuration of each store to export
+	*/
+	private $config = null;
+	
+	/**
+	* Cache of entity id types from table eav_entity_type
+	* Only used in function: getEntityIdFor
+	*/
+	protected $_entityIds = null;
+
+	/**
+	* Cache of product images
+	*/
+    protected $_productsImages = array();
+	
+	/**
+	* Cache of product image thumnails
+	*/
+    protected $_productsThumbnails = array();
+	
+	/**
+	* keeps the information whether a product property has been set at least once in the product export
+	* key: name of the property
+	* value: if true ==> set at least once
+	*/
+	private $_attrProdCount = array();
 
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -51,7 +124,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		Filesystem $filesystem,
 		\Magento\Catalog\Helper\Product\Flat\Indexer $productHelper,
 		\Magento\Catalog\Model\ResourceModel\Category\Collection $categoryCollection,
-		\Magento\Framework\App\ResourceConnection $rs
+		\Magento\Framework\App\ResourceConnection $rs,
+		\Magento\Framework\App\DeploymentConfig $deploymentConfig,
+		ProductFactory $productFactory,
+		\Magento\Catalog\Block\Product\Context $context,
+		\Magento\Framework\App\ProductMetadata $productMetaData,
+		\Magento\Catalog\Model\Product\Type\Price $typePrice
     )
     {
        $this->storeManager = $storeManager;
@@ -60,39 +138,37 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	   $this->productHelper = $productHelper;
 	   $this->categoryCollection = $categoryCollection;
 	   $this->rs = $rs;
+	   $this->deploymentConfig = $deploymentConfig;
+	   $this->productFactory = $productFactory;
+	   $this->context = $context;
+	   $this->_imageHelper = $context->getImageHelper();
+	   $this->productMetaData = $productMetaData;
+	   $this->typePrice = $typePrice;
 	   
 	   $this->bxGeneral = new BxGeneral();
     }
 
     public function executeRow($id){
-		
-		$this->indexType = "delta";
-        echo "executeRow";
-        exit;
+		$this->exportStores(array($id));
     }
 
     public function executeList(array $ids){
-		
-		$this->indexType = "delta";
-        echo "executeList";
-        exit;
+		$this->exportStores($ids);
     }
 
     public function execute($ids){
-		
-		$this->indexType = "delta";
-		
-        echo "execute";
-        exit;
+		$this->exportStores($ids);
     }
-
-	private $_attrProdCount = array();
-	private $config = null;
+	
     public function executeFull(){
+		$this->exportStores();
+	}
+	
+	protected function exportStores($deltaIds=array()) {
 		
-		$this->indexType = "full";
+		$this->logger->info("bxLog: starting exportStores");
 		
-		$this->logger->info("bxLog: starting executeFull");
+		$this->deltaIds = $deltaIds;
 		
 		$this->config = new BxIndexConfig($this->storeManager->getWebsites());
 		$this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
@@ -110,11 +186,11 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				
 				$store = $this->config->getStore($account, $language);
 				
-				$this->logger->info('bxLog: Start getStoreAttributes for language . ' . $language . ' on store:' . $store->getId());
-				$attributes = $this->getStoreAttributes($account, $store);
+				$this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
+				$attributes = $this->getStoreProductAttributes($account, $store);
 				
-				$this->logger->info('bxLog: Start getStoreAttributesValues for language . ' . $language . ' on store:' . $store->getId());
-				$attributesValuesByName = $this->getStoreAttributesValues($account, $attributes, $store, $language, $attributesValuesByName);
+				$this->logger->info('bxLog: Start getStoreProductAttributesValues for language . ' . $language . ' on store:' . $store->getId());
+				$attributesValuesByName = $this->getStoreProductAttributesValues($account, $attributes, $store, $language, $attributesValuesByName);
 				
 				$this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
 				$categories = $this->exportCategories($store, $language, $categories);
@@ -139,17 +215,17 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$files->createZip($file . '.zip', $file . '.xml');
 			
 			$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server: ' . $account);
-			$files->pushXML($file, $this->indexType == 'delta');
+			$files->pushXML($file, $this->getIndexType() == 'delta');
             
 			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server: ' . $account);
-			$files->pushZip($file, $this->indexType == 'delta');
+			$files->pushZip($file, $this->getIndexType() == 'delta');
 			
             $this->_attrProdCount = array();
 			
             $this->logger->info('bxLog: Finished account: ' . $account);
         }
 		
-		$this->logger->info("bxLog: finished executeFull");
+		$this->logger->info("bxLog: finished exportStores");
 	}
 	
 	protected function removeUnusedAttributes($attributes, $attributesValuesByName) {
@@ -174,14 +250,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      */
     protected function exportCategories($store, $language, $transformedCategories)
     {
-		$this->logger->info('Categories are not loaded');
+		$this->logger->info('bxLog: starts loading categories for store: ' . $store->getId());
 		$categories = $this->categoryCollection->setProductStoreId($store->getId())->setStoreId($store->getId())->addAttributeToSelect('*');
 		$categories->clear();
 		
-        $this->logger->info('Categories are loaded');
-		
+		$this->logger->info('bxLog: prepare transformed categories for store: ' . $store->getId());
 		foreach ($categories as $category) {
-
 			if ($category->getParentId() == null) {
 				continue;
 			}
@@ -196,7 +270,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				$transformedCategories[$category->getId()] = array('category_id' => $category->getId(), 'parent_id' => $parentId, 'value_' . $language => $this->bxGeneral->escapeString($category->getName()));
 			}
 		}
-		$this->logger->info('Categories are returned for data saving');
+		
+		$this->logger->info('bxLog: returning transformed categories for store: ' . $store->getId());
 		return $transformedCategories;
     }
 
@@ -204,9 +279,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @description Merge default attributes with attributes added by user
      * @return void
      */
-    protected function getStoreAttributes($account, $store)
+    protected function getStoreProductAttributes($account, $store)
     {
 		
+		$this->logger->info('bxLog: get all product attributes for store: ' . $store->getId());
 		$attributes = array();
 		foreach ($this->productHelper->getAttributes() as $attribute) {
 			if ($attribute->getAttributeCode() != null && strlen($attribute->getAttributeCode()) > 0) {
@@ -228,6 +304,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             'visibility',
             'status'
         );
+		$this->logger->info('bxLog: get configured product attributes for store: ' . $store->getId());
 		$filteredAttributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
 		
 		foreach($attributes as $k => $attribute) {
@@ -236,6 +313,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			}
 		}
 		
+		$this->logger->info('bxLog: returning configured product attributes for store ' . $store->getId() . ': ' . implode(',', array_values($attributes)));
 		return $attributes;
     }
 	
@@ -244,7 +322,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @description Get labels for all Attributes where is optionsId = optionValue
      * @return void
      */
-    protected function getStoreAttributesValues($account, $attributeCodes, $store, $language, $attributesValuesByName)
+    protected function getStoreProductAttributesValues($account, $attributeCodes, $store, $language, $attributesValuesByName)
     {	
         foreach ($this->productHelper->getAttributes() as $attribute) {
 			if(isset($attributeCodes[$attribute->getId()])) {
@@ -283,9 +361,11 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      */
     protected function exportCustomers($account, $files)
     {
-		if(!$this->config->isCustomersExportEnabled($account)) {
+		if(!$this->config->isCustomersExportEnabled($account) || $this->getIndexType() == 'delta') {
 			return;
 		}
+		
+		$this->logger->info('bxLog: starting exporting customers for account: ' . $account);
 
         $limit = 1000;
         $count = $limit;
@@ -299,10 +379,11 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             'datetime' => array(),
         );
 		
-        $customer_attributes = $this->mergeCustomerAttributes(array('dob', 'gender'));
-
-		$db = $this->rs->getConnection();
+		$this->logger->info('bxLog: get final customer attributes for account: ' . $account);
+        $customer_attributes = $this->getCustomerAttributes($account);
 		
+		$this->logger->info('bxLog: get customer attributes backend types for account: ' . $account);
+		$db = $this->rs->getConnection();
 		$select = $db->select()
             ->from(
                 array('main_table' => $this->rs->getTableName('eav_attribute')),
@@ -326,25 +407,24 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         }
 
         do {
-            $this->logger->info("Customers - load page $page");
-            $customers_to_save = array();
+            $this->logger->info('bxLog: Customers - load page $page for account: ' . $account);
+			$customers_to_save = array();
 
             $customers = array();
 
-            $select = $db->select()
+            $this->logger->info('bxLog: Customers - get customer ids for page $page for account: ' . $account);
+			$select = $db->select()
                 ->from(
                     $this->rs->getTableName('customer_entity'),
                     array('entity_id', 'created_at', 'updated_at')
                 )
                 ->limit($limit, ($page - 1) * $limit);
-
-            $this->_getIndexType() == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
-
-            foreach ($db->fetchAll($select) as $r) {
+			foreach ($db->fetchAll($select) as $r) {
                 $customers[$r['entity_id']] = array('id' => $r['entity_id']);
             }
 
-            $ids = array_keys($customers);
+            $this->logger->info('bxLog: Customers - prepare side queries page $page for account: ' . $account);
+			$ids = array_keys($customers);
             $columns = array(
                 'entity_id',
                 'attribute_id',
@@ -406,7 +486,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     \Magento\Framework\DB\Select::SQL_UNION_ALL
                 );
 
-            foreach ($db->fetchAll($select) as $r) {
+            $this->logger->info('bxLog: Customers - retrieve data for side queries page $page for account: ' . $account);
+			foreach ($db->fetchAll($select) as $r) {
                 $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
             }
 
@@ -417,7 +498,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             $select4 = null;
             $selects = null;
 
-            $select = $db->select()
+            $this->logger->info('bxLog: Customers - get postcode for page $page for account: ' . $account);
+			$select = $db->select()
                 ->from(
                     $this->rs->getTableName('eav_attribute'),
                     array(
@@ -434,10 +516,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             }
             $addressIds = array_keys($addressAttr);
 
-            $this->logger->info('Customers - loaded page ' . $page);
-
-            foreach ($customers as $customer) {
-                $this->logger->info('Customers - Load billing address ');
+            $this->logger->info('bxLog: Customers - load data per customer for page $page for account: ' . $account);
+			foreach ($customers as $customer) {
                 $id = $customer['id'];
 
                 $select = $db->select()
@@ -498,8 +578,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $data = array_merge(array(array_keys(end($customers_to_save))), $customers_to_save);
                 $header = false;
             }
-            $this->logger->info('Customers - save to file');
-            $files->savePartToCsv('customers.csv', $data);
+            $this->logger->info('bxLog: Customers - save to file for page $page for account: ' . $account);
+			$files->savePartToCsv('customers.csv', $data);
             $data = null;
 
             $count = count($customers_to_save);
@@ -508,7 +588,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         } while ($count >= $limit);
         $customers = null;
 
-        $this->logger->info('Customers - end of exporting');
+        $this->logger->info('bxLog: Customers - end of exporting for account: ' . $account);
 		
 		return $customer_attributes;
     }
@@ -519,7 +599,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @param string $entityType
      * @return null|string
      */
-	protected $_entityIds = null;
     public function getEntityIdFor($entityType)
     {
         if ($this->_entityIds == null) {
@@ -536,48 +615,88 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         }
         return array_key_exists($entityType, $this->_entityIds) ? $this->_entityIds[$entityType] : null;
     }
+	
+	protected function getTransactionAttributes($account) {
+		$this->logger->info('bxLog: get all transaction attributes for account: ' . $account);
+		$dbConfig = $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_DB);
+		if(!isset($dbConfig['connection']['default']['dbname'])) {
+			$this->logger->warn("ConfigOptionsListConstants::CONFIG_PATH_DB doesn't provide a dbname in ['connection']['default']['dbname']");
+			return array();
+		}
+		$attributes = array();
+		$db = $this->rs->getConnection();
+		$select = $db->select()
+			->from(
+				'INFORMATION_SCHEMA.COLUMNS',
+				array('COLUMN_NAME')
+			)
+			->where('TABLE_SCHEMA=?', $dbConfig['connection']['default']['dbname'])
+			->where('TABLE_NAME=?', $this->rs->getTableName('sales_order_address'));
+		$this->_entityIds = array();
+		foreach ($db->fetchAll($select) as $row) {
+			$attributes[$row['COLUMN_NAME']] = $row['COLUMN_NAME'];
+		}
+		
+		$requiredProperties = array();
+		
+		$this->logger->info('bxLog: get configured transaction attributes for account: ' . $account);
+		$filteredAttributes = $this->config->getAccountTransactionsProperties($account, $attributes, $requiredProperties);
+		
+		foreach($attributes as $k => $attribute) {
+			if(!in_array($attribute, $filteredAttributes)) {
+				unset($attributes[$k]);
+			}
+		}
+		$this->logger->info('bxLog: returning configured transaction attributes for account ' . $account . ': ' . implode(',', array_values($attributes)));
+		
+		return $attributes;
+	}
 
     /**
      * @description Merge default customer attributes with customer attributes added by user
      * @param array $attributes optional, array to merge the user defined attributes into
      * @return array
      */
-    protected function mergeCustomerAttributes($attributes = array())
+    protected function getCustomerAttributes($account)
     {
-		return $attributes;
-		/*
-        if (isset($this->_storeConfig['additional_customer_attributes']) && $this->_storeConfig['additional_customer_attributes'] != '') {
-            if(count($this->_customerAttributes) == 0) {
-                foreach (Mage::getModel('customer/customer')->getAttributes() as $at) {
-                    $this->_customerAttributes[] = $at->getAttributeCode();
-                }
-            }
-
-            foreach (explode(',', $this->_storeConfig['additional_customer_attributes']) as $field) {
-                if (!in_array($field, $this->_customerAttributes)) {
-                    Mage::throwException("Customer attribute \"$field\" doesn't exist, please update your additional_customer_attributes setting in the Boxalino Exporter settings!");
-                }
-                if ($field != null && strlen($field) > 0 && !in_array($field, $attributes)) {
-                    $attributes[] = $field;
-                }
-            }
+		$attributes = array();
+		
+		$this->logger->info('bxLog: get all customer attributes for account: ' . $account);
+		$db = $this->rs->getConnection();
+		$select = $db->select()
+            ->from(
+                array('main_table' => $this->rs->getTableName('eav_attribute')),
+                array(
+                    'attribute_code',
+                )
+            )
+            ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('customer'));
+			
+		foreach ($db->fetchAll($select) as $attr) {
+            $attributes[$attr['attribute_code']] = $attr['attribute_code'];
         }
-        return $attributes;*/
+		
+		$requiredProperties = array('dob', 'gender');
+		
+		$this->logger->info('bxLog: get configured customer attributes for account: ' . $account);
+		$filteredAttributes = $this->config->getAccountCustomersProperties($account, $attributes, $requiredProperties);
+		
+		foreach($attributes as $k => $attribute) {
+			if(!in_array($attribute, $filteredAttributes)) {
+				unset($attributes[$k]);
+			}
+		}
+		$this->logger->info('bxLog: returning configured customer attributes for account ' . $account . ': ' . implode(',', array_values($attributes)));
+		return $attributes;
     }
 
     /**
      * @return string Index type
      */
-    protected function _getIndexType()
+    protected function getIndexType()
     {
-        $this->indexType;
+        return sizeof($this->deltaIds) == 0 ? 'full' : 'delta';
     }
-	
-	protected function _getLastIndex() {
-		throw new \Exception("_getLastIndex is not the delta process anymore");
-	}
-	
-	
 
     /**
      * @description Preparing transactions to export
@@ -590,25 +709,26 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			return;
 		}
 
-        $this->logger->info('Transactions - start of export');
+        $this->logger->info('bxLog: starting transaction export for account ' . $account);
+		
         $db = $this->rs->getConnection();
 
         $limit = 1000;
         $count = $limit;
         $page = 1;
         $header = true;
-
-        // We use the crypt key as salt when generating the guest user hash
+		
+		// We use the crypt key as salt when generating the guest user hash
         // this way we can still optimize on those users behaviour, whitout
         // exposing any personal data. The server salt is there to guarantee
         // that we can't connect guest user profiles across magento installs.
-        $salt = "\"salt\""; /*$db->quote(
-            ((string) Mage::getConfig()->getNode('global/crypt/key')) .
-            $this->_storeConfig['di_username']
-        );*/
+        $salt = $db->quote(
+            ((string) $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY)) .
+            $account
+        );
 
         while ($count >= $limit) {
-            $this->logger->info('Transactions - load page ' . $page);
+			$this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
             $transactions_to_save = array();
             $configurable = array();
 
@@ -649,7 +769,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 ->order(array('order.entity_id', 'item.product_type'))
                 ->limit($limit, ($page - 1) * $limit);
 
-            $transaction_attributes = array(); //explode(',', $this->_storeConfig['additional_transactions_attributes']);
+            $transaction_attributes = $this->getTransactionAttributes($account);
             if (count($transaction_attributes)) {
                 $billing_columns = $shipping_columns = array();
                 foreach ($transaction_attributes as $attribute) {
@@ -668,13 +788,14 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                        );
             }
             // when in full transaction export mode, don't limit the query
+			//TODO: ENABLE A MODE TO ONLY EXPORT THE TRANSACTIONS SINCE LAST EXPORT AND NOT ALL THE TRANSACTIONS
             /*if (!$this->_storeConfig['export_transactions_full']) {
                 $select->where('order.created_at >= ?', $this->_getLastIndex())
                        ->orWhere('order.updated_at >= ?', $this->_getLastIndex());
             }*/
 
             $transactions = $db->fetchAll($select);
-            $this->logger->info("Transactions - loaded page $page");
+			$this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
 
             foreach ($transactions as $transaction) {
                 //is configurable
@@ -686,28 +807,32 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $productOptions = unserialize($transaction['product_options']);
 
                 //is configurable - simple product
-                /*if (intval($transaction['price']) == 0 && $transaction['product_type'] == 'simple') {
+                if (intval($transaction['price']) == 0 && $transaction['product_type'] == 'simple' && isset($productOptions['info_buyRequest']['product'])) {
                     if (isset($configurable[$productOptions['info_buyRequest']['product']])) {
                         $pid = $configurable[$productOptions['info_buyRequest']['product']];
 
                         $transaction['original_price'] = $pid['original_price'];
                         $transaction['price'] = $pid['price'];
                     } else {
-                        $pid = Mage::getModel('catalog/product')->load($productOptions['info_buyRequest']['product']);
+						$product = $this->productFactory->create();
+						try {
+							$product->load($productOptions['info_buyRequest']['product']);
+							
+							$transaction['original_price'] = ($product->getPrice());
+							$transaction['price'] = ($product->getPrice());
 
-                        $transaction['original_price'] = 0; //($pid->getPrice());
-                        $transaction['price'] = 0; //($pid->getPrice());
+							$tmp = array();
+							$tmp['original_price'] = $transaction['original_price'];
+							$tmp['price'] = $transaction['price'];
 
-                        $tmp = array();
-                        $tmp['original_price'] = $transaction['original_price'];
-                        $tmp['price'] = $transaction['price'];
-
-                        $configurable[$productOptions['info_buyRequest']['product']] = $tmp;
-
-                        $pid = null;
-                        $tmp = null;
+							$configurable[$productOptions['info_buyRequest']['product']] = $tmp;
+							$tmp = null;
+						} catch (\Exception $e) {
+							$this->logger->critical($e);
+						}
+						$product = null;
                     }
-                }*/
+                }
 
                 $status = 0; // 0 - pending, 1 - confirmed, 2 - shipping
                 if ($transaction['updated_at'] != $transaction['created_at']) {
@@ -763,7 +888,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $header = false;
             }
 
-            $this->logger->info('Transactions - save to file');
+			$this->logger->info('bxLog: Transactions - save to file for account ' . $account);
             $files->savePartToCsv('transactions.csv', $data);
             $data = null;
 
@@ -771,7 +896,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
         }
 
-        $this->logger->info('Transactions - end of export');
+		$this->logger->info('bxLog: Transactions - end of export for account ' . $account);
     }
 
     /**
@@ -785,9 +910,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		
 		$transformedProducts = array();
 		
-        $this->logger->info('Products - start of export');
+		$this->logger->info('bxLog: Products - start of export for account ' . $account);
         $attrs = $attributes;
-        $this->logger->info('Products - get info about attributes - before');
+		$this->logger->info('bxLog: Products - get info about attributes - before for account ' . $account);
 
         $db = $this->rs->getConnection();
         $select = $db->select()
@@ -806,7 +931,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
             ->where('main_table.attribute_code IN(?)', $attrs);
 
-        $this->logger->info('Products - connected to DB, built attribute info query');
+		$this->logger->info('bxLog: Products - connected to DB, built attribute info query for account ' . $account);
 
         $attrsFromDb = array(
             'int' => array(),
@@ -822,7 +947,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $attrsFromDb[$type][] = $r['attribute_id'];
             }
         }
-        $this->logger->info('Products - attributes preparing done');
+		$this->logger->info('bxLog: Products - attributes preparing done for account ' . $account);
 
         $countMax = 1000000; //$this->_storeConfig['maximum_population'];
         $localeCount = 0;
@@ -837,8 +962,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$tmpFiles = array_keys($attributesValuesByName);
         $tmpFiles[] = 'categories';
         $files->prepareProductFiles($tmpFiles);
-		
-		$groupId = null; //$this->_storeConfig['groupId']
 
         while ($count >= $limit) {
             if ($countMax > 0 && $totalCount >= $countMax) {
@@ -852,16 +975,17 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $storeBaseUrl = $storeObject->getBaseUrl();
                 $storeCode = $storeObject->getCode();
 
-                $this->logger->info('Products - fetch products - before');
+				
+				$this->logger->info('bxLog: Products - fetch products - before for account ' . $account . ' for languge ' . $lang);
                 $select = $db->select()
                     ->from(
                         array('e' => $this->rs->getTableName('catalog_product_entity'))
                     )
                     ->limit($limit, ($page - 1) * $limit);
 
-                //$this->_getIndexType() == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+                $this->getIndexType() == 'delta' ? $select->where('entity_id IN (?)', $this->deltaIds) : '';
 
-                $this->logger->info('Products - fetch products - after');
+				$this->logger->info('bxLog: Products - fetch products - after for account ' . $account . ' for languge ' . $lang);
 
                 $products = array();
                 $ids = array();
@@ -875,7 +999,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 }
 
                 // we have to check for settings on the different levels: Store(View) & Global
-                $this->logger->info('Products - get attributes - before');
+				$this->logger->info('bxLog: Products - get attributes - before for account ' . $account . ' for languge ' . $lang);
                 $columns = array(
                     'entity_id',
                     'attribute_id',
@@ -886,7 +1010,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 $select1 = $db->select()
                     ->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 't_d.attribute_id = ea.attribute_id', 'ea.attribute_code')
                     ->where('t_d.store_id = ?', 0)
-                    //->where('t_d.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
                     ->where('t_d.entity_id IN(?)', $ids);
                 $select2 = clone $select1;
                 $select3 = clone $select1;
@@ -957,9 +1080,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 foreach ($db->fetchAll($select) as $r) {
                     $products[$r['entity_id']][$r['attribute_code']] = $r['value'];
                 }
-                $this->logger->info('Products - get attributes - after');
+				$this->logger->info('bxLog: Products - get attributes - after for account ' . $account . ' for languge ' . $lang);
 
-                $this->logger->info('Products - get stock  - before');
+				$this->logger->info('bxLog: Products - get stock - before for account ' . $account . ' for languge ' . $lang);
                 $select = $db->select()
                     ->from(
                         $this->rs->getTableName('cataloginventory_stock_status'),
@@ -974,9 +1097,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 foreach ($db->fetchAll($select) as $r) {
                     $products[$r['product_id']]['stock_status'] = $r['stock_status'];
                 }
-                $this->logger->info('Products - get stock  - after');
+				$this->logger->info('bxLog: Products - get stock - after for account ' . $account . ' for languge ' . $lang);
 
-                $this->logger->info('Products - get products from website - before');
+				$this->logger->info('bxLog: Products - get products from website - before for account ' . $account . ' for languge ' . $lang);
                 $select = $db->select()
                     ->from(
                         $this->rs->getTableName('catalog_product_website'),
@@ -989,9 +1112,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 foreach ($db->fetchAll($select) as $r) {
                     $products[$r['product_id']]['website'][] = $r['website_id'];
                 }
-                $this->logger->info('Products - get products from website - after');
+				$this->logger->info('bxLog: Products - get products from website - after for account ' . $account . ' for languge ' . $lang);
 
-                $this->logger->info('Products - get products connections - before');
+				$this->logger->info('bxLog: Products - get products connections - before for account ' . $account . ' for languge ' . $lang);
                 $select = $db->select()
                     ->from(
                         $this->rs->getTableName('catalog_product_super_link'),
@@ -1004,9 +1127,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 foreach ($db->fetchAll($select) as $r) {
                     $products[$r['product_id']]['parent_id'] = $r['parent_id'];
                 }
-                $this->logger->info('Products - get products connections - after');
+				$this->logger->info('bxLog: Products - get products connections - after for account ' . $account . ' for languge ' . $lang);
 
-                $this->logger->info('Products - get categories - before');
+				$this->logger->info('bxLog: Products - get categories - before for account ' . $account . ' for languge ' . $lang);
                 $select = $db->select()
                     ->from(
                         $this->rs->getTableName('catalog_category_product'),
@@ -1020,11 +1143,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     $products[$r['product_id']]['categories'][] = $r['category_id'];
                 }
                 $select = null;
-                $this->logger->info('Products - get categories - after');
+				$this->logger->info('bxLog: Products - get categories - after for account ' . $account . ' for languge ' . $lang);
 
-				$enterpriseEdition = false; //Mage::getEdition() == Mage::EDITION_ENTERPRISE
-                if ($enterpriseEdition) {
-                    $this->logger->info('Products - get EE URL key  - before');
+				if ($this->productMetaData->getEdition() != "Community") {
+					$this->logger->info('bxLog: Products - get EE URL key  - before for account ' . $account . ' for languge ' . $lang);
                     $select = $db->select()
                         ->from(
                             array('t_g' => $this->rs->getTableName('catalog_product_entity_url_key')),
@@ -1040,14 +1162,14 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     foreach ($db->fetchAll($select) as $r) {
                         $products[$r['entity_id']]['url_key'] = $r['value'];
                     }
-                    $this->logger->info('Products - get EE URL key  - after');
+					$this->logger->info('bxLog: Products - get EE URL key  - after for account ' . $account . ' for languge ' . $lang);
                 }
                 $ids = null;
 
                 foreach ($products as $product) {
-                    $this->logger->info('Products - start transform');
+					$this->logger->info('bxLog: Products - start transform for account ' . $account . ' for languge ' . $lang);
 
-                    if (count($product['website']) == 0) { // || !in_array($groupId, $product['website'])) {
+                    if (count($product['website']) == 0 || !in_array($storeObject->getGroupId(), $product['website'])) {
                         $product = null;
                         continue;
                     }
@@ -1060,6 +1182,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                         $id = $product['parent_id'];
                         $haveParent = true;
                     }
+					
+					if(!isset($product['special_from_date'])) {
+						$product['special_from_date'] = null;
+					}
+					if(!isset($product['special_to_date'])) {
+						$product['special_to_date'] = null;
+					}
 
                     // apply special price time range
                     if (
@@ -1069,18 +1198,18 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                             !empty($product['special_to_date'])
                         )
                     ) {
-                        $product['special_price'] = $product['price']; /*Mage_Catalog_Model_Product_Type_Price::calculateSpecialPrice(
+                        $product['special_price'] = $this->typePrice->calculateSpecialPrice(
                             $product['price'],
                             $product['special_price'],
                             $product['special_from_date'],
                             $product['special_to_date'],
                             $storeObject
-                        );*/
+                        );
                     }
 
                     foreach ($attrs as $attr) {
-                        $this->logger->info('Products - start attributes transform');
-
+						$this->logger->info('bxLog: Products - start attributes transform for attribute $attr for account ' . $account . ' for languge ' . $lang);
+                        
                         if (isset($attributesValuesByName[$attr])) {
 
                             $val = array_key_exists($attr, $product) ? $this->bxGeneral->escapeString($product[$attr]) : '';
@@ -1124,7 +1253,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                                 $productParam[$attr] = $val;
                                 break;
                         }
-                        $this->logger->info('Products - end attributes transform');
+						$this->logger->info('bxLog: Products - end attributes transform for attribute $attr for account ' . $account . ' for languge ' . $lang);
 
                     }
 
@@ -1162,15 +1291,25 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
                         // Add url to image cache
                         if ($this->config->exportProductImages($account)) {
-                            /*$_product = Mage::getModel('catalog/product')->load($id);
-                            $media_gallery = $_product->getMediaGallery();
-                            foreach ($media_gallery['images'] as $_image) {
-                                $url = $this->_helperImage->init($_product, 'image', $_image['file'])->__toString();
-                                $url_tbm = $this->_helperImage->init($_product, 'thumbnail', $_image['file'])->resize(100)->__toString();
+							
+							$product = $this->productFactory->create();
+							try {
+								$product->load($id);
+								$media_gallery = $product->getMediaGallery();
+								foreach ($media_gallery['images'] as $image) {
+									
+									//TODO: CORRECT THAT IT RETRIEVES A PROPER URL WHICH CAN BE RE-USED
+									$url = $this->_imageHelper->init($product, $image['file'])->getUrl();
+									$url_tbm = $this->_imageHelper->init($product, $image['file'])->resize(100)->getUrl();
 
-                                $this->_productsImages[] = array($id, $url);
-                                $this->_productsThumbnails[] = array($id, $url_tbm);
-                            }*/
+									$this->_productsImages[] = array($id, $url);
+									$this->_productsThumbnails[] = array($id, $url_tbm);
+								}
+							
+							} catch (\Exception $e) {
+								$this->logger->critical($e);
+							}
+							$product = null;
                         }
 
                     } elseif (isset($transformedProducts['products'][$id])) {
@@ -1198,13 +1337,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     $product = null;
 
                     ksort($transformedProducts['products'][$id]);
-                    $this->logger->info('Products - end transform');
+					$this->logger->info('bxLog: Products - end transform for account ' . $account . ' for languge ' . $lang);
                 }
             }
 
             if (isset($transformedProducts['products']) && count($transformedProducts['products']) > 0) {
 				
-				$this->logger->info('Products - validate names start');
+				$this->logger->info('bxLog: Products - validate names start for account ' . $account);
 
                 $data = $transformedProducts['products'];
 
@@ -1212,16 +1351,16 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     $data = array_merge(array(array_keys(end($data))), $data);
                     $header = false;
                 }
-                $this->logger->info('Products - save to file');
+				$this->logger->info('bxLog: Products - save to file for account ' . $account);
                 $files->savePartToCsv('products.csv', $data);
                 $data = null;
                 $transformedProducts['products'] = null;
                 $transformedProducts['products'] = array();
 
                 if ($this->config->exportProductImages($account)) {
-                    $this->logger->info('Products - save images');
+					$this->logger->info('bxLog: Products - save images for account ' . $account);
 
-                    /*$d = $this->_productsImages;
+                    $d = $this->_productsImages;
                     $this->savePartToCsv('product_cache_image_url.csv', $d);
                     $d = null;
 
@@ -1229,7 +1368,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     $this->savePartToCsv('product_cache_image_thumbnail_url.csv', $d);
                     $d = null;
                     $this->_productsImages = array();
-                    $this->_productsThumbnails = array();*/
+                    $this->_productsThumbnails = array();
                 }
 
             }
