@@ -175,9 +175,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		
 		foreach ($this->config->getAccounts() as $account) {
 			
-			$this->logger->info("bxLog: initialize files on account " . $account);
+			$this->logger->info("bxLog: initialize files on account: " . $account);
             $files = new BxFiles($this->filesystem, $this->logger, $account, $this->config);
 		
+			$this->logger->info("bxLog: verify credentials for account: " . $account);
+			$files->verifyCredentials();
+			
 			$this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
 			$attributesValuesByName = array();
 			$categories = array();
@@ -196,7 +199,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				$categories = $this->exportCategories($store, $language, $categories);
 			}
 			
-			$this->logger->info('bxLog: Export the customers, transactions and product files: ' . $account);
+			$this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
 			$customer_attributes = $this->exportCustomers($account, $files);
 			$this->exportTransactions($account, $files);
 			$this->exportProducts($account, $files, $attributes, $attributesValuesByName, $categories);
@@ -211,13 +214,26 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$bxDIXML = new BXDataIntelligenceXML($account, $files, $this->config);
 			$bxDIXML->createXML($file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
 			
-			$this->logger->info('bxLog: Prepare ZIP file with all the data files: ' . $account);
+			$this->logger->info('bxLog: Prepare ZIP file with all the data files for account: ' . $account);
 			$files->createZip($file . '.zip', $file . '.xml');
 			
-			$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server: ' . $account);
-			$files->pushXML($file, $this->getIndexType() == 'delta');
+			try {
+				$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
+				$files->pushXML($file, $this->getIndexType() == 'delta');
+			} catch(\Exception $e) {
+				$value = @json_decode($e->getMessage(), true);
+				if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
+					$this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
+					$files->pushXML($file, $this->getIndexType() == 'delta', 2);
+				} else {
+					throw $e;
+				}
+			}
+			
+			$this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
+			$files->publishMagentoConfigChanges($file);
             
-			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server: ' . $account);
+			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
 			$files->pushZip($file, $this->getIndexType() == 'delta');
 			
             $this->_attrProdCount = array();

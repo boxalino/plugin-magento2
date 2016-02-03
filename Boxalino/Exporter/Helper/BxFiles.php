@@ -10,6 +10,10 @@ class BxFiles
     const URL_XML_DEV = '/frontend/dbmind/en/dbmind/api/data/source/update?dev=true';
     const URL_ZIP = '/frontend/dbmind/en/dbmind/api/data/push';
     const URL_ZIP_DEV = '/frontend/dbmind/en/dbmind/api/data/push?dev=true';
+	const URL_VERIFY_CREDENTIALS = '/frontend/dbmind/en/dbmind/api/credentials/verify';
+	const URL_PUBLISH_CONFIGURATION_CHANGES = '/frontend/dbmind/en/dbmind/api/configuration/publish/owner';
+	
+	const MAGENTO_OWNER = 'magento2';
 	
     public $XML_DELIMITER = ',';
     public $XML_ENCLOSURE = '"';
@@ -322,27 +326,48 @@ class BxFiles
      * @return string URL to delta sync
      * @param $dev
      */
-    public function getXMLSyncUrl($exportServer, $dev = false)
+    public function getXMLSyncUrl($exportServer, $dev = false, $count=null)
     {
         if ($dev) {
-            return $exportServer . self::URL_XML_DEV;
+            return $exportServer . self::URL_XML_DEV . '&count=' . $count;
         } else {
-            return $exportServer . self::URL_XML;
+            return $exportServer . self::URL_XML . '?count=' . $count;
         }
 
     }
+	
+	public function getVerifyCredentialsURL($exportServer) {
+		return $exportServer . self::URL_VERIFY_CREDENTIALS;
+	}
+	
+	public function getPublishOwnerConfigurationURL($exportServer) {
+		return $exportServer . self::URL_PUBLISH_CONFIGURATION_CHANGES;
+	}
 
     public function getError($responseBody)
     {
-        $htmlTagsToReplace = array('body', 'p', 'br');
+		return $responseBody;
+        /*$htmlTagsToReplace = array('body', 'p', 'br');
         $startPosition = strpos($responseBody, '<p>');
         $endPosition = strpos($responseBody, '&lt;br&gt;') + 3;
         $error = html_entity_decode(substr($responseBody, $startPosition, $endPosition));
         foreach ($htmlTagsToReplace as $tag) {
             $error = str_replace('<' . $tag . '>', PHP_EOL, $error);
         }
-        return $error;
+        return $error;*/
     }
+	
+	public function verifyCredentials() {
+		$fields = array(
+            'username' => $this->config->getAccountUsername($this->account),
+            'password' => $this->config->getAccountPassword($this->account),
+            'account' => $this->account,
+            'owner' => self::MAGENTO_OWNER
+        );
+		
+		$url = $this->getVerifyCredentialsURL($this->config->getAccountExportServer($this->account));
+		return $this->pushFile($fields, $url, 'verifyCredentials');
+	}
 
     protected function pushFile($fields, $url, $type, $isDelta=false)
     {
@@ -370,20 +395,32 @@ class BxFiles
         return $responseBody;
     }
 
-    public function pushXML($file, $isDelta=false)
+    public function pushXML($file, $isDelta=false, $count=null)
     {
         $fields = array(
             'username' => $this->config->getAccountUsername($this->account),
             'password' => $this->config->getAccountPassword($this->account),
             'account' => $this->account,
+            'owner' => self::MAGENTO_OWNER,
             'template' => 'standard_source',
             'xml' => file_get_contents($file . '.xml')
         );
 
-        $url = $this->getXMLSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account));
-        return $this->pushFile($fields, $url, 'xml', $isDelta);
-
+        $url = $this->getXMLSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account), $count);
+		return $this->pushFile($fields, $url, 'xml', $isDelta);
     }
+	
+	public function publishMagentoConfigChanges($file) {
+		$fields = array(
+            'username' => $this->config->getAccountUsername($this->account),
+            'password' => $this->config->getAccountPassword($this->account),
+            'account' => $this->account,
+            'owner' => self::MAGENTO_OWNER
+        );
+		
+		$url = $this->getPublishOwnerConfigurationURL($this->config->getAccountExportServer($this->account));
+		return $this->pushFile($fields, $url, 'publishMagentoConfigChanges');
+	}
 
     /**
      * @param $zip
@@ -394,6 +431,7 @@ class BxFiles
             'username' => $this->config->getAccountUsername($this->account),
             'password' => $this->config->getAccountPassword($this->account),
             'account' => $this->account,
+            'owner' => self::MAGENTO_OWNER,
             'dev' => $this->config->isAccountDev($this->account) ? 'false' : 'true',
             'delta' => $isDelta,
             'data' => $this->getCurlFile("$file.zip", "application/zip"),
