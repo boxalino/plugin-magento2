@@ -143,6 +143,10 @@ class BxIndexConfig
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/products/export_url') == 1;
 	}
 	
+	public function publishConfigurationChanges($account) {
+		return $this->getFirstAccountStore($account)->getConfig('bxExporter/advanced/publish_configuration_changes') == 1;
+	}
+	
 	protected function getFinalProperties($allProperties, $includes, $excludes, $requiredProperties=array()) {
 		foreach($includes as $k => $incl) {
 			if($incl == "") {

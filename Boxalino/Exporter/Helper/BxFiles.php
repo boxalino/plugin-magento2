@@ -410,16 +410,18 @@ class BxFiles
 		return $this->pushFile($fields, $url, 'xml', $isDelta);
     }
 	
-	public function publishMagentoConfigChanges($file) {
+	public function publishMagentoConfigChanges($file, $publish=true) {
 		$fields = array(
             'username' => $this->config->getAccountUsername($this->account),
             'password' => $this->config->getAccountPassword($this->account),
             'account' => $this->account,
-            'owner' => self::MAGENTO_OWNER
+            'owner' => self::MAGENTO_OWNER,
+            'publish' => $publish ? "true" : "false"
         );
 		
 		$url = $this->getPublishOwnerConfigurationURL($this->config->getAccountExportServer($this->account));
-		return $this->pushFile($fields, $url, 'publishMagentoConfigChanges');
+		$changes = $this->pushFile($fields, $url, 'publishMagentoConfigChanges');
+		return json_decode($changes, true);
 	}
 
     /**

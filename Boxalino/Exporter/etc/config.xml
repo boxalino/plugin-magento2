@@ -17,6 +17,9 @@
                 <transactions>
                     <enabled>1</enabled>
                 </transactions>
+                <advanced>
+                    <publish_configuration_changes>1</publish_configuration_changes>
+                </advanced>
             </bxExporter>
         </default>
     </config>

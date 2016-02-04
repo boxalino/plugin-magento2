@@ -231,8 +231,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			}
 			
 			$this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
-			$files->publishMagentoConfigChanges($file);
-            
+			$publish = $this->config->publishConfigurationChanges($account);
+			$changes = $files->publishMagentoConfigChanges($file, $publish);
+            if(sizeof($changes['changes']) > 0 && !$publish) {
+				$this->logger->warn("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
+			}
+			
 			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
 			$files->pushZip($file, $this->getIndexType() == 'delta');
 			
@@ -1185,7 +1189,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 foreach ($products as $product) {
 					$this->logger->info('bxLog: Products - start transform for account ' . $account . ' for languge ' . $lang);
 
-                    if (count($product['website']) == 0 || !in_array($storeObject->getGroupId(), $product['website'])) {
+					// TODO: FIGURE OUT HOW THE GROUP LOGIC WORKS EXACTLY
+                    if (count($product['website']) == 0) { // || !in_array($storeObject->getGroupId(), $product['website'])) {
                         $product = null;
                         continue;
                     }
