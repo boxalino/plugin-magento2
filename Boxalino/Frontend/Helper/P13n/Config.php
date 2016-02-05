@@ -5,7 +5,7 @@ namespace Boxalino\Frontend\Helper\P13n;
  * Mail: michal.sordyl@boxalino.com
  * Date: 28.05.14
  */
-class Boxalino_Frontend_Helper_P13n_Config
+class Config
 {
     private $host;
     private $account;

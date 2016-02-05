@@ -1,13 +1,11 @@
 <?php
+namespace Boxalino\Frontend\Model\Resource;
 
-require_once 'Mage/CatalogSearch/Model/Resource/Fulltext.php';
-
-class Boxalino_Frontend_Model_Resource_Fulltext extends Mage_CatalogSearch_Model_Resource_Fulltext
+class Fulltext extends \Magento\CatalogSearch\Model\ResourceModel\Fulltext
 {
 
-    public function prepareResult($object, $queryText, $query)
+    public function prepareResultPage($object, $queryText, $query)
     {
-
         $session = Mage::getSingleton('core/session');
         $session->unsetData('relax');
         $session->unsetData('relax_products');

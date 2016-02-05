@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Frontend\Helper\P13n;
 
-class Boxalino_Frontend_Helper_P13n_Recommendation
+class Recommendation
 {
     private $returnFields = array('id');
     private $results = array();

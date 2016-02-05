@@ -35,31 +35,27 @@
                 </field>
                 <field id="domain" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
                     <label>Domain</label>
-                    <validate>required-entry</validate>
+
                 </field>
                 <field id="host" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
                     <label>Host</label>
-                    <validate>required-entry</validate>
+
                 </field>
                 <field id="di_username" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
                     <label>Data Intelligence Username</label>
-                    <validate>required-entry</validate>
+
                 </field>
                 <field id="di_password" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
                     <label>Data Intelligence Password</label>
-                    <validate>required-entry</validate>
                 </field>
                 <field id="di_account" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
                     <label>Data Intelligence Account</label>
-                    <validate>required-entry</validate>
                 </field>
                 <field id="p13n_username" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
                     <label>P13n Username</label>
-                    <validate>required-entry</validate>
                 </field>
                 <field id="p13n_password" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
                     <label>P13n Password</label>
-                    <validate>required-entry</validate>
                 </field>
                 <field id="additional_fields" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="12">
                     <label>Return additional fields</label>

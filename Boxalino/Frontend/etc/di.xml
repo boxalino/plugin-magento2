@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\CatalogSearch\Controller\Advanced\Result" type="Boxalino\Frontend\Controller\AdvancedController" />
+    <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Frontend\Controller\IndexController" />
+    <preference for="Magento\CatalogSearch\Model\Advanced" type="Boxalino\Frontend\Model\Advanced" />
+    <preference for="Magento\Catalog\Block\Product\ListProduct" type="Boxalino\Frontend\Block\Product\BxListProducts" />
+    <preference for="Magento\CatalogSearch\Model\ResourceModel\Advanced\Collection" type="Boxalino\Frontend\Model\Resource\Advanced\Collection" />
+    <!--<preference for="Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection" type="Boxalino\Frontend\Model\Resource\Fulltext\Collection" />-->
+    <!--<preference for="Magento\CatalogSearch\Model\ResourceModel\Fulltext" type="Boxalino\Frontend\Model\Resource\Fulltext" />-->
+</config>

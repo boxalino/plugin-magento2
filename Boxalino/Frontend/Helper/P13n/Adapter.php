@@ -2,13 +2,16 @@
 namespace Boxalino\Frontend\Helper\P13n;
 use Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n;
 use Boxalino\Frontend\Model\Boxalino_Frontend_Model_Logger;
+use Boxalino\Frontend\Helper\P13n\Config;
+use Boxalino\Frontend\Helper\Data;
+use Boxalino\Frontend\Helper\P13n\Sort;
 /**
  * User: Michal Sordyl
  * Mail: michal.sordyl@boxalino.com
  * Date: 28.05.14
  */
 
-class Boxalino_Frontend_Helper_P13n_Adapter
+class Adapter
 {
     private $config = null;
     private $p13n = null;
@@ -25,28 +28,34 @@ class Boxalino_Frontend_Helper_P13n_Adapter
     protected $session;
     protected $locale;
     protected $scopeConfig;
+    protected $objectMangaer;
     const VISITOR_COOKIE_TIME = 31536000;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    private $additionalFields = null;
 
     public function __construct(
-        Boxalino_Frontend_Helper_P13n_Config $config,
+        \Magento\Framework\ObjectManager\ObjectManager $objectManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\Category $catalogCategory,
         \Magento\Framework\Session\Storage $session
     )
     {
+        $this->objectMangaer = $objectManager;
         $this->session = $session;
         $this->scopeConfig = $scopeConfig;
         $this->catalogCategory = $catalogCategory;
-        $this->config = $config;
         $this->p13n = new HttpP13n();
+
+    }
+
+    public function setConfig(\Boxalino\Frontend\Helper\P13n\Config $config) {
+        $this->config = $config;
         $this->configureP13n();
         $this->createChoiceRequest();
 
         $om = \Magento\Framework\App\ObjectManager::getInstance();
         /** @var \Magento\Framework\Locale\Resolver $resolver */
         $this->locale = $om->get('Magento\Framework\Locale\Resolver');
-
     }
 
     private function getChoiceResponse()
@@ -73,6 +82,14 @@ class Boxalino_Frontend_Helper_P13n_Adapter
         unset($this->p13n);
     }
 
+    public function getAdditionalFieldsFromP13n()
+    {
+        if ($this->additionalFields == null) {
+            $this->additionalFields = explode(',', $this->scopeConfig->getValue('Boxalino_General/general/additional_fields',$this->scopeStore));
+        }
+        return !empty($this->additionalFields) ? $this->additionalFields : array();
+    }
+
     /**
      * @param String $choiceId can be found on admin page /Recommendations/Widgets
      * @param String test to search, eg 'shirt'
@@ -85,7 +102,7 @@ class Boxalino_Frontend_Helper_P13n_Adapter
     public function setupInquiry($choiceId, $search, $language, $returnFields, $sort, $offset = 0, $hitCount = 10)
     {
         $this->inquiry = $this->createInquiry();
-        $returnFields = array_merge($returnFields, Mage::helper('Boxalino_Frontend')->getAdditionalFieldsFromP13n());
+        $returnFields = array_merge($returnFields, $this->getAdditionalFieldsFromP13n());
         $this->returnFields = $returnFields;
         $this->createAndSetUpSearchQuery($search, $language, $returnFields, $offset, $hitCount);
         $this->setUpSorting($sort);
@@ -121,11 +138,11 @@ class Boxalino_Frontend_Helper_P13n_Adapter
         $this->searchQuery->hitCount = $hitCount;
         $this->searchQuery->facetRequests = $this->prepareFacets();
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('query', $search);
-        Boxalino_Frontend_Model_Logger::saveFrontActions('facets', $this->searchQuery->facetRequests);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('query', $search);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('facets', $this->searchQuery->facetRequests);
     }
 
-    private function setUpSorting(Boxalino_Frontend_Helper_P13n_Sort $sorting)
+    private function setUpSorting(Sort $sorting)
     {
         $sortFieldsArray = $sorting->getSorts();
         $sortFields = array();
@@ -335,13 +352,13 @@ class Boxalino_Frontend_Helper_P13n_Adapter
         $this->autocompleteRequest->searchChoiceId = $searchConfig['quick_search'];
         $this->autocompleteRequest->searchQuery = $searchQuery;
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Query', $text);
-        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Request', $this->autocompleteRequest);
-        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Request_serialized', serialize($this->autocompleteRequest));
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Query', $text);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Request', $this->autocompleteRequest);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Request_serialized', serialize($this->autocompleteRequest));
 
         $this->autocompleteResponse = $this->p13n->autocomplete($this->autocompleteRequest);
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Response', $this->autocompleteResponse, 1);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('autocomplete_Response', $this->autocompleteResponse, 1);
 
     }
 
@@ -453,6 +470,17 @@ class Boxalino_Frontend_Helper_P13n_Adapter
         }
     }
 
+    public function getAccount()
+    {
+        $isDev = $this->config->getValue('Boxalino_General/general/account_dev',$this->scopeStore);
+        $account = $this->config->getValue('Boxalino_General/general/di_account',$this->scopeStore);
+
+        if ($isDev) {
+            return $account . '_dev';
+        }
+        return $account;
+    }
+
     public function getAutocompleteProducts($facets, $map = null, $fields = null)
     {
         if (!is_array($facets)) {
@@ -484,14 +512,14 @@ class Boxalino_Frontend_Helper_P13n_Adapter
         // facets
         if ($extraConfig['products'] == '1') {
             $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
-            $p13nConfig = new Boxalino_Frontend_Helper_P13n_Config(
+            $p13nConfig = new Config(
                 $storeConfig['host'],
-                Mage::helper('Boxalino_Frontend')->getAccount(),
+                $this->data->getAccount(),
                 $storeConfig['p13n_username'],
                 $storeConfig['p13n_password'],
                 $storeConfig['domain']
             );
-            $p13nSort = new Boxalino_Frontend_Helper_P13n_Sort();
+            $p13nSort = new Sort();
         }
 
         $lang = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
@@ -522,7 +550,8 @@ class Boxalino_Frontend_Helper_P13n_Adapter
                         continue;
                     }
 
-                    $p13n = new Boxalino_Frontend_Helper_P13n_Adapter($p13nConfig);
+                    $p13n =  $this->objectMangaer->create('\Boxalino\Frontend\Helper\P13n\Adapter');
+                    $p13n->setConfig($p13nConfig);
                     $p13n->setupInquiry(
                         $generalConfig['quick_search'],
                         $this->autocompleteResponse->prefixSearchResult->queryText,
@@ -575,12 +604,12 @@ class Boxalino_Frontend_Helper_P13n_Adapter
 
         $this->choiceRequest->inquiries = array($this->inquiry);
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Request', $this->choiceRequest);
-        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Request_serialized', serialize($this->choiceRequest));
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Request', $this->choiceRequest);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Request_serialized', serialize($this->choiceRequest));
 
         self::$choiceResponse = $this->p13n->choose($this->choiceRequest);
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Response', self::$choiceResponse, 1);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('choice_Response', self::$choiceResponse, 1);
     }
 
     private function prepareFacets()
@@ -694,7 +723,7 @@ class Boxalino_Frontend_Helper_P13n_Adapter
     {
         $result = array();
         $response = self::getChoiceResponse();
-        $additionalFields = Mage::helper('Boxalino_Frontend')->getAdditionalFieldsFromP13n();
+        $additionalFields = $this->getAdditionalFieldsFromP13n();
         if (!empty($response->variants)) {
             foreach ($response->variants as $variant) {
                 /** @var \com\boxalino\p13n\api\thrift\SearchResult $searchResult */
@@ -924,17 +953,17 @@ class Boxalino_Frontend_Helper_P13n_Adapter
             $choiceRequest->inquiries[] = $inquiry;
         }
 
-        if (isset($_REQUEST['productId'])) {
-            Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_product_id', $_REQUEST['productId']);
-        } elseif (isset($_REQUEST['basketContent'])) {
-            Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_basket_content', $_REQUEST['basketContent']);
-        }
-        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Request', $choiceRequest);
-        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Request_serialized', serialize($choiceRequest));
+//        if (isset($_REQUEST['productId'])) {
+//            Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_product_id', $_REQUEST['productId']);
+//        } elseif (isset($_REQUEST['basketContent'])) {
+//            Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_basket_content', $_REQUEST['basketContent']);
+//        }
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Request', $choiceRequest);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Request_serialized', serialize($choiceRequest));
 
         $choiceResponse = $this->p13n->choose($choiceRequest);
 
-        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Response', $choiceResponse, 1);
+//        Boxalino_Frontend_Model_Logger::saveFrontActions('recommendation_Response', $choiceResponse, 1);
         $results = array();
         /** @var \com\boxalino\p13n\api\thrift\Variant $variant */
         foreach ($choiceResponse->variants as $variantId => $variant) {

@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Frontend\Catalogsearch\Helper;
-use Magento\CatalogSearch\Helper\Data;
-class Boxalino_CemSearch_CatalogSearch_Helper_Data extends Data
+use Magento\CatalogSearch\Helper\Data as CatalogData;
+class Data extends CatalogData
 {
 
     protected $_urlForSearch;

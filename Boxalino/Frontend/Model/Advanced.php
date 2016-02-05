@@ -1,18 +1,21 @@
 <?php
-/**
- * Created by: Szymon Nosal <szymon.nosal@boxalino.com>
- * Created at: 06.06.14 11:45
- */
-
-require_once 'Mage/CatalogSearch/Model/Advanced.php';
-
-/**
- *
- * @category    Mage
- * @package     Mage_CatalogSearch
- * @author      Szymon Nosal <szymon.nosal@boxalino.com>
- */
-class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
+namespace Boxalino\Frontend\Model;
+use Magento\Catalog\Model\Config;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as AttributeCollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\CatalogSearch\Model\ResourceModel\Advanced\Collection as ProductCollection;
+use Magento\CatalogSearch\Model\ResourceModel\AdvancedFactory;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Eav\Model\Entity\Attribute as EntityAttribute;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\CatalogSearch\Helper\Data;
+class Advanced extends \Magento\CatalogSearch\Model\Advanced
 {
     /**
      * User friendly search criteria list
@@ -34,21 +37,59 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
      * @var Mage_CatalogSearch_Model_Resource_Advanced_Collection
      */
     protected $_productCollection;
+    protected $scopeConfig;
+    protected $helperData;
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    public function __construct(
+        Context $context,
+        Registry $registry,
+        AttributeCollectionFactory $attributeCollectionFactory,
+        Visibility $catalogProductVisibility,
+        Config $catalogConfig,
+        CurrencyFactory $currencyFactory,
+        ProductFactory $productFactory,
+        StoreManagerInterface $storeManager,
+        ProductCollectionFactory $productCollectionFactory,
+        AdvancedFactory $advancedFactory,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        Data $helperData,
+        array $data = []
+    )
+    {
+        $this->helperData = $helperData;
+        $this->scopeConfig = $scopeConfig;
+        parent::__construct($context, $registry, $attributeCollectionFactory, $catalogProductVisibility, $catalogConfig, $currencyFactory, $productFactory, $storeManager, $productCollectionFactory, $advancedFactory, $data);
+    }
+//    public function __construct(
+//        Context $context,
+//        Registry $registry,
+//        AttributeCollectionFactory $attributeCollectionFactory,
+//        Visibility $catalogProductVisibility,
+//        Config $catalogConfig,
+//        CurrencyFactory $currencyFactory,
+//        ProductFactory $productFactory,
+//        StoreManagerInterface $storeManager,
+//        ProductCollectionFactory $productCollectionFactory,
+//        AdvancedFactory $advancedFactory,
+//        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+//        array $data
+//    )
+//    {
+//        $this->scopeConfig = $scopeConfig;
+//        parent::__construct($context, $registry, $attributeCollectionFactory,
+//            $catalogProductVisibility, $catalogConfig, $currencyFactory,
+//            $productFactory, $storeManager, $productCollectionFactory, $advancedFactory, $data);
+//    }
 
-    /**
-     * Add advanced search filters to product collection
-     *
-     * @param   array $values
-     * @return  Mage_CatalogSearch_Model_Advanced
-     */
+
     public function addFilters($values, $ids = null)
     {
-
-        if (Mage::getStoreConfig('Boxalino_General/general/enabled') == 0) {
-            return parent::addFilters($values, $ids);
+        if ($this->scopeConfig->getValue('Boxalino_General/general/enabled',$this->scopeStore) == 0) {
+            return parent::addFilters($values);
         }
 
         $attributes = $this->getAttributes();
+        exit;
         $hasConditions = true;
         $allConditions = array();
 
@@ -57,22 +98,26 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
             if (!isset($values[$attribute->getAttributeCode()])) {
                 continue;
             }
+
             $value = $values[$attribute->getAttributeCode()];
             if (!is_array($value)) {
                 $value = trim($value);
             }
 
             if ($attribute->getAttributeCode() == 'price') {
-                $value['from'] = isset($value['from']) ? trim($value['from']) : '';
-                $value['to'] = isset($value['to']) ? trim($value['to']) : '';
-                if (is_numeric($value['from']) || is_numeric($value['to'])) {
-                    if (!empty($value['currency'])) {
-                        $rate = Mage::app()->getStore()->getBaseCurrency()->getRate($value['currency']);
-                    } else {
-                        $rate = 1;
-                    }
-                    $this->_addSearchCriteria($attribute, $value);
+                $rate = 1;
+                $store = $this->_storeManager->getStore();
+                $currency = $store->getCurrentCurrencyCode();
+                if ($currency != $store->getBaseCurrencyCode()) {
+                    $rate = $store->getBaseCurrency()->getRate($currency);
                 }
+                $value['from'] = (isset($value['from']) && is_numeric($value['from']))
+                    ? (float)$value['from'] / $rate
+                    : '';
+                $value['to'] = (isset($value['to']) && is_numeric($value['to']))
+                    ? (float)$value['to'] / $rate
+                    : '';
+                $this->_addSearchCriteria($attribute, $value);
             } else if ($attribute->isIndexable()) {
                 if (!is_string($value) || strlen($value) != 0) {
                     $this->_addSearchCriteria($attribute, $value);
@@ -91,36 +136,13 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
         if ($allConditions) {
             $this->getProductCollection()->addIdFromBoxalino($allConditions);
         } else if (!$hasConditions) {
-            Mage::throwException(Mage::helper('catalogsearch')->__('Please specify at least one search term.'));
+            throw new LocalizedException(__('Please specify at least one search term.'));
         }
 
         return $this;
     }
 
-    /**
-     * Retrieve array of attributes used in advanced search
-     *
-     * @return array
-     */
-    public function getAttributes()
-    {
-        /* @var $attributes Mage_Catalog_Model_Resource_Eav_Resource_Product_Attribute_Collection */
-        $attributes = $this->getData('attributes');
-        if (is_null($attributes)) {
-            $product = Mage::getModel('catalog/product');
-            $attributes = Mage::getResourceModel('catalog/product_attribute_collection')
-                ->addHasOptionsFilter()
-                ->addDisplayInAdvancedSearchFilter()
-                ->addStoreLabel(Mage::app()->getStore()->getId())
-                ->setOrder('main_table.attribute_id', 'asc')
-                ->load();
-            foreach ($attributes as $attribute) {
-                $attribute->setEntity($product->getResource());
-            }
-            $this->setData('attributes', $attributes);
-        }
-        return $attributes;
-    }
+
 
     /**
      * Add data about search criteria to object state
@@ -205,14 +227,14 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
      *
      * @return Mage_CatalogSearch_Model_Resource_Advanced
      */
-    protected function _getResource()
-    {
-        $resourceName = $this->_engine->getResourceName();
-        if ($resourceName) {
-            $this->_resourceName = $resourceName;
-        }
-        return parent::_getResource();
-    }
+//    protected function _getResource()
+//    {
+//        $resourceName = $this->_engine->getResourceName();
+//        if ($resourceName) {
+//            $this->_resourceName = $resourceName;
+//        }
+//        return parent::_getResource();
+//    }
 
     /**
      * Retrieve advanced search product collection
@@ -221,17 +243,7 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
      */
     public function getProductCollection()
     {
-
-        if (is_null($this->_productCollection)) {
-            $collection = $this->_engine->getAdvancedResultCollection();
-            $this->prepareProductCollection($collection);
-            if (!$collection) {
-                return $collection;
-            }
-            $this->_productCollection = $collection;
-        }
-
-        return $this->_productCollection;
+        return parent::getProductCollection();
     }
 
     /**
@@ -242,16 +254,7 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
      */
     public function prepareProductCollection($collection)
     {
-        $collection->addAttributeToSelect(Mage::getSingleton('catalog/config')->getProductAttributes())
-            ->setStore(Mage::app()->getStore())
-            ->addMinimalPrice()
-            ->addTaxPercents()
-            ->addStoreFilter();
-
-        Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($collection);
-        Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($collection);
-
-        return $this;
+        return parent::prepareProductCollection($collection);
     }
 
     /**
@@ -264,22 +267,5 @@ class Boxalino_Frontend_Model_Advanced extends Mage_CatalogSearch_Model_Advanced
         return $this->_searchCriterias;
     }
 
-    /**
-     * Initialize resource model
-     *
-     */
-    protected function _construct()
-    {
-        $this->_getEngine();
-        $this->_init('catalogsearch/advanced');
-    }
 
-    protected function _getEngine()
-    {
-        if ($this->_engine == null) {
-            $this->_engine = Mage::helper('catalogsearch')->getEngine();
-        }
-
-        return $this->_engine;
-    }
 }

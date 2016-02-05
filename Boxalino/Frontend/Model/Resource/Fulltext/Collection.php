@@ -6,7 +6,7 @@
  * @package     Boxalino_Frontend
  * @author      Simon Rupf <simon.rupf@boxalino.com>
  */
-class Boxalino_Frontend_Model_Resource_Fulltext_Collection extends Mage_CatalogSearch_Model_Resource_Fulltext_Collection
+abstract class  Boxalino_Frontend_Model_Resource_Fulltext_Collection implements \Magento\Framework\ObjectManager\RelationsInterface
 {
     /**
      * Retrieve collection all items count
@@ -17,6 +17,7 @@ class Boxalino_Frontend_Model_Resource_Fulltext_Collection extends Mage_CatalogS
     {
         return Mage::helper('Boxalino_Frontend')->getSearchAdapter()->getTotalHitCount();
     }
+
 
     /**
      * Render sql select limit

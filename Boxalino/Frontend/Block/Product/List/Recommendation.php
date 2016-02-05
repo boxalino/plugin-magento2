@@ -9,7 +9,10 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
     protected $_recommendationContext = array();
     protected $_recommendationParameterValues = array();
     protected $scopeConfig;
+    protected $cart;
+    protected $catalog;
     protected $collection;
+    protected $checkoutSession;
     protected $registry;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
@@ -17,14 +20,19 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart,
+        \Magento\Catalog\Helper\Catalog $catalog,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Framework\Module\Manager $moduleManager,
         \Magento\Framework\Registry $registry,
+        \Magento\Checkout\Model\ResourceModel\Cart $cart,
         Magento\Catalog\Model\ResourceModel\Product\Collection $collection,
         array $data
     )
     {
+        $this->checkoutSession = $checkoutSession;
+        $this->cart = $cart;
+        $this->catalog = $catalog;
         $this->collection = $collection;
         $this->registry = $registry;
         $this->scopeConfig = $scopeConfig;
@@ -90,10 +98,10 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
             ->addFieldToFilter('entity_id', $entityIds)
             ->addAttributeToSelect('*');
 
-        if (Mage::helper('catalog')->isModuleEnabled('Mage_Checkout')) {
-            Mage::getResourceSingleton('checkout/cart')->addExcludeProductFilter(
+        if ($this->catalog->isModuleOutputEnabled('Magento_Checkout')) {
+            $this->cart->addExcludeProductFilter(
                 $this->_itemCollection,
-                Mage::getSingleton('checkout/session')->getQuoteId()
+                $this->checkoutSession->getQuoteId()
             );
             $this->_addProductAttributesAndPrices($this->_itemCollection);
         }

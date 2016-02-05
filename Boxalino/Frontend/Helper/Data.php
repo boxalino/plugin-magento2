@@ -1,12 +1,11 @@
 <?php
 namespace Boxalino\Frontend\Helper;
-use Boxalino\Frontend\Helper\P13n\Boxalino_Frontend_Helper_P13n_Config;
-use Boxalino\Frontend\Helper\P13n\Boxalino_Frontend_Helper_P13n_Sort;
-use Boxalino\Frontend\Helper\P13n\Boxalino_Frontend_Helper_P13n_Adapter;
-class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\AbstractHelper
+use Boxalino\Frontend\Helper\P13n\Config;
+use Boxalino\Frontend\Helper\P13n\Sort;
+use Boxalino\Frontend\Lib\vendor\HttpP13n;
+use Magento\Search\Model\QueryFactory;
+class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    private $additionalFields = null;
-    private $searchAdapter = null;
     protected $reader;
     protected $checkoutSession;
     protected $customerSession;
@@ -18,9 +17,12 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
     protected $catalogSearch;
     protected $controllerInterface;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    protected $searchAdapter;
+    protected $searchAdapterInitialized = false;
+    private $_queryFactory;
 
     public function __construct(
-        \Magento\Framework\Module\Dir\Reader $reader,
+        \Magento\CatalogSearch\Helper\Data $catalogSearch,
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
@@ -29,11 +31,12 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
         \Magento\Catalog\Model\ResourceModel\Product $catalogProduct,
         \Magento\Framework\App\FrontControllerInterface $controllerInterface,
         \Magento\Framework\App\Request\Http $request,
-        \Magento\Framework\Registry $registry
-       // \Magento\CatalogSearch\H $catalogSearch
+        \Magento\Framework\Registry $registry,
+        QueryFactory $queryFactory,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter
     )
     {
-       // $this->catalogSearch = $catalogSearch;
+        $this->searchAdapter = $p13nAdapter;
         $this->registry = $registry;
         $this->request = $request;
         $this->controllerInterface = $controllerInterface;
@@ -42,9 +45,9 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
         $this->catalogCategory = $catalogCategory;
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
-        $this->reader = $reader;
-        include_once($this->reader->getModuleDir('', 'Boxalino_Frontend') . '/Lib/vendor/Thrift/HttpP13n.php');
-        spl_autoload_register(array('Boxalino_Frontend_Helper_Data', '__loadClass'), TRUE, TRUE);
+        $this->catalogSearch = $catalogSearch;
+        $this->_queryFactory = $queryFactory;
+        spl_autoload_register(array('\Boxalino\Frontend\Helper\Data', '__loadClass'), TRUE, TRUE);
         parent::__construct($context);
     }
 
@@ -54,9 +57,13 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
         $reader = $om->get('Magento\Framework\Module\Dir\Reader');
         if (strpos($name, 'Thrift\\') !== false) {
             try {
-                include_once($reader->getModuleDir('', 'Boxalino_Frontend') . '/Lib/vendor/' . str_replace('\\', '/', $name) . '.php');
-            } catch (Exception $e) {
-                Mage::throwException($e->getMessage());
+                $file = '/'.str_replace('Boxalino/Frontend/', '', str_replace('\\', '/', $name)) . '.php';
+                if(strpos($file, 'Lib/vendor')===false) {
+                    $file = "/Lib/vendor" . $file;
+                }
+                include_once($reader->getModuleDir('', 'Boxalino_Frontend') . $file);
+            } catch (\Exception $e) {
+                throw new \Exception($e->getMessage());
             }
         }
     }
@@ -305,28 +312,20 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
         return $text;
     }
 
-    public function getAdditionalFieldsFromP13n()
-    {
-        if ($this->additionalFields == null) {
-            $this->additionalFields = explode(',', $this->scopeConfig->getValue('Boxalino_General/general/additional_fields',$this->scopeStore));
-        }
-        return !empty($this->additionalFields) ? $this->additionalFields : array();
-    }
-
     public function getSearchAdapter()
     {
 
-        if ($this->searchAdapter === null) {
+        if ($this->searchAdapterInitialized == false) {
             $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
             $request = $this->request;
-            $p13nConfig = new Boxalino_Frontend_Helper_P13n_Config(
+            $p13nConfig = new Config(
                 $storeConfig['host'],
                 $this->getAccount(),
                 $storeConfig['p13n_username'],
                 $storeConfig['p13n_password'],
                 $storeConfig['domain']
             );
-            $p13nSort = new Boxalino_Frontend_Helper_P13n_Sort();
+            $p13nSort = new Sort();
 
             $field = '';
             $dir = '';
@@ -349,7 +348,7 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
                 $p13nSort->push($field, $dir);
             }
 
-            $this->searchAdapter = new Boxalino_Frontend_Helper_P13n_Adapter($p13nConfig);
+            $this->searchAdapter->setConfig($p13nConfig);
 
             $categoryId = $request->getParam('bx_category_id');
             if (empty($categoryId)) {
@@ -373,23 +372,27 @@ class Boxalino_Frontend_Helper_Data extends \Magento\Framework\App\Helper\Abstra
             );
             $offset = abs(((int) $request->getParam('p', 1)) - 1) * $pageSize;
 
+            $query = $this->_queryFactory->get();
+            //$query->setStoreId($this->_storeManager->getStore()->getId());
+
           //  $this->catalogSearch->;
             $this->searchAdapter->setupInquiry(
                 empty($generalConfig['quick_search']) ? 'search' : $generalConfig['quick_search'],
-                Mage::helper('catalogsearch')->getQueryText(),
-                substr(Mage::app()->getLocale()->getLocaleCode(), 0, 2),
+                $query->getQueryText(),
+                substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2),
                 array($generalConfig['entity_id'], 'categories'),
                 $p13nSort, $offset, $pageSize
             );
 
             $this->searchAdapter->search();
             $this->searchAdapter->prepareAdditionalDataFromP13n();
+            $this->searchAdapterInitialized = true;
         }
         return $this->searchAdapter;
     }
 
     public function resetSearchAdapter()
     {
-        $this->searchAdapter = null;
+        $this->searchAdapterInitialized = false;
     }
 }

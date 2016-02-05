@@ -1,9 +1,5 @@
 <?php
 namespace Boxalino\Frontend\Lib\vendor\Thrift;
-/**
- * Class P13n
- * @method \com\boxalino\p13n\api\thrift\ChoiceResponse choose(\com\boxalino\p13n\api\thrift\ChoiceRequest $choiceRequest)
- */
 class HttpP13n
 {
     protected static $thriftClassLoader = null;
@@ -81,11 +77,11 @@ class HttpP13n
     protected function getClient()
     {
         if ($this->client === null || $this->transport === null) {
-            if(function_exists('curl_version')) {
-                $this->transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
-            } else {
+            //if(function_exists('curl_version')) {
+            //    $this->transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
+            //} else {
                 $this->transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
-            }
+            //}
             $this->transport->setAuthorization($this->username, $this->password);
             $this->client = new \com\boxalino\p13n\api\thrift\P13nServiceClient(new \Thrift\Protocol\TCompactProtocol($this->transport));
         }

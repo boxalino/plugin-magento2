@@ -1,80 +1,80 @@
 <?php
-/**
- * Created by: Szymon Nosal <szymon.nosal@boxalino.com>
- * Created at: 06.06.14 11:36
- */
-
-require_once "Mage/CatalogSearch/controllers/AdvancedController.php";
-
-/**
- * Catalog Search Controller
- *
- * @category   Mage
- * @package    Mage_CatalogSearch
- * @module     Catalog
- */
-class Boxalino_CemSearch_AdvancedController extends Mage_CatalogSearch_AdvancedController
+namespace Boxalino\Frontend\Controller;
+use Magento\Catalog\Model\Layer\Resolver;
+use Boxalino\Frontend\Model\Advanced as ModelAdvanced;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\UrlFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\ObjectManager\ObjectManager;
+use Boxalino\Frontend\Helper\P13n\Config;
+use Boxalino\Frontend\Helper\P13n\Sort;
+use Boxalino\Frontend\Helper\Data;
+class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Result
 {
-
-    public function indexAction()
+    protected $scopeConfig;
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    protected $_catalogSearchAdvanced;
+    protected $_urlFactory;
+    protected $bxHelperData;
+    protected $objectManager;
+    protected $p13nAdapter;
+    public function __construct(
+        Context $context,
+        ModelAdvanced $catalogSearchAdvanced,
+        UrlFactory $urlFactory,
+        ScopeConfigInterface $scopeConfigInterface,
+        ObjectManager $objectManager,
+        Data $bxHelperData,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter
+    )
     {
-        $this->loadLayout();
-        $this->_initLayoutMessages('catalogsearch/session');
-        $this->renderLayout();
+        $this->objectManager = $objectManager;
+        $this->bxHelperData = $bxHelperData;
+        $this->_catalogSearchAdvanced = $catalogSearchAdvanced;
+        $this->_urlFactory = $urlFactory;
+        $this->scopeConfig = $scopeConfigInterface;
+        $this->p13nAdapter = $p13nAdapter;
+        parent::__construct($context, $catalogSearchAdvanced, $urlFactory);
     }
 
-    public function resultAction()
+    public function execute()
     {
-
-        $queryAttribute = array();
-
-        if (Mage::getStoreConfig('Boxalino_General/general/enabled') == 0) {
-            return parent::resultAction();
+        if ($this->scopeConfig->getValue('Boxalino_General/general/enabled') == 0) {
+            parent::execute();
         }
+//            $this->getResponse()->setRedirect($this->_redirect->getRedirectUrl());
+        $this->_view->loadLayout();
+        $params = $this->getRequest()->getParams();
 
-        $this->loadLayout();
-
-        $params = $this->getRequest()->getQuery();
-
-        $tmp = Mage::getModel('catalogsearch/advanced');
-        try {
-            $tmp->addFilters($params);
-        } catch (Mage_Core_Exception $e) {
-            Mage::getSingleton('catalogsearch/session')->addError($e->getMessage());
-            $this->_redirectError(
-                Mage::getModel('core/url')
-                    ->setQueryParams($params)
-                    ->getUrl('*/*/')
-            );
-        }
-
+        $tmp = $this->_catalogSearchAdvanced;
+//
         foreach ($tmp->getAttributes() as $at) {
             $queryAttribute[$at->getStoreLabel()] = $at->getAttributeCode();
         }
-
+//
         $criteria = $tmp->getSearchCriterias();
-        unset($tmp);
-        $lang = substr(Mage::app()->getLocale()->getLocaleCode(), 0, 2);
+        //unset($tmp);
+        $lang = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 
         //setUp Boxalino
-        $storeConfig = Mage::getStoreConfig('Boxalino_General/general');
-        $generalConfig = Mage::getStoreConfig('Boxalino_General/search');
+        $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
+        $generalConfig = $this->scopeConfig->getValue('Boxalino_General/search',$this->scopeStore);
 
-        $p13nConfig = new Boxalino_CemSearch_Helper_P13n_Config(
+        $p13nConfig = new Config(
             $storeConfig['host'],
-            Mage::helper('Boxalino_CemSearch')->getAccount(),
+            $this->bxHelperData->getAccount(),
             $storeConfig['p13n_username'],
             $storeConfig['p13n_password'],
             $storeConfig['domain']
         );
-        $p13nSort = new Boxalino_CemSearch_Helper_P13n_Sort();
 
-        $p13n = new Boxalino_CemSearch_Helper_P13n_Adapter($p13nConfig);
+        $p13nSort = new Sort();
+        $this->p13nAdapter->setConfig($p13nConfig);
 
         $limit = $generalConfig['advanced_search_limit'] == 0 ? 1000 : $generalConfig['advanced_search_limit'];
 
         //setup search
-        $p13n->setupInquiry(
+        $this->p13nAdapter->setupInquiry(
             $generalConfig['advanced_search'],
             $params['name'],
             $lang,
@@ -92,10 +92,10 @@ class Boxalino_CemSearch_AdvancedController extends Mage_CatalogSearch_AdvancedC
                 $from = null;
                 $to = null;
 
-                if (isset($params[$key]['from']) && $params[$key]['from'] != '' /* && $params['price']['from'] >= 0*/) {
+                if (isset($params[$key]['from']) && $params[$key]['from'] != '' ) {
                     $from = $params[$key]['from'];
                 }
-                if (isset($params[$key]['to']) && $params[$key]['to'] != '' /*&& $params['price']['to'] >= 0*/) {
+                if (isset($params[$key]['to']) && $params[$key]['to'] != '' ) {
                     $to = $params[$key]['to'];
                 }
 
@@ -108,14 +108,13 @@ class Boxalino_CemSearch_AdvancedController extends Mage_CatalogSearch_AdvancedC
                 if ($from == null && $to == null) {
                     continue;
                 }
-                $p13n->addFilterFromTo($key, $from, $to);
+                $this->p13nAdapter->addFilterFromTo($key, $from, $to);
 
             }
         }
-
         foreach ($criteria as $criterium) {
 
-            $name = Mage::helper("Boxalino_CemSearch")->sanitizeFieldName($queryAttribute[$criterium['name']]);
+            $name = $this->bxHelperData->sanitizeFieldName($queryAttribute[$criterium['name']]);
 
             if (in_array($name, $skip)) {
                 continue;
@@ -129,30 +128,30 @@ class Boxalino_CemSearch_AdvancedController extends Mage_CatalogSearch_AdvancedC
                 $name = 'products_' . $name;
             }
 
-            $p13n->addFilter($name, $values, null);
+            $this->p13nAdapter->addFilter($name, $values, null);
         }
 
         //get result from boxalino
-        $p13n->search();
-        $p13n->prepareAdditionalDataFromP13n();
-        $entity_ids = $p13n->getEntitiesIds();
+        $this->p13nAdapter->search();
+        $this->p13nAdapter->prepareAdditionalDataFromP13n();
+        $entity_ids = $this->p13nAdapter->getEntitiesIds();
         unset($p13n);
+        var_dump($entity_ids);
 
         try {
-            Boxalino_CemSearch_Model_Logger::saveFrontActions('AdvancedController_ResultAction', 'storing catalogsearch/advanced for entities with id: ' . implode(', ', $entity_ids));
-            Mage::getSingleton('catalogsearch/advanced')->addFilters($params, $entity_ids);
-        } catch (Mage_Core_Exception $e) {
-            Mage::getSingleton('catalogsearch/session')->addError($e->getMessage());
-            $this->_redirectError(
-                Mage::getModel('core/url')
-                    ->setQueryParams($this->getRequest()->getQuery())
-                    ->getUrl('*/*/')
-            );
+//            Boxalino_CemSearch_Model_Logger::saveFrontActions('AdvancedController_ResultAction', 'storing catalogsearch/advanced for entities with id: ' . implode(', ', $entity_ids));
+            $this->_catalogSearchAdvanced->addFilters($params, $entity_ids);
+        } catch (\Exception $e) {
+            $this->messageManager->addError($e->getMessage());
+            $defaultUrl = $this->_urlFactory->create()
+                ->addQueryParams($this->getRequest()->getQueryValue())
+                ->getUrl('*/*/');
+            $this->getResponse()->setRedirect($this->_redirect->error($defaultUrl));
         }
 
-        $this->_initLayoutMessages('catalog/session');
-        $this->renderLayout();
-
+        $this->_view->renderLayout();
     }
+
+
 
 }
