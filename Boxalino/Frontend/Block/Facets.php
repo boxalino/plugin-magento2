@@ -70,6 +70,7 @@ class Facets extends \Magento\Framework\View\Element\Template
         $titles = explode(',', $filterOptions['top_filters_title']);
         $i = 0;
         $allFilters = $this->_allFilters;
+
         foreach ($topFilters as $filter) {
             $filter = trim($filter);
             if (isset($allFilters[$filter])) {
@@ -78,7 +79,7 @@ class Facets extends \Magento\Framework\View\Element\Template
                     if ($values['stringValue'] == 1 || $yes) {
                         $filters[$filter] = $allFilters[$filter][$key];
                         $filters[$filter]['title'] = $titles[$i];
-                        $filters[$filter]['url'] = $this->_getTopFilterUrl($filter, $yes?$values['stringValue']:'1', $allFilters[$filter][$key]['selected']);
+                        $filters[$filter]['url'] = $this->_getTopFilterUrl($filter, $yes ? $values['stringValue'] : '1', $allFilters[$filter][$key]['selected']);
                         $filters[$filter]['selected'] = $allFilters[$filter][$key]['selected'];
                     }
                 }
@@ -114,6 +115,10 @@ class Facets extends \Magento\Framework\View\Element\Template
             }
             $i++;
         }
+        $this->setResultCount("0");
+//        echo "<pre>";
+//        print_r($filters);
+//        exit;
         return $filters;
     }
 

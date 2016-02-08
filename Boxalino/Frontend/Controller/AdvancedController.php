@@ -136,7 +136,6 @@ class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Resu
         $this->p13nAdapter->prepareAdditionalDataFromP13n();
         $entity_ids = $this->p13nAdapter->getEntitiesIds();
         unset($p13n);
-        var_dump($entity_ids);
 
         try {
 //            Boxalino_CemSearch_Model_Logger::saveFrontActions('AdvancedController_ResultAction', 'storing catalogsearch/advanced for entities with id: ' . implode(', ', $entity_ids));

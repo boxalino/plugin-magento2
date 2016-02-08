@@ -1,22 +1,28 @@
 <?php
-
-class Boxalino_CemSearch_Block_Result extends Mage_CatalogSearch_Block_Result
+namespace Boxalino\Frontend\Block;
+use Magento\CatalogSearch\Block\Result as Mage_Result;
+use Boxalino\Frontend\Helper\Data as BxData;
+use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
+use Magento\CatalogSearch\Helper\Data;
+use Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Search\Model\QueryFactory;
+class Result extends Mage_Result
 {
-    /**
-     * Retrieve loaded category collection
-     *
-     * @return Mage_CatalogSearch_Model_Resource_Fulltext_Collection
-     */
-    protected function _getProductCollection()
-    {
-        if (is_null($this->_productCollection)) {
-            $this->_productCollection = $this->getListBlock()->getLoadedProductCollection();
-        }
-        // reset limits set by the toolbar
-        $this->_productCollection->clear();
-        $this->_productCollection->getSelect()->limit();
 
-        return $this->_productCollection;
+    protected $bxHelperData;
+
+    public function __construct(
+        Context $context,
+        LayerResolver $layerResolver,
+        Data $catalogSearchData,
+        QueryFactory $queryFactory,
+        BxData $bxHelperData,
+        array $data = [])
+    {
+        $this->bxHelperData = $bxHelperData;
+        parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
     /**
@@ -27,7 +33,7 @@ class Boxalino_CemSearch_Block_Result extends Mage_CatalogSearch_Block_Result
     public function getResultCount()
     {
         if (!$this->getData('result_count')) {
-            $size = Mage::helper('Boxalino_CemSearch')->getSearchAdapter()->getTotalHitCount();
+            $size = $this->bxHelperData->getSearchAdapter()->getTotalHitCount();
             $this->_getQuery()->setNumResults($size);
             $this->setResultCount($size);
         }

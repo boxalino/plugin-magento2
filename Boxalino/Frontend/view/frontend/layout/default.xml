@@ -7,18 +7,14 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <referenceContainer name="main">
+            <block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.top"
+                   template="Boxalino_Frontend::top_filters.phtml">
+            </block>
+        </referenceContainer>
         <referenceContainer name="sidebar.additional">
             <block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.sidebar"
                    template="Boxalino_Frontend::left_filters.phtml">
-                <!--<arguments>-->
-                    <!--<argument name="jsLayout" xsi:type="array">-->
-                        <!--<item name="components" xsi:type="array">-->
-                            <!--<item name="compareProducts" xsi:type="array">-->
-                                <!--<item name="component" xsi:type="string">Magento_Catalog/js/view/compare-products</item>-->
-                            <!--</item>-->
-                        <!--</item>-->
-                    <!--</argument>-->
-                <!--</arguments>-->
             </block>
         </referenceContainer>
     </body>

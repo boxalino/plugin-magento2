@@ -5,6 +5,7 @@
     <preference for="Magento\CatalogSearch\Model\Advanced" type="Boxalino\Frontend\Model\Advanced" />
     <preference for="Magento\Catalog\Block\Product\ListProduct" type="Boxalino\Frontend\Block\Product\BxListProducts" />
     <preference for="Magento\CatalogSearch\Model\ResourceModel\Advanced\Collection" type="Boxalino\Frontend\Model\Resource\Advanced\Collection" />
+    <preference for="Magento\CatalogSearch\Block\Result" type="Boxalino\Frontend\Block\Result" />
     <!--<preference for="Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection" type="Boxalino\Frontend\Model\Resource\Fulltext\Collection" />-->
     <!--<preference for="Magento\CatalogSearch\Model\ResourceModel\Fulltext" type="Boxalino\Frontend\Model\Resource\Fulltext" />-->
 </config>
