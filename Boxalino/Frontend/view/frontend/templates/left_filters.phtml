@@ -1,0 +1,17 @@
+<?php $filters = $this->getLeftFilters(); ?>
+<?php if (!empty($filters)): ?>
+    <div class="left-filters">
+        <?php foreach ($filters as $key => $filter): ?>
+            <div class="filter">
+                <div class="filter-title"><?php echo $filter['title']; ?></div>
+                <ul class="values">
+                    <?php foreach ($filter['values'] as $value): ?>
+                        <li class="value">
+                            <a href="<?php echo $value['url'] ?>"><?php echo $value['stringValue'] . ' (' . $value['hitCount'] . ')' ?></a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>

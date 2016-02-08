@@ -194,7 +194,7 @@
             </group>
 
             <!-- Filters Configuration Group -->
-            <group id="search_relaxation" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="6">
+            <group id="filter" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="6">
                 <label>Filters Configuration</label>
 
                 <!-- Fields -->

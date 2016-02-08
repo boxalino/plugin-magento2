@@ -1,6 +1,8 @@
 <?php
 
-class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
+namespace Boxalino\Frontend\Block;
+
+class Facets extends \Magento\Framework\View\Element\Template
 {
     /** @var array */
     private $_allFilters = array();
@@ -8,9 +10,16 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
     /** @var array */
     public $maxLevel = array();
 
-    public function __construct()
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+
+    public function __construct(
+        \Magento\Framework\View\Element\Template\Context $context,
+        \Boxalino\Frontend\Helper\Data $bxHelperData,
+        array $data = []
+    )
     {
-        $this->_allFilters = Mage::helper('Boxalino_CemSearch')->getSearchAdapter()->getFacetsData();
+        parent::__construct($context, $data);
+        $this->_allFilters = $bxHelperData->getSearchAdapter()->getFacetsData();
     }
 
     /**
@@ -20,11 +29,9 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
      */
     public function getResetUrl()
     {
-        /** @var $helper Mage_Core_Helper_Url */
-        $helper = Mage::helper('core/url');
 
         // get current url
-        $url = $helper->getCurrentUrl();
+        $url = $this->_urlBuilder->getCurrentUrl();
 
         // parse url
         $parsedUrl = parse_url($url);
@@ -53,10 +60,12 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
         return $url;
     }
 
+    protected function getAllFilters() {}
+
     public function getTopFilters()
     {
         $filters = array();
-        $filterOptions = Mage::getStoreConfig('Boxalino_General/filter');
+        $filterOptions =  $this->_scopeConfig->getValue('Boxalino_General/filter', $this->scopeStore);
         $topFilters = explode(',', $filterOptions['top_filters']);
         $titles = explode(',', $filterOptions['top_filters_title']);
         $i = 0;
@@ -82,8 +91,8 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
     public function getLeftFilters()
     {
         $filters = array();
-        $leftFilters = explode(',', Mage::getStoreConfig('Boxalino_General/filter/left_filters_normal'));
-        $leftFiltersTitles = explode(',', Mage::getStoreConfig('Boxalino_General/filter/left_filters_normal_title'));
+        $leftFilters = explode(',',  $this->_scopeConfig->getValue('Boxalino_General/filter/left_filters_normal', $this->scopeStore));
+        $leftFiltersTitles = explode(',',  $this->_scopeConfig->getValue('Boxalino_General/filter/left_filters_normal_title', $this->scopeStore));
         $i = 0;
         $allFilters = $this->_allFilters;
         foreach ($leftFilters as $filterString) {
@@ -153,8 +162,8 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
 
     protected function _getFilterUrl($name, $value, $selected, $ranged = false, $position = 0, $hierarchical = null)
     {
-        $multioption = Mage::getStoreConfig('Boxalino_General/filter/left_filters_multioption');
-        $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+        $multioption =  $this->_scopeConfig->getValue('Boxalino_General/filter/left_filters_multioption', $this->scopeStore);
+        $currentUrl = $this->_urlBuilder->getCurrentUrl();
         if (!$ranged) {
             if ($multioption == true && $hierarchical == null) {
                 if ($selected === false) {
@@ -187,9 +196,9 @@ class Boxalino_CemSearch_Block_Facets extends Mage_Core_Block_Template
 
     protected function _getTopFilterUrl($name, $value, $selected)
     {
-        $filterOptions = Mage::getStoreConfig('Boxalino_General/filter');
+        $filterOptions =  $this->_scopeConfig->getValue('Boxalino_General/filter', $this->scopeStore);
         $multioption = $filterOptions['top_filters_multioption'];
-        $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+        $currentUrl = $this->_urlBuilder->getCurrentUrl();
         if ($multioption == true) {
             if ($selected === false) {
                 $url = $this->_addFilterToUrl($currentUrl, $name, $value);
