@@ -23,6 +23,7 @@ class Adapter
         \Magento\Framework\Session\Storage $session,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Registry $registry,
+        \Boxalino\Frontend\Helper\Data $bxHelperData,
         \Magento\Search\Model\QueryFactory $queryFactory
     )
     {

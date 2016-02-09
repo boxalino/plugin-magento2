@@ -22,8 +22,17 @@ class BxClient
 		$this->account = $account;
 		$this->isDev = $isDev;
 		$this->host = $host;
+		if($this->host == null) {
+			$this->host = "cdn.bx-cloud.com";
+		}
 		$this->p13n_username = $p13n_username;
+		if($this->p13n_username == null) {
+			$this->p13n_username = "ibrows";
+		}
 		$this->p13n_password = $p13n_password;
+		if($this->p13n_password == null) {
+			$this->p13n_password = "cfdjermluubsrvkl";
+		}
 		$this->domain = $domain;
 		$this->language = $language;
 		$this->additionalFields = $additionalFields;
@@ -251,7 +260,6 @@ class BxClient
 		
 		$p13n = $this->getP13n();
 		$this->choiceResponse = $p13n->choose($choiceRequest);
-
 	}
 	
 	protected function getIP()
@@ -584,6 +592,13 @@ class BxClient
 				/** @var \com\boxalino\p13n\api\thrift\SearchResult $searchResult */
 				$searchResult = $variant->searchResult;
 				foreach ($searchResult->hits as $item) {
+					if(!isset($item->values[$entityIdFieldName])) {
+						throw new \Exception("the requested item property $entityIdFieldName was not returned: " . implode(',', array_keys($item->values)));
+					}
+					if(!isset($item->values[$entityIdFieldName][0])) {
+						//throw new \Exception("the requested item property $entityIdFieldName was not set to any value for item: " . json_encode($item->values));
+						$entityIdFieldName = 'id';
+					}
 					$result[] = $item->values[$entityIdFieldName][0];
 				}
 			}
