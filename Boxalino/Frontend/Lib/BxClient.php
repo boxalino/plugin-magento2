@@ -14,11 +14,13 @@ class BxClient
 	
 	private $filters = array();
 	private $autocompleteResponse = null;
-	private $choiceResponse = null;
+	private $searchResponse = null;
+	private $recommendationsResponse = null;
+	
 	
     const VISITOR_COOKIE_TIME = 31536000;
 
-	public function __construct($account, $isDev, $host, $p13n_username, $p13n_password, $domain, $language, $additionalFields, $p13n) {
+	public function __construct($account, $isDev, $host, $p13n_username, $p13n_password, $domain, $language, $additionalFields) {
 		$this->account = $account;
 		$this->isDev = $isDev;
 		$this->host = $host;
@@ -36,7 +38,7 @@ class BxClient
 		$this->domain = $domain;
 		$this->language = $language;
 		$this->additionalFields = $additionalFields;
-		$this->p13n = $p13n;
+		$this->p13n = new \Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n();
 	}
 
     /**
@@ -259,7 +261,7 @@ class BxClient
 		$choiceRequest = $this->getChoiceRequest(array($choiceInquiry));
 		
 		$p13n = $this->getP13n();
-		$this->choiceResponse = $p13n->choose($choiceRequest);
+		$this->searchResponse = $p13n->choose($choiceRequest);
 	}
 	
 	protected function getIP()
@@ -310,7 +312,6 @@ class BxClient
         return $requestContext;
     }
 	
-	private $recommendationResponses = array();
 	protected function recommend($bxRecommendations, $returnFields = array(), $bxFacets = null, $bxSortFields=null, $queryText=null) {
 		
 		$choiceInquiries = array();
@@ -333,19 +334,15 @@ class BxClient
 		
 		$choiceRequest = $this->getChoiceRequest($choiceInquiries, $requestContext);
 		
-		$this->recommendationResponses = $this->choose($choiceRequest);
+		$this->recommendationsResponse = $this->choose($choiceRequest);
 	}
 	
 	public function getChoiceRecommendations($choiceId, $bxRecommendations, $returnFields = array()) {
-		if(!isset($this->recommendationResponses[$choiceId])) {
+		if(!$this->recommendationsResponse) {
 			$this->recommend($bxRecommendations, $returnFields);
 		}
 		
-		if(!isset($this->recommendationResponses[$choiceId])) {
-			throw new \Exception("Problem to create recommendations for choice " . $choic);
-		}
-		
-		foreach ($choiceResponse->variants as $variantId => $variant) {
+		foreach ($recommendationsResponse->variants as $variantId => $variant) {
 			$name = $bxRecommendations[$variantId];
 			if($choiceId == $bxRecommendations[$variantId]->getChoiceId()) {
 				foreach ($variant->searchResult->hits as $item) {
@@ -387,31 +384,39 @@ class BxClient
 		}
 	}
 	
-	public function getChoiceResponse($func="getChoiceResponse") {
-		if($this->choiceResponse == null) {
-			throw new \Exception("$func called before any call to autocomplete method");
-		}
-		return $this->choiceResponse;
+	public function isSearchDone() {
+		return $this->searchResponse != null;
 	}
 	
-	public function getAdditionalData($fields) {
-		$result = array();
-        $response = $this->getChoiceResponse("getAdditionalData");
-        if (!empty($response->variants)) {
+	public function getSearchResponse($func="getSearchResponse") {
+		if($this->searchResponse == null) {
+			throw new \Exception("$func called before any call to autocomplete method");
+		}
+		return $this->searchResponse;
+	}
+	
+	public function getSearchResponseVariant($func="getSearchResponseVariant") {
+        $response = $this->getSearchResponse($func);
+		if (!empty($response->variants)) {
             foreach ($response->variants as $variant) {
-                /** @var \com\boxalino\p13n\api\thrift\SearchResult $searchResult */
-                $searchResult = $variant->searchResult;
-                foreach ($searchResult->hits as $item) {
-                    foreach ($fields as $field) {
-                        if (isset($item->values[$field])) {
-                            if (!empty($item->values[$field])) {
-                                $result[$item->values['id'][0]][$field] = $item->values[$field];
-                            }
-                        }
-                    }
-                }
-            }
-        }
+				return $variant;
+			}
+		}
+		throw new \Exception("no variant provided in choice response (caller: $func)");
+	}
+	
+	public function getAdditionalData() {
+		$result = array();
+		$variant = $this->getSearchResponseVariant("getAdditionalData");
+		foreach ($variant->searchResult->hits as $item) {
+			foreach ($this->additionalFields as $field) {
+				if (isset($item->values[$field])) {
+					if (!empty($item->values[$field])) {
+						$result[$item->values['id'][0]][$field] = $item->values[$field];
+					}
+				}
+			}
+		}
 		return $result;
     }
 	
@@ -570,87 +575,161 @@ class BxClient
         }
         return $items;
     }
+	
+	public function areResultsCorrected() {
+		return $this->getTotalHitCount(false) == 0 && $this->getTotalHitCount(true) > 0;
+	}
+	
+	public function getCorrectedQuery() {
+		$variant = $this->getSearchResponseVariant("getRelaxationTotalHitCount");
+		$searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
+		if($searchResult) {
+			return $searchResult->queryText;
+		}
+		return null;
+	}
 
-    public function getTotalHitCount()
+    public function getTotalHitCount($considerRelxation=true)
     {
-		$count = 0;
-        $response = $this->getChoiceResponse("getTotalHitCount");
-        if(isset($response->variants)) {
-			foreach ($response->variants as $variant) {
-				$count += $variant->searchResult->totalHitCount;
-			}
+		$variant = $this->getSearchResponseVariant("getTotalHitCount");
+		$count = $variant->searchResult->totalHitCount;
+		if($considerRelxation && $count == 0) {
+			return $this->getRelaxationTotalHitCount();
 		}
         return $count;
     }
-
-    public function getEntitiesIds($entityIdFieldName)
-    {
-		$result = array();
-        $response = $this->getChoiceResponse("getEntitiesIds");
-        if(isset($response->variants)) {
-			foreach ($response->variants as $variant) {
-				/** @var \com\boxalino\p13n\api\thrift\SearchResult $searchResult */
-				$searchResult = $variant->searchResult;
-				foreach ($searchResult->hits as $item) {
-					if(!isset($item->values[$entityIdFieldName])) {
-						throw new \Exception("the requested item property $entityIdFieldName was not returned: " . implode(',', array_keys($item->values)));
-					}
-					if(!isset($item->values[$entityIdFieldName][0])) {
-						//throw new \Exception("the requested item property $entityIdFieldName was not set to any value for item: " . json_encode($item->values));
-						$entityIdFieldName = 'id';
-					}
-					$result[] = $item->values[$entityIdFieldName][0];
-				}
+	
+	protected function getFirstPositiveSuggestionSearchResult($variant) {
+		foreach($variant->searchRelaxation->suggestionsResults as $searchResult) {
+			if($searchResult->totalHitCount > 0) {
+				return $searchResult;
 			}
+		}
+		return null;
+	}
+	
+	public function getRelaxationTotalHitCount() {
+		$variant = $this->getSearchResponseVariant("getRelaxationTotalHitCount");
+		$searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
+		if($searchResult) {
+			return $searchResult->totalHitCount;
+		}
+		return 0;
+	}
+
+    public function getEntitiesIds($entityIdFieldName, $considerRelxation=true)
+    {
+		$variant = $this->getSearchResponseVariant("getEntitiesIds");
+        $result = $this->getSearchResultEntitiesIds($variant->searchResult, $entityIdFieldName);
+		if($considerRelxation && sizeof($result) == 0) {
+			return $this->getRelaxationEntitiesIds($entityIdFieldName);
 		}
 
         return $result;
     }
 
+    public function getRelaxationEntitiesIds($entityIdFieldName)
+    {
+		$variant = $this->getSearchResponseVariant("getRelaxationEntitiesIds");
+		$searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
+		if($searchResult) {
+			return $this->getSearchResultEntitiesIds($searchResult, $entityIdFieldName);
+		}
+		return array();
+    }
+	
+	protected function getSearchResultEntitiesIds($searchResult, $entityIdFieldName) {
+		$result = array();
+		foreach ($searchResult->hits as $item) {
+			if(!isset($item->values[$entityIdFieldName])) {
+				throw new \Exception("the requested item property $entityIdFieldName was not returned: " . implode(',', array_keys($item->values)));
+			}
+			if(!isset($item->values[$entityIdFieldName][0])) {
+				//throw new \Exception("the requested item property $entityIdFieldName was not set to any value for item: " . json_encode($item->values));
+				$entityIdFieldName = 'id';
+			}
+			$result[] = $item->values[$entityIdFieldName][0];
+		}
+		return $result;
+	}
+	
+	public function areThereSubPhrases() {
+		$variant = $this->getSearchResponseVariant("areThereSubPhrases");
+		return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0;
+	}
+	
+	public function getSubPhrasesQueries() {
+		if(!$this->areThereSubPhrases()) {
+			return array();
+		}
+		$queries = array();
+		$variant = $this->getSearchResponseVariant("getSubPhrasesQueries");
+		foreach($variant->searchRelaxation->subphrasesResults as $searchResult) {
+			$queries[] = $searchResult->queryText;
+		}
+		return $queries;
+	}
+	
+	protected function getSubPhraseSearchResult($queryText) {
+		if(!$this->areThereSubPhrases()) {
+			return null;
+		}
+		$variant = $this->getSearchResponseVariant("getSubPhraseSearchResult");
+		foreach($variant->searchRelaxation->subphrasesResults as $searchResult) {
+			if($searchResult->queryText == $queryText) {
+				return $searchResult;
+			}
+		}
+		return null;
+	}
+	
+	public function getSubPhraseTotalHitCount($queryText) {
+		$searchResult = $this->getSubPhraseSearchResult($queryText);
+		if($searchResult) {
+			return $searchResult->totalHitCount;
+		}
+		return 0;
+	}
+
+    public function getSubPhraseEntitiesIds($queryText, $entityIdFieldName)
+    {
+		$searchResult = $this->getSubPhraseSearchResult($queryText);
+		if($searchResult) {
+			return $this->getSearchResultEntitiesIds($searchResult, $entityIdFieldName);
+		}
+		return array();
+    }
+
     public function getFacetsData()
     {
         $preparedFacets = array();
-        $response = $this->getChoiceResponse("getFacetsData");
-		if(isset($response->variants)) {
-			foreach ($response->variants as $variant) {
-				$facets = $variant->searchResult->facetResponses;
-				foreach ($facets as $facet) {
-					if (!empty($facet->values)) {
-						$filter[$facet->fieldName] = array();
-						foreach ($facet->values as $value) {
-							$param['stringValue'] = $value->stringValue;
-							$param['hitCount'] = $value->hitCount;
-							$param['rangeFromInclusive'] = $value->rangeFromInclusive;
-							$param['rangeToExclusive'] = $value->rangeToExclusive;
-							$param['hierarchyId'] = $value->hierarchyId;
-							$param['hierarchy'] = $value->hierarchy;
-							$param['selected'] = $value->selected;
-							$filter[$facet->fieldName][] = $param;
-						}
-						$preparedFacets = $filter;
-					}
+        $variant = $this->getSearchResponseVariant("getFacetsData");
+		$facets = $variant->searchResult->facetResponses;
+		foreach ($facets as $facet) {
+			if (!empty($facet->values)) {
+				$filter[$facet->fieldName] = array();
+				foreach ($facet->values as $value) {
+					$param['stringValue'] = $value->stringValue;
+					$param['hitCount'] = $value->hitCount;
+					$param['rangeFromInclusive'] = $value->rangeFromInclusive;
+					$param['rangeToExclusive'] = $value->rangeToExclusive;
+					$param['hierarchyId'] = $value->hierarchyId;
+					$param['hierarchy'] = $value->hierarchy;
+					$param['selected'] = $value->selected;
+					$filter[$facet->fieldName][] = $param;
 				}
+				$preparedFacets = $filter;
 			}
 		}
         return $preparedFacets;
     }
 
-    public function getChoiceRelaxation()
-    {
-        $response = $this->getChoiceResponse("getChoiceRelaxation");
-		if(isset($response->variants[0]->searchRelaxation)) {
-			return $response->variants[0]->searchRelaxation;
-		}
-		return null;
-    }
-
-    public function printData()
+    /*
+	public function printData()
     {
         $results = array();
-        $response = $this->getChoiceResponse("printData");
-        /** @var \com\boxalino\p13n\api\thrift\Variant $variant */
+        $response = $this->getSearchResponse("printData");
         foreach ($response->variants as $variant) {
-            /** @var \com\boxalino\p13n\api\thrift\SearchResult $searchResult */
             $searchResult = $variant->searchResult;
             foreach ($searchResult->hits as $item) {
                 $result = array();
@@ -680,4 +759,5 @@ class BxClient
         echo '</table>';
 
     }
+	*/
 }

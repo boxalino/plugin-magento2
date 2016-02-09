@@ -1,6 +1,5 @@
 <?php
 namespace Boxalino\Frontend\Helper\P13n;
-use Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n;
 
 class Adapter
 {
@@ -9,39 +8,37 @@ class Adapter
 	protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     
 	protected $catalogCategory;
-    protected $session;
     protected $scopeConfig;
     protected $request;
     protected $registry;
     protected $queryFactory;
-	protected $p13n;
 
     public function __construct(
         \Magento\Framework\ObjectManager\ObjectManager $objectManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\Category $catalogCategory,
-        \Magento\Framework\Session\Storage $session,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Registry $registry,
         \Boxalino\Frontend\Helper\Data $bxHelperData,
         \Magento\Search\Model\QueryFactory $queryFactory
     )
     {
-        $this->session = $session;
         $this->scopeConfig = $scopeConfig;
         $this->catalogCategory = $catalogCategory;
 		$this->request = $request;
 		$this->registry = $registry;
 		$this->queryFactory = $queryFactory;
 		
-        $this->p13n =  $objectManager->create('\Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n');
-		$this->initializeBXClient($this->p13n);
+        $this->initializeBXClient();
 
     }
 	
-	protected function initializeBXClient($p13n) {
+	protected function initializeBXClient() {
 		
 		if(self::$bxClient == null) {
+			
+			//initialize class of HttpP13n (required to have client available)
+			new \Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n();
 			
 			$account = $this->scopeConfig->getValue('bxGeneral/general/account_name',$this->scopeStore);
 			$isDev = $this->scopeConfig->getValue('bxGeneral/general/dev',$this->scopeStore);
@@ -53,7 +50,7 @@ class Adapter
 			
 			$language = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 			
-			self::$bxClient = new \BxClient($account, $isDev, $host, $p13n_username, $p13n_password, $domain, $language, $additionalFields, $p13n);
+			self::$bxClient = new \BxClient($account, $isDev, $host, $p13n_username, $p13n_password, $domain, $language, $additionalFields);
 			self::$bxClient->addBxFilter(new \BxFilter('products_visibility', array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true));
 			self::$bxClient->addBxFilter(new \BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)));
 			
@@ -85,7 +82,7 @@ class Adapter
 
     public function __destruct()
     {
-        unset($this->p13n);
+        
     }
 	
 	public function addFilterFromTo($field, $from, $to, $localized = false)
@@ -219,7 +216,7 @@ class Adapter
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/general/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
         $searchChoice = $this->getSearchChoice();
-		$withRelaxation = $this->scopeConfig->getValue('bxSearch/advanced/relaxation_enabled',$this->scopeStore);
+		$withRelaxation = true; //$this->scopeConfig->getValue('bxSearch/advanced/relaxation_enabled',$this->scopeStore);
 		$bxFacets = $this->prepareFacets();
 		
 		$hitCount = $overwriteHitcount != null ? $overwriteHitcount : $this->scopeConfig->getValue('bxSearch/search/limit',$this->scopeStore);
@@ -229,19 +226,14 @@ class Adapter
 		
 		$offset = $pageOffset * $hitCount;
 		
-		self::$bxClient->search($queryText, $hitCount, $returnFields, $searchChoice, $bxFacets, $offset, $bxSortFields, $withRelaxation);
-		
-		$additionalData = self::$bxClient->getAdditionalData($additionalFields);
-        $this->session->setData('boxalino_additional_data', $additionalData);
+		self::$bxClient->search($queryText, $hitCount, $returnFields, $searchChoice, $bxFacets, $offset, $bxSortFields, $withRelaxation, $additionalFields);
     }
 	
-	private $simpleSearchDone = false;
 	public function simpleSearch() {
 		
-		if($this->simpleSearchDone) {
+		if(self::$bxClient->isSearchDone()) {
 			return;
 		}
-		$this->simpleSearchDone = true;
 		
 		$field = '';
 		$dir = '';
@@ -349,24 +341,54 @@ class Adapter
 		$this->simpleSearch();
 		return self::$bxClient->getEntitiesIds($this->getEntityIdFieldName());
     }
+	
+	/*public function getAdditionalData()
+	{
+		$this->simpleSearch();
+		return self::$bxClient->getAdditionalData();
+	}*/
 
     public function getFacetsData()
     {
 		$this->simpleSearch();
 		return self::$bxClient->getFacetsData();
     }
-
-    public function getChoiceRelaxation()
-    {
+	
+	public function getCorrectedQuery() {
 		$this->simpleSearch();
-		return self::$bxClient->getChoiceRelaxation();
-    }
+		return self::$bxClient->getCorrectedQuery();
+	}
+	
+	public function areResultsCorrected() {
+		$this->simpleSearch();
+		return self::$bxClient->areResultsCorrected();
+	}
+	
+	public function areThereSubPhrases() {
+		$this->simpleSearch();
+		return self::$bxClient->areThereSubPhrases();
+	}
+	
+	public function getSubPhrasesQueries() {
+		$this->simpleSearch();
+		return self::$bxClient->getSubPhrasesQueries();
+	}
+	
+	public function getSubPhraseTotalHitCount($queryText) {
+		$this->simpleSearch();
+		return self::$bxClient->getSubPhraseTotalHitCount($queryText);
+	}
+	
+	public function getSubPhraseEntitiesIds($queryText) {
+		$this->simpleSearch();
+		return self::$bxClient->getSubPhraseEntitiesIds($queryText, $this->getEntityIdFieldName());
+	}
 
-    public function printData()
+    /*public function printData()
     {
 		$this->simpleSearch();
 		return self::$bxClient->printData();
-    }
+    }*/
 
     public function getRecommendation($widgetType, $widgetName, $amount = 3)
     {
