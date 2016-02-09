@@ -11,17 +11,17 @@ use Magento\Search\Model\QueryFactory;
 class Result extends Mage_Result
 {
 
-    protected $bxHelperData;
+    protected $p13nHelper;
 
     public function __construct(
         Context $context,
         LayerResolver $layerResolver,
         Data $catalogSearchData,
         QueryFactory $queryFactory,
-        BxData $bxHelperData,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
         array $data = [])
     {
-        $this->bxHelperData = $bxHelperData;
+        $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
@@ -33,7 +33,7 @@ class Result extends Mage_Result
     public function getResultCount()
     {
         if (!$this->getData('result_count')) {
-            $size = $this->bxHelperData->getSearchAdapter()->getTotalHitCount();
+            $size = $this->p13nHelper->getTotalHitCount();
             $this->_getQuery()->setNumResults($size);
             $this->setResultCount($size);
         }

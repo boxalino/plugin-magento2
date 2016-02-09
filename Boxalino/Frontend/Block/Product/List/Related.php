@@ -21,9 +21,7 @@ class Boxalino_CemSearch_Block_Product_List_Related extends Mage_Catalog_Block_P
 
         $_REQUEST['productId'] = $product->getId();
 
-        $p13nRecommendation = Boxalino_CemSearch_Helper_P13n_Recommendation::Instance();
-
-        $response = $p13nRecommendation->getRecommendation('product', $name);
+        $response = $this->p13nAdapter->getRecommendation('product', $name);
         $entityIds = array();
 
         if ($response === null) {

@@ -14,7 +14,7 @@ use Boxalino\Frontend\Helper\Data;
 class BxListProducts extends ListProduct
 {
     protected $collection;
-    protected $bxHelperData;
+    protected $p13nHelper;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
@@ -23,11 +23,11 @@ class BxListProducts extends ListProduct
         CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         CollectionFactory $collectionFactory,
-        Data $bxHelperData,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
         array $data = [])
     {
         $this->collection = $collectionFactory;
-        $this->bxHelperData = $bxHelperData;
+        $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
@@ -44,7 +44,7 @@ class BxListProducts extends ListProduct
             }
         }*/
 
-        $entity_ids = $this->bxHelperData->getSearchAdapter()->getEntitiesIds();
+        $entity_ids = $this->p13nHelper->getEntitiesIds();
 
         // Added check if there are any entity ids, otherwise force empty result
         if (count($entity_ids) == 0) {

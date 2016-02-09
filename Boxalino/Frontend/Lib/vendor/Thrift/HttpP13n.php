@@ -6,6 +6,11 @@ class HttpP13n
     protected $dependencies = array(
         '../../P13nService.php',
         '../../Types.php',
+        '../../BxClient.php',
+        '../../BxFacets.php',
+        '../../BxFilter.php',
+        '../../BxRecommendation.php',
+        '../../BxSortFields.php'
     );
     protected $client = null;
     protected $transport = null;

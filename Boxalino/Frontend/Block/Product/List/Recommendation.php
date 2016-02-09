@@ -27,6 +27,7 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
         \Magento\Framework\Registry $registry,
         \Magento\Checkout\Model\ResourceModel\Cart $cart,
         Magento\Catalog\Model\ResourceModel\Product\Collection $collection,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter,
         array $data
     )
     {
@@ -78,11 +79,7 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
             }
         }
 
-        $p13nRecommendation = Boxalino_Frontend_Helper_P13n_Recommendation::Instance();
-
-        $response = $p13nRecommendation->getRecommendation(
-            'free', $this->_recommendationName, $this->_recommendationAmount
-        );
+        $response = $this->p13nAdapter->getRecommendation('free', $this->_recommendationName, $this->_recommendationAmount);
         $entityIds = array();
 
         if ($response === null) {

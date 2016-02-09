@@ -32,6 +32,7 @@ class Boxalino_Frontend_Block_Cart_Crosssell extends Crosssell
         Collection $collection,
         Catalog $catalog,
         Cart $cart,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter,
         array $data)
     {
         $this->scopeConfig = $scopeConfig;
@@ -74,9 +75,7 @@ class Boxalino_Frontend_Block_Cart_Crosssell extends Crosssell
 
         $_REQUEST['basketContent'] = json_encode($cartItems);
 
-        $p13nRecommendation = Boxalino_Frontend_Helper_P13n_Recommendation::Instance();
-
-        $response = $p13nRecommendation->getRecommendation('basket', $name);
+        $response = $this->p13nAdapter->getRecommendation('basket', $name);
         $entityIds = array();
 
         if ($response === null) {

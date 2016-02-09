@@ -60,28 +60,8 @@ class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Resu
         $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
         $generalConfig = $this->scopeConfig->getValue('Boxalino_General/search',$this->scopeStore);
 
-        $p13nConfig = new Config(
-            $storeConfig['host'],
-            $this->bxHelperData->getAccount(),
-            $storeConfig['p13n_username'],
-            $storeConfig['p13n_password'],
-            $storeConfig['domain']
-        );
-
-        $p13nSort = new Sort();
-        $this->p13nAdapter->setConfig($p13nConfig);
-
         $limit = $generalConfig['advanced_search_limit'] == 0 ? 1000 : $generalConfig['advanced_search_limit'];
 
-        //setup search
-        $this->p13nAdapter->setupInquiry(
-            $generalConfig['advanced_search'],
-            $params['name'],
-            $lang,
-            array($generalConfig['entity_id'], 'discountedPrice', 'title_' . $lang, 'score'),
-            $p13nSort,
-            0, $limit
-        );
         //add filters
 
         $skip = array('name');
@@ -101,10 +81,6 @@ class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Resu
 
                 $skip[] = $key;
 
-                if ($key == 'price') {
-                    $key = 'discountedPrice';
-                }
-
                 if ($from == null && $to == null) {
                     continue;
                 }
@@ -122,20 +98,12 @@ class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Resu
 
             $values = explode(", ", $criterium['value']);
 
-            if ($name == 'description') {
-                $name = 'body';
-            } else {
-                $name = 'products_' . $name;
-            }
-
             $this->p13nAdapter->addFilter($name, $values, null);
         }
 
         //get result from boxalino
-        $this->p13nAdapter->search();
-        $this->p13nAdapter->prepareAdditionalDataFromP13n();
+        $this->p13nAdapter->search($params['name'], 0, $limit);
         $entity_ids = $this->p13nAdapter->getEntitiesIds();
-        unset($p13n);
 
         try {
 //            Boxalino_CemSearch_Model_Logger::saveFrontActions('AdvancedController_ResultAction', 'storing catalogsearch/advanced for entities with id: ' . implode(', ', $entity_ids));

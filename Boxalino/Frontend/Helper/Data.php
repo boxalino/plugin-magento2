@@ -1,26 +1,19 @@
 <?php
 namespace Boxalino\Frontend\Helper;
-use Boxalino\Frontend\Helper\P13n\Config;
-use Boxalino\Frontend\Helper\P13n\Sort;
 use Boxalino\Frontend\Lib\vendor\HttpP13n;
-use Magento\Search\Model\QueryFactory;
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
     protected $reader;
     protected $checkoutSession;
     protected $customerSession;
     protected $config;
-    protected $request;
-    protected $registry;
     protected $catalogProduct;
     protected $catalogCategory;
     protected $catalogSearch;
     protected $controllerInterface;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    protected $searchAdapter;
-    protected $searchAdapterInitialized = false;
-    private $_queryFactory;
-
+    
     public function __construct(
         \Magento\CatalogSearch\Helper\Data $catalogSearch,
         \Magento\Framework\App\Helper\Context $context,
@@ -29,16 +22,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\Category $catalogCategory,
         \Magento\Catalog\Model\ResourceModel\Product $catalogProduct,
-        \Magento\Framework\App\FrontControllerInterface $controllerInterface,
-        \Magento\Framework\App\Request\Http $request,
-        \Magento\Framework\Registry $registry,
-        QueryFactory $queryFactory,
-        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter
+        \Magento\Framework\App\FrontControllerInterface $controllerInterface
     )
     {
-        $this->searchAdapter = $p13nAdapter;
-        $this->registry = $registry;
-        $this->request = $request;
         $this->controllerInterface = $controllerInterface;
         $this->catalogCategory = $catalogProduct;
         $this->config = $scopeConfig;
@@ -46,7 +32,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
         $this->catalogSearch = $catalogSearch;
-        $this->_queryFactory = $queryFactory;
         spl_autoload_register(array('\Boxalino\Frontend\Helper\Data', '__loadClass'), TRUE, TRUE);
         parent::__construct($context);
     }
@@ -216,17 +201,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    public function getAccount()
-    {
-        $isDev = $this->config->getValue('Boxalino_General/general/account_dev',$this->scopeStore);
-        $account = $this->config->getValue('Boxalino_General/general/di_account',$this->scopeStore);
-
-        if ($isDev) {
-            return $account . '_dev';
-        }
-        return $account;
-    }
-
     public function getFiltersValues($params)
     {
         $filters = new stdClass();
@@ -310,89 +284,5 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $text = trim($text, $delimiter);
 
         return $text;
-    }
-
-    public function getSearchAdapter()
-    {
-
-        if ($this->searchAdapterInitialized == false) {
-            $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
-            $request = $this->request;
-            $p13nConfig = new Config(
-                $storeConfig['host'],
-                $this->getAccount(),
-                $storeConfig['p13n_username'],
-                $storeConfig['p13n_password'],
-                $storeConfig['domain']
-            );
-            $p13nSort = new Sort();
-
-            $field = '';
-            $dir = '';
-            $order = $request->getParam('order');
-            if(isset($order)){
-                if($order == 'name'){
-                    $field = 'title';
-                } elseif($order == 'price'){
-                    $field = 'discountedPrice';
-                }
-            }
-            $dirOrder = $request->getParam('dir');
-            if($dirOrder){
-                $dir = $dirOrder == 'asc' ? false : true;
-            } else{
-                $dir = false;
-            }
-
-            if($field !== '' && $dir !== ''){
-                $p13nSort->push($field, $dir);
-            }
-
-            $this->searchAdapter->setConfig($p13nConfig);
-
-            $categoryId = $request->getParam('bx_category_id');
-            if (empty($categoryId)) {
-                /* @var $category Mage_Catalog_Model_Category */
-                $category = $this->registry->registry('current_category');
-                if (!empty($category)) {
-                    $_REQUEST['bx_category_id'][0] = $category->getId();
-                }
-                // GET param 'cat' may override the current_category,
-                // i.e. when clicking on subcategories in a category page
-                $cat = $request->getParam('cat');
-                if (!empty($cat)) {
-                    $_REQUEST['bx_category_id'][0] = $cat;
-                }
-            }
-
-            $generalConfig = $this->scopeConfig->getValue('Boxalino_General/search',$this->scopeStore);
-            $pageSize = (int) $request->getParam(
-                'limit',
-                $generalConfig['quick_search_limit'] == 0 ? 1000 : $generalConfig['quick_search_limit']
-            );
-            $offset = abs(((int) $request->getParam('p', 1)) - 1) * $pageSize;
-
-            $query = $this->_queryFactory->get();
-            //$query->setStoreId($this->_storeManager->getStore()->getId());
-
-          //  $this->catalogSearch->;
-            $this->searchAdapter->setupInquiry(
-                empty($generalConfig['quick_search']) ? 'search' : $generalConfig['quick_search'],
-                $query->getQueryText(),
-                substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2),
-                array($generalConfig['entity_id'], 'categories'),
-                $p13nSort, $offset, $pageSize
-            );
-
-            $this->searchAdapter->search();
-            $this->searchAdapter->prepareAdditionalDataFromP13n();
-            $this->searchAdapterInitialized = true;
-        }
-        return $this->searchAdapter;
-    }
-
-    public function resetSearchAdapter()
-    {
-        $this->searchAdapterInitialized = false;
     }
 }

@@ -14,12 +14,12 @@ class Facets extends \Magento\Framework\View\Element\Template
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Frontend\Helper\Data $bxHelperData,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
         array $data = []
     )
     {
         parent::__construct($context, $data);
-        $this->_allFilters = $bxHelperData->getSearchAdapter()->getFacetsData();
+        $this->_allFilters = $p13nHelper->getFacetsData();
     }
 
     /**

@@ -176,69 +176,12 @@ class Boxalino_CemSearch_Block_Autocomplete extends Mage_CatalogSearch_Block_Aut
         if (!$this->_suggestData) {
             $query = $this->helper('catalogsearch')->getQueryText();
 
-            $htmlConfig = Mage::getStoreConfig('Boxalino_General/autocomplete_html');
-            $generalConfig = Mage::getStoreConfig('Boxalino_General/search');
-            $p13nConfig = new Boxalino_CemSearch_Helper_P13n_Config(
-                $storeConfig['host'],
-                Mage::helper('Boxalino_CemSearch')->getAccount(),
-                $storeConfig['p13n_username'],
-                $storeConfig['p13n_password'],
-                $storeConfig['domain']
-            );
-            $p13n = new Boxalino_CemSearch_Helper_P13n_Adapter($p13nConfig);
+			list($suggestedTerms, $suggestedProducts, $order, $first) = $this->p13nAdapter->autocomplete($query);
 
-            if ($query) {
-                if ($htmlConfig['enabled'] == '1') {
-                    $fields = array($generalConfig['entity_id'], 'title', 'score');
-                } else {
-                    $fields = array($generalConfig['entity_id']);
-                    $map = array($generalConfig['entity_id'] => $generalConfig['entity_id']);
-                    $fi = explode(',', $htmlConfig['items']);
-                    foreach ($fi as $f) {
-                        list($attribute, $fieldname) = explode(':', $f);
-                        $fields[] = $fieldname;
-                        $map[$fieldname] = $attribute;
-                        $this->_order[] = $attribute;
-                    }
-                }
-
-                $p13n->autocomplete($query, $generalConfig['autocomplete_limit'], $generalConfig['autocomplete_products_limit'], $fields);
-                $collection = $p13n->getAutocompleteEntities();
-                $this->_first = $p13n->getPrefixSearchHash();
-            } else {
-                $collection = array();
-            }
-
-            $counter = 0;
-            $data = array();
-            foreach ($collection as $item) {
-                if ($item['hits'] <= 0) {
-                    continue;
-                }
-
-                $_data = array(
-                    'id' => substr(md5($item['text']), 0, 10),
-                    'title' => $item['text'],
-                    'html' => $item['html'],
-                    'row_class' => (++$counter) % 2 ? 'odd' : 'even',
-                    'num_of_results' => $item['hits'],
-                    'facets' => $item['facets']
-                );
-
-                if ($item['text'] == $query) {
-                    array_unshift($data, $_data);
-                } else {
-                    $data[] = $_data;
-                }
-            }
-
-            $this->_suggestData = $data;
-            $facets = array_key_exists(0, $data) && is_array($data[0]['facets']) ? $data[0]['facets'] : array();
-            if ($htmlConfig['enabled'] == '1') {
-                $this->_suggestDataProducts = $p13n->getAutocompleteProducts($facets);
-            } else {
-                $this->_suggestDataProducts = $p13n->getAutocompleteProducts($facets, $map, $fields);
-            }
+            $this->_suggestData = $suggestedTerms;
+			$this->_suggestDataProducts = $suggestedProducts
+			$this->_order = $order
+			$this->_first = $first
         }
         return $this->_suggestData;
     }
