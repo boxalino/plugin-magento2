@@ -116,9 +116,6 @@ class Facets extends \Magento\Framework\View\Element\Template
             $i++;
         }
         $this->setResultCount("0");
-//        echo "<pre>";
-//        print_r($filters);
-//        exit;
         return $filters;
     }
 

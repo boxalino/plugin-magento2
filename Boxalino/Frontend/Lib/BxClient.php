@@ -600,6 +600,9 @@ class BxClient
     }
 	
 	protected function getFirstPositiveSuggestionSearchResult($variant) {
+        if(!isset($variant->searchRelaxation->suggestionsResults)) {
+            return null;
+        }
 		foreach($variant->searchRelaxation->suggestionsResults as $searchResult) {
 			if($searchResult->totalHitCount > 0) {
 				return $searchResult;
@@ -702,25 +705,35 @@ class BxClient
 
     public function getFacetsData()
     {
-        $preparedFacets = array();
+        if($this->areResultsCorrected()) {
+            $variant = $this->getSearchResponseVariant("getFacetsData");
+            $searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
+            $facets = $searchResult->facetResponses;
+            return $this->getFacetResponsesData($facets);
+        }
         $variant = $this->getSearchResponseVariant("getFacetsData");
 		$facets = $variant->searchResult->facetResponses;
-		foreach ($facets as $facet) {
-			if (!empty($facet->values)) {
-				$filter[$facet->fieldName] = array();
-				foreach ($facet->values as $value) {
-					$param['stringValue'] = $value->stringValue;
-					$param['hitCount'] = $value->hitCount;
-					$param['rangeFromInclusive'] = $value->rangeFromInclusive;
-					$param['rangeToExclusive'] = $value->rangeToExclusive;
-					$param['hierarchyId'] = $value->hierarchyId;
-					$param['hierarchy'] = $value->hierarchy;
-					$param['selected'] = $value->selected;
-					$filter[$facet->fieldName][] = $param;
-				}
-				$preparedFacets = $filter;
-			}
-		}
+		return $this->getFacetResponsesData($facets);
+    }
+
+    protected function getFacetResponsesData($facets) {
+        $preparedFacets = array();
+        foreach ($facets as $facet) {
+            if (!empty($facet->values)) {
+                $filter[$facet->fieldName] = array();
+                foreach ($facet->values as $value) {
+                    $param['stringValue'] = $value->stringValue;
+                    $param['hitCount'] = $value->hitCount;
+                    $param['rangeFromInclusive'] = $value->rangeFromInclusive;
+                    $param['rangeToExclusive'] = $value->rangeToExclusive;
+                    $param['hierarchyId'] = $value->hierarchyId;
+                    $param['hierarchy'] = $value->hierarchy;
+                    $param['selected'] = $value->selected;
+                    $filter[$facet->fieldName][] = $param;
+                }
+                $preparedFacets = $filter;
+            }
+        }
         return $preparedFacets;
     }
 

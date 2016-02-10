@@ -45,16 +45,16 @@ class BxListProducts extends ListProduct
         }*/
 
         $entity_ids = $this->p13nHelper->getEntitiesIds();
-
+//        print_r($entity_ids);
         // Added check if there are any entity ids, otherwise force empty result
         if (count($entity_ids) == 0) {
             $entity_ids = array(0);
         }
+
         $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
         $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
         $list->load();
-
         //Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($this->_productCollection);
 
         return $list;
