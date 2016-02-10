@@ -3,15 +3,29 @@
     <div class="left-filters">
         <?php foreach ($filters as $key => $filter): ?>
             <div class="filter">
-                <div class="filter-title"><?php echo $filter['title']; ?></div>
-                <ul class="values">
-                    <?php foreach ($filter['values'] as $value): ?>
-                        <li class="value">
-                            <a href="<?php echo $value['url'] ?>"><?php echo $value['stringValue'] . ' (' . $value['hitCount'] . ')' ?></a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                <?php if($filter['title'] == 'Price'): ?>
+                    <div class="filter-title-<?php echo $filter['title']; ?>"><?php echo $filter['title']; ?></div>
+                    <ul class="min-max">
+                        <?php foreach ($filter['values'] as $value): ?>
+                            <li class="value">
+                                <a href="<?php echo $value['url'] ?>">
+                                    <?php echo $value['stringValue']['min'] . " - " . $value['stringValue']['max']; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <div class="filter-title-<?php echo $filter['title']; ?>"><?php echo $filter['title']; ?></div>
+                    <ul class="values">
+                        <?php foreach ($filter['values'] as $value): ?>
+                            <li class="value">
+                                <a href="<?php echo $value['url'] ?>"><?php echo $value['stringValue'] . ' (' . $value['hitCount'] . ')' ?></a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif;; ?>
             </div>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
