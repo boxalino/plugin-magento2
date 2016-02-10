@@ -4,8 +4,12 @@
         <default>
 			<bxGeneral>
                 <general>
+                    <enabled>1</enabled>
                     <dev>0</dev>
                 </general>
+                <advanced>
+                    <host>cdn.bx-cloud.com</host>
+                </advanced>
             </bxGeneral>
             <bxExporter>
                 <exporter>
@@ -17,6 +21,46 @@
                 <transactions>
                     <enabled>1</enabled>
                 </transactions>
+                <advanced>
+                    <publish_configuration_changes>1</publish_configuration_changes>
+                </advanced>
             </bxExporter>
+            <bxSearch>
+                <search>
+
+                </search>
+                <advanced>
+
+                </advanced>
+                <autocomplete>
+
+                </autocomplete>
+                <facets>
+
+                </facets>
+            </bxSearch>
+            <bxRecommendations>
+                <cart>
+                    <status>1</status>
+                    <widget>recommendation_cart</widget>
+                    <min>0</min>
+                    <max>3</max>
+                    <scenario>basket</scenario>
+                </cart>
+                <related>
+                    <status>1</status>
+                    <widget>recommendation_related</widget>
+                    <min>0</min>
+                    <max>3</max>
+                    <scenario>product</scenario>
+                </related>
+                <upsell>
+                    <status>1</status>
+                    <widget>recommendation_upsell</widget>
+                    <min>0</min>
+                    <max>3</max>
+                    <scenario>product</scenario>
+                </upsell>
+            </bxRecommendations>
         </default>
     </config>
