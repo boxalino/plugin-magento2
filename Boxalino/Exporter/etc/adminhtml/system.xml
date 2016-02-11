@@ -64,6 +64,10 @@
                     <label>Boxalino User name</label>
                     <comment>Optional: leave empty to use account name as username (typical case)</comment>
                 </field>
+                <field id="entity_id" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Id field name</label>
+                    <comment>Optional: specify special field name for search and recommendation grouping</comment>
+                </field>
             </group>
         </section>
 
@@ -157,6 +161,7 @@
             <!-- Assign section to tab -->
             <tab>boxalino</tab>
             <resource>Boxalino_Exporter::configuration</resource>
+			
             <!-- create group for fields in section -->
             <group id="search" translate="label" type="text" delault="1" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General</label>
@@ -164,35 +169,17 @@
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
                     <label>Search enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="search_choice" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Search choice</label>
-                </field>
-                <field id="limit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Search limit</label>
-                </field>
-                <field id="autocomplete_choice" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Autocomplete choice</label>
-                </field>
-                <field id="entity_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Id field name</label>
+                    <comment>Is Boxalino search active?</comment>
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Advanced</label>
-                <field id="relaxation_enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Relaxation enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <group id="facets" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Facets</label>
+                <field id="left_filters_normal" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Left filters</label>
                 </field>
-                <field id="limit" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Limit</label>
-                </field>
-                <field id="products_limit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Autocomplete choice</label>
-                </field>
-                <field id="items" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Id field name</label>
+                <field id="top_filters" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Top Filters</label>
                 </field>
             </group>
 
@@ -201,39 +188,27 @@
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Is Boxalino search as you type (autocompletion) active?</comment>
                 </field>
                 <field id="limit" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Limit</label>
+                    <comment>Maximum number of search textual suggestions to display und the search bar while the user is typing</comment>
                 </field>
                 <field id="products_limit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Autocomplete choice</label>
-                </field>
-                <field id="items" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Id field name</label>
+                    <comment>Maximum number of product suggestions to display und the search bar while the user is typing</comment>
                 </field>
             </group>
 
-            <group id="facets" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Facets</label>
-                <field id="left_filters_enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Left filter enable</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <group id="advanced" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced</label>
+                <field id="search_choice_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Search choice ID</label>
+                    <comment>Optional: default value is "search" and should normally not be changed</comment>
                 </field>
-                <field id="left_filters_normal" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Left filters</label>
-                </field>
-                <field id="top_filters_enable" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Top filter enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="top_filters" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Top Filters</label>
-                </field>
-                <field id="products_limit" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="autocomplete_choice_id" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Autocomplete choice</label>
-                </field>
-                <field id="items" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Id field name</label>
+                    <comment>Optional: default value is "autocomplete" and should normally not be changed</comment>
                 </field>
             </group>
 
@@ -257,6 +232,7 @@
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
+                    <comment>Optional: default value is "basket" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Minimum recommendations</label>
@@ -281,6 +257,7 @@
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
+                    <comment>Optional: default value is "something_similar" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Minimum recommendations</label>
@@ -305,6 +282,7 @@
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
+                    <comment>Optional: default value is "something_related" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Minimum recommendations</label>

@@ -30,7 +30,7 @@ class Boxalino_CemSearch_Block_Product_List_Related extends Mage_Catalog_Block_P
         }
 
         foreach ($response as $item) {
-            $entityIds[] = $item[Mage::getStoreConfig('Boxalino_General/search/entity_id')];
+            $entityIds[] = $item[Mage::getStoreConfig('bxGeneral/advanced/entity_id')];
         }
 
 ###############################################################

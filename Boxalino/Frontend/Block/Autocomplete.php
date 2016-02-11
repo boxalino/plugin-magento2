@@ -150,7 +150,7 @@ class Boxalino_CemSearch_Block_Autocomplete extends Mage_CatalogSearch_Block_Aut
         $html .= '<a href="' . $product['url'] . '" >';
         unset($product['url']);
         unset($product['hash']);
-        unset($product[Mage::getStoreConfig('Boxalino_General/search/entity_id')]);
+        unset($product[Mage::getStoreConfig('bxGeneral/advanced/entity_id')]);
 
         foreach ($this->_order as $f) {
             if ($f == 'image' && isset($product[$f]) && !empty($product[$f])) {

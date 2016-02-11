@@ -83,7 +83,7 @@ class Boxalino_Frontend_Block_Cart_Crosssell extends Crosssell
         }
 
         foreach ($response as $item) {
-            $entityIds[] = $item[$config->getValue('Boxalino_General/search/entity_id', $this->scopeStore)];
+            $entityIds[] = $item[$config->getValue('bxGeneral/advanced/entity_id', $this->scopeStore)];
         }
 
         if (empty($entityIds)) {
