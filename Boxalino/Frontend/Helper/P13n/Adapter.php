@@ -4,7 +4,6 @@ namespace Boxalino\Frontend\Helper\P13n;
 class Adapter
 {
     private static $bxClient = null;
-    
 	protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     
 	protected $catalogCategory;
@@ -341,6 +340,14 @@ class Adapter
 		$this->simpleSearch();
 		return self::$bxClient->getEntitiesIds($this->getEntityIdFieldName());
     }
+
+	public function getCount() {
+		return self::$bxClient->getCount();
+	}
+
+	public function incrementCount() {
+		return self::$bxClient->incrementCount();
+	}
 	
 	/*public function getAdditionalData()
 	{

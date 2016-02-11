@@ -41,6 +41,15 @@ class BxClient
 		$this->p13n = new \Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n();
 	}
 
+    private $count = 0;
+    public function getCount() {
+        return $this->count;
+    }
+
+    public function incrementCount() {
+        $this->count++;
+    }
+
     /**
      * @param string $field field name for filter
      * @param int $hierarchyId names of categories in hierarchy
@@ -577,11 +586,11 @@ class BxClient
     }
 	
 	public function areResultsCorrected() {
-		return $this->getTotalHitCount(false) == 0 && $this->getTotalHitCount(true) > 0;
+        return $this->getTotalHitCount(false) == 0 && $this->getRelaxationTotalHitCount() > 0 && $this->areThereSubPhrases() == false;
 	}
 	
 	public function getCorrectedQuery() {
-		$variant = $this->getSearchResponseVariant("getRelaxationTotalHitCount");
+        $variant = $this->getSearchResponseVariant("getRelaxationTotalHitCount");
 		$searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
 		if($searchResult) {
 			return $searchResult->queryText;
@@ -593,7 +602,7 @@ class BxClient
     {
 		$variant = $this->getSearchResponseVariant("getTotalHitCount");
 		$count = $variant->searchResult->totalHitCount;
-		if($considerRelxation && $count == 0) {
+		if($considerRelxation && $this->areResultsCorrected()) {
 			return $this->getRelaxationTotalHitCount();
 		}
         return $count;
@@ -624,7 +633,7 @@ class BxClient
     {
 		$variant = $this->getSearchResponseVariant("getEntitiesIds");
         $result = $this->getSearchResultEntitiesIds($variant->searchResult, $entityIdFieldName);
-		if($considerRelxation && sizeof($result) == 0) {
+		if($considerRelxation && $this->areResultsCorrected()) {
 			return $this->getRelaxationEntitiesIds($entityIdFieldName);
 		}
 

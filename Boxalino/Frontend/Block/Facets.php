@@ -19,7 +19,9 @@ class Facets extends \Magento\Framework\View\Element\Template
     )
     {
         parent::__construct($context, $data);
-        $this->_allFilters = $p13nHelper->getFacetsData();
+        if(!$p13nHelper->areThereSubPhrases()){
+            $this->_allFilters = $p13nHelper->getFacetsData();
+        }
     }
 
     /**

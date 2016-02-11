@@ -12,11 +12,6 @@
                    template="Boxalino_Frontend::top_filters.phtml">
             </block>
         </referenceContainer>
-        <referenceContainer name="main">
-            <block class="Boxalino\Frontend\Block\Product\BxListProducts" name="relaxation.suggestion"
-                   template="Boxalino_Frontend::relaxation_suggestion.phtml">
-            </block>
-        </referenceContainer>
         <referenceContainer name="sidebar.additional">
             <block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.sidebar"
                    template="Boxalino_Frontend::left_filters.phtml">

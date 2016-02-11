@@ -1,4 +1,11 @@
 <?php
-include "vendor/magento/module-catalog-search/view/frontend/templates/result.phtml";
-?>
 
+if($this->hasSubPhrases()): ?>
+    <h1><?php echo $block->getSubPhrasesResultText(0); ?></h1>
+    <?php echo $block->getProductListHtml();
+    Boxalino\Frontend\Block\Product\bxListProducts::$number++; ?>
+    <h1><?php echo $block->getSubPhrasesResultText(1); ?></h1>
+    <?php echo $block->getProductListHtml(); ?>
+<?php else: ?>
+    <?php echo $block->getProductListHtml(); ?>
+<?php endif; ?>

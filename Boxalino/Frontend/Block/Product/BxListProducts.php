@@ -11,10 +11,16 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Boxalino\Frontend\Helper\Data;
+use Magento\Framework\Session\SessionManager;
 class BxListProducts extends ListProduct
 {
+    public static $number = 0;
+    protected $count = -1;
     protected $collection;
     protected $p13nHelper;
+    protected $queryFactory;
+    protected $queries;
+    protected $session;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
@@ -23,31 +29,33 @@ class BxListProducts extends ListProduct
         CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         CollectionFactory $collectionFactory,
-        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
+        \Magento\Search\Model\QueryFactory $queryFactory,
+        SessionManager $session,
         array $data = [])
     {
+        $om = \Magento\Framework\App\ObjectManager::getInstance();
+        $p13nHelper = $om->get('Boxalino\Frontend\Helper\P13n\Adapter');
+        if($p13nHelper->areThereSubPhrases()){
+            $this->queries = $p13nHelper->getSubPhrasesQueries();
+        }
+        $this->queryFactory = $queryFactory;
         $this->collection = $collectionFactory;
         $this->p13nHelper = $p13nHelper;
+        $this->session = $session;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
     public function _getProductCollection()
     {
-        /*if (Mage::getStoreConfig('Boxalino_General/general/enabled') == 0) {
-            return parent::_getProductCollection();
-        }*/
+        if($this->p13nHelper->areThereSubPhrases()) {
+            $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
 
-        // make sure to only use products which are in the current category
-        /*if ($category = Mage::registry('current_category')) {
-            if (!$category->getIsAnchor()) {
-                return parent::_getProductCollection();
-            }
-        }*/
+        }else{
+            $entity_ids = $this->p13nHelper->getEntitiesIds();
+        }
 
-        $entity_ids = $this->p13nHelper->getEntitiesIds();
-//        print_r($entity_ids);
         // Added check if there are any entity ids, otherwise force empty result
-        if (count($entity_ids) == 0) {
+        if ((count($entity_ids) == 0)) {
             $entity_ids = array(0);
         }
 
@@ -56,7 +64,6 @@ class BxListProducts extends ListProduct
         $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
         $list->load();
         //Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($this->_productCollection);
-
         return $list;
     }
 }
