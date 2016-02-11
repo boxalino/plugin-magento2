@@ -88,7 +88,7 @@ class Boxalino_Frontend_Block_Product_List_Recommendation extends \Magento\Catal
         }
 
         foreach ($response as $item) {
-            $entityIds[] = $item[$this->scopeConfig->getValue('Boxalino_General/search/entity_id',$this->scopeStore)];
+            $entityIds[] = $item[$this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore)];
         }
 
         $this->_itemCollection = $this->collection->addFieldToFilter('catalog/product_collection')

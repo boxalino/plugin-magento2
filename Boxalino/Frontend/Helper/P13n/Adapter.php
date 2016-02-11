@@ -64,7 +64,7 @@ class Adapter
 	
 	public function getAutocompleteChoice() {
 		
-		$choice = $this->scopeConfig->getValue('bxSearch/search/autocomplete_choice',$this->scopeStore);
+		$choice = $this->scopeConfig->getValue('bxSearch/advanced/autocomplete_choice_id',$this->scopeStore);
 		if($choice == null) {
 			$choice = "autocomplete";
 		}
@@ -73,7 +73,7 @@ class Adapter
 	
 	public function getSearchChoice() {
 		
-		$choice = $this->scopeConfig->getValue('bxSearch/search/search_choice',$this->scopeStore);
+		$choice = $this->scopeConfig->getValue('bxSearch/advanced/search_choice_id',$this->scopeStore);
 		if($choice == null) {
 			$choice = "search";
 		}
@@ -153,7 +153,7 @@ class Adapter
     }
 	
 	public function getEntityIdFieldName() {
-		$entityIdFieldName = $this->scopeConfig->getValue('bxSearch/search/entity_id',$this->scopeStore);
+		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
 		if (!isset($entity_id) || $entity_id === '') {
 			$entityIdFieldName = 'entity_id';
 		}
@@ -169,14 +169,13 @@ class Adapter
 		$acExtraEnabled = $this->scopeConfig->getValue('bxSearch/autocomplete/enabled',$this->scopeStore);
 		$autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit',$this->scopeStore);
 		$products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit',$this->scopeStore);
-		$acItems = $this->scopeConfig->getValue('bxSearch/autocomplete/items',$this->scopeStore);
 			
 		if ($queryText) {
 			$fields = array($this->getEntityIdFieldName(), 'title', 'score');
 
 			self::$bxClient->autocomplete($queryText, $autocomplete_limit, $products_limit, $fields, $acExtraEnabled, $this->getAutocompleteChoice(), $this->getSearchChoice());
 			
-			$collection = self::$bxClient->getAutocompleteEntities($acItems);
+			$collection = self::$bxClient->getAutocompleteEntities();
 			
 			$hash = self::$bxClient->getACPrefixSearchHash();
 			
@@ -221,13 +220,29 @@ class Adapter
 		
 		$hitCount = $overwriteHitcount != null ? $overwriteHitcount : $this->scopeConfig->getValue('bxSearch/search/limit',$this->scopeStore);
 		if($hitCount == null) {
-			$hitCount = 10;
+			$hitCount = $this->getMagentoStoreConfigPageSize();
 		}
 		
 		$offset = $pageOffset * $hitCount;
 		
 		self::$bxClient->search($queryText, $hitCount, $returnFields, $searchChoice, $bxFacets, $offset, $bxSortFields, $withRelaxation, $additionalFields);
     }
+	
+	public function getMagentoStoreConfigPageSize() {
+		$storeConfig = $this->scopeConfig->getValue('catalog/frontend');
+			
+		$storeDisplayMode = $storeConfig['list_mode'];
+
+		//we may get grid-list, list-grid, grid or list
+
+		$storeMainMode = explode('-', $storeDisplayMode);
+
+		$storeMainMode = $storeMainMode[0];
+
+		$hitCount = $storeConfig[$storeMainMode . '_per_page'];
+		
+		return $hitCount;
+	}
 	
 	public function simpleSearch() {
 		
@@ -278,17 +293,15 @@ class Adapter
 
     private function prepareFacets()
     {
-        $normalFilters = array();
-        $topFilters = array();
-        $enableLeftFilters = $this->scopeConfig->getValue('bxSearch/facets/left_filters_enable',$this->scopeStore);
-        $enableTopFilters = $this->scopeConfig->getValue('bxSearch/facets/top_filters_enable',$this->scopeStore);
-
-        if ($enableLeftFilters == 1) {
-            $normalFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/left_filters_normal',$this->scopeStore));
+        $normalFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/left_filters_normal',$this->scopeStore));
+		if ($normalFilters[0] == '') {
+            $normalFilters = array();
         }
-        if ($enableTopFilters == 1) {
-            $topFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/top_filters',$this->scopeStore));
-        }
+        
+		$topFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/top_filters',$this->scopeStore));
+		if ($topFilters[0] == '') {
+            $topFilters = array();
+		}
 		
         if (array_key_exists('bx_category_id', $_REQUEST)) {
             $normalFilters[] = 'category_id:hierarchical:1';
