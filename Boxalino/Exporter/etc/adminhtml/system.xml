@@ -19,7 +19,7 @@
                 <!-- create text type field -->
                 <field id="enabled" translate="label" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable plugin</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="account_name" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino account name</label>
@@ -34,39 +34,43 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Is the account a development account or a production account? (Yes=DEV, No=PROD)</comment>
                 </field>
-                <field id="additional_fields" translate="label comment" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Return additional fields</label>
-                    <comment><![CDATA[ Write here comma-separated names of fields from the Data Intelligence which should be returned with P13n response<br />
-                        Colon separate option: global (without language version), local (with language version)]]></comment>
+				<field id="domain" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Domain</label>
+                    <comment>What is your domain (e.g.: www.myshop.com)? Used to store cookie information about session id and visitor id.</comment>
                 </field>
             </group>
 
 			<group id="advanced" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <!-- create text type field -->
-                <field id="domain" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Domain</label>
-                </field>
-                <field id="host" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0" >
+                <field id="host" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>Host</label>
+                    <comment>Optional: uses default value "cdn.bx-cloud.com" if left empty</comment>
                 </field>
-                <field id="p13n_username" translate="label" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="0" >
+                <field id="p13n_username" translate="label" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>P13n Username</label>
+                    <comment>Optional: uses default credentials if left empty</comment>
                 </field>
-                <field id="p13n_password" translate="label" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="p13n_password" translate="label" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>P13n Password</label>
+                    <comment>Optional: uses default credentials if left empty</comment>
                 </field>
-                <field id="language" translate="label comment" sortOrder="5" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="language" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Overwrite language</label>
                     <comment>Optional: uses store's "general/locale/code" value by default</comment>
                 </field>
-				<field id="username" translate="label comment" sortOrder="6" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+				<field id="username" translate="label comment" sortOrder="5" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino User name</label>
                     <comment>Optional: leave empty to use account name as username (typical case)</comment>
                 </field>
-                <field id="entity_id" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="entity_id" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Id field name</label>
                     <comment>Optional: specify special field name for search and recommendation grouping</comment>
+                </field>
+                <field id="additional_fields" translate="label comment" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Returned fields</label>
+                    <comment><![CDATA[ Optional: Write here comma-separated names of fields in Boxalino response<br />
+                        Colon separate option: global (without language version), local (with language version)]]></comment>
                 </field>
             </group>
         </section>
@@ -84,7 +88,7 @@
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
             </group>
 			<group id="products" translate="label" type="text" delault="1" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -100,13 +104,13 @@
                 </field>
 				<field id="export_images" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export product images</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Optional: Export image and thumbnail image urls (not required if standard usage of search and recommendations in Magento, as Magento renders the images itself).</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Optional: Export image and thumbnail image urls (not required if standard usage of search and recommendations in Magento, as Magento renders the images itself). If activated, makes export slower.</comment>
                 </field>
 				<field id="export_url" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export product urls</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Optional: Export product urls (not required if standard usage of search and recommendations  in Magento, as Magento renders the url itself).</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Optional: Export product urls (not required if standard usage of search and recommendations  in Magento, as Magento renders the url itself).. If activated, makes export slower.</comment>
                 </field>
             </group>
 			<group id="customers" translate="label" type="text" delault="1" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -114,7 +118,7 @@
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
 				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of customer properties to include in export</label>
@@ -130,7 +134,7 @@
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="0">
                     <label>Enable export</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
 				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of transaction properties to include in export</label>
@@ -168,7 +172,7 @@
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
                     <label>Search enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search active?</comment>
                 </field>
             </group>
@@ -187,8 +191,8 @@
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
                     <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Is Boxalino search as you type (autocompletion) active?</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino search as you type (autocomplete) active?</comment>
                 </field>
                 <field id="limit" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Limit</label>
@@ -228,20 +232,19 @@
                 <!-- Fields -->
                 <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
                     <label>Widgets enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
                     <comment>Optional: default value is "basket" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
-                    <label>Minimum recommendations</label>
+                    <label>Minimum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
                 <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
-                    <label>Maximum recommendations</label>
-                </field>
-                <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
-                    <label>Scenario</label>
+                    <label>Maximum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
             </group>
 
@@ -253,20 +256,19 @@
                 <!-- Fields -->
                 <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
                     <label>Widgets enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
                     <comment>Optional: default value is "something_similar" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
-                    <label>Minimum recommendations</label>
+                    <label>Minimum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
                 <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
-                    <label>Maximum recommendations</label>
-                </field>
-                <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
-                    <label>Scenario</label>
+                    <label>Maximum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
             </group>
 
@@ -278,20 +280,43 @@
                 <!-- Fields -->
                 <field id="status" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
                     <label>Widgets enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Widget name</label>
                     <comment>Optional: default value is "something_related" and should normally not be changed</comment>
                 </field>
                 <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
-                    <label>Minimum recommendations</label>
+                    <label>Minimum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
                 <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
-                    <label>Maximum recommendations</label>
+                    <label>Maximum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+            </group>
+
+            <!-- Upsell Configuration -->
+            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                <label>Other recommendations Configuration</label>
+                <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
+
+                <!-- Fields -->
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Widget names</label>
+                    <comment>Optional: if you want to have other recommendations, list them by names here (separated by comma)</comment>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Minimum recommended items</label>
+                    <comment>Optional: if define other recommendation widgets, list the minimum recommended items you want for each (separated by coma, same order)</comment>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Maximum recommended items</label>
+                    <comment>Optional: if define other recommendation widgets, list the maxiumum recommended items you want for each (separated by coma, same order)</comment>
                 </field>
                 <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
-                    <label>Scenario</label>
+                    <label>Types</label>
+                    <comment>Optional: if define other recommendation types, for each one: on which page the recommendation appear (separated by coma, same order). Possible values: 'product' if appear on a product page, 'basket' if appear on the basket, 'category' if appear on a category page, 'search' if appear on a search page, 'others' in other cases. </comment>
                 </field>
             </group>
         </section>

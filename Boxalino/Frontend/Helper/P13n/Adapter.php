@@ -4,6 +4,7 @@ namespace Boxalino\Frontend\Helper\P13n;
 class Adapter
 {
     private static $bxClient = null;
+    
 	protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     
 	protected $catalogCategory;
@@ -44,8 +45,8 @@ class Adapter
 			$host = $this->scopeConfig->getValue('bxGeneral/advanced/host',$this->scopeStore);
 			$p13n_username = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_username',$this->scopeStore);
 			$p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password',$this->scopeStore);
-			$domain = $this->scopeConfig->getValue('bxGeneral/advanced/domain',$this->scopeStore);
-			$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/general/additional_fields',$this->scopeStore));
+			$domain = $this->scopeConfig->getValue('bxGeneral/general/domain',$this->scopeStore);
+			$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 			
 			$language = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 			
@@ -211,7 +212,7 @@ class Adapter
     public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, $bxSortFields=null)
     {
 		$returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
-		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/general/additional_fields',$this->scopeStore));
+		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
         $searchChoice = $this->getSearchChoice();
 		$withRelaxation = true; //$this->scopeConfig->getValue('bxSearch/advanced/relaxation_enabled',$this->scopeStore);
