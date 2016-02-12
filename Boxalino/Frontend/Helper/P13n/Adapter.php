@@ -369,6 +369,11 @@ class Adapter
 		return self::$bxClient->getAdditionalData();
 	}*/
 
+	public function getFacets() {
+		$this->simpleSearch();
+		return self::$bxClient->getFacets();
+	}
+
     public function getFacetsData()
     {
 		$this->simpleSearch();

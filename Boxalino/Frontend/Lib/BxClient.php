@@ -725,6 +725,18 @@ class BxClient
 		return $this->getFacetResponsesData($facets);
     }
 
+    public function getFacets() {
+        if($this->areResultsCorrected()) {
+            $variant = $this->getSearchResponseVariant("getFacetsData");
+            $searchResult = $this->getFirstPositiveSuggestionSearchResult($variant);
+            $facets = $searchResult->facetResponses;
+            return $this->getFacetResponsesData($facets);
+        }
+        $variant = $this->getSearchResponseVariant("getFacetsData");
+        $facets = $variant->searchResult->facetResponses;
+        return new BxFacets($facets);
+    }
+
     protected function getFacetResponsesData($facets) {
         $preparedFacets = array();
         foreach ($facets as $facet) {

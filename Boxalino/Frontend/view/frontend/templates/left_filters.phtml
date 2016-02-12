@@ -17,15 +17,23 @@
                 <?php else: ?>
                     <div class="filter-title-<?php echo $filter['title']; ?>"><?php echo $filter['title']; ?></div>
                     <ul class="values">
-                        <?php foreach ($filter['values'] as $value): ?>
+                        <?php $lastSelected = $this->lastSelected($filter['values']); ?>
+                        <?php $count = count($filter['values']); ?>
+                        <?php $index = 0; ?>
+                        <?php if($count == 1): ?>
+                        <?php foreach($filter['values'] as $value): ?>
                             <li class="value">
-                                <a href="<?php echo $value['url'] ?>"><?php echo $value['stringValue'] . ' (' . $value['hitCount'] . ')' ?></a>
+                                <a href="<?php echo $value['url'] ?>"><?php echo $value['stringValue'] . ' (' . $value['hitCount'] . ')'; ?></a>
                             </li>
                         <?php endforeach; ?>
+
+
+                        <?php endif; ?>
                     </ul>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+
     </div>
 <?php endif; ?>
 
