@@ -21,6 +21,9 @@ class Facets extends \Magento\Framework\View\Element\Template
         parent::__construct($context, $data);
         if(!$p13nHelper->areThereSubPhrases()){
             $this->_allFilters = $p13nHelper->getFacetsData();
+//            echo "<pre>",
+//            print_r($this->_allFilters);
+//            exit;
         }
     }
 
@@ -95,7 +98,9 @@ class Facets extends \Magento\Framework\View\Element\Template
     {
         $filters = array();
         $leftFilters = explode(',',  $this->_scopeConfig->getValue('Boxalino_General/filter/left_filters_normal', $this->scopeStore));
+//        print_r($leftFilters);
         $leftFiltersTitles = explode(',',  $this->_scopeConfig->getValue('Boxalino_General/filter/left_filters_normal_title', $this->scopeStore));
+//        print_r($leftFiltersTitles);
         $i = 0;
         $allFilters = $this->_allFilters;
         foreach ($leftFilters as $filterString) {
@@ -360,5 +365,17 @@ class Facets extends \Magento\Framework\View\Element\Template
         $results = array_merge($results, $highestChild);
         $this->maxLevel[$filter] = $level;
         return $results;
+    }
+
+    public function lastSelected($filter){
+        $selected = 0;
+        $count = 0;
+        foreach($filter as $value){
+            if($value['selected']){
+                $selected = $count;
+            }
+            $count++;
+        }
+        return $selected;
     }
 }
