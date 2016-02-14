@@ -72,9 +72,6 @@ class State extends \Magento\Framework\DataObject
 				$filters[] = $filter;
 			}
         }
-		if(sizeof($filters) == 0) {
-			return parent::getFilters();
-		}
-        return $filters;
+		return $filters;
     }
 }
