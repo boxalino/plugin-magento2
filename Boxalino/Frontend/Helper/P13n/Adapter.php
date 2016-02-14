@@ -160,6 +160,11 @@ class Adapter
 		return $entityIdFieldName;
 	}
 	
+	public function isEnabled() {
+		$enabled = $this->scopeConfig->getValue('bxGeneral/general/enabled',$this->scopeStore);
+		return false;
+	}
+	
 	public function autocomplete($queryText) {
 		$order = array();
 		$hash = null;
@@ -267,18 +272,18 @@ class Adapter
 			$dir = false;
 		}
 
-		$categoryId = $this->request->getParam('bx_category_id');
+		$categoryId = $this->request->getParam($this->getUrlParameterPrefix() . 'category_id');
 		if (empty($categoryId)) {
 			/* @var $category Mage_Catalog_Model_Category */
 			$category = $this->registry->registry('current_category');
 			if (!empty($category)) {
-				$_REQUEST['bx_category_id'][0] = $category->getId();
+				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
 			}
 			// GET param 'cat' may override the current_category,
 			// i.e. when clicking on subcategories in a category page
 			$cat = $this->request->getParam('cat');
 			if (!empty($cat)) {
-				$_REQUEST['bx_category_id'][0] = $cat;
+				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
 			}
 		}
 
@@ -290,26 +295,54 @@ class Adapter
 		$this->search($query->getQueryText(), $pageOffset, $overWriteLimit, new \BxSortFields($field, $dir));
             
 	}
+	
+	private function getLeftFacets() {
+		$fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
+		$labels = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/labels',$this->scopeStore));
+		$types = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/types',$this->scopeStore));
+		$orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));
+		
+		if($fields[0] == "") {
+			return array();
+		}
+		
+		if(sizeof($fields) != sizeof($labels)) {
+			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
+		}
+		if(sizeof($fields) != sizeof($types)) {
+			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet types: " . implode(',', $fields) . " versus " . implode(',', $types));
+		}
+		if(sizeof($fields) != sizeof($orders)) {
+			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
+		}
+		
+		$facets = array();
+		foreach($fields as $k => $field){
+			$facets[$field] = array($labels[$k], $types[$k], $orders[$k]);
+		}
+		
+		return $facets;
+	}
+	
+	private function getTopFacetValues() {
+		$field = $this->scopeConfig->getValue('bxSearch/top_facet/field',$this->scopeStore);
+		$order = $this->scopeConfig->getValue('bxSearch/top_facet/order',$this->scopeStore);
+		return array($field, $order);
+	}
+	
+	public function getLeftFacetFieldNames() {
+		return array_keys($this->getLeftFacets());
+	}
+	
+	private function getUrlParameterPrefix() {
+		return 'bx_';
+	}
 
     private function prepareFacets()
     {
-        $normalFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/left_filters_normal',$this->scopeStore));
-		if ($normalFilters[0] == '') {
-            $normalFilters = array();
-        }
-        
-		$topFilters = explode(',', $this->scopeConfig->getValue('bxSearch/facets/top_filters',$this->scopeStore));
-		if ($topFilters[0] == '') {
-            $topFilters = array();
-		}
-		
-        if (array_key_exists('bx_category_id', $_REQUEST)) {
-            $normalFilters[] = 'category_id:hierarchical:1';
-        }
-        
 		$requestFacets = array();
 		foreach ($_REQUEST as $key => $values) {
-			if (strpos($key, 'bx_') !== false) {
+			if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
 				$fieldName = substr($key, 3);
 				$values = !is_array($values)?array($values):$values;
 				foreach ($values as $value) {
@@ -317,29 +350,27 @@ class Adapter
 				}
 			}
         }
-		$bxFacets = new \BxFacets($requestFacets);
 		
-		if (count($normalFilters)) {
-            foreach ($normalFilters as $filterString) {
-                $filter = explode(':', $filterString);
-                if ($filter[0] != '') {
-					if(!isset($filter[1])) {
-						throw new \Exception("a left search filter must be defined with the pattern: FIELD_NAME:TYPE:ORDER (1), wrongly provided filter. " . $filterString);
-					}
-					if(!isset($filter[2])) {
-						throw new \Exception("a left search filter must be defined with the pattern: FIELD_NAME:TYPE:ORDER (2), wrongly provided filter. " . $filterString);
-					}
-					$bxFacets->addFacet($filter[0], $filter[1], $filter[2]);
-                }
-            }
+		$bxFacets = self::$bxClient->getBxFacets();
+		$bxFacets->setParameterPrefix($this->getUrlParameterPrefix());
+		
+		$bxFacets->setRequestFacets($requestFacets);
+		
+		if (array_key_exists($this->getUrlParameterPrefix() . 'category_id', $_REQUEST)) {
+			$bxFacets->addFacet('category_id', 'cat_id', 'hierarchical', '1');
         }
-        if (count($topFilters)) {
-            foreach ($topFilters as $filter) {
-                if ($filter != '') {
-					$bxFacets->addFacet($filter, 'string', null);
-                }
-            }
-        }
+        
+		foreach($this->getLeftFacets() as $fieldName => $facetValues) {
+			$bxFacets->addFacet($fieldName, $facetValues[0], $facetValues[1], $facetValues[2]);
+		}
+		
+		list($topField, $topOrder) = $this->getTopFacetValues();
+		if($topField) {
+			$bxFacets->addFacet($topField, "top_facet", "string", $topOrder);
+		}
+		
+		self::$bxClient->setBxFacets($bxFacets);
+		
         return $bxFacets;
     }
 

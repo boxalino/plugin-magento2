@@ -20,6 +20,7 @@
                 <field id="enabled" translate="label" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable plugin</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is the overal Boxalino plugin active (global switch)?</comment>
                 </field>
                 <field id="account_name" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino account name</label>
@@ -177,17 +178,39 @@
                 </field>
             </group>
 
-            <group id="facets" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Facets</label>
-                <field id="left_filters_normal" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Left filters</label>
+            <group id="left_facets" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Left facets</label>
+                <field id="fields" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Field names</label>
+                    <comment>The list of the field names of the facets to display on the left (extends Magento Search Layered Naviagation). Ordered list (from top to bottom) of the field names to be used as left facets (values separated by ','). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountPrice and categories).N.b.: value for categories is "categories"; field name of price is "discountedPrice"</comment>
                 </field>
-                <field id="top_filters" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Top Filters</label>
+                <field id="labels" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Facet labels</label>
+                    <comment>Label to be displayed on the store (should be set in each store language individually). Ordered list matching the values of Field names (values separated by ',').</comment>
+                </field>
+                <field id="types" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Facet types</label>
+                    <comment>The type of the facet. Ordered list matching the values of Field names (values separated by ','). Possibile values: "list" (most common value, to be used in most cases), "ranged" (e.g.: for "discountedPrice"), "hierarchical" (e.g.: for "categories"), "numerical" (for numberical values)</comment>
+                </field>
+                <field id="orders" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Ordering of facet values</label>
+                    <comment>The ordering to sort the values in a facet. Ordered list matching the values of Field names (values separated by ','). 0 = "order by count values from biggest to smallest"; 1 = "order alphabetically the values from A to Z"</comment>
                 </field>
             </group>
 
-            <group id="autocomplete" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="top_facet" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Top facet</label>
+                <field id="field" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Field name</label>
+                    <comment>Optional: display a list of filter values on top of the search results (typically "value-oriented" facets with icons like: "in discount", "new", "top ranked", etc.). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountPrice and categories)</comment>
+                </field>
+                <field id="order" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
+                    <label>Ordering of facet values</label>
+                    <comment>The ordering to sort the values in a facet. 0 = "order by count values from biggest to smallest"; 1 = "order alphabetically the values from A to Z"</comment>
+                </field>
+            </group>
+
+            <group id="autocomplete" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
                     <label>Enabled</label>
@@ -204,7 +227,7 @@
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <field id="search_choice_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Search choice ID</label>
@@ -226,7 +249,7 @@
 
             <!-- Cart Configuration -->
             <group id="cart" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="0">
-                <label>Cart Configuration</label>
+                <label>Cart recommendations</label>
                 <comment><![CDATA[ Widget configuration for recommendation on basket page. ]]></comment>
 
                 <!-- Fields -->
@@ -234,23 +257,23 @@
                     <label>Widgets enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
-                    <label>Widget name</label>
-                    <comment>Optional: default value is "basket" and should normally not be changed</comment>
-                </field>
-                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Minimum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
-                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Maximum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Widget name</label>
+                    <comment>Optional: default value is "basket" and should normally not be changed</comment>
                 </field>
             </group>
 
             <!-- Related Configuration -->
             <group id="related" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
-                <label>Related Configuration</label>
+                <label>Product detail page: related recommendations</label>
                 <comment><![CDATA[ Widget configuration for related recommendation on product page. ]]></comment>
 
                 <!-- Fields -->
@@ -258,23 +281,23 @@
                     <label>Widgets enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
-                    <label>Widget name</label>
-                    <comment>Optional: default value is "something_similar" and should normally not be changed</comment>
-                </field>
-                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Minimum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
-                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Maximum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Widget name</label>
+                    <comment>Optional: default value is "similar" and should normally not be changed</comment>
                 </field>
             </group>
 
             <!-- Upsell Configuration -->
             <group id="upsell" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
-                <label>Upsell Configuration</label>
+                <label>Product detail page: upsell recommendations</label>
                 <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
 
                 <!-- Fields -->
@@ -282,22 +305,22 @@
                     <label>Widgets enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
-                    <label>Widget name</label>
-                    <comment>Optional: default value is "something_related" and should normally not be changed</comment>
-                </field>
-                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
                     <label>Minimum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
                 </field>
-                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                     <label>Maximum recommended items</label>
                     <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Widget name</label>
+                    <comment>Optional: default value is "complementary" and should normally not be changed</comment>
                 </field>
             </group>
 
             <!-- Upsell Configuration -->
-            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
                 <label>Other recommendations Configuration</label>
                 <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
 

@@ -11,6 +11,7 @@ class BxClient
 	private $language;
 	private $additionalFields;
 	private $p13n;
+	private $facets;
 	
 	private $filters = array();
 	private $autocompleteResponse = null;
@@ -39,6 +40,8 @@ class BxClient
 		$this->language = $language;
 		$this->additionalFields = $additionalFields;
 		$this->p13n = new \Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n();
+		
+		$this->facets = new \BxFacets();
 	}
 
     private $count = 0;
@@ -724,6 +727,14 @@ class BxClient
 		$facets = $variant->searchResult->facetResponses;
 		return $this->getFacetResponsesData($facets);
     }
+	
+	public function setBxFacets($facets) {
+		$this->facets = $facets;
+	}
+	
+	public function getBxFacets() {
+		return $this->facets;
+	}
 
     public function getFacets() {
         if($this->areResultsCorrected()) {
@@ -733,8 +744,8 @@ class BxClient
             return $this->getFacetResponsesData($facets);
         }
         $variant = $this->getSearchResponseVariant("getFacetsData");
-        $facets = $variant->searchResult->facetResponses;
-        return new BxFacets($facets);
+        $this->facets->setFacetResponse($variant->searchResult->facetResponses);
+		return $this->facets;
     }
 
     protected function getFacetResponsesData($facets) {

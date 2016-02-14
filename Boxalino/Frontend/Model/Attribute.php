@@ -17,20 +17,21 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
 
     public function getName()
     {
-        return $this->fieldName;
+        return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
     protected function _getItemsData()
     {
         $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
-        foreach($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
-            $this->itemDataBuilder->addItemData(
-                $this->tagFilter->filter($facetValue),
-                $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue)
-            );
-        }
-
+        if(!$this->bxFacets->isSelected($this->fieldName, true)) {
+			foreach($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
+				$this->itemDataBuilder->addItemData(
+					$this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+					$this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+					$this->bxFacets->getFacetValueCount($this->fieldName, $facetValue)
+				);
+			}
+		}
         return $this->itemDataBuilder->build();
     }
 }
