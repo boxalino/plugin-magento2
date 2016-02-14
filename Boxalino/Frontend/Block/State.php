@@ -60,7 +60,7 @@ class State extends \Magento\Framework\DataObject
     {
 		$filters = array();
         $facets = $this->p13nHelper->getFacets();
-        foreach($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
+        foreach($this->p13nHelper->getAllFacetFieldNames() as $fieldName) {
             
 			if($facets->isSelected($fieldName)) {
 				$filter = $this->objectManager->create(

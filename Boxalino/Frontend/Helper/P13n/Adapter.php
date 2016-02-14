@@ -334,6 +334,14 @@ class Adapter
 		return array_keys($this->getLeftFacets());
 	}
 	
+	public function getAllFacetFieldNames() {
+		$allFacets = array_keys($this->getLeftFacets());
+		if($this->getTopFacetFieldName() != null) {
+			$allFacets[] = $this->getTopFacetFieldName();
+		}
+		return $allFacets;
+	}
+	
 	private function getUrlParameterPrefix() {
 		return 'bx_';
 	}
@@ -366,13 +374,18 @@ class Adapter
 		
 		list($topField, $topOrder) = $this->getTopFacetValues();
 		if($topField) {
-			$bxFacets->addFacet($topField, "top_facet", "string", $topOrder);
+			$bxFacets->addFacet($topField, $topField, "string", $topOrder);
 		}
 		
 		self::$bxClient->setBxFacets($bxFacets);
 		
         return $bxFacets;
     }
+	
+	public function getTopFacetFieldName() {
+		list($topField, $topOrder) = $this->getTopFacetValues();
+		return $topField;
+	}
 
     public function getTotalHitCount()
     {

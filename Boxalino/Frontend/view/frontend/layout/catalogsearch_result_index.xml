@@ -8,15 +8,10 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <attribute name="class" value="page-products"/>
-        <referenceContainer name="main">
+        <referenceContainer name="content">
             <block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.top"
-                   template="Boxalino_Frontend::top_filters.phtml">
+                   template="Boxalino_Frontend::top_filters.phtml"  before="search.result">
             </block>
         </referenceContainer>
-        <!--<referenceContainer name="sidebar.additional">-->
-        <!--<block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.sidebar"-->
-        <!--template="Boxalino_Frontend::left_filters.phtml">-->
-        <!--</block>-->
-        <!--</referenceContainer>-->
     </body>
 </page>
