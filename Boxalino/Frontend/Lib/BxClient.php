@@ -432,12 +432,9 @@ class BxClient
 		return $result;
     }
 	
-    public function autocomplete($queryText, $suggestionsHitCount, $hitCount = 0, $returnFields = array(), $acExtraEnabled = true, $autocompleteChoice = 'autocomplete', $searchChoice = 'search')
+    public function autocomplete($queryText, $suggestionsHitCount, $hitCount = 0, $returnFields = array(), $autocompleteChoice = 'autocomplete', $searchChoice = 'search')
     {
         $searchQuery = $this->getSimpleSearchQuery($returnFields, $hitCount, $queryText);
-		if ($acExtraEnabled) {
-            $searchQuery->facetRequests[] = $this->getCategoryFacet();
-        }
 		
 		list($sessionid, $profileid) = $this->getSessionAndProfile();
         
@@ -468,125 +465,55 @@ class BxClient
             return null;
         }
     }
-
-    protected function getFacetLeafs($facets, $hit, $config)
-    {
-        $tmp = array();
-
-        foreach ($facets as $facet) {
-
-            foreach ($facet->hierarchy as $h) {
-                if (array_key_exists($h, $tmp)) {
-                    unset($tmp[$h]);
-                }
-            }
-
-            $tmp[end($facet->hierarchy)] = array(
-                'title' => end($facet->hierarchy),
-                'hits' => $facet->hitCount,
-                'href' => $facet->stringValue,
-                'id' => substr(md5($hit->suggestion . '_' . $facet->stringValue), 0, 10)
-            );
-        }
-
-        if ($config['sort']) {
-            usort($tmp, array($this, 'cmpFacets'));
-        }
-
-        return $tmp;
-    }
-
-    public function getAutocompleteEntities($acItems = true, $acExtraEnabled = true)
-    {
+	
+	public function getAutocompleteTextualSuggestions() {
 		$suggestions = array();
-		
 		foreach ($this->getAutocompleteResponse()->hits as $hit) {
-
-            $tmp = array('text' => $hit->suggestion, 'html' => (strlen($hit->highlighted) ? $hit->highlighted : $hit->suggestion), 'hits' => $hit->searchResult->totalHitCount);
-            $facets = array();
-
-            if ($acExtraEnabled) {
-                $tmp['facets'] = array_slice($this->getFacetLeafs($hit->searchResult->facetResponses[0]->values, $hit, $config),
-                    0, $acItems);
-            }
-
-            $suggestions[] = $tmp;
+			$suggestions[] = $hit->suggestion;
         }
         return $suggestions;
-    }
+	}
+	
+	protected function getAutocompleteTextualSuggestionHit($suggestion) {
+		foreach ($this->getAutocompleteResponse()->hits as $hit) {
+			if($hit->suggestion == $suggestion) {
+				return $hit;
+			}
+		}
+		throw new \Exception("unexisting textual suggestion provided " . $suggestion);
+	}
+	
+	public function getAutocompleteTextualSuggestionTotalHitCount($suggestion) {
+		$hit = $this->getAutocompleteTextualSuggestionHit($suggestion);
+		return $hit->searchResult->totalHitCount;
+	}
+	
+	public function getAutocompleteProducts($fields, $suggestion=null) {
+		$searchResult = $suggestion == null ? $this->getAutocompleteResponse()->prefixSearchResult : $this->getAutocompleteTextualSuggestionHit($suggestion)->searchResult;
+		
+		$products = array();
+		foreach($searchResult->hits as $item) {
+			$values = array();
+			foreach($fields as $field) {
+				if(isset($item->values[$field])) {
+					$values[$field] = $item->values[$field];
+				} else {
+					$values[$field] = array();
+				}
+			}
+			$k = isset($item->values['id'][0]) ? $item->values['id'][0] : sizeof($products);
+			$products[$k] = $values;
+		}
+		return $products;
+	}
 
-    public function getAutocompleteProducts($facets, $map = null, $fields = null, $entity_id = 'id', $searchChoice='search')
-    {
-		if (!is_array($facets)) {
-            $facets = array();
-        }
-
-        $fs = array();
-        foreach($facets as $f) {
-            $fs[] = $f['id'];
-        }
-
-        if (!is_array($map)) {
-            $map = array($entity_id => $entity_id);
-        }
-
-        if (!is_array($fields)) {
-            $fields = array($entity_id);
-        }
-
-        // prefix search result
-        $products = array();
-        $id = substr(md5($this->getAutocompleteResponse()->prefixSearchResult->queryText), 0, 10);
-        $products[$id] = $this->extractItemsFromHits($this->getAutocompleteResponse()->prefixSearchResult->hits, $id, $entity_id, $map);
-
-        $lang = $this->language;
-        $i = 0;
-        foreach ($this->getAutocompleteResponse()->hits as $hit) {
-            if ($i++ >= $autocomplete_limit) {
-                break;
-            }
-
-            $id = substr(md5($hit->suggestion), 0, 10);
-            $products[$id] = $this->extractItemsFromHits($hit->searchResult->hits, $id, $entity_id, $map);
-        }
-
-        return $products;
-    }
-
-    protected function getFacetDepth($facet)
-    {
-
-        return substr_count($facet->stringValue, '/');
-
-    }
-
-    private function cmpFacets($a, $b)
+    /*private function cmpFacets($a, $b)
     {
         if ($a['hits'] == $b['hits']) {
             return 0;
         }
         return ($a['hits'] > $b['hits']) ? -1 : 1;
-    }
-
-    private function extractItemsFromHits($hits, $hash, $entity_id, $map)
-    {
-        $items = array();
-        foreach ($hits as $item) {
-            $tmp = array();
-            $tmp['hash'] = $hash;
-            foreach ($item->values as $key => $value) {
-                if (array_key_exists($key, $map)) {
-                    if (is_array($value)) {
-                        $tmp[$map[$key]] = array_shift($value);
-                    } else {
-                        $tmp[$map[$key]] = $value;
-                    }
-                }
-            }
-            $items[] = $tmp;
-        }
-        return $items;
-    }
+    }*/
 	
 	public function areResultsCorrected() {
         return $this->getTotalHitCount(false) == 0 && $this->getRelaxationTotalHitCount() > 0 && $this->areThereSubPhrases() == false;
