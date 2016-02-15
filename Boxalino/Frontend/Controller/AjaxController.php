@@ -32,16 +32,48 @@
  * @module     Catalog
  */
 
-require_once "Mage/CatalogSearch/controllers/AjaxController.php";
+namespace Boxalino\Frontend\Controller;
 
-class Boxalino_CemSearch_AjaxController extends Mage_CatalogSearch_AjaxController
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Search\Model\AutocompleteInterface;
+use Magento\Framework\Controller\ResultFactory;
+
+class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
 {
-    public function suggestAction()
+	public function __construct(
+        Context $context,
+        AutocompleteInterface $autocomplete
+    ) {
+        parent::__construct($context, $autocomplete);
+    }
+	
+	/*public function suggestAction()
     {
         if (!$this->getRequest()->getParam('q', false)) {
             $this->getResponse()->setRedirect(Mage::getSingleton('core/url')->getBaseUrl());
         }
 
         $this->getResponse()->setBody($this->getLayout()->createBlock('catalogsearch/autocomplete')->toHtml());
-    }
+    }*/
+	
+	public function execute()
+    {
+		if (!$this->getRequest()->getParam('q', false)) {
+            /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
+            $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+            $resultRedirect->setUrl($this->_url->getBaseUrl());
+            return $resultRedirect;
+        }
+		
+		$data = $this->_objectManager->create("\Boxalino\Frontend\Helper\Data");
+		$p13n = $this->_objectManager->create("\Boxalino\Frontend\Helper\P13n\Adapter");
+		
+		$responseData = $p13n->autocomplete($this->getRequest()->getParam('q', false));
+        
+		/** @var \Magento\Framework\Controller\Result\Json $resultJson */
+        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson->setData($responseData);
+        return $resultJson;
+	}
 }

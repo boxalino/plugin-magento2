@@ -12,15 +12,18 @@ class Adapter
     protected $request;
     protected $registry;
     protected $queryFactory;
+    protected $collectionFactory;
+    protected $storeManager;
 
     public function __construct(
-        \Magento\Framework\ObjectManager\ObjectManager $objectManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\Category $catalogCategory,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Registry $registry,
-        \Boxalino\Frontend\Helper\Data $bxHelperData,
-        \Magento\Search\Model\QueryFactory $queryFactory
+        \Magento\Search\Model\QueryFactory $queryFactory,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Boxalino\Frontend\Helper\Data $bxHelperData
     )
     {
         $this->scopeConfig = $scopeConfig;
@@ -28,6 +31,8 @@ class Adapter
 		$this->request = $request;
 		$this->registry = $registry;
 		$this->queryFactory = $queryFactory;
+		$this->collectionFactory = $collectionFactory;
+		$this->storeManager = $storeManager;
 		
         $this->initializeBXClient();
 
@@ -171,35 +176,35 @@ class Adapter
 		
 		$data = array();
 		
-		$acExtraEnabled = $this->scopeConfig->getValue('bxSearch/autocomplete/enabled',$this->scopeStore);
 		$autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit',$this->scopeStore);
 		$products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit',$this->scopeStore);
 			
 		if ($queryText) {
 			$fields = array($this->getEntityIdFieldName(), 'title', 'score');
 
-			self::$bxClient->autocomplete($queryText, $autocomplete_limit, $products_limit, $fields, $acExtraEnabled, $this->getAutocompleteChoice(), $this->getSearchChoice());
+			self::$bxClient->autocomplete($queryText, $autocomplete_limit, $products_limit, $fields, $this->getAutocompleteChoice(), $this->getSearchChoice());
 			
-			$collection = self::$bxClient->getAutocompleteEntities();
-			
-			$hash = self::$bxClient->getACPrefixSearchHash();
-			
-			$counter = 0;
-            foreach ($collection as $item) {
-                if ($item['hits'] <= 0) {
+			$globalProducts = self::$bxClient->getAutocompleteProducts(array($this->getEntityIdFieldName()));
+			$entity_ids = $this->mergeProductsInEntityIds(array(), $globalProducts);
+            foreach (self::$bxClient->getAutocompleteTextualSuggestions() as $suggestion) {
+				
+				$totalHitcount = self::$bxClient->getAutocompleteTextualSuggestionTotalHitCount($suggestion);
+				
+                if ($totalHitcount <= 0) {
                     continue;
                 }
+				
+				$products = self::$bxClient->getAutocompleteProducts(array($this->getEntityIdFieldName()), $suggestion);
 
-                $_data = array(
-                    'id' => substr(md5($item['text']), 0, 10),
-                    'title' => $item['text'],
-                    'html' => $item['html'],
-                    'row_class' => (++$counter) % 2 ? 'odd' : 'even',
-                    'num_of_results' => $item['hits'],
-                    'facets' => $item['facets']
+				$_data = array(
+                    'title' => $suggestion,
+                    'num_results' => $totalHitcount,
+                    'products' => $products
                 );
+				
+				$entity_ids = $this->mergeProductsInEntityIds($entity_ids, $products);
 
-                if ($item['text'] == $query) {
+                if ($_data['title'] == $queryText) {
                     array_unshift($data, $_data);
                 } else {
                     $data[] = $_data;
@@ -207,11 +212,59 @@ class Adapter
             }
 		}
 		
-        $facets = array_key_exists(0, $data) && is_array($data[0]['facets']) ? $data[0]['facets'] : array();
-		
-		$products = self::$bxClient->getAutocompleteProducts($facets, $this->getEntityIdFieldName());
-		
-		return array($data, $products, $order, $hash);
+		if(sizeof($entity_ids) > 0) {
+			
+			$list = $this->collectionFactory->create()->setStoreId($this->storeManager->getStore()->getId())
+				->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+			$list->load();
+			
+			foreach($list as $product) {
+				$products[$product->getEntityid()] = $product;
+			}
+			
+			$autocomplete = new \Boxalino\Frontend\Helper\Autocomplete();
+			
+			$list = $this->getProductsFromIds($globalProducts, $products);
+			$globalProductHtml = $autocomplete->getListHtml($list);
+			
+			$first = true;
+			foreach($data as $k => $v) {
+				$list = $this->getProductsFromIds($v['products'], $products);
+				$productHtml = $autocomplete->getListHtml($list);
+				$v['products'] = $productHtml;
+				if($first) {
+					$v['global_products'] = $globalProductHtml;
+				}
+				$first = false;
+				$data[$k] = $v;
+			}
+		}
+		return $data;
+	}
+	
+	protected function getProductsFromIds($ids, $products) {
+		$list = array();
+		foreach($ids as $k => $v) {
+			$id = $k;
+			if(isset($v[$this->getEntityIdFieldName()][0])) {
+				$id = $v[$this->getEntityIdFieldName()][0];
+			}
+			if(isset($products[$id])) {
+				$list[] = $products[$id];
+			}
+		}
+		return $list;
+	}
+	
+	protected function mergeProductsInEntityIds($entity_ids, $products) {
+		foreach($products as $k => $v) {
+			if(isset($v[$this->getEntityIdFieldName()][0])) {
+				$entity_ids[$v[$this->getEntityIdFieldName()][0]] = $v[$this->getEntityIdFieldName()][0];
+			} else {
+				$entity_ids[$k] = $k;
+			}
+		}
+		return $entity_ids;
 	}
 
     public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, $bxSortFields=null)
