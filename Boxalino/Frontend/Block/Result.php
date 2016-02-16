@@ -86,8 +86,6 @@ class Result extends Mage_Result
         $this->bxListProducts->incrementCount();
     }
 
-
-
     public function getProductListHtml()
     {
         return $this->getChildHtml('search_result_list', false);

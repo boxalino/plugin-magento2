@@ -3,19 +3,17 @@
  * Boxalino Script Block
  */
 
-$_helper = $this->helperData;
+$_helper = $this->getBxHelperData();
 
-// get account
 $account = $this->getAccount();
-echo "tatsuya";
+
 ?>
-<h1>Tatpun</h1>
 <script>
     var _bxq = _bxq || []
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
 
-    <?php if ($_helper->isAnalyticsEnabled()): ?>
+    <?php if ($_helper->isTrackerEnabled()): ?>
     _bxq.push(['trackPageView']);
     <?php endif; ?>
 

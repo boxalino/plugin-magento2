@@ -40,7 +40,7 @@ class BxClient
 		$this->language = $language;
 		$this->additionalFields = $additionalFields;
 		$this->p13n = new \Boxalino\Frontend\Lib\vendor\Thrift\HttpP13n();
-		
+
 		$this->facets = new \BxFacets();
 	}
 
@@ -345,8 +345,9 @@ class BxClient
 		}
 		
 		$choiceRequest = $this->getChoiceRequest($choiceInquiries, $requestContext);
-		
-		$this->recommendationsResponse = $this->choose($choiceRequest);
+
+		$p13n = $this->getP13n();
+		$this->recommendationsResponse = $p13n->choose($choiceRequest);
 	}
 	
 	public function getChoiceRecommendations($choiceId, $bxRecommendations, $returnFields = array()) {
@@ -354,9 +355,10 @@ class BxClient
 			$this->recommend($bxRecommendations, $returnFields);
 		}
 		
-		foreach ($recommendationsResponse->variants as $variantId => $variant) {
+		foreach ($this->recommendationsResponse->variants as $variantId => $variant) {
 			$name = $bxRecommendations[$variantId];
 			if($choiceId == $bxRecommendations[$variantId]->getChoiceId()) {
+				$itemValues = array();
 				foreach ($variant->searchResult->hits as $item) {
 					$result = array();
 					foreach ($item->values as $key => $value) {
@@ -366,16 +368,11 @@ class BxClient
 							$result[$key] = $value;
 						}
 					}
-					if (!isset($result['name']) && isset($result['title'])) {
-						$result['name'] = $result['title'];
-					}
+					$id = isset($item->values['id'][0]) ? $item->values['id'][0] : sizeof($itemValues);
 
-					$result['_rule'] = $name . ':' . $variant->scenarioId . ':' . $variant->variantId;
-					$result['_choice'] = $name;
-					$result['_scenario'] = $variant->scenarioId;
-					$result['_variant'] = $variant->variantId;
-					return $result;
+					$itemValues[$id] = $result;
 				}
+				return $itemValues;
 			}
 		}
 		return array();

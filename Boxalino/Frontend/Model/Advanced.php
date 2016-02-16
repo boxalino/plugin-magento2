@@ -89,7 +89,6 @@ class Advanced extends \Magento\CatalogSearch\Model\Advanced
         }
 
         $attributes = $this->getAttributes();
-        exit;
         $hasConditions = true;
         $allConditions = array();
 

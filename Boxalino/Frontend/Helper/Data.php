@@ -9,6 +9,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $customerSession;
     protected $config;
     protected $catalogProduct;
+    protected $factory;
     protected $catalogCategory;
     protected $catalogSearch;
     protected $controllerInterface;
@@ -22,6 +23,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\Category $catalogCategory,
         \Magento\Catalog\Model\ResourceModel\Product $catalogProduct,
+        \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $factory,
         \Magento\Framework\App\FrontControllerInterface $controllerInterface
     )
     {
@@ -31,6 +33,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->catalogCategory = $catalogCategory;
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
+        $this->factory = $factory;
         $this->catalogSearch = $catalogSearch;
         spl_autoload_register(array('\Boxalino\Frontend\Helper\Data', '__loadClass'), TRUE, TRUE);
         parent::__construct($context);
@@ -98,20 +101,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return @json_encode($items);
     }
 
-    public function isSalesTrackingEnabled()
+    public function isTrackerEnabled()
     {
-        $trackSales = $this->config->getValue('Boxalino_General/tracker/analytics',$this->scopeStore); //Mage::getStoreConfig('Boxalino_General/tracker/analytics');
-        return ($trackSales == 1);
-    }
-
-    public function isAnalyticsEnabled()
-    {
-        return (bool)$this->config->getValue('Boxalino_General/tracker/analytics', $this->scopeStore);
+        return (bool)$this->config->getValue('bxGeneral/tracker/enabled', $this->scopeStore);
     }
 
     public function reportSearch($term, $filters = null)
     {
-        if ($this->isAnalyticsEnabled()) {
+        if ($this->isTrackerEnabled()) {
             $logTerm = addslashes($term);
             $script = "_bxq.push(['trackSearch', '" . $logTerm . "', " . json_encode($filters) . "]);" . PHP_EOL;
             return $script;
@@ -122,7 +119,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function reportProductView($product)
     {
-        if ($this->isAnalyticsEnabled()) {
+        if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackProductView', '" . $product . "'])" . PHP_EOL;
             return $script;
         } else {
@@ -132,7 +129,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function reportAddToBasket($product, $count, $price, $currency)
     {
-        if ($this->isAnalyticsEnabled()) {
+        if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
             return $script;
         } else {
@@ -142,7 +139,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function reportCategoryView($categoryID)
     {
-        if ($this->isAnalyticsEnabled()) {
+        if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackCategoryView', '" . $categoryID . "'])" . PHP_EOL;
             return $script;
         } else {
@@ -152,7 +149,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function reportLogin($customerId)
     {
-        if ($this->isAnalyticsEnabled()) {
+        if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackLogin', '" . $customerId . "'])" . PHP_EOL;
             return $script;
         } else {
@@ -203,7 +200,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getFiltersValues($params)
     {
-        $filters = new stdClass();
+        $filters = new \stdClass();
         if (isset($params['cat'])) {
             $filters->filter_hc_category = '';
             $category = $this->catalogCategory->load($params['cat']);
@@ -230,15 +227,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             unset($params['price']);
         }
         if (isset($params)) {
+            $list = $this->factory->create();
+            $list->load();
             foreach ($params as $param => $values) {
-                $getAttribute = $this->catalogProduct->getResource()->getAttribute($param);
+                $getAttribute = null;
+                foreach($list as $cat) {
+                    if($param == $cat->getName()) {
+                        $getAttribute = $cat;
+                    }
+                }
                 if ($getAttribute !== false) {
                     $values = html_entity_decode($values);
                     preg_match_all('!\d+!', $values, $matches);
                     if (is_array($matches[0])) {
                         $attrValues = array();
+                        $paramName = 'filter_' . $param;
                         foreach ($matches[0] as $id) {
-                            $paramName = 'filter_' . $param;
                             $attribute = $attribute = $getAttribute->getSource()->getOptionText($id);
                             $attrValues[] = $attribute;
                         }

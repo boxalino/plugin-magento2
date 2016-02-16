@@ -3,7 +3,7 @@
     
 	<preference for="Magento\CatalogSearch\Model\Advanced" type="Boxalino\Frontend\Model\Advanced" />
     <preference for="Magento\CatalogSearch\Model\ResourceModel\Advanced\Collection" type="Boxalino\Frontend\Model\Resource\Advanced\Collection" />
-	
+
 	<preference for="Magento\CatalogSearch\Controller\Advanced\Result" type="Boxalino\Frontend\Controller\AdvancedController" />
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Frontend\Controller\IndexController" />
     <preference for="Magento\Search\Controller\Ajax\Suggest" type="Boxalino\Frontend\Controller\AjaxController" />
@@ -13,7 +13,6 @@
     <preference for="Magento\Catalog\Block\Product\ProductList\Toolbar" type="Boxalino\Frontend\Block\bxToolbar"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Related" type="Boxalino\Frontend\Block\Product\ProductList\Related"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Upsell" type="Boxalino\Frontend\Block\Product\ProductList\Upsell"/>
-    <preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>
-    <preference for="Magento\Framework\View\Element\AbstractBlock" type="Boxalino\Frontend\Block\BxAbstract"/>
-
+    <!--<preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>-->
+    <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Boxalino\Frontend\Block\Cart\Crosssell" />
 </config>

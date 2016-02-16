@@ -3,8 +3,9 @@ namespace Boxalino\Frontend\Block\Product\ProductList;
 use Magento\Catalog\Block\Product\ProductList\Upsell as  MageUpsell;
 class Upsell extends MageUpsell
 {
-
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     protected $p13nHelper;
+    protected $factory;
 
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
@@ -12,40 +13,58 @@ class Upsell extends MageUpsell
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\Module\Manager $moduleManager,
+        \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
         array $data = []
     )
     {
         $this->p13nHelper = $p13nHelper;
+        $this->factory = $factory;
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
     }
 
-//    protected function _prepareData()
-//    {
-//
-//        $product = $this->_coreRegistry->registry('product');
-//        /* @var $product \Magento\Catalog\Model\Product */
-////        $this->_itemCollection->addFieldToFilter('entity_id', )
-//        if ($this->moduleManager->isEnabled('Magento_Checkout')) {
-//            $this->_addProductAttributesAndPrices($this->_itemCollection);
-//        }
-//        $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
-//
-//        $this->_itemCollection->load();
-//
-//        /**
-//         * Updating collection with desired items
-//         */
+    protected function _prepareData()
+    {
+        $products = array($this->_coreRegistry->registry('product'));
+        $config = $this->_scopeConfig->getValue('bxRecommendations/upsell',$this->scopeStore);
+        $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'related';
+
+        if(!$config['enabled']){
+            return parent::_prepareData();
+        }
+
+        $recommendations = $this->p13nHelper->getRecommendation(
+            'product',
+            $choiceId,
+            $config['min'],
+            $config['max'],
+            $products
+        );
+
+        $entity_ids = array_keys($recommendations);
+
+        $this->_itemCollection = $this->factory->create()
+        ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*')
+        ->setPositionOrder();
+
+        $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
+
+        $this->_itemCollection->load();
+
+        /**
+         * Updating collection with desired items
+         */
 //        $this->_eventManager->dispatch(
 //            'catalog_product_upsell',
-//            ['product' => $product, 'collection' => $this->_itemCollection, 'limit' => null]
+//            ['product' => $products, 'collection' => $this->_itemCollection, 'limit' => $config['max']]
 //        );
-//
-//        foreach ($this->_itemCollection as $product) {
-//            $product->setDoNotUseCategoryId(true);
-//        }
-//
-//        return $this;
-//    }
+
+        foreach ($this->_itemCollection as $product) {
+            $product->setDoNotUseCategoryId(true);
+        }
+
+        return $this;
+    }
+
 
 }

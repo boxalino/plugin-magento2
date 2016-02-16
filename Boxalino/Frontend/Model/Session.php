@@ -4,6 +4,9 @@ class Session extends \Magento\Framework\Session\Storage
 {
     public function addScript($script)
     {
+
+        print_r($script);
+//        exit;
         if (!isset($this->_data['scipts']) || !is_array($this->_data['scipts'])) {
             $this->_data['scipts'] = array();
         }

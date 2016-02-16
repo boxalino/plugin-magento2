@@ -4,6 +4,7 @@ use Magento\Catalog\Block\Product\ProductList\Related as MageRelated;
 class Related extends MageRelated
 {
 
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
     protected $p13nHelper;
     protected $factory;
 
@@ -25,25 +26,30 @@ class Related extends MageRelated
 
     protected function _prepareData()
     {
-        $this->p13nHelper->search('pack');
-        $entity_ids = $this->p13nHelper->getEntitiesIds();
+        $products = array($this->_coreRegistry->registry('product'));
 
-        $product = $this->_coreRegistry->registry('product');
-//        $product->setRelatedProductIds($entity_ids);
 
-//        $this->factory->create()->
-        /* @var $product \Magento\Catalog\Model\Product */
+        $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
+
+        if(!$config['enabled']){
+            return parent::_prepareData();
+        }
+
+        $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'related';
+
+        $recommendations = $this->p13nHelper->getRecommendation(
+            'product',
+            $choiceId,
+            $config['min'],
+            $config['max'],
+            $products
+        );
+
+        $entity_ids = array_keys($recommendations);
+
         $this->_itemCollection = $this->factory->create()
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*')
             ->setPositionOrder();
-
-//        $this->_itemCollection = $product->getRelatedProductCollection()->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect(
-//            '*'
-//        )->setPositionOrder()->addStoreFilter();
-
-//        $this->_itemCollection = $product->getRelatedProductCollection()->addAttributeToSelect(
-//            '*'
-//        )->setPositionOrder()->addStoreFilter();
 
         if ($this->moduleManager->isEnabled('Magento_Checkout')) {
             $this->_addProductAttributesAndPrices($this->_itemCollection);
@@ -54,15 +60,8 @@ class Related extends MageRelated
 
         foreach ($this->_itemCollection as $product) {
             $product->setDoNotUseCategoryId(true);
-            $product->setHasOptions(true);
-            $product->setRequiredOptions(true);
-
         }
 
         return $this;
-    }
-    public function canItemsAddToCart()
-    {
-        return false;
     }
 }

@@ -126,6 +126,9 @@ class BxFacets
 	}
 	
 	protected function getFacetKeysValues($fieldName) {
+		if($fieldName == "") {
+			return array();
+		}
         $facetValues = array();
         $facetResponse = $this->getFacetResponse($fieldName);
 		$type = $this->getFacetType($fieldName);
@@ -174,6 +177,9 @@ class BxFacets
 	}
 	
 	public function isSelected($fieldName, $ignoreCategories=false) {
+		if($fieldName == "") {
+			return false;
+		}
 		if($this->isCategories($fieldName)) {
 			if($ignoreCategories) {
 				return false;
@@ -196,6 +202,9 @@ class BxFacets
 	}
 	
 	public function getSelectedValueLabel($fieldName, $index=0) {
+		if($fieldName == "") {
+			return "";
+		}
 		$svs = $this->getSelectedValues($fieldName);
 		if(isset($svs[$index])) {
 			return $this->getFacetValueLabel($fieldName, $svs[$index]);

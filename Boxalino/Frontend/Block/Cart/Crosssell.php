@@ -1,48 +1,29 @@
 <?php
 namespace Boxalino\Frontend\Block\Cart;
-use Magento\Checkout\Block\Cart\Crosssell;
-use Magento\Catalog\Model\ResourceModel\Product\Collection;
-use Magento\Catalog\Helper\Catalog;
-use Magento\Checkout\Model\ResourceModel\Cart;
-use Boxalino\Frontend\Helper\P13n\Boxalino_Frontend_Helper_P13n_Recommendation;
+use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
 
-class Boxalino_Frontend_Block_Cart_Crosssell extends Crosssell
+class Crosssell extends Mage_Crosssell
 {
 
-    /**
-     * Items quantity will be capped to this value
-     *
-     * @var int
-     */
-    protected $_maxItemCount = 4;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    protected $itemCollection;
-    protected $catalogHelper;
-    protected $cart;
-    protected $checkoutSession;
-    protected $scopeConfig;
+    protected $p13nHelper;
+
+    protected $factory;
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $productVisibility,
-        \Magento\Catalog\Model\Product\Link $productLinkFactory,
+        \Magento\Catalog\Model\Product\LinkFactory $productLinkFactory,
         \Magento\Quote\Model\Quote\Item\RelatedProducts $itemRelationsList,
         \Magento\CatalogInventory\Helper\Stock $stockHelper,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        Collection $collection,
-        Catalog $catalog,
-        Cart $cart,
-        \Boxalino\Frontend\Helper\P13n\Adapter $p13nAdapter,
-        array $data)
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
+        \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
+        array $data=[]
+    )
     {
-        $this->scopeConfig = $scopeConfig;
-        $this->itemCollection = $collection;
-        $this->catalogHelper = $catalog;
-        $this->cart = $cart;
-        $this->checkoutSession = $checkoutSession;
-        parent::__construct($context, $checkoutSession,
-            $productVisibility, $productLinkFactory,
-            $itemRelationsList, $stockHelper, $data);
+        $this->p13nHelper = $p13nHelper;
+        $this->factory = $factory;
+        parent::__construct($context, $checkoutSession, $productVisibility, $productLinkFactory, $itemRelationsList, $stockHelper, $data);
     }
 
     /**
@@ -52,65 +33,46 @@ class Boxalino_Frontend_Block_Cart_Crosssell extends Crosssell
      */
     public function getItems()
     {
-        $config = $this->scopeConfig;
 
-        if ($config->getValue('Boxalino_General/general/enabled', $this->scopeStore) == 0) {
+        $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
+
+        if(!$config['enabled']){
             return parent::getItems();
         }
-        $name = $config->getValue('Boxalino_Recommendation/cart/widget', $this->scopeStore);
-        #####################################################################################
 
-        $cartItems = array();
+        $products = array();
         foreach ($this->getQuote()->getAllItems() as $item) {
-            $productPrice = $item->getProductId()->getPrice();
-            $productId = $item->getProductId();
-
-            if ($item->getProductType() === 'configurable') {
-                continue;
+            $product = $item->getProduct();
+            if ($product) {
+                $products[] = $product;
             }
-
-            $cartItems[] = array('id' => $productId, 'price' => $productPrice);
-
         }
 
-        $_REQUEST['basketContent'] = json_encode($cartItems);
+        $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
 
-        $response = $this->p13nAdapter->getRecommendation('basket', $name);
-        $entityIds = array();
+        $recommendations = $this->p13nHelper->getRecommendation(
+            'basket',
+            $choiceId,
+            $config['min'],
+            $config['max'],
+            $products
+        );
 
-        if ($response === null) {
-            return null;
-        }
+        $entity_ids = array_keys($recommendations);
 
-        foreach ($response as $item) {
-            $entityIds[] = $item[$config->getValue('bxGeneral/advanced/entity_id', $this->scopeStore)];
-        }
-
-        if (empty($entityIds)) {
+        if (empty($entity_ids)) {
             return parent::getItems();
         }
 
-        #########################################################################################
+        $items = $this->factory->create()
+            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*')
+            ->setPositionOrder();
 
-        $this->itemCollection->addFieldToFilter('entity_id', $entityIds)
-            ->addAttributeToSelect('*');
+        $items->load();
 
-        if ($this->catalogHelper->isModuleOutputEnabled('Mage_Checkout')) { //Mage::helper('catalog')->isModuleEnabled('Mage_Checkout')
-            $this->cart->addExcludeProductFilter($this->itemCollection,$this->checkoutSession->getQuoteId());
-//            Mage::getResourceSingleton('checkout/cart')->addExcludeProductFilter($itemCollection,
-//                Mage::getSingleton('checkout/session')->getQuoteId()
-
-            $this->_addProductAttributesAndPrices($this->itemCollection);
-        }
-        Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($this->itemCollection); //?
-
-        $this->itemCollection->load();
-        $items = array();
-        foreach ($this->itemCollection as $product) {
+        foreach ($items as $product) {
             $product->setDoNotUseCategoryId(true);
-            $items[] = $product;
         }
-
 
         return $items;
     }

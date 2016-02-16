@@ -513,32 +513,46 @@ class Adapter
 		return self::$bxClient->printData();
     }*/
 
-    public function getRecommendation($widgetType, $widgetName, $amount = 3)
+    public function getRecommendation($widgetType, $widgetName, $minAmount = 3, $amount = 3, $products = array())
     {
 		$recommendations = $this->scopeConfig->getValue('bxRecommendations',$this->scopeStore);
 		$recChoices = array();
 		if ($widgetType == '') {
 			
-			$recChoice = new \BxRecommendation($widgetName, 0, $amount);
-			if (!empty($_REQUEST['productId'])) {
-				$recChoice->setProductContext($this->getEntityIdFieldName(), $_REQUEST['productId']);
+			$recChoice = new \BxRecommendation(self::$bxClient->getAccount(), $widgetName, $minAmount, $amount);
+			if (isset($products[0])) {
+				$product = $products[0];
+				$recChoice->setProductContext($this->getEntityIdFieldName(), $product->getId());
 			}
 			$recChoices[] = $recChoice;
 		} else {
-			foreach ($recommendations as $recommendation) {
+			foreach ($recommendations as $key => $recommendation) {
+
+				$type = 'others';
+				if($key == 'cart') {
+					$type = 'basket';
+				}
+				if($key == 'related' || $key == 'upsell') {
+					$type = 'product';
+				}
+
 				if (
 					(!empty($recommendation['min']) || $recommendation['min'] >= 0) &&
 					(!empty($recommendation['max']) || $recommendation['max'] >= 0) &&
-					!empty($recommendation['scenario']) &&
 					($recommendation['min'] <= $recommendation['max']) &&
-					$recommendation['status'] == true
+					(!isset($recommendation['enabled']) || $recommendation['enabled'] == 1)
 				) {
-					if ($recommendation['scenario'] == $widgetType) {
-						$recChoice = new \BxRecommendation($recommendation['widget'], $recommendation['min'], $recommendation['max']);
-						if ($widgetType === 'basket' && $_REQUEST['basketContent']) {
-							$recChoice->setBasketContext($this->getEntityIdFieldName(), json_decode($_REQUEST['basketContent'], true));
-						} elseif ($widgetType === 'product' && !empty($_REQUEST['productId'])) {
-							$recChoice->setProductContext($this->getEntityIdFieldName(), $_REQUEST['productId']);
+					if ($type == $widgetType) {
+						$recChoice = new \BxRecommendation(self::$bxClient->getAccount(), $recommendation['widget'], $recommendation['min'], $recommendation['max']);
+						if ($widgetType === 'basket') {
+							$basketProducts = array();
+							foreach($products as $product) {
+								$basketProducts[] = array('id'=>$product->getid(), 'price'=>$product->getPrice());
+							}
+							$recChoice->setBasketContext($this->getEntityIdFieldName(), $basketProducts);
+						} elseif ($widgetType === 'product' && isset($products[0])) {
+							$product = $products[0];
+							$recChoice->setProductContext($this->getEntityIdFieldName(), $product->getId());
 						}
 						$recChoices[] = $recChoice;
 					}
