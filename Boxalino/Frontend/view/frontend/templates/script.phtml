@@ -1,0 +1,32 @@
+<?php
+/**
+ * Boxalino Script Block
+ */
+
+$_helper = $this->helperData;
+
+// get account
+$account = $this->getAccount();
+echo "tatsuya";
+?>
+<h1>Tatpun</h1>
+<script>
+    var _bxq = _bxq || []
+    _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
+    <?php echo $this->getScripts(); ?>
+
+    <?php if ($_helper->isAnalyticsEnabled()): ?>
+    _bxq.push(['trackPageView']);
+    <?php endif; ?>
+
+    <?php if ($this->isSearch()): ?>
+    <?php echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
+    <?php endif; ?>
+
+    (function () {
+        var s = document.createElement('script');
+        s.async = 1;
+        s.src = '//cdn.bx-cloud.com/frontend/rc/js/ba.min.js';
+        document.getElementsByTagName('head')[0].appendChild(s);
+    })();
+</script>

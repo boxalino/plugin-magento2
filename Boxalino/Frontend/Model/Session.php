@@ -1,13 +1,7 @@
 <?php
-
-class Boxalino_Frontend_Model_Session extends Mage_Core_Model_Session_Abstract
+namespace Boxalino\Frontend\Model;
+class Session extends \Magento\Framework\Session\Storage
 {
-
-    public function __construct()
-    {
-        $this->init('checkout');
-    }
-
     public function addScript($script)
     {
         if (!isset($this->_data['scipts']) || !is_array($this->_data['scipts'])) {

@@ -27,14 +27,14 @@ class BxListProducts extends ListProduct
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         CategoryRepositoryInterface $categoryRepository,
+        \Boxalino\Frontend\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         CollectionFactory $collectionFactory,
         \Magento\Search\Model\QueryFactory $queryFactory,
         SessionManager $session,
         array $data = [])
     {
-        $om = \Magento\Framework\App\ObjectManager::getInstance();
-        $p13nHelper = $om->get('Boxalino\Frontend\Helper\P13n\Adapter');
+        $this->p13nHelper = $p13nHelper;
         if($p13nHelper->areThereSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
         }
