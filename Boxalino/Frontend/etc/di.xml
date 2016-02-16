@@ -11,4 +11,9 @@
     <preference for="Magento\Catalog\Block\Product\ListProduct" type="Boxalino\Frontend\Block\Product\BxListProducts" />
     <preference for="Magento\CatalogSearch\Block\Result" type="Boxalino\Frontend\Block\Result" />
     <preference for="Magento\Catalog\Block\Product\ProductList\Toolbar" type="Boxalino\Frontend\Block\bxToolbar"/>
+    <preference for="Magento\Catalog\Block\Product\ProductList\Related" type="Boxalino\Frontend\Block\Product\ProductList\Related"/>
+    <preference for="Magento\Catalog\Block\Product\ProductList\Upsell" type="Boxalino\Frontend\Block\Product\ProductList\Upsell"/>
+    <preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>
+    <preference for="Magento\Framework\View\Element\AbstractBlock" type="Boxalino\Frontend\Block\BxAbstract"/>
+
 </config>
