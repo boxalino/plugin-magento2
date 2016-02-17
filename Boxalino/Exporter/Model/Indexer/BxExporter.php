@@ -1184,6 +1184,39 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     }
 					$this->logger->info('bxLog: Products - get EE URL key  - after for account ' . $account . ' for languge ' . $lang);
                 }
+                $select = null;
+
+                $select = $db->select()
+                    ->from(
+                        array('pl'=> $this->rs->getTableName('catalog_product_link')),
+                        array(
+                            'link_id',
+                            'product_id',
+                            'linked_product_id',
+                            'link_type_id'
+                        )
+                    )
+					->from(
+                        array('lt' => $this->rs->getTableName('catalog_product_link_type')),
+                        array(
+                            'link_type_id',
+                            'code'
+                        )
+                    )
+                    ->where('lt.link_type_id = pl.link_type_id')
+                    ->where('product_id IN(?)', $ids);
+                $linkCodes = array();
+				foreach ($db->fetchAll($select) as $r) {
+					$linkCodes[$r['code']] = 'linked_products_' . $r['code'];
+				    if(!isset($products[$r['product_id']]['linked_products_' . $r['code']])) {
+						$products[$r['product_id']]['linked_products_' . $r['code']] = $r['linked_product_id'];
+					} else {
+						$products[$r['product_id']]['linked_products_' . $r['code']] .= ',' . $r['linked_product_id'];
+					}
+                }
+				foreach($linkCodes as $code => $codeFieldName) {
+					$attrs[] = $codeFieldName;
+				}
                 $ids = null;
 
                 foreach ($products as $product) {
