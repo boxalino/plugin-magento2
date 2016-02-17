@@ -9,6 +9,30 @@ $account = $this->getAccount();
 
 ?>
 <script>
+    require([
+        'jquery',
+        'mage/mage',
+        'Magento_Catalog/product/view/validation',
+        'Magento_Catalog/js/catalog-add-to-cart'
+    ], function ($) {
+        'use strict';
+
+        $('#product_addtocart_form').mage('validation', {
+            radioCheckboxClosest: '.nested',
+            submitHandler: function (form) {
+                _bxq.push(['trackAddToBasket', $(form).find('input[name="product"]').val(), $(form).find('input[name="qty"]').val(),"", ""]);
+
+                var widget = $(form).catalogAddToCart({
+                    bindSubmit: false
+                });
+
+                widget.catalogAddToCart('submitForm', $(form));
+
+                return false;
+            }
+        });
+    });
+
     var _bxq = _bxq || []
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>

@@ -52,7 +52,6 @@ class BxListProducts extends ListProduct
 
         }else{
             $entity_ids = $this->p13nHelper->getEntitiesIds();
-
         }
 
         // Added check if there are any entity ids, otherwise force empty result

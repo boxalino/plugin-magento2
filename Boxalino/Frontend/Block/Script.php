@@ -4,30 +4,32 @@ namespace Boxalino\Frontend\Block;
 class Script extends \Magento\Framework\View\Element\Template
 {
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    protected $bxSession;
     protected $helperData;
+    protected $customerSession;
+
+    public static $SCRIPT_SESSION = null;
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
+        \Magento\Customer\Model\Session $customerSession,
         \Boxalino\Frontend\Helper\Data $helperData,
-        \Boxalino\Frontend\Model\Session $bxSession,
         array $data = []
         )
     {
+        $this->customerSession = $customerSession;
         $this->helperData = $helperData;
-        $this->bxSession = $bxSession;
         parent::__construct($context, $data);
     }
 
     public function getScripts()
     {
         $html = '';
-        $scripts = $this->bxSession->getScripts();
-
-        foreach ($scripts as $script) {
-            $html .= $script;
+        foreach($this->helperData->getScripts() as $script) {
+            $html.= $script;
         }
-        $this->bxSession->clearScripts();
+        if($this->customerSession->getCustomerId()) {
+            $html .= $this->helperData->reportLogin($this->customerSession->getCustomerId());
+        }
 
         return $html;
     }

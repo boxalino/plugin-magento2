@@ -131,6 +131,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
+            print_r($script);
             return $script;
         } else {
             return '';
@@ -171,10 +172,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function reportPurchase($products, $orderId, $price, $currency)
     {
-        $trackSales = $this->config->getValue('Boxalino_General/tracker/track_sales',$this->scopeStore);
-
         $productsJson = json_encode($products);
-        if ($trackSales == 1) {
+        if ($this->isTrackerEnabled()) {
             $script = "_bxq.push([" . PHP_EOL;
             $script .= "'trackPurchase'," . PHP_EOL;
             $script .= $price . "," . PHP_EOL;
@@ -186,6 +185,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         } else {
             return '';
         }
+    }
+
+    protected static $SCRIPTS = array();
+    public function addScript($script) {
+        self::$SCRIPTS[] = $script;
+    }
+
+    public function getScripts() {
+        return self::$SCRIPTS;
     }
 
     public function getLoggedInUserId()

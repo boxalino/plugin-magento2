@@ -12,23 +12,27 @@ class Observer implements ObserverInterface
 {
     protected $messageManager;
     protected $bxHelperData;
-    protected $bxSession;
     protected $storeManager;
     protected $order;
-
+    protected $logger;
     public function __construct(
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Boxalino\Frontend\Helper\Data $bxHelperData,
-        \Boxalino\Frontend\Model\Session $bxSession,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Framework\Logger\Monolog $logger,
         \Magento\Sales\Model\Order $order
     )
     {
         $this->order = $order;
         $this->storeManager = $storeManager;
-        $this->bxSession = $bxSession;
         $this->bxHelperData = $bxHelperData;
         $this->messageManager = $messageManager;
+        $this->logger = $logger;
+    }
+
+    public function addScript($script)
+    {
+        $this->bxHelperData->addScript($script);
     }
 
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -36,49 +40,50 @@ class Observer implements ObserverInterface
         $event = $observer->getEvent();
         switch($event->getName()){
             case "checkout_cart_add_product_complete": //onProductAddedToCart
+                $block = "product added";
                 $this->onProductAddedToCart($event);
                 break;
             case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
+                $block = "order success";
                 $this->onOrderSuccessPageView($event);
                 break;
-            case "catalog_controller_product_view": //onProductPageView DONE
+            case "catalog_controller_product_view": //onProductPageView
+                $block = "product page view";
                 $this->onProductPageView($event);
                 break;
-            case "catalog_controller_category_init_after": //onCategoryPageView DONE
+            case "catalog_controller_category_init_after": //onCategoryPageView
+                $block = "category page view";
                 $this->onCategoryPageView($event);
                 break;
-            case "customer_login": //onLogin DONE
+            case "customer_login": //onLogin
+                $block = "customer login";
                 $this->onLogin($event);
                 break;
             default:
+                $block = "nothing";
                 break;
         }
+        $this->messageManager->addNotice(__('%1!', $block));
     }
 
     public function onProductAddedToCart($event)
     {
         try {
+            $product = $event->getProduct()->getId();
+            $count = $event->getProduct()->getQty();
+            $price = $event->getProduct()->getSpecialPrice() > 0 ? $event->getProduct()->getSpecialPrice() : $event->getProduct()->getPrice();
+            $currency = $this->storeManager->getStore()->getCurrentCurrencyCode();
 
-                $product = $event->getProduct()->getId();
-                $count = $event->getProduct()->getQty();
-                $price = $event->getProduct()->getSpecialPrice() > 0 ? $event->getProduct()->getSpecialPrice() : $event->getProduct()->getPrice();
-                $currency = $this->storeManager->getStore()->getCurrentCurrencyCode();
-
-            $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
-
-            $this->bxSession->addScript($script);
+            $script = $this->bxHelperData->reportAddToBasket($product,$count,$price,$currency);
+            $this->addScript($script);
         } catch (\Exception $e) {
-//            if (Mage::helper('Boxalino_Frontend')->isDebugEnabled()) {
-//                echo($e);
-//                exit;
-//            }
         }
     }
 
     public function onOrderSuccessPageView($event)
     {
         try {
-            $orders = $this->order->getItemsCollection()
+            $orders = $this->order->getCollection()
                 ->setOrder('entity_id', 'DESC')
                 ->setPageSize(1)
                 ->setCurPage(1);
@@ -86,25 +91,21 @@ class Observer implements ObserverInterface
             $orderData = $order->getData();
             $transactionId = $orderData['entity_id'];
             $products = array();
-            $fullPrice = 0;
-            foreach ($order->getItems() as $item) {
+            foreach ($order->getAllItems() as $item) {
                 if ($item->getPrice() > 0) {
                     $products[] = array(
                         'product' => $item->getProduct()->getId(),
                         'quantity' => $item->getData('qty_ordered'),
                         'price' => $item->getPrice()
                     );
-                    $fullPrice += $item->getPrice() * $item->getData('qty_ordered');
                 }
             }
-            $script = $this->bxHelperData->reportPurchase($products, $transactionId, $fullPrice, $this->storeManager->getStore()->getCurrentCurrencyCode());
+            $fullPrice = $orderData['grand_total'];
+            $currency = $orderData['base_currency_code'];
+            $script = $this->bxHelperData->reportPurchase($products, $transactionId, $fullPrice, $currency);
 
-            $this->bxSession->addScript($script);
+            $this->addScript($script);
         } catch (\Exception $e) {
-//            if (Mage::helper('Boxalino_Frontend')->isDebugEnabled()) {
-//                echo($e);
-//                exit;
-//            }
         }
     }
 
@@ -112,12 +113,9 @@ class Observer implements ObserverInterface
     {
         try {
             $script = $this->bxHelperData->reportProductView($event->getProduct()->getId());
-            $this->bxSession->addScript($script);
+            $this->addScript($script);
+
         } catch (\Exception $e) {
-//            if (Mage::helper('Boxalino_Frontend')->isDebugEnabled()) {
-//                echo($e);
-//                exit;
-//            }
         }
     }
 
@@ -126,12 +124,8 @@ class Observer implements ObserverInterface
 
         try {
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());
-            $this->bxSession->addScript($script);
+            $this->addScript($script);
         } catch (\Exception $e) {
-//            if (Mage::helper('Boxalino_Frontend')->isDebugEnabled()) {
-//                echo($e);
-//                exit;
-//            }
         }
     }
 
@@ -139,12 +133,8 @@ class Observer implements ObserverInterface
     {
         try {
             $script = $this->bxHelperData->reportLogin($event->getCustomer()->getId());
-            $this->bxSession->addScript($script);
+            $this->addScript($script);
         } catch (\Exception $e) {
-//            if (Mage::helper('Boxalino_Frontend')->isDebugEnabled()) {
-//                echo($e);
-//                exit;
-//            }
         }
     }
 }
