@@ -40,30 +40,23 @@ class Observer implements ObserverInterface
         $event = $observer->getEvent();
         switch($event->getName()){
             case "checkout_cart_add_product_complete": //onProductAddedToCart
-                $block = "product added";
                 $this->onProductAddedToCart($event);
                 break;
             case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
-                $block = "order success";
                 $this->onOrderSuccessPageView($event);
                 break;
             case "catalog_controller_product_view": //onProductPageView
-                $block = "product page view";
                 $this->onProductPageView($event);
                 break;
             case "catalog_controller_category_init_after": //onCategoryPageView
-                $block = "category page view";
                 $this->onCategoryPageView($event);
                 break;
             case "customer_login": //onLogin
-                $block = "customer login";
                 $this->onLogin($event);
                 break;
             default:
-                $block = "nothing";
                 break;
         }
-        $this->messageManager->addNotice(__('%1!', $block));
     }
 
     public function onProductAddedToCart($event)
