@@ -6,9 +6,9 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <virtualType name="Magento\LayeredNavigation\Block\Navigation\Search" type="Magento\LayeredNavigation\Block\Navigation">
+    <virtualType name="Magento\LayeredNavigation\Block\Navigation\SearchTop" type="Magento\LayeredNavigation\Block\Navigation">
         <arguments>
-            <argument name="filterList" xsi:type="object">Boxalino\Frontend\Model\FilterList</argument>
+            <argument name="filterList" xsi:type="object">searchFilterListTop</argument>
         </arguments>
     </virtualType>
 </config>

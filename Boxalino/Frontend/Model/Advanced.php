@@ -60,27 +60,6 @@ class Advanced extends \Magento\CatalogSearch\Model\Advanced
         $this->scopeConfig = $scopeConfig;
         parent::__construct($context, $registry, $attributeCollectionFactory, $catalogProductVisibility, $catalogConfig, $currencyFactory, $productFactory, $storeManager, $productCollectionFactory, $advancedFactory, $data);
     }
-//    public function __construct(
-//        Context $context,
-//        Registry $registry,
-//        AttributeCollectionFactory $attributeCollectionFactory,
-//        Visibility $catalogProductVisibility,
-//        Config $catalogConfig,
-//        CurrencyFactory $currencyFactory,
-//        ProductFactory $productFactory,
-//        StoreManagerInterface $storeManager,
-//        ProductCollectionFactory $productCollectionFactory,
-//        AdvancedFactory $advancedFactory,
-//        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-//        array $data
-//    )
-//    {
-//        $this->scopeConfig = $scopeConfig;
-//        parent::__construct($context, $registry, $attributeCollectionFactory,
-//            $catalogProductVisibility, $catalogConfig, $currencyFactory,
-//            $productFactory, $storeManager, $productCollectionFactory, $advancedFactory, $data);
-//    }
-
 
     public function addFilters($values, $ids = null)
     {
@@ -99,6 +78,7 @@ class Advanced extends \Magento\CatalogSearch\Model\Advanced
             }
 
             $value = $values[$attribute->getAttributeCode()];
+
             if (!is_array($value)) {
                 $value = trim($value);
             }
@@ -137,11 +117,8 @@ class Advanced extends \Magento\CatalogSearch\Model\Advanced
         } else if (!$hasConditions) {
             throw new LocalizedException(__('Please specify at least one search term.'));
         }
-
         return $this;
     }
-
-
 
     /**
      * Add data about search criteria to object state
@@ -206,65 +183,4 @@ class Advanced extends \Magento\CatalogSearch\Model\Advanced
         $this->_searchCriterias[] = array('name' => $name, 'value' => $value);
         return $this;
     }
-
-    /**
-     * Prepare search condition for attribute
-     *
-     * @deprecated after 1.4.1.0 - use Mage_CatalogSearch_Model_Resource_Advanced->_prepareCondition()
-     *
-     * @param Mage_Catalog_Model_Resource_Eav_Attribute $attribute
-     * @param string|array $value
-     * @return mixed
-     */
-    protected function _prepareCondition($attribute, $value)
-    {
-        return $this->_getResource()->prepareCondition($attribute, $value, $this->getProductCollection());
-    }
-
-    /**
-     * Retrieve resource instance wrapper
-     *
-     * @return Mage_CatalogSearch_Model_Resource_Advanced
-     */
-//    protected function _getResource()
-//    {
-//        $resourceName = $this->_engine->getResourceName();
-//        if ($resourceName) {
-//            $this->_resourceName = $resourceName;
-//        }
-//        return parent::_getResource();
-//    }
-
-    /**
-     * Retrieve advanced search product collection
-     *
-     * @return Mage_CatalogSearch_Model_Resource_Advanced_Collection
-     */
-    public function getProductCollection()
-    {
-        return parent::getProductCollection();
-    }
-
-    /**
-     * Prepare product collection
-     *
-     * @param Mage_CatalogSearch_Model_Resource_Advanced_Collection $collection
-     * @return Mage_Catalog_Model_Layer
-     */
-    public function prepareProductCollection($collection)
-    {
-        return parent::prepareProductCollection($collection);
-    }
-
-    /**
-     * Returns prepared search criterias in text
-     *
-     * @return array
-     */
-    public function getSearchCriterias()
-    {
-        return $this->_searchCriterias;
-    }
-
-
 }

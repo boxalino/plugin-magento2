@@ -182,7 +182,7 @@
                 <label>General</label>
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" default="1">
-                    <label>Search enabled</label>
+                    <label>Enable search</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search active?</comment>
                 </field>

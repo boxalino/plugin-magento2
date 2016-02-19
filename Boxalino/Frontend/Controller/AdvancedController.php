@@ -39,28 +39,27 @@ class AdvancedController extends \Magento\CatalogSearch\Controller\Advanced\Resu
 
     public function execute()
     {
-        if ($this->scopeConfig->getValue('Boxalino_General/general/enabled') == 0) {
+        if (!$this->bxHelperData->isSearchEnabled()) {
             parent::execute();
         }
-//            $this->getResponse()->setRedirect($this->_redirect->getRedirectUrl());
+
         $this->_view->loadLayout();
         $params = $this->getRequest()->getParams();
 
         $tmp = $this->_catalogSearchAdvanced;
-//
+
         foreach ($tmp->getAttributes() as $at) {
             $queryAttribute[$at->getStoreLabel()] = $at->getAttributeCode();
         }
-//
+
         $criteria = $tmp->getSearchCriterias();
         //unset($tmp);
         $lang = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 
         //setUp Boxalino
         $storeConfig = $this->scopeConfig->getValue('Boxalino_General/general',$this->scopeStore);
-        $generalConfig = $this->scopeConfig->getValue('Boxalino_General/search',$this->scopeStore);
 
-        $limit = $generalConfig['advanced_search_limit'] == 0 ? 1000 : $generalConfig['advanced_search_limit'];
+        $limit = 1000; //$generalConfig['advanced_search_limit'] == 0 ? 1000 : $generalConfig['advanced_search_limit'];
 
         //add filters
 

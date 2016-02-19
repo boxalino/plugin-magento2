@@ -12,6 +12,7 @@ use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Boxalino\Frontend\Helper\Data;
 use Magento\Framework\Session\SessionManager;
+use Magento\Catalog\Model\Product\ProductList\Toolbar;
 class BxListProducts extends ListProduct
 {
     public static $number = 0;
@@ -22,6 +23,7 @@ class BxListProducts extends ListProduct
     protected $queries;
     protected $session;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
@@ -47,6 +49,7 @@ class BxListProducts extends ListProduct
 
     public function _getProductCollection()
     {
+
         if($this->p13nHelper->areThereSubPhrases()) {
             $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
 
@@ -62,8 +65,47 @@ class BxListProducts extends ListProduct
         $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
         $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
+
         $list->load();
-        //Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($this->_productCollection);
+
         return $list;
+    }
+
+    protected function _beforeToHtml()
+    {
+        $toolbar = $this->getToolbarBlock();
+
+        // called prepare sortable parameters
+        $collection = $this->_getProductCollection();
+
+        // use sortable parameters
+        $orders = $this->getAvailableOrders();
+        if ($orders) {
+            $toolbar->setAvailableOrders($orders);
+        }
+
+        $toolbar->setDefaultOrder('relevance');
+
+        $dir = $this->getDefaultDirection();
+        if ($dir) {
+            $toolbar->setDefaultDirection($dir);
+        }
+        $modes = $this->getModes();
+        if ($modes) {
+            $toolbar->setModes($modes);
+        }
+
+        // set collection to toolbar and apply sort
+        $toolbar->setCollection($collection);
+
+        $this->setChild('toolbar', $toolbar);
+        $this->_eventManager->dispatch(
+            'catalog_block_product_list_collection',
+            ['collection' => $this->_getProductCollection()]
+        );
+
+        $this->_getProductCollection()->load();
+
+        return parent::_beforeToHtml();
     }
 }

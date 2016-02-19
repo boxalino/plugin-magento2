@@ -2,7 +2,7 @@
 
 namespace Boxalino\Frontend\Model;
 
-class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
+class FilterListTop extends \Magento\Catalog\Model\Layer\FilterList {
 
     private $p13nHelper;
     public function __construct(
@@ -20,17 +20,15 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     {
         $filters = array();
         $facets = $this->p13nHelper->getFacets();
-        foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
-            $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
-            $filter = $this->objectManager->create(
-                "Boxalino\Frontend\Model\Attribute",
-                ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
-            );
-
-            $filter->setFacets($facets);
-            $filter->setFieldName($fieldName);
-            $filters[] = $filter;
-        }
+        $fieldName = $this->p13nHelper->getTopFacetFieldName();
+        $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
+        $filter = $this->objectManager->create(
+            "Boxalino\Frontend\Model\Attribute",
+            ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
+        );
+        $filter->setFacets($facets);
+        $filter->setFieldName($fieldName);
+        $filters[] = $filter;
         return $filters;
     }
 }

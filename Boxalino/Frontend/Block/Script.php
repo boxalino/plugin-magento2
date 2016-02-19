@@ -4,7 +4,7 @@ namespace Boxalino\Frontend\Block;
 class Script extends \Magento\Framework\View\Element\Template
 {
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    protected $helperData;
+    protected $bxHelperData;
     protected $customerSession;
 
     public static $SCRIPT_SESSION = null;
@@ -12,28 +12,27 @@ class Script extends \Magento\Framework\View\Element\Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Customer\Model\Session $customerSession,
-        \Boxalino\Frontend\Helper\Data $helperData,
+        \Boxalino\Frontend\Helper\Data $bxHelperData,
         array $data = []
         )
     {
         $this->customerSession = $customerSession;
-        $this->helperData = $helperData;
+        $this->bxHelperData = $bxHelperData;
         parent::__construct($context, $data);
     }
 
     public function getScripts()
     {
         $html = '';
-        foreach($this->helperData->getScripts() as $script) {
+        foreach($this->bxHelperData->getScripts() as $script) {
             $html.= $script;
         }
         if($this->customerSession->getCustomerId()) {
-            $html .= $this->helperData->reportLogin($this->customerSession->getCustomerId());
+            $html .= $this->bxHelperData->reportLogin($this->customerSession->getCustomerId());
         }
 
         return $html;
     }
-
     public function isSearch()
     {
         $current = $this->getRequest()->getRouteName() . '/' . $this->getRequest()->getControllerName();
@@ -45,7 +44,7 @@ class Script extends \Magento\Framework\View\Element\Template
     }
 
     public function getBxHelperData(){
-        return $this->helperData;
+        return $this->bxHelperData;
     }
 }
 

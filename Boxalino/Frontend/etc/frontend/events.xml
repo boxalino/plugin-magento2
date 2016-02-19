@@ -12,7 +12,4 @@
     <event name="catalog_controller_category_init_after">
         <observer name="category_init_after_observer" instance="Boxalino\Frontend\Model\Observer"/>
     </event>
-    <event name="customer_login">
-        <observer name="customer_login_observer" instance="Boxalino\Frontend\Model\Observer"/>
-    </event>
 </config>

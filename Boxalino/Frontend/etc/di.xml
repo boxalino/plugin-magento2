@@ -1,18 +1,29 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    
-	<preference for="Magento\CatalogSearch\Model\Advanced" type="Boxalino\Frontend\Model\Advanced" />
+    <preference for="Magento\CatalogSearch\Model\Advanced" type="Boxalino\Frontend\Model\Advanced" />
     <preference for="Magento\CatalogSearch\Model\ResourceModel\Advanced\Collection" type="Boxalino\Frontend\Model\Resource\Advanced\Collection" />
 
 	<preference for="Magento\CatalogSearch\Controller\Advanced\Result" type="Boxalino\Frontend\Controller\AdvancedController" />
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Frontend\Controller\IndexController" />
     <preference for="Magento\Search\Controller\Ajax\Suggest" type="Boxalino\Frontend\Controller\AjaxController" />
-    
+
     <preference for="Magento\Catalog\Block\Product\ListProduct" type="Boxalino\Frontend\Block\Product\BxListProducts" />
     <preference for="Magento\CatalogSearch\Block\Result" type="Boxalino\Frontend\Block\Result" />
     <preference for="Magento\Catalog\Block\Product\ProductList\Toolbar" type="Boxalino\Frontend\Block\bxToolbar"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Related" type="Boxalino\Frontend\Block\Product\ProductList\Related"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Upsell" type="Boxalino\Frontend\Block\Product\ProductList\Upsell"/>
-    <!--<preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>-->
+    <preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Boxalino\Frontend\Block\Cart\Crosssell" />
+
+    <virtualType name="searchFilterListTop" type="Magento\Catalog\Model\Layer\FilterList">
+        <arguments>
+            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Search\FilterableAttributeList</argument>
+            <argument name="filters" xsi:type="array">
+                <item name="attribute" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Attribute</item>
+                <item name="price" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Price</item>
+                <item name="decimal" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Decimal</item>
+                <item name="category" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Category</item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>

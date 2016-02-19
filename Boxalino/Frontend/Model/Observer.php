@@ -37,26 +37,24 @@ class Observer implements ObserverInterface
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $event = $observer->getEvent();
-        switch($event->getName()){
-            case "checkout_cart_add_product_complete": //onProductAddedToCart
-                $this->onProductAddedToCart($event);
-                break;
-            case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
-                $this->onOrderSuccessPageView($event);
-                break;
-            case "catalog_controller_product_view": //onProductPageView
-                $this->onProductPageView($event);
-                break;
-            case "catalog_controller_category_init_after": //onCategoryPageView
-                $this->onCategoryPageView($event);
-                break;
-            case "customer_login": //onLogin
-                $this->onLogin($event);
-                break;
-            default:
-                break;
-        }
+            $event = $observer->getEvent();
+            switch($event->getName()){
+                case "checkout_cart_add_product_complete": //onProductAddedToCart
+                    $this->onProductAddedToCart($event);
+                    break;
+                case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
+                    $this->onOrderSuccessPageView($event);
+                    break;
+                case "catalog_controller_product_view": //onProductPageView
+                    $this->onProductPageView($event);
+                    break;
+                case "catalog_controller_category_init_after": //onCategoryPageView
+                    $this->onCategoryPageView($event);
+                    break;
+                default:
+                    break;
+            }
+
     }
 
     public function onProductAddedToCart($event)
@@ -117,15 +115,6 @@ class Observer implements ObserverInterface
 
         try {
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());
-            $this->addScript($script);
-        } catch (\Exception $e) {
-        }
-    }
-
-    public function onLogin($event)
-    {
-        try {
-            $script = $this->bxHelperData->reportLogin($event->getCustomer()->getId());
             $this->addScript($script);
         } catch (\Exception $e) {
         }
