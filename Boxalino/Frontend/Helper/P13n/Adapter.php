@@ -170,7 +170,7 @@ class Adapter
 		return false;
 	}
 	
-	public function autocomplete($queryText) {
+	public function autocomplete($queryText, $autocomplete) {
 		$order = array();
 		$hash = null;
 		
@@ -221,8 +221,6 @@ class Adapter
 			foreach($list as $product) {
 				$products[$product->getEntityid()] = $product;
 			}
-			
-			$autocomplete = new \Boxalino\Frontend\Helper\Autocomplete();
 			
 			$list = $this->getProductsFromIds($globalProducts, $products);
 			$globalProductHtml = $autocomplete->getListHtml($list);
@@ -310,7 +308,8 @@ class Adapter
 		
 		$field = '';
 		$dir = '';
-		$order = $this->request->getParam('order');
+		$order = $this->request->getParam('product_list_order');
+
 		if(isset($order)){
 			if($order == 'name'){
 				$field = 'title';
@@ -318,11 +317,11 @@ class Adapter
 				$field = 'discountedPrice';
 			}
 		}
-		$dirOrder = $this->request->getParam('dir');
+		$dirOrder = $this->request->getParam('product_list_dir');
 		if($dirOrder){
 			$dir = $dirOrder == 'asc' ? false : true;
 		} else{
-			$dir = false;
+			$dir = true;
 		}
 
 		$categoryId = $this->request->getParam($this->getUrlParameterPrefix() . 'category_id');
@@ -344,7 +343,6 @@ class Adapter
 		$pageOffset = abs(((int) $this->request->getParam('p', 1)) - 1);
 
 		$query = $this->queryFactory->get();
-		
 		$this->search($query->getQueryText(), $pageOffset, $overWriteLimit, new \BxSortFields($field, $dir));
             
 	}
@@ -542,15 +540,20 @@ class Adapter
 					($recommendation['min'] <= $recommendation['max']) &&
 					(!isset($recommendation['enabled']) || $recommendation['enabled'] == 1)
 				) {
+
 					if ($type == $widgetType) {
+
 						$recChoice = new \BxRecommendation(self::$bxClient->getAccount(), $recommendation['widget'], $recommendation['min'], $recommendation['max']);
+
 						if ($widgetType === 'basket') {
+						;
 							$basketProducts = array();
 							foreach($products as $product) {
 								$basketProducts[] = array('id'=>$product->getid(), 'price'=>$product->getPrice());
 							}
 							$recChoice->setBasketContext($this->getEntityIdFieldName(), $basketProducts);
 						} elseif ($widgetType === 'product' && isset($products[0])) {
+
 							$product = $products[0];
 							$recChoice->setProductContext($this->getEntityIdFieldName(), $product->getId());
 						}
@@ -560,11 +563,11 @@ class Adapter
 			}
 		}
 		if (empty($recChoices)) {
+
 			return array();
 		}
 		
 		$returnFields = array('id');
-        
 		return self::$bxClient->getChoiceRecommendations($widgetName, $recChoices, $returnFields);
     }
 

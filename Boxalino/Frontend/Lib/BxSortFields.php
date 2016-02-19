@@ -37,7 +37,7 @@ class BxSortFields
 		foreach ($this->getSortFields() as $field) {
 			$sortFields[] = new \com\boxalino\p13n\api\thrift\SortField(array(
 				'fieldName' => $field,
-				'reverse' => $this->isFieldReverse()
+				'reverse' => $this->isFieldReverse($field)
 			));
 		}
 		return $sortFields;

@@ -199,24 +199,6 @@ class BxClient
         return $userRecord;
 	}
 	
-	private function getSimpleSearchQuery($returnFields, $hitCount, $queryText, $bxFacets = array(), $bxSortFields = null, $offset = 0) {
-		$searchQuery = new \com\boxalino\p13n\api\thrift\SimpleSearchQuery();
-        $searchQuery->indexId = $this->getAccount();
-        $searchQuery->language = $this->language;
-        $searchQuery->returnFields = $returnFields;
-        $searchQuery->offset = $offset;
-        $searchQuery->hitCount = $hitCount;
-        $searchQuery->queryText = $queryText;
-		if($bxFacets) {
-			$searchQuery->facetRequests = $bxFacets->getThriftFacets();
-		}
-		$searchQuery->filters = $this->filters;
-		if($bxSortFields) {
-			$searchQuery->sortFields = $bxSortFields->getThriftSortFields();
-		}
-		return $searchQuery;
-	}
-	
 	private function getCategoryFacet() {
 		$facet = new \com\boxalino\p13n\api\thrift\FacetRequest();
 		$facet->fieldName = 'categories';
@@ -260,19 +242,43 @@ class BxClient
 
         return $choiceRequest;
 	}
-	
+
+	private function getSimpleSearchQuery($returnFields, $hitCount, $queryText, $bxFacets = array(), $bxSortFields = null, $offset = 0) {
+		$searchQuery = new \com\boxalino\p13n\api\thrift\SimpleSearchQuery();
+		$searchQuery->indexId = $this->getAccount();
+		$searchQuery->language = $this->language;
+		$searchQuery->returnFields = $returnFields;
+		$searchQuery->offset = $offset;
+		$searchQuery->hitCount = $hitCount;
+		$searchQuery->queryText = $queryText;
+		if($bxFacets) {
+			$searchQuery->facetRequests = $bxFacets->getThriftFacets();
+		}
+
+		if($bxSortFields) {
+			$searchQuery->sortFields = $bxSortFields->getThriftSortFields();
+		}
+
+		return $searchQuery;
+	}
+
 	public function search($queryText, $hitCount = 10, $returnFields = array(), $searchChoice = 'search', $bxFacets = null, $offset = 0, $bxSortFields=null, $withRelaxation = true) {
-		
+
 		$simpleSearchQuery = $this->getSimpleSearchQuery($returnFields, $hitCount, $queryText, $bxFacets, $bxSortFields, $offset);
-		
+
 		$choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
 		$choiceInquiry->choiceId = $searchChoice;
         $choiceInquiry->simpleSearchQuery = $simpleSearchQuery;
         $choiceInquiry->withRelaxation = $withRelaxation;
 		
 		$choiceRequest = $this->getChoiceRequest(array($choiceInquiry));
-		
+
 		$p13n = $this->getP13n();
+		
+		if(isset($_REQUEST['show_search_request']) && $_REQUEST['show_search_request'] == 'true') {
+			print_r($choiceRequest);
+			exit;
+		}
 		$this->searchResponse = $p13n->choose($choiceRequest);
 	}
 	
@@ -329,7 +335,7 @@ class BxClient
 		$choiceInquiries = array();
 		
 		$requestContext = $this->getRequestContext();
-		
+
 		$contextItems = array();
 		
 		foreach($bxRecommendations as $bxRecommendation) {
@@ -343,18 +349,18 @@ class BxClient
 			
 			$choiceInquiries[] = $choiceInquiry;
 		}
-		
-		$choiceRequest = $this->getChoiceRequest($choiceInquiries, $requestContext);
 
+		$choiceRequest = $this->getChoiceRequest($choiceInquiries, $requestContext);
 		$p13n = $this->getP13n();
 		$this->recommendationsResponse = $p13n->choose($choiceRequest);
 	}
 	
 	public function getChoiceRecommendations($choiceId, $bxRecommendations, $returnFields = array()) {
+
 		if(!$this->recommendationsResponse) {
 			$this->recommend($bxRecommendations, $returnFields);
 		}
-		
+
 		foreach ($this->recommendationsResponse->variants as $variantId => $variant) {
 			$name = $bxRecommendations[$variantId];
 			if($choiceId == $bxRecommendations[$variantId]->getChoiceId()) {
@@ -379,7 +385,6 @@ class BxClient
 	}
 	
 	private function choose($choiceRequest) {
-		
 		try {
 			return $this->p13n->choose($choiceRequest);
 		} catch(\Exception $e) {

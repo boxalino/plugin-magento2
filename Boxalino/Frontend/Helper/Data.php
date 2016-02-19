@@ -101,11 +101,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return @json_encode($items);
     }
 
-    public function isTrackerEnabled()
-    {
-        return (bool)$this->config->getValue('bxGeneral/tracker/enabled', $this->scopeStore);
-    }
-
     public function reportSearch($term, $filters = null)
     {
         if ($this->isTrackerEnabled()) {
@@ -244,7 +239,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         $getAttribute = $cat;
                     }
                 }
-                if ($getAttribute !== false) {
+                if ($getAttribute !== null) {
                     $values = html_entity_decode($values);
                     preg_match_all('!\d+!', $values, $matches);
                     if (is_array($matches[0])) {
@@ -297,4 +292,37 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $text;
     }
+
+    public function isPluginEnabled(){
+        return (bool)$this->config->getValue('bxGeneral/general/enabled', $this->scopeStore);
+    }
+
+    public function isSearchEnabled(){
+        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxSearch/search/enabled', $this->scopeStore);
+    }
+
+    public function isAutocompleteEnabled(){
+        return (bool)$this->isPluginEnabled() && $this->isSearchEnabled() && $this->config->getValue('bxSearch/autocomplete/enabled', $this->scopeStore);
+    }
+
+    public function isTrackerEnabled()
+    {
+        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxGeneral/tracker/enabled', $this->scopeStore);
+    }
+
+    public function isCrosssellEnabled()
+    {
+        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/cart/status', $this->scopeStore);
+    }
+
+    public function isRelatedEnabled()
+    {
+        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/related/status', $this->scopeStore);
+    }
+
+    public function isUpsellEnabled()
+    {
+        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/upsell/status', $this->scopeStore);
+    }
+
 }
