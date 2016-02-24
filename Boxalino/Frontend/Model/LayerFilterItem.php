@@ -33,6 +33,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
+
     /**
      * Get filter instance
      *
@@ -45,10 +46,12 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 			$this->filter = $this->objectManager->create(
                 "Boxalino\Frontend\Model\LayerFilterFilter"
             );
+
 			$this->filter->setRequestVar($this->bxFacets->getFacetParameterName($this->fieldName));
 			$this->filter->setCleanValue(null);
-			$this->filter->setClearLinkText(null);
-			$this->filter->setResetValue(null);
+			$this->filter->setClearLinkText(true);
+			$this->filter->setResetValue($this->bxFacets->getParentId($_REQUEST['bx_category_id']));
+
 		}
 		return $this->filter;
     }

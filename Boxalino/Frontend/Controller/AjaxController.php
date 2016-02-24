@@ -41,10 +41,14 @@ use Magento\Framework\Controller\ResultFactory;
 
 class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
 {
+
+    protected $bxHelperData;
 	public function __construct(
         Context $context,
+        \Boxalino\Frontend\Helper\Data $bxHelperData,
         AutocompleteInterface $autocomplete
     ) {
+        $this->bxHelperData = $bxHelperData;
         parent::__construct($context, $autocomplete);
     }
 	
@@ -59,21 +63,25 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
 	
 	public function execute()
     {
-		if (!$this->getRequest()->getParam('q', false)) {
-            /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
-            $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-            $resultRedirect->setUrl($this->_url->getBaseUrl());
-            return $resultRedirect;
+        if($this->bxHelperData->isAutocompleteEnabled()){
+            if (!$this->getRequest()->getParam('q', false)) {
+                /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
+                $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+                $resultRedirect->setUrl($this->_url->getBaseUrl());
+                return $resultRedirect;
+            }
+
+            $data = $this->_objectManager->create("\Boxalino\Frontend\Helper\Data");
+            $p13n = $this->_objectManager->create("\Boxalino\Frontend\Helper\P13n\Adapter");
+
+
+            $autocomplete = new \Boxalino\Frontend\Helper\Autocomplete();
+            $responseData = $p13n->autocomplete($this->getRequest()->getParam('q', false), $autocomplete);
+
+            /** @var \Magento\Framework\Controller\Result\Json $resultJson */
+            $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+            $resultJson->setData($responseData);
+            return $resultJson;
         }
-		
-		$data = $this->_objectManager->create("\Boxalino\Frontend\Helper\Data");
-		$p13n = $this->_objectManager->create("\Boxalino\Frontend\Helper\P13n\Adapter");
-		
-		$responseData = $p13n->autocomplete($this->getRequest()->getParam('q', false));
-        
-		/** @var \Magento\Framework\Controller\Result\Json $resultJson */
-        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-        $resultJson->setData($responseData);
-        return $resultJson;
 	}
 }

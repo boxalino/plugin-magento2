@@ -6,26 +6,28 @@ class Autocomplete
 	public function escapeHtml($string) {
 		return $string;
 	}
-	
-    public function getListHtml($products) {
-        $html = '<ul class="products">';
-		$first = true;
+
+	public function getListValues($products, $title) {
+		$values = array();
 		foreach($products as $product) {
-			$hash = "asdf";//todo
-			if($first)  {
-				$html .= '<li data-word="' . $hash . '" class="product-autocomplete" title="' . $this->escapeHtml($product->getName()) . '">';
-			} else {
-				$html .= '<li style="display:none" data-word="' . $hash . '" class="product-autocomplete" title="' . $this->escapeHtml($product->getName()) . '">';
-			}
-			$first = false;
-			$html .= '<a href="' . $product->getProductUrl() . '" >';
-			$html .= '<div class="product-image"><img src="' . $product->getThumbnailUrl() . '" alt="' . $product->getName() . '"></div>';
-			$html .= '<div class="product-title"><span>' . $product->getName() . '</span></div>';
-			$html .= '</a>';
-			$html .= '</li>';
+
+			$value = array();
+			$value['escape_name'] = $this->escapeHtml($product->getName());
+			$value['name'] = $product->getName();
+			$value['url'] = $product->getProductUrl();
+			$value['image'] = "http" . (isset($_SERVER['HTTPS']) ? 's' : '') . "://" . $_SERVER['SERVER_NAME'] . "/magento/pub/media/catalog/product/" . $product->getImage();
+			$value['suggestion'] = $title;
+			$values[] = $value;
 		}
-		$html .= '</ul>';
-		return $html;
+		return $values;
 	}
-	
+
+	public function getProductACTemplate() {
+		$template = '<li class="<%- data.row_class %>" class="text_suggest_<%- data.suggestion %>" role="option">';
+		$template .= '<a href="<%- data.product.url %>"><span class="product-name"><%- data.product.name %></span>';
+		$template .= '<span class="product-image"><img src="<%- data.product.image %>""></span></a></li>';
+		return $template;
+	}
+
+
 }

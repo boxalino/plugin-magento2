@@ -69,6 +69,7 @@ class State extends \Magento\Framework\DataObject
 
 				$filter->setFacets($facets);
 				$filter->setFieldName($fieldName);
+                $filter->setClearLinkUrl("abc");
 				$filters[] = $filter;
 			}
         }

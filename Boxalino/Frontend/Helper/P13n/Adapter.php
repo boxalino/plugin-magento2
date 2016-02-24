@@ -186,6 +186,7 @@ class Adapter
 			
 			$globalProducts = self::$bxClient->getAutocompleteProducts(array($this->getEntityIdFieldName()));
 			$entity_ids = $this->mergeProductsInEntityIds(array(), $globalProducts);
+			$id = 0;
             foreach (self::$bxClient->getAutocompleteTextualSuggestions() as $suggestion) {
 				
 				$totalHitcount = self::$bxClient->getAutocompleteTextualSuggestionTotalHitCount($suggestion);
@@ -199,48 +200,58 @@ class Adapter
 				$_data = array(
                     'title' => $suggestion,
                     'num_results' => $totalHitcount,
-                    'products' => $products
+                    'products' => $products,
+					'type' => 'suggestion',
+					'id' => $id++,
+					'row_class' => 'acsuggestions'
                 );
-				
+
 				$entity_ids = $this->mergeProductsInEntityIds($entity_ids, $products);
 
-                if ($_data['title'] == $queryText) {
-                    array_unshift($data, $_data);
-                } else {
-                    $data[] = $_data;
-                }
+				if ($_data['title'] == $queryText) {
+					array_unshift($data, $_data);
+				} else {
+					$data[] = $_data;
+				}
             }
 		}
-		
+
 		if(sizeof($entity_ids) > 0) {
-			
+
 			$list = $this->collectionFactory->create()->setStoreId($this->storeManager->getStore()->getId())
 				->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
 			$list->load();
-			
+
 			foreach($list as $product) {
 				$products[$product->getEntityid()] = $product;
 			}
-			
-			$list = $this->getProductsFromIds($globalProducts, $products);
-			$globalProductHtml = $autocomplete->getListHtml($list);
-			
-			$first = true;
+
+			$globalProductValues = $autocomplete->getListValues($list, "global");
+			$subProductValues = array();
 			foreach($data as $k => $v) {
+
 				$list = $this->getProductsFromIds($v['products'], $products);
-				$productHtml = $autocomplete->getListHtml($list);
-				$v['products'] = $productHtml;
-				if($first) {
-					$v['global_products'] = $globalProductHtml;
+
+				foreach($autocomplete->getListValues($list , $v['id']) as $prod) {
+					$subProductValues[] = $prod;
 				}
-				$first = false;
+
+				//$v['products'] = $productValues;
 				$data[$k] = $v;
 			}
+
+		}
+		foreach($globalProductValues as $p) {
+			$data[] = array("type"=>"global_products","product"=> $p, 'row_class'=>'suggestion-item global_product_suggestions');
+		}
+		foreach($subProductValues as $p) {
+			$data[] = array("type"=>"sub_products","product"=> $p, 'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $p['suggestion']);
 		}
 		return $data;
 	}
 	
 	protected function getProductsFromIds($ids, $products) {
+
 		$list = array();
 		foreach($ids as $k => $v) {
 			$id = $k;
@@ -425,7 +436,7 @@ class Adapter
 		
 		list($topField, $topOrder) = $this->getTopFacetValues();
 		if($topField) {
-			$bxFacets->addFacet($topField, $topField, "string", $topOrder);
+			$bxFacets->addFacet($topField, $topField, "string", $topOrder); // 1 ?? *iku*
 		}
 		
 		self::$bxClient->setBxFacets($bxFacets);

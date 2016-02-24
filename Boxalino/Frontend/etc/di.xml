@@ -14,16 +14,4 @@
     <preference for="Magento\Catalog\Block\Product\ProductList\Upsell" type="Boxalino\Frontend\Block\Product\ProductList\Upsell"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Frontend\Block\Product\ProductList\Crosssell"/>
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Boxalino\Frontend\Block\Cart\Crosssell" />
-
-    <virtualType name="searchFilterListTop" type="Magento\Catalog\Model\Layer\FilterList">
-        <arguments>
-            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Search\FilterableAttributeList</argument>
-            <argument name="filters" xsi:type="array">
-                <item name="attribute" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Attribute</item>
-                <item name="price" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Price</item>
-                <item name="decimal" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Decimal</item>
-                <item name="category" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Category</item>
-            </argument>
-        </arguments>
-    </virtualType>
 </config>

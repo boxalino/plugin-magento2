@@ -1,0 +1,8 @@
+<?php $filterItems = $this->getTopFilters(); ?>
+<?php if (!empty($filterItems)): ?>
+    <div class="top_filters">
+        <?php 
+		include "vendor/magento/module-layered-navigation/view/frontend/templates/layer/filter.phtml";
+		?>
+    </div>
+<?php endif; ?>

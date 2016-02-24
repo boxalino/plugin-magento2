@@ -27,6 +27,27 @@ class BxFacets
 		return strpos($fieldName, 'categories') !== false ;
 	}
 
+	public function getParentId($id){
+		$hierarchy = array();
+		foreach ($this->facetResponse[1]->values as $item) {
+			if($item->hierarchyId == $id){
+				$hierarchy = $item->hierarchy;
+			}
+		}
+
+		if(count($hierarchy) < 4){
+			return 1;
+		}else {
+			foreach ($this->facetResponse[1]->values as $item) {
+				if (count($item->hierarchy) == count($hierarchy) - 1) {
+					if ($item->hierarchy[count($hierarchy) - 2] === $hierarchy[count($hierarchy) - 2]) {
+						return $item->hierarchyId;
+					}
+				}
+			}
+		}
+	}
+
     public function getFacetParameterName($fieldName) {
 		$parameterName = $fieldName;
 		if($this->isCategories($fieldName)) {
@@ -326,4 +347,5 @@ class BxFacets
         }
         return;
     }
+
 }

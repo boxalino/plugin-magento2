@@ -39,11 +39,6 @@ class IndexController extends \Magento\CatalogSearch\Controller\Result\Index
             );
             $this->_objectManager->configure($configuration);
 
-            $configuration = array('searchFilterListTop' =>
-                array('type'=>'Boxalino\Frontend\Model\FilterListTop')
-            );
-            $this->_objectManager->configure($configuration);
-
             $configuration = array('Magento\Catalog\Model\Layer\State' =>
                 array('type'=>'Boxalino\Frontend\Block\State')
             );

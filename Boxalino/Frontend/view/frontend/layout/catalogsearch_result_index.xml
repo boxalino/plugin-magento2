@@ -6,13 +6,15 @@
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Boxalino_Frontend::css/top.css"/>
+    </head>
     <body>
+        <attribute name="class" value="page-products"/>
         <referenceContainer name="content">
-            <block class="Magento\LayeredNavigation\Block\Navigation\SearchTop" name="catalogsearch.content" before="search.result" template="Magento_LayeredNavigation::layer/view.phtml">
-                <block class="Magento\LayeredNavigation\Block\Navigation\State" name="catalogsearch.content.state" as="state" />
-                <block class="Magento\LayeredNavigation\Block\Navigation\FilterRenderer" name="catalogsearch.content.renderer" as="renderer" template="Magento_LayeredNavigation::layer/filter.phtml"/>
+            <block class="Boxalino\Frontend\Block\Facets" name="catalog.facets.top"
+                   template="Boxalino_Frontend::top_filters.phtml"  before="search.result">
             </block>
         </referenceContainer>
-
     </body>
 </page>

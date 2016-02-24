@@ -4,7 +4,7 @@
  */
 
 $_helper = $this->getBxHelperData();
-
+$_autocompleteHelper = $this->getAutocompleteHelper();
 $account = $this->getAccount();
 
 ?>
@@ -30,7 +30,41 @@ $account = $this->getAccount();
 
                 return false;
             }
+
         });
+
+        <?php if($_helper->isAutocompleteEnabled()): ?>
+            var timer;
+            $("body").on('mouseenter', '.acsuggestions', function () {
+                var $this = $(this);
+                timer = setTimeout(function () {
+                    $('.global_product_suggestions').hide();
+                    $('.sub_product_suggestions').hide();
+                    $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
+                }, 1000);
+            });
+
+            $("body").on('mouseleave', '.acsuggestions', function () {
+                clearTimeout(timer);
+            });
+
+            $("body").on('mouseleave', '#search_autocomplete', function () {
+                $('.global_product_suggestions').show();
+                $('.sub_product_suggestions').hide();
+            });
+
+
+            $( "#search" ).keydown(function() {
+                if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
+                    $("#search").data().mageQuickSearch.options.template =
+                        '<% if(data.type == "suggestion" ){ %>' +
+                        $("#search").data().mageQuickSearch.options.template +
+                        '<% }else{ %>' +
+                            '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
+                        '<% }; %>';
+                }
+            });
+        <?php endif; ?>
     });
 
     var _bxq = _bxq || []
