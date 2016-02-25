@@ -42,10 +42,9 @@ $account = $this->getAccount();
                     $('.sub_product_suggestions').hide();
                     $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
                 }, 1000);
-            });
-
-            $("body").on('mouseleave', '.acsuggestions', function () {
+            }).on('mouseleave', '.acsuggestions', function () {
                 clearTimeout(timer);
+                $(this).removeClass("selected");
             });
 
             $("body").on('mouseleave', '#search_autocomplete', function () {
@@ -60,6 +59,9 @@ $account = $this->getAccount();
                         '<% if(data.type == "suggestion" ){ %>' +
                         $("#search").data().mageQuickSearch.options.template +
                         '<% }else{ %>' +
+                            '<% if("first" in data){ %>'+
+                                '<h4 class="product-title">Products</h4>'+
+                            '<% }; %>'+
                             '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
                         '<% }; %>';
                 }

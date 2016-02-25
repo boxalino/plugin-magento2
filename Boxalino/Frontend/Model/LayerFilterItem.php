@@ -6,17 +6,19 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 
     private $filter;
 	protected $objectManager;
-	
+	protected $bxDataHelper;
 	private $bxFacets = null;
     private $fieldName = array();
 	
 	public function __construct(
         \Magento\Framework\UrlInterface $url,
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
+        \Boxalino\Frontend\Helper\Data $bxDataHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []
     ) {
 		$this->objectManager = $objectManager;
+        $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
     }
 
@@ -50,8 +52,9 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 			$this->filter->setRequestVar($this->bxFacets->getFacetParameterName($this->fieldName));
 			$this->filter->setCleanValue(null);
 			$this->filter->setClearLinkText(true);
-			$this->filter->setResetValue($this->bxFacets->getParentId($_REQUEST['bx_category_id']));
-
+            if($this->bxDataHelper->isHierarchical($this->fieldName)){
+                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$_REQUEST[$this->bxFacets->getFacetParameterName($this->fieldName)]));
+            }
 		}
 		return $this->filter;
     }

@@ -293,6 +293,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $text;
     }
 
+    public function isHierarchical($fieldName){
+        $facetConfig = $this->config->getValue('bxSearch/left_facets', $this->scopeStore);
+
+        $fields = explode(",", $facetConfig['fields']);
+        $type = explode(",", $facetConfig['types']);
+        if(in_array($fieldName,$fields )){
+            if($type[array_search($fieldName, $fields)] == 'hierarchical'){
+                return true;
+            }
+        }
+        return false;
+    }
     public function isPluginEnabled(){
         return (bool)$this->config->getValue('bxGeneral/general/enabled', $this->scopeStore);
     }

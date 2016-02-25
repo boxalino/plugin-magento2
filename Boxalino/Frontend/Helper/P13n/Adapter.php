@@ -242,11 +242,17 @@ class Adapter
 
 		}
 		foreach($globalProductValues as $p) {
-			$data[] = array("type"=>"global_products","product"=> $p, 'row_class'=>'suggestion-item global_product_suggestions');
+			if($p === reset($globalProductValues)){
+				$data[] = array("type"=>"global_products","product"=> $p, 'row_class'=>'suggestion-item global_product_suggestions', 'first'=> true);
+			}else{
+				$data[] = array("type"=>"global_products","product"=> $p, 'row_class'=>'suggestion-item global_product_suggestions');
+			}
 		}
+
 		foreach($subProductValues as $p) {
 			$data[] = array("type"=>"sub_products","product"=> $p, 'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $p['suggestion']);
 		}
+
 		return $data;
 	}
 	

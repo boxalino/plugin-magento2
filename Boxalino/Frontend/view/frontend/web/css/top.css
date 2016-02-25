@@ -1,2 +1,7 @@
-div.top_filters > ol > li{float: left;}
-div.top_filters{width:100%; margin-left:5px;}
+div.top_filters > ol > li{
+    float: left;
+    padding-right: 10px;
+}
+div.top_filters {
+    height: 60px;
+}
