@@ -6,16 +6,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 
 class BxFiles
 {
-	const URL_XML = '/frontend/dbmind/en/dbmind/api/data/source/update';
-    const URL_XML_DEV = '/frontend/dbmind/en/dbmind/api/data/source/update?dev=true';
-    const URL_ZIP = '/frontend/dbmind/en/dbmind/api/data/push';
-    const URL_ZIP_DEV = '/frontend/dbmind/en/dbmind/api/data/push?dev=true';
-	const URL_VERIFY_CREDENTIALS = '/frontend/dbmind/en/dbmind/api/credentials/verify';
-	const URL_PUBLISH_CONFIGURATION_CHANGES = '/frontend/dbmind/en/dbmind/api/configuration/publish/owner';
-	
-	const MAGENTO_OWNER = 'magento2';
-	
-    public $XML_DELIMITER = ',';
+	public $XML_DELIMITER = ',';
     public $XML_ENCLOSURE = '"';
     public $XML_ENCLOSURE_TEXT = "&quot;"; // it's $XML_ENCLOSURE
     public $XML_NEWLINE = '\n';
@@ -100,7 +91,7 @@ class BxFiles
         return rmdir($dir);
     }
 	
-	protected function getPath($file) {
+	public function getPath($file) {
 		if (!file_exists($this->_dir)) {
             mkdir($this->_dir);
         }
@@ -250,54 +241,6 @@ class BxFiles
 
         return $exportFile;
     }
-
-    /**
-     * @param $name
-     * @param $csvFiles
-     */
-    public function createZip($name, $xml)
-    {
-        if (file_exists($name)) {
-            @unlink($name);
-        };
-		
-		$csvFiles = array_filter($this->_files);
-
-        $zip = new \ZipArchive();
-        if ($zip->open($name, \ZipArchive::CREATE)) {
-
-            foreach ($csvFiles as $f) {
-                if (!$zip->addFile($this->_dir . '/' . $f, $f)) {
-                    throw new \Exception(
-                        'Synchronization failure: Failed to add file "' .
-                        $this->_dir . '/' . $f . '" to the zip "' .
-                        $name . '". Please try again.'
-                    );
-                }
-            }
-
-            if (!$zip->addFile($xml, 'properties.xml')) {
-                throw new \Exception(
-                    'Synchronization failure: Failed to add file "' .
-                    $xml . '" to the zip "' .
-                    $name . '". Please try again.'
-                );
-            }
-
-            if (!$zip->close()) {
-                throw new \Exception(
-                    'Synchronization failure: Failed to close the zip "' .
-                    $name . '". Please try again.'
-                );
-            }
-
-        } else {
-            throw new \Exception(
-                'Synchronization failure: Failed to open the zip "' .
-                $name . '" for writing. Please check the permissions and try again.'
-            );
-        }
-    }
 	
 	public function addToCSV($file, $values) {
 		fputcsv($this->filesMtM[$file], $values, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
@@ -308,149 +251,4 @@ class BxFiles
             fclose($this->filesMtM[$file]);
         }
 	}
-
-    /**
-     * @return string URL to normal data sync
-     * @param $dev
-     */
-    public function getZIPSyncUrl($exportServer, $dev = false)
-    {
-        if ($dev) {
-            return $exportServer . self::URL_ZIP_DEV;
-        } else {
-            return $exportServer . self::URL_ZIP;
-        }
-    }
-
-    /**
-     * @return string URL to delta sync
-     * @param $dev
-     */
-    public function getXMLSyncUrl($exportServer, $dev = false, $count=null)
-    {
-        if ($dev) {
-            return $exportServer . self::URL_XML_DEV . '&count=' . $count;
-        } else {
-            return $exportServer . self::URL_XML . '?count=' . $count;
-        }
-
-    }
-	
-	public function getVerifyCredentialsURL($exportServer) {
-		return $exportServer . self::URL_VERIFY_CREDENTIALS;
-	}
-	
-	public function getPublishOwnerConfigurationURL($exportServer) {
-		return $exportServer . self::URL_PUBLISH_CONFIGURATION_CHANGES;
-	}
-
-    public function getError($responseBody)
-    {
-		return $responseBody;
-        /*$htmlTagsToReplace = array('body', 'p', 'br');
-        $startPosition = strpos($responseBody, '<p>');
-        $endPosition = strpos($responseBody, '&lt;br&gt;') + 3;
-        $error = html_entity_decode(substr($responseBody, $startPosition, $endPosition));
-        foreach ($htmlTagsToReplace as $tag) {
-            $error = str_replace('<' . $tag . '>', PHP_EOL, $error);
-        }
-        return $error;*/
-    }
-	
-	public function verifyCredentials() {
-		$fields = array(
-            'username' => $this->config->getAccountUsername($this->account),
-            'password' => $this->config->getAccountPassword($this->account),
-            'account' => $this->account,
-            'owner' => self::MAGENTO_OWNER
-        );
-		
-		$url = $this->getVerifyCredentialsURL($this->config->getAccountExportServer($this->account));
-		return $this->pushFile($fields, $url, 'verifyCredentials');
-	}
-
-    protected function pushFile($fields, $url, $type, $isDelta=false)
-    {
-        if ($isDelta && !in_array('products.csv', $this->_files)) {
-            return 'skipped empty product delta sync';
-        }
-
-        $this->logger->info($type . ' push');
-        $s = curl_init();
-
-        curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 35000);
-        curl_setopt($s, CURLOPT_POST, true);
-        curl_setopt($s, CURLOPT_ENCODING, '');
-        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($s, CURLOPT_POSTFIELDS, $fields);
-
-        $responseBody = curl_exec($s);
-        curl_close($s);
-        if (strpos($responseBody, 'Internal Server Error') !== false) {
-            $this->logger->info($type . ' push error: ' . $responseBody);
-            throw new \Exception($this->getError($responseBody));;
-        }
-        $this->logger->info($type . ' pushed. Response: ' . $responseBody);
-        return $responseBody;
-    }
-
-    public function pushXML($file, $isDelta=false, $count=null)
-    {
-        $fields = array(
-            'username' => $this->config->getAccountUsername($this->account),
-            'password' => $this->config->getAccountPassword($this->account),
-            'account' => $this->account,
-            'owner' => self::MAGENTO_OWNER,
-            'template' => 'standard_source',
-            'xml' => file_get_contents($file . '.xml')
-        );
-
-        $url = $this->getXMLSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account), $count);
-		return $this->pushFile($fields, $url, 'xml', $isDelta);
-    }
-	
-	public function publishMagentoConfigChanges($file, $publish=true) {
-		$fields = array(
-            'username' => $this->config->getAccountUsername($this->account),
-            'password' => $this->config->getAccountPassword($this->account),
-            'account' => $this->account,
-            'owner' => self::MAGENTO_OWNER,
-            'publish' => $publish ? "true" : "false"
-        );
-		
-		$url = $this->getPublishOwnerConfigurationURL($this->config->getAccountExportServer($this->account));
-		$changes = $this->pushFile($fields, $url, 'publishMagentoConfigChanges');
-		return json_decode($changes, true);
-	}
-
-    /**
-     * @param $zip
-     */
-    public function pushZip($file, $isDelta=false)
-    {
-        $fields = array(
-            'username' => $this->config->getAccountUsername($this->account),
-            'password' => $this->config->getAccountPassword($this->account),
-            'account' => $this->account,
-            'owner' => self::MAGENTO_OWNER,
-            'dev' => $this->config->isAccountDev($this->account) ? 'false' : 'true',
-            'delta' => $isDelta,
-            'data' => $this->getCurlFile("$file.zip", "application/zip"),
-        );
-
-        $url = $this->getZIPSyncUrl($this->config->getAccountExportServer($this->account), $this->config->isAccountDev($this->account));
-
-        return $this->pushFile($fields, $url, 'zip');
-    }
-
-    protected function getCurlFile($filename, $type)
-    {
-        try {
-            if (class_exists('CURLFile')) {
-                return new \CURLFile($filename, $type);
-            }
-        } catch(\Exception $e) {}
-        return "@$filename;type=$type";
-    }
 }

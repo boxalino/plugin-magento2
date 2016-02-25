@@ -5,7 +5,6 @@ namespace Boxalino\Exporter\Model\Indexer;
 use Boxalino\Exporter\Helper\BxindexConfig;
 use Boxalino\Exporter\Helper\BxFiles;
 use Boxalino\Exporter\Helper\BxGeneral;
-use Boxalino\Exporter\Helper\BxDataIntelligenceXML;
 
 use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
@@ -117,6 +116,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	* value: if true ==> set at least once
 	*/
 	private $_attrProdCount = array();
+	
+	private $bxData = null;
 
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -146,6 +147,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	   $this->typePrice = $typePrice;
 	   
 	   $this->bxGeneral = new BxGeneral();
+
+	   $libPath = __DIR__ . '/../../Lib';
+		require_once($libPath . '/BxClient.php');
+		\com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }
 
     public function executeRow($id){
@@ -177,9 +182,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			
 			$this->logger->info("bxLog: initialize files on account: " . $account);
             $files = new BxFiles($this->filesystem, $this->logger, $account, $this->config);
-		
+			
+			$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
+			$this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexType() == 'delta');
+			
 			$this->logger->info("bxLog: verify credentials for account: " . $account);
-			$files->verifyCredentials();
+			$this->bxData->verifyCredentials();
 			
 			$this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
 			$attributesValuesByName = array();
@@ -211,34 +219,32 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$file = $files->prepareGeneralFiles($attributesValuesByName, $categories);
 			
 			$this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
-			$bxDIXML = new BXDataIntelligenceXML($account, $files, $this->config);
-			$bxDIXML->createXML($file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
+			$this->prepareData($account, $files, $file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
 			
-			$this->logger->info('bxLog: Prepare ZIP file with all the data files for account: ' . $account);
-			$files->createZip($file . '.zip', $file . '.xml');
-			
-			try {
-				$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
-				$files->pushXML($file, $this->getIndexType() == 'delta');
-			} catch(\Exception $e) {
-				$value = @json_decode($e->getMessage(), true);
-				if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
-					$this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
-					$files->pushXML($file, $this->getIndexType() == 'delta', 2);
-				} else {
-					throw $e;
+			if($this->getIndexType() == 'delta') {
+				try {
+					$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
+					$this->bxData->pushDataSpecifications();
+				} catch(\Exception $e) {
+					$value = @json_decode($e->getMessage(), true);
+					if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
+						$this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
+						$this->bxData->pushDataSpecifications();
+					} else {
+						throw $e;
+					}
+				}
+				
+				$this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
+				$publish = $this->config->publishConfigurationChanges($account);
+				$changes = $this->bxData->publishChanges($publish);
+				if(sizeof($changes['changes']) > 0 && !$publish) {
+					$this->logger->warn("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
 				}
 			}
 			
-			$this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
-			$publish = $this->config->publishConfigurationChanges($account);
-			$changes = $files->publishMagentoConfigChanges($file, $publish);
-            if(sizeof($changes['changes']) > 0 && !$publish) {
-				$this->logger->warn("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
-			}
-			
 			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
-			$files->pushZip($file, $this->getIndexType() == 'delta');
+			$this->bxData->pushData();
 			
             $this->_attrProdCount = array();
 			
@@ -246,6 +252,128 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         }
 		
 		$this->logger->info("bxLog: finished exportStores");
+	}
+	
+	protected function prepareData($account, $files, $name, $attributes, $attributesValuesByName, $customer_attributes, $tags = null, $productTags = null) {
+		$withTag = ($tags != null && $productTags != null) ? true : false;
+		$languages = $this->config->getAccountLanguages($account);
+		
+		$sourceKey = $this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
+		
+        $attrs = array_keys($attributesValuesByName);
+        if ($withTag) { //$this->_storeConfig['export_tags'] && 
+            $attrs[] = 'tag';
+        }
+
+		if ($this->config->exportProductUrl($this->account)) {
+            $attrs[] = 'default_url';
+        }
+        foreach ($attrs as $attr) {
+            if ($attr == 'visibility' || $attr == 'status') {
+                continue;
+            }
+            $attr = $this->bxGeneral->sanitizeFieldName($attr);
+			
+			$labelColumns = array();
+            foreach ($languages as $lang) {
+                $labelColumns[$lang] = 'value_' . $lang;
+            }
+			$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $attr . '.csv'), 'entity_id');
+			
+			$attributeReferenceSourceKey = null;
+			
+			$reference = false;
+            if (isset($attributesValuesByName[$attr]) && $attr != 'visibility' && $attr != 'status') {
+                $attributeReferenceSourceKey = $this->bxData->addResourceFile($files->getPath($attr . '.csv'), $attr . '_id', $labelColumns);
+				
+				$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $attr, $attr . '_id', $attributeReferenceSourceKey);
+				
+            } else {
+				
+				$columnLabels = array();
+				foreach ($languages as $lang) {
+					$labelColumns[$lang] = $this->bxGeneral->sanitizeFieldName($attr) . '_' . $lang;
+				}
+				
+				$fieldId = $this->bxGeneral->sanitizeFieldName($attr);
+				
+				switch ($attr) {
+					case 'category_ids':
+						break;
+					case 'name':
+						$this->bxData->addSourceTitleField($attributeSourceKey, $labelColumns);
+						break;
+					case 'description':
+						$this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
+						break;
+					case 'price':
+						$this->bxData->addSourceListPriceField($attributeSourceKey, $attr);
+						break;
+					case 'special_price':
+						$this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $attr);
+						break;
+					case 'entity_id':
+						break;
+					case 'short_description':
+					case 'status':
+					case 'visibility':
+					case 'default_url':
+						$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
+						break;
+					case 'weight':
+					case 'width':
+					case 'height':
+					case 'length':
+						$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, $labelColumns);
+						break;
+					default:
+						$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, $attr);
+						break;
+				}
+			}
+        }
+
+        if (true) { //$this->_storeConfig['export_categories']
+			$labelColumns = array();
+            foreach ($languages as $lang) {
+                $labelColumns[$lang] = 'value_' . $lang;
+            }
+			$this->bxData->addCategoryFile($files->getPath('categories.csv'), 'category_id', 'parent_id', $labelColumns);
+			$productToCategoriesSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_categories.csv'), 'entity_id');
+			$this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
+        }
+		
+        if ($this->config->exportProductImages($account)) {
+			
+			$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_url.csv'), 'entity_id');
+			$this->bxData->addSourceStringField($sourceKey, 'cache_image_url', 'cache_image_url');
+			
+			$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_thumbnail_url.csv'), 'entity_id');
+			$this->bxData->addSourceStringField($sourceKey, 'cache_image_thumbnail_url', 'cache_image_url');
+        }
+		
+        if ($this->config->isCustomersExportEnabled($account)) {
+			
+			$customerSourceKey = $this->bxData->addMainCSVCustomerFile($files->getPath('customers.csv'), 'customer_id');
+
+            foreach (
+                $customer_attributes as $prop
+            ) {
+                if($prop == 'id') {
+					continue;
+				}
+
+                $this->bxData->addSourceStringField($customerSourceKey, $prop, $prop);
+            }
+        }
+
+        if ($this->config->isTransactionsExportEnabled($account)) {
+			
+			//todo: add  $customerIdColumn->addAttribute('guest_property_id', 'guest_id');
+			
+			//add a csv file as main customer file
+			$this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
+        }
 	}
 	
 	protected function removeUnusedAttributes($attributes, $attributesValuesByName) {
