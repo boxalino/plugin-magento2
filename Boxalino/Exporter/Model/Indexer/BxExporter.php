@@ -265,7 +265,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             $attrs[] = 'tag';
         }
 
-		if ($this->config->exportProductUrl($this->account)) {
+		if ($this->config->exportProductUrl($account)) {
             $attrs[] = 'default_url';
         }
         foreach ($attrs as $attr) {
