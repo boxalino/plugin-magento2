@@ -12,7 +12,7 @@ class BxAutocompleteResponse
 	}
 	
 	public function getResponse() {
-		return $this->response->response;
+		return $this->response;
 	}
 
     public function getPrefixSearchHash() {

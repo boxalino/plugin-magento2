@@ -15,13 +15,13 @@ class BxClient
 	private $p13n_password;
 	private $domain;
 	
-	private $autocompleteRequest = null;
-	private $autocompleteResponse = null;
+	private $autocompleteRequests = null;
+	private $autocompleteResponses = null;
 	
 	private $chooseRequests = array();
 	private $chooseResponses = null;
 	
-    const VISITOR_COOKIE_TIME = 31536000;
+	const VISITOR_COOKIE_TIME = 31536000;
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
 		$this->account = $account;
@@ -92,48 +92,48 @@ class BxClient
 	
 	private function getSessionAndProfile() {
 		if (empty($_COOKIE['cems'])) {
-            $sessionid = session_id();
-            if (empty($sessionid)) {
-                session_start();
-                $sessionid = session_id();
-            }
-        } else {
-            $sessionid = $_COOKIE['cems'];
-        }
+			$sessionid = session_id();
+			if (empty($sessionid)) {
+				session_start();
+				$sessionid = session_id();
+			}
+		} else {
+			$sessionid = $_COOKIE['cems'];
+		}
 
-        if (empty($_COOKIE['cemv'])) {
-            $profileid = '';
-            if (function_exists('openssl_random_pseudo_bytes')) {
-                $profileid = bin2hex(openssl_random_pseudo_bytes(16));
-            }
-            if (empty($profileid)) {
-                $profileid = uniqid('', true);
-            }
-        } else {
-            $profileid = $_COOKIE['cemv'];
-        }
+		if (empty($_COOKIE['cemv'])) {
+			$profileid = '';
+			if (function_exists('openssl_random_pseudo_bytes')) {
+				$profileid = bin2hex(openssl_random_pseudo_bytes(16));
+			}
+			if (empty($profileid)) {
+				$profileid = uniqid('', true);
+			}
+		} else {
+			$profileid = $_COOKIE['cemv'];
+		}
 
-        // Refresh cookies
-        if (empty($this->domain)) {
-            setcookie('cems', $sessionid, 0);
-            setcookie('cemv', $profileid, time() + self::VISITOR_COOKIE_TIME);
-        } else {
-            setcookie('cems', $sessionid, 0, '/', $this->domain);
-            setcookie('cemv', $profileid, time() + 1800, '/', self::VISITOR_COOKIE_TIME);
-        }
+		// Refresh cookies
+		if (empty($this->domain)) {
+			setcookie('cems', $sessionid, 0);
+			setcookie('cemv', $profileid, time() + self::VISITOR_COOKIE_TIME);
+		} else {
+			setcookie('cems', $sessionid, 0, '/', $this->domain);
+			setcookie('cemv', $profileid, time() + 1800, '/', self::VISITOR_COOKIE_TIME);
+		}
 		
 		return array($sessionid, $profileid);
 	}
 	
 	private function getUserRecord() {
 		$userRecord = new \com\boxalino\p13n\api\thrift\UserRecord();
-        $userRecord->username = $this->getAccount();
-        return $userRecord;
+		$userRecord->username = $this->getAccount();
+		return $userRecord;
 	}
 	
-    private function getP13n($sendTimeout=120000, $recvTimeout=120000, $useCurlIfAvailable=true)
-    {
-        $transport = new \Thrift\Transport\TSocket($this->host, $this->port);
+	private function getP13n($sendTimeout=120000, $recvTimeout=120000, $useCurlIfAvailable=true)
+	{
+		$transport = new \Thrift\Transport\TSocket($this->host, $this->port);
 		$transport->setSendTimeout($sendTimeout);
 		$transport->setRecvTimeout($recvTimeout);
 		
@@ -146,14 +146,14 @@ class BxClient
 		$client = new \com\boxalino\p13n\api\thrift\P13nServiceClient(new \Thrift\Protocol\TCompactProtocol($transport));
 		$transport->open();
 		return $client;
-    }
+	}
 	
 	public function getChoiceRequest($inquiries, $requestContext = null) {
 		
 		$choiceRequest = new \com\boxalino\p13n\api\thrift\ChoiceRequest();
 
-        list($sessionid, $profileid) = $this->getSessionAndProfile();
-        
+		list($sessionid, $profileid) = $this->getSessionAndProfile();
+		
 		$choiceRequest->userRecord = $this->getUserRecord();
 		$choiceRequest->profileId = $profileid;
 		$choiceRequest->inquiries = $inquiries;
@@ -162,56 +162,56 @@ class BxClient
 		}
 		$choiceRequest->requestContext = $requestContext;
 
-        return $choiceRequest;
+		return $choiceRequest;
 	}
 	
 	protected function getIP()
-    {
-        $ip = null;
-        $clientip = @$_SERVER['HTTP_CLIENT_IP'];
-        $forwardedip = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-        if (filter_var($clientip, FILTER_VALIDATE_IP)) {
-            $ip = $clientip;
-        } elseif (filter_var($forwardedip, FILTER_VALIDATE_IP)) {
-            $ip = $forwardedip;
-        } else {
-            $ip = @$_SERVER['REMOTE_ADDR'];
-        }
+	{
+		$ip = null;
+		$clientip = @$_SERVER['HTTP_CLIENT_IP'];
+		$forwardedip = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+		if (filter_var($clientip, FILTER_VALIDATE_IP)) {
+			$ip = $clientip;
+		} elseif (filter_var($forwardedip, FILTER_VALIDATE_IP)) {
+			$ip = $forwardedip;
+		} else {
+			$ip = @$_SERVER['REMOTE_ADDR'];
+		}
 
-        return $ip;
-    }
+		return $ip;
+	}
 	
-    protected function getCurrentURL()
-    {
-        $protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
-        $hostname = @$_SERVER['HTTP_HOST'];
-        $requesturi = @$_SERVER['REQUEST_URI'];
+	protected function getCurrentURL()
+	{
+		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
+		$hostname = @$_SERVER['HTTP_HOST'];
+		$requesturi = @$_SERVER['REQUEST_URI'];
 
-        return $protocol . '://' . $hostname . $requesturi;
-    }
+		return $protocol . '://' . $hostname . $requesturi;
+	}
 	
 	protected function getRequestContext()
-    {
-        list($sessionid, $profileid) = $this->getSessionAndProfile();
+	{
+		list($sessionid, $profileid) = $this->getSessionAndProfile();
 		
-        $requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
-        $requestContext->parameters = array(
-            'User-Agent'     => array(@$_SERVER['HTTP_USER_AGENT']),
-            'User-Host'      => array($this->getIP()),
-            'User-SessionId' => array($sessionid),
-            'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
-            'User-URL'       => array($this->getCurrentURL())
-        );
+		$requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
+		$requestContext->parameters = array(
+			'User-Agent'	 => array(@$_SERVER['HTTP_USER_AGENT']),
+			'User-Host'	  => array($this->getIP()),
+			'User-SessionId' => array($sessionid),
+			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
+			'User-URL'	   => array($this->getCurrentURL())
+		);
 
-        if (isset($_REQUEST['p13nRequestContext']) && is_array($_REQUEST['p13nRequestContext'])) {
-            $requestContext->parameters = array_merge(
-                $_REQUEST['p13nRequestContext'],
-                $requestContext->parameters
-            );
-        }
+		if (isset($_REQUEST['p13nRequestContext']) && is_array($_REQUEST['p13nRequestContext'])) {
+			$requestContext->parameters = array_merge(
+				$_REQUEST['p13nRequestContext'],
+				$requestContext->parameters
+			);
+		}
 
-        return $requestContext;
-    }
+		return $requestContext;
+	}
 	
 	private function throwCorrectP13nException($e) {
 		if(strpos($e->getMessage(), 'Could not connect ') !== false) {
@@ -293,8 +293,18 @@ class BxClient
 	}
 	
 	public function setAutocompleteRequest($request) {
+		$this->setAutocompleteRequests(array($request));
+	}
+	
+	public function setAutocompleteRequests($requests) {
+		foreach ($requests as $request) {
+			$this->enhanceAutoCompleterequest($request);
+		}
+		$this->autocompleteRequests = $requests;
+	}
+	
+	private function enhanceAutoCompleterequest(&$request) {
 		$request->setDefaultIndexId($this->getAccount());
-		$this->autocompleteRequest = $request;
 	}
 	
 	private function p13nautocomplete($autocompleteRequest) {
@@ -305,20 +315,44 @@ class BxClient
 		}
 	}
 	
-    public function autocomplete()
-    {
-        list($sessionid, $profileid) = $this->getSessionAndProfile();
-        
-		$autocompleteRequest = $this->autocompleteRequest->getAutocompleteThriftRequest($profileid, $this->getUserRecord());
-        
-		$this->autocompleteResponse = new BxAutocompleteResponse($this->p13nautocomplete($autocompleteRequest), $this->autocompleteRequest);
+	public function autocomplete()
+	{
+		list($sessionid, $profileid) = $this->getSessionAndProfile();
+		$userRecord = $this->getUserRecord();
+		$p13nrequests = array_map(function($request) use(&$profileid, &$userRecord) {
+			return $request->getAutocompleteThriftRequest($profileid, $userRecord);
+		}, $this->autocompleteRequests);
+		$i = -1;
+		$this->autocompleteResponses = array_map(function($response) use (&$i) {
+			$request = $this->autocompleteRequests[++$i];
+			return new BxAutocompleteResponse($response, $request);
+		}, $this->p13nautocompleteAll($p13nrequests));
 
-    }
-	
+	}
+		
 	public function getAutocompleteResponse() {
-		if(!$this->autocompleteResponse) {
+		$responses = $this->getAutocompleteResponses();
+		if(isset($responses[0])) {
+			return $responses[0];
+		}
+		return null;
+	}
+	
+	private function p13nautocompleteAll($requests) {
+		$requestBundle = new \com\boxalino\p13n\api\thrift\AutocompleteRequestBundle();
+	$requestBundle->requests = $requests;
+		try {
+			return $this->getP13n()->autocompleteAll($requestBundle)->responses;
+		} catch(\Exception $e) {
+			$this->throwCorrectP13nException($e);
+		}
+	}
+			
+	public function getAutocompleteResponses() {
+		if (!$this->autocompleteResponses) {
 			$this->autocomplete();
 		}
-		return new \com\boxalino\bxclient\v1\BxAutocompleteResponse($this->autocompleteResponse, $this->autocompleteRequest);
+		return $this->autocompleteResponses;
 	}
+	
 }
