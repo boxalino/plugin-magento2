@@ -32,6 +32,10 @@ $account = $this->getAccount();
             }
 
         });
+        $("div.top_filters>ol.items>li.item>a>span.count").text(function () {
+            var text = $(this).clone().children().remove().end().text(); //get text without children
+            return "(" + text + ")" ;
+        });
 
         <?php if($_helper->isAutocompleteEnabled()): ?>
             var timer;
@@ -59,7 +63,7 @@ $account = $this->getAccount();
                         '<% if(data.type == "suggestion" ){ %>' +
                         $("#search").data().mageQuickSearch.options.template +
                         '<% }else{ %>' +
-                            '<% if("first" in data){ %>'+
+                            '<% if(data.first){ %>'+
                                 '<h4 class="product-title">Products</h4>'+
                             '<% }; %>'+
                             '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+

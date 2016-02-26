@@ -37,8 +37,7 @@ class Script extends \Magento\Framework\View\Element\Template
     }
     public function isSearch()
     {
-        $current = $this->getRequest()->getRouteName() . '/' . $this->getRequest()->getControllerName();
-        return $current == 'catalogsearch/result';
+        return 'catalogsearch/result' == $this->getRequest()->getRouteName() . '/' . $this->getRequest()->getControllerName();
     }
 
     public function getBxHelperData(){

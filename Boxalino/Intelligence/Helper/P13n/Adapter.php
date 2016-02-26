@@ -56,7 +56,7 @@ class Adapter
 			//$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 			//$language = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 			
-			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, $p13n_username, $p13n_password);
+			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
 			
 		}
 	}
@@ -95,7 +95,7 @@ class Adapter
 	public function getEntityIdFieldName() {
 		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
 		if (!isset($entity_id) || $entity_id === '') {
-			$entityIdFieldName = 'entity_id';
+			$entityIdFieldName = 'id';
 		}
 		return $entityIdFieldName;
 	}
@@ -175,6 +175,7 @@ class Adapter
 				$row['product'] = $productValues[$id];
 				$row['first'] = $first;
 				$first = false;
+				$data[] = $row;
 			}
 			
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
