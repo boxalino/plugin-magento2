@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_cart_add_product_complete">
+        <observer name="product_add_observer" instance="Boxalino\Intelligence\Model\Observer"/>
+    </event>
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="order_success_observer" instance="Boxalino\Intelligence\Model\Observer"/>
+    </event>
+    <event name="catalog_controller_product_view">
+        <observer name="product_view_observer" instance="Boxalino\Intelligence\Model\Observer"/>
+    </event>
+    <event name="catalog_controller_category_init_after">
+        <observer name="category_init_after_observer" instance="Boxalino\Intelligence\Model\Observer"/>
+    </event>
+</config>
