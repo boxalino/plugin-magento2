@@ -5,7 +5,7 @@
 1. Copy the Boxalino folder with all files in your app/code folder (create the folder if it doesn't already exist).
 2. Set chmod for Boxalino directory and files:
     * chmod 755 -R app/code/Boxalino
-3. Upgrade with the two modules (Exporter and Frontend)
+3. Upgrade with the module
 	* run the command line (from your main magento folder): php bin/magento setup:upgrade
 4. Update the administrator role:
     * System > Permissions > Roles > Administrators - Save Role
