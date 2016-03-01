@@ -135,6 +135,7 @@ class BxFacets
 	}
 	
 	public function getSelectedTreeNode($tree) {
+
 		if(!isset($this->facets['category_id'])){
 			return $tree;
 		}
@@ -163,6 +164,7 @@ class BxFacets
 			$tree = $this->buildTree($facetResponse->values);
 			$tree = $this->getSelectedTreeNode($tree);
 			$node = $this->getFirstNodeWithSeveralChildren($tree);
+
 			if($node) {
 				foreach($node['children'] as $node) {
 					$facetValues[$node['node']->stringValue] = $node['node'];
@@ -180,12 +182,14 @@ class BxFacets
 			}
 			break;
 		}
+
         return $facetValues;
 	}
 	
 	public function getSelectedValues($fieldName) {
 		$selectedValues = array();
         foreach($this->getFacetValues($fieldName) as $key) {
+
 			if($this->isFacetValueSelected($fieldName, $key)) {
 				$selectedValues[] = $key;
 			}
@@ -258,6 +262,7 @@ class BxFacets
 			$parents[] = array($parts[0], $parts[sizeof($parts)-1]);
 			$parent = $this->getTreeParent($tree, $parent);
 		}
+
 		krsort($parents);
 		$final = array();
 		foreach($parents as $v) {
@@ -265,7 +270,28 @@ class BxFacets
 		}
 		return $final;
 	}
-	
+
+	public function getParentCategoriesHitCount($id){
+		$fieldName = 'categories';
+		$facetResponse = $this->getFacetResponse($fieldName);
+		$tree = $this->buildTree($facetResponse->values);
+		$treeEnd = $this->getSelectedTreeNode($tree);
+		if($treeEnd == null) {
+			return $tree['node']->hitCount;
+		}
+		if($treeEnd['node']->stringValue == $tree['node']->stringValue) {
+			return $tree['node']->hitCount;
+		}
+		$parent = $treeEnd;
+		while($parent) {
+			if($parent['node']->hierarchyId == $id){
+				return $parent['node']->hitCount;
+			}
+			$parent = $this->getTreeParent($tree, $parent);
+		}
+		return 0;
+	}
+
 	public function getSelectedValueLabel($fieldName, $index=0) {
 		if($fieldName == "") {
 			return "";
@@ -320,6 +346,7 @@ class BxFacets
 	}
 	
 	protected function getFacetValueArray($fieldName, $facetValue) {
+
         $keyValues = $this->getFacetKeysValues($fieldName);
 		if(!isset($keyValues[$facetValue])) {
 			throw new \Exception("Requesting an invalid facet values for fieldname: " . $fieldName . ", requested value: " . $facetValue . ", available values . " . implode(',', array_keys($keyValues)));
