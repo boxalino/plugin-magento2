@@ -1,6 +1,8 @@
 <?php
 namespace Boxalino\Intelligence\Helper\P13n;
-
+use com\boxalino\bxclient\v1\BxClient;
+use com\boxalino\bxclient\v1\BxSearchRequest;
+use com\boxalino\bxclient\v1\BxFilter;
 class Adapter
 {
     private static $bxClient = null;
@@ -323,6 +325,22 @@ class Adapter
 	
 	private function getUrlParameterPrefix() {
 		return 'bx_';
+	}
+
+	public function getCategoryEntitiesIds($id){
+
+		$language = "en";
+		$queryText = "";
+		$hitCount = 20;
+		$filterField = "category_id";
+		$filterValues = array($id);
+		$filterNegative = true;
+
+		$bxRequest = new BxSearchRequest($language, $queryText, $hitCount);
+		$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
+		self::$bxClient->addRequest($bxRequest);
+		$bxResponse = self::$bxClient->getResponse();
+		return $bxResponse->getHitIds();
 	}
 
     private function prepareFacets()

@@ -47,28 +47,48 @@ class BxListProducts extends ListProduct
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
+
     public function _getProductCollection()
     {
+        $layer = $this->getLayer();
+        if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
+            $category = $layer->getCurrentCategory();
+            $entity_ids = $this->p13nHelper->getCategoryEntitiesIds($category->getEntityId());
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+            $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
+                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+            $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
 
-        if($this->p13nHelper->areThereSubPhrases()) {
-            $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
+            $list->load();
 
+            return $list;
+
+        }
+        elseif($layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
+            if($this->p13nHelper->areThereSubPhrases()) {
+                $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
+
+            }else{
+                $entity_ids = $this->p13nHelper->getEntitiesIds();
+            }
+
+            // Added check if there are any entity ids, otherwise force empty result
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+
+            $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
+                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+            $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
+
+            $list->load();
+
+            return $list;
         }else{
-            $entity_ids = $this->p13nHelper->getEntitiesIds();
+            return parent::_getProductCollection();
         }
-
-        // Added check if there are any entity ids, otherwise force empty result
-        if ((count($entity_ids) == 0)) {
-            $entity_ids = array(0);
-        }
-
-        $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
-            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-        $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-
-        $list->load();
-
-        return $list;
     }
 
     protected function _beforeToHtml()
