@@ -6,6 +6,7 @@
 	<preference for="Magento\CatalogSearch\Controller\Advanced\Result" type="Boxalino\Intelligence\Controller\AdvancedController" />
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Intelligence\Controller\IndexController" />
     <preference for="Magento\Search\Controller\Ajax\Suggest" type="Boxalino\Intelligence\Controller\AjaxController" />
+    <preference for="Magento\Catalog\Controller\Category\View" type="Boxalino\Intelligence\Controller\View" />
 
     <preference for="Magento\Catalog\Block\Product\ListProduct" type="Boxalino\Intelligence\Block\Product\BxListProducts" />
     <preference for="Magento\CatalogSearch\Block\Result" type="Boxalino\Intelligence\Block\Result" />

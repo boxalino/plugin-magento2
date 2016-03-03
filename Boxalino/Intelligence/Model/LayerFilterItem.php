@@ -53,7 +53,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 			$this->filter->setCleanValue(null);
 			$this->filter->setClearLinkText(true);
             if($this->bxDataHelper->isHierarchical($this->fieldName)){
-                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$_REQUEST[$this->bxFacets->getFacetParameterName($this->fieldName)]));
+                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$this->getRequest()->getParam($this->bxFacets->getFacetParameterName($this->fieldName))));
             }
 		}
 		return $this->filter;

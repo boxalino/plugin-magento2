@@ -16,6 +16,7 @@ class Adapter
     protected $queryFactory;
     protected $collectionFactory;
     protected $storeManager;
+	protected $_catalogLayer;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -25,6 +26,7 @@ class Adapter
         \Magento\Search\Model\QueryFactory $queryFactory,
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
+		\Magento\Catalog\Model\Layer\Resolver $layerResolver,
         \Boxalino\Intelligence\Helper\Data $bxHelperData
     )
     {
@@ -35,6 +37,7 @@ class Adapter
 		$this->queryFactory = $queryFactory;
 		$this->collectionFactory = $collectionFactory;
 		$this->storeManager = $storeManager;
+		$this->_catalogLayer = $layerResolver->get();
 		
 	   $libPath = __DIR__ . '/../../Lib';
 		require_once($libPath . '/BxClient.php');
@@ -190,27 +193,30 @@ class Adapter
 		return $data;
 	}
 
-    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, $bxSortFields=null)
+    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, $bxSortFields=null, $categoryId=null)
     {
 		$returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
-		
-		$hitCount = $overwriteHitcount != null ? $overwriteHitcount : $this->scopeConfig->getValue('bxSearch/search/limit',$this->scopeStore);
-		if($hitCount == null) {
-			$hitCount = $this->getMagentoStoreConfigPageSize();
-		}
-		
-		$offset = $pageOffset * $hitCount;
-		
+
+		$hitCount = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+
 		//create search request
 		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->getLanguage(), $queryText, $hitCount, $this->getSearchChoice());
 		$bxRequest->setReturnFields($returnFields);
-		$bxRequest->setOffset($offset);
+		$bxRequest->setOffset($pageOffset);
 		$bxRequest->setSortFields($bxSortFields);
 		$bxRequest->setFacets($this->prepareFacets());
-		
-		//add the request
+
+		if($categoryId != null) {
+			$filterField = "category_id";
+			$filterValues = array($categoryId);
+			$filterNegative = false;
+			$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
+			$navigationChoiceId = 'search'; //navigation
+			$bxRequest->setChoiceId($navigationChoiceId);
+		}
+
 		self::$bxClient->addRequest($bxRequest);
     }
 	
@@ -268,15 +274,18 @@ class Adapter
 				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
 			}
 		}
-
-		$overWriteLimit = (int) $this->request->getParam('limit',null);
-		$pageOffset = abs(((int) $this->request->getParam('p', 1)) - 1);
-
+		$overWriteLimit = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
 		$query = $this->queryFactory->get();
-		$this->search($query->getQueryText(), $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
-            
+		$categoryId = null;
+		$queryText = $query->getQueryText();
+		if($queryText == null) {
+			$category = $this->_catalogLayer->getCurrentCategory();
+			$categoryId = $category->getEntityId();
+		}
+		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
-	
+
 	private function getLeftFacets() {
 		$fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
 		$labels = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/labels',$this->scopeStore));
@@ -327,24 +336,9 @@ class Adapter
 		return 'bx_';
 	}
 
-	public function getCategoryEntitiesIds($id){
-
-		$language = "en";
-		$queryText = "";
-		$hitCount = 20;
-		$filterField = "category_id";
-		$filterValues = array($id);
-		$filterNegative = true;
-
-		$bxRequest = new BxSearchRequest($language, $queryText, $hitCount);
-		$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-		self::$bxClient->addRequest($bxRequest);
-		$bxResponse = self::$bxClient->getResponse();
-		return $bxResponse->getHitIds();
-	}
-
     private function prepareFacets()
     {
+
 		$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 		
 		$selectedValues = array();
@@ -356,6 +350,7 @@ class Adapter
         }
 		
 		$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+
 		$bxFacets->addCategoryFacet($catId);
         
 		foreach($this->getLeftFacets() as $fieldName => $facetValues) {
@@ -392,6 +387,9 @@ class Adapter
 	public function getFacets() {
 		$this->simpleSearch();
 		$facets = self::$bxClient->getResponse()->getFacets();
+		if(empty($facets)){
+			return null;
+		}
 		$facets->setParameterPrefix($this->getUrlParameterPrefix());
 		return $facets;
 	}

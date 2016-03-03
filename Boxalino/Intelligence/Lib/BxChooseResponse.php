@@ -112,6 +112,9 @@ class BxChooseResponse
 		$variant = $this->getChoiceResponseVariant($choice);
 		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation);
 		$facets = $this->getRequestFacets($choice);
+		if(empty($facets)){
+			return null;
+		}
 		$facets->setFacetResponse($variant->searchResult->facetResponses);
 		return $facets;
     }

@@ -24,3 +24,9 @@ li.home.children{
 li.children{
     padding-left: 25px;
 }
+li.parent:not(.selected)>a>span.count{
+    display:none;
+}
+#bxslider{
+    margin: 10px 0px 10px 0px ;
+}

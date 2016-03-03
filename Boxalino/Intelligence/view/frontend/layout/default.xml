@@ -5,7 +5,7 @@
         <css src="Boxalino_Intelligence::css/autocomplete.css"/>
     </head>
     <body>
-        <referenceContainer name="after.body.start">
+        <referenceContainer name="before.body.end">
             <block class="Boxalino\Intelligence\Block\Script" name="bxScript"
                    template="Boxalino_Intelligence::script.phtml">
             </block>

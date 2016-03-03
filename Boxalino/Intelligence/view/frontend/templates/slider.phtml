@@ -1,0 +1,51 @@
+<?php
+    $sliderValues = $this->getSliderValues();
+?>
+<script>
+    require([
+        'jquery',
+        'nouislider'
+    ], function ($,nouislider) {
+        'use strict';
+
+        var slider = document.getElementById('bxslider');
+        nouislider.create(slider, {
+            start: [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : null ?>,
+                <?php echo isset($sliderValues[1]) ? $sliderValues[1] : null; ?>],
+            connect: true,
+            behaviour: 'tap',
+            step: 1,
+            range: {
+                'min': <?php echo isset($sliderValues[2]) ? $sliderValues[2] : null; ?>,
+                'max': <?php echo isset($sliderValues[3]) ? $sliderValues[3] : null; ?>
+            }
+        });
+        var snapValues = [
+            document.getElementById('slider-snap-value-lower'),
+            document.getElementById('slider-snap-value-upper')
+        ];
+
+        slider.noUiSlider.on('update', function (values, handle) {
+            var handlename = (handle == 1) ? 'bis ' : 'von ';
+            snapValues[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
+        });
+
+        slider.noUiSlider.on('change', function (values, handle) {
+            var params = location.search;
+            var newSrc = values[0] + "-" + values[1];
+            var name = 'bx_discountedPrice';
+            var paramSet = name + '=' + newSrc;
+            var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+            if (results && results[1]) {
+                params = params.replace(results[1], newSrc);
+                location.search = params;
+            } else {
+                if (params) {
+                    location.search = location.search + '&' + paramSet;
+                } else {
+                    location.search = location.search + '?' + paramSet;
+                }
+            }
+        });
+    });
+</script>

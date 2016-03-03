@@ -139,6 +139,9 @@ class BxFacets
 		if(!isset($this->facets['category_id'])){
 			return $tree;
 		}
+		if(!$tree['node']) {
+			return null;
+		}
 		$parts = explode('/', $tree['node']->stringValue);
 		if($parts[0] == $this->facets['category_id']['selectedValues'][0]) {
 			return $tree;
@@ -157,6 +160,7 @@ class BxFacets
 			return array();
 		}
         $facetValues = array();
+
         $facetResponse = $this->getFacetResponse($fieldName);
 		$type = $this->getFacetType($fieldName);
 		switch($type) {
@@ -346,7 +350,6 @@ class BxFacets
 	}
 	
 	protected function getFacetValueArray($fieldName, $facetValue) {
-
         $keyValues = $this->getFacetKeysValues($fieldName);
 		if(!isset($keyValues[$facetValue])) {
 			throw new \Exception("Requesting an invalid facet values for fieldname: " . $fieldName . ", requested value: " . $facetValue . ", available values . " . implode(',', array_keys($keyValues)));
@@ -422,17 +425,19 @@ class BxFacets
 	public function getThriftFacets() {
 		
 		$thriftFacets = array();
-		
+
 		foreach($this->facets as $fieldName => $facet) {
 			$type = $facet['type'];
 			$order = $facet['order'];
-			
+
 			$facetRequest = new \com\boxalino\p13n\api\thrift\FacetRequest();
 			$facetRequest->fieldName = $fieldName;
 			$facetRequest->numerical = $type == 'ranged' ? true : $type == 'numerical' ? true : false;
 			$facetRequest->range = $type == 'ranged' ? true : false;
+			$facetRequest->boundsOnly = $type == 'ranged' ? true : false;
 			$facetRequest->selectedValues = $this->facetSelectedValue($fieldName, $type);
 			$facetRequest->sortOrder = isset($order) && $order == 1 ? 1 : 2;
+
 			$thriftFacets[] = $facetRequest;
 		}
 		

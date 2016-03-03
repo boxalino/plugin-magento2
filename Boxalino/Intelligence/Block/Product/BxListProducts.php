@@ -13,15 +13,18 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Boxalino\Intelligence\Helper\Data;
 use Magento\Framework\Session\SessionManager;
 use Magento\Catalog\Model\Product\ProductList\Toolbar;
+use Magento\UrlRewrite\Helper\UrlRewrite;
+
 class BxListProducts extends ListProduct
 {
     public static $number = 0;
     protected $count = -1;
     protected $collection;
     protected $p13nHelper;
-    protected $queryFactory;
     protected $queries;
-    protected $session;
+    protected $_objectManager;
+    protected $abstractAction;
+    protected $urlFactory;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
     public function __construct(
@@ -32,18 +35,20 @@ class BxListProducts extends ListProduct
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         CollectionFactory $collectionFactory,
-        \Magento\Search\Model\QueryFactory $queryFactory,
-        SessionManager $session,
+        \Magento\Framework\App\Action\AbstractAction $abstractAction,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\UrlFactory $urlFactory,
         array $data = [])
     {
         $this->p13nHelper = $p13nHelper;
         if($p13nHelper->areThereSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
         }
-        $this->queryFactory = $queryFactory;
+        $this->urlFactory = $urlFactory;
+        $this->abstractAction = $abstractAction;
+        $this->_objectManager = $objectManager;
         $this->collection = $collectionFactory;
         $this->p13nHelper = $p13nHelper;
-        $this->session = $session;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
@@ -51,22 +56,7 @@ class BxListProducts extends ListProduct
     public function _getProductCollection()
     {
         $layer = $this->getLayer();
-        if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
-            $category = $layer->getCurrentCategory();
-            $entity_ids = $this->p13nHelper->getCategoryEntitiesIds($category->getEntityId());
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
-            }
-            $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-            $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-
-            $list->load();
-
-            return $list;
-
-        }
-        elseif($layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
+        if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
             if($this->p13nHelper->areThereSubPhrases()) {
                 $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
 
@@ -79,12 +69,23 @@ class BxListProducts extends ListProduct
                 $entity_ids = array(0);
             }
 
-            $list = $this->collection->create()->setStoreId($this->_storeManager->getStore()->getId())
+            $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
+            $list->setStoreId($this->_storeManager->getStore()->getId())
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
             $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-
             $list->load();
+            $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
+            $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
+            $totalHitCount = $this->p13nHelper->getTotalHitCount();
 
+            if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
+                $url = $this->urlFactory->create()->getCurrentUrl();
+                $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
+                $this->abstractAction->getResponse()->setRedirect($url);
+            }
+            $lastPage = ceil($totalHitCount /$limit);
+            $list->setLastBxPage($lastPage);
+            $list->setBxTotal($totalHitCount);
             return $list;
         }else{
             return parent::_getProductCollection();
