@@ -52,15 +52,6 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
         parent::__construct($context, $autocomplete);
     }
 	
-	/*public function suggestAction()
-    {
-        if (!$this->getRequest()->getParam('q', false)) {
-            $this->getResponse()->setRedirect(Mage::getSingleton('core/url')->getBaseUrl());
-        }
-
-        $this->getResponse()->setBody($this->getLayout()->createBlock('catalogsearch/autocomplete')->toHtml());
-    }*/
-	
 	public function execute()
     {
         if($this->bxHelperData->isAutocompleteEnabled()){
@@ -71,9 +62,7 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
                 return $resultRedirect;
             }
 
-            $data = $this->_objectManager->create("\Boxalino\Intelligence\Helper\Data");
             $p13n = $this->_objectManager->create("\Boxalino\Intelligence\Helper\P13n\Adapter");
-
 
             $autocomplete = new \Boxalino\Intelligence\Helper\Autocomplete();
             $responseData = $p13n->autocomplete($this->getRequest()->getParam('q', false), $autocomplete);

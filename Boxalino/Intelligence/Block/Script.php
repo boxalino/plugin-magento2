@@ -15,7 +15,7 @@ class Script extends \Magento\Framework\View\Element\Template
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\Autocomplete $bxAutoCompleteHelper,
         array $data = []
-        )
+    )
     {
         $this->customerSession = $customerSession;
         $this->bxHelperData = $bxHelperData;

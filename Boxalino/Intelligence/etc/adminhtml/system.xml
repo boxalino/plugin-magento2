@@ -20,7 +20,7 @@
                 <field id="enabled" translate="label" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable plugin</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    <comment>Is the overal Boxalino plugin active (global switch)?</comment>
+                    <comment>Is the overall Boxalino plugin active (global switch)?</comment>
                 </field>
                 <field id="account_name" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino account name</label>
@@ -200,7 +200,7 @@
                 </field>
                 <field id="types" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Facet types</label>
-                    <comment>The type of the facet. Ordered list matching the values of Field names (values separated by ','). Possibile values: "list" (most common value, to be used in most cases), "ranged" (e.g.: for "discountedPrice"), "hierarchical" (e.g.: for "categories"), "numerical" (for numberical values)</comment>
+                    <comment>The type of the facet. Ordered list matching the values of Field names (values separated by ','). Possible values: "list" (most common value, to be used in most cases), "ranged" (e.g.: for "discountedPrice"), "hierarchical" (e.g.: for "categories"), "numerical" (for numberical values)</comment>
                 </field>
                 <field id="orders" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Ordering of facet values</label>

@@ -9,7 +9,6 @@ use Magento\Catalog\Model\Product;
 use Magento\Eav\Model\Entity\Collection\AbstractCollection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\DataObject\IdentityInterface;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Boxalino\Intelligence\Helper\Data;
 use Magento\Framework\Session\SessionManager;
 use Magento\Catalog\Model\Product\ProductList\Toolbar;
@@ -19,7 +18,6 @@ class BxListProducts extends ListProduct
 {
     public static $number = 0;
     protected $count = -1;
-    protected $collection;
     protected $p13nHelper;
     protected $queries;
     protected $_objectManager;
@@ -34,7 +32,6 @@ class BxListProducts extends ListProduct
         CategoryRepositoryInterface $categoryRepository,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\Url\Helper\Data $urlHelper,
-        CollectionFactory $collectionFactory,
         \Magento\Framework\App\Action\AbstractAction $abstractAction,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\UrlFactory $urlFactory,
@@ -47,7 +44,6 @@ class BxListProducts extends ListProduct
         $this->urlFactory = $urlFactory;
         $this->abstractAction = $abstractAction;
         $this->_objectManager = $objectManager;
-        $this->collection = $collectionFactory;
         $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }

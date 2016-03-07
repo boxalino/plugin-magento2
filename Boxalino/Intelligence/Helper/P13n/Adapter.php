@@ -421,7 +421,7 @@ class Adapter
 	
 	public function getSubPhraseEntitiesIds($queryText) {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseEntitiesIds($queryText, $this->getEntityIdFieldName());
+		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->getEntityIdFieldName());
 	}
 
     public function getRecommendation($widgetType, $widgetName, $minAmount = 3, $amount = 3, $products = array())

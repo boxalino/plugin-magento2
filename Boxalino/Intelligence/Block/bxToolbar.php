@@ -3,7 +3,7 @@ namespace Boxalino\Intelligence\Block;
 use Magento\Catalog\Block\Product\ProductList\Toolbar;
 use Magento\Catalog\Helper\Product\ProductList;
 use Magento\Catalog\Model\Product\ProductList\Toolbar as ToolbarModel;
-class bxToolbar extends Toolbar{
+class BxToolbar extends Toolbar{
 
     protected $p13Helper;
     public function __construct(
@@ -24,8 +24,4 @@ class bxToolbar extends Toolbar{
     public function hasSubPhrases(){
         return $this->p13Helper->areThereSubPhrases();
     }
-
-}
-
-
-?>
+}?>

@@ -10,7 +10,6 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Model\QueryFactory;
 class Result extends Mage_Result
 {
-
     protected $p13nHelper;
     protected $queryFactory;
     protected $bxListProducts;
@@ -99,4 +98,4 @@ class Result extends Mage_Result
     {
         return $this->getChildHtml('search_result_list', false);
     }
-}
+}?>

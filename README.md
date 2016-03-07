@@ -11,7 +11,7 @@
     * System > Permissions > Roles > Administrators - Save Role
 5. Indicate your account name and password in the Store -> Configuration -> Boxalion -> General
 6. Run a full data sync (direct command line from your main magento folder): php bin/magento indexer:reindex boxalino_indexer
-7. Delete all folders under /pub/static and run: php bin/magento setup:static-content:deploy de_CH (language is optional).
+7. Delete all folders under /pub/static/frontend and /pub/static/_requirejs/frontend. Run: php bin/magento setup:static-content:deploy de_CH (language is optional).
 8. Activate the search, facets, autocompletion and recommendations (one after the other).
 9. Set up a an indexing cronjob, running at least one full index per day. Use the delta indexer if you want to update more than once per hour.
 

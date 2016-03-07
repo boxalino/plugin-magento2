@@ -14,20 +14,15 @@ class Observer implements ObserverInterface
     protected $bxHelperData;
     protected $storeManager;
     protected $order;
-    protected $logger;
     public function __construct(
-        \Magento\Framework\Message\ManagerInterface $messageManager,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\Logger\Monolog $logger,
         \Magento\Sales\Model\Order $order
     )
     {
         $this->order = $order;
         $this->storeManager = $storeManager;
         $this->bxHelperData = $bxHelperData;
-        $this->messageManager = $messageManager;
-        $this->logger = $logger;
     }
 
     public function addScript($script)
@@ -40,7 +35,6 @@ class Observer implements ObserverInterface
             $event = $observer->getEvent();
             switch($event->getName()){
                 case "checkout_cart_add_product_complete": //onProductAddedToCart
-                    $this->onProductAddedToCart($event);
                     break;
                 case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
                     $this->onOrderSuccessPageView($event);
@@ -54,21 +48,6 @@ class Observer implements ObserverInterface
                 default:
                     break;
             }
-
-    }
-
-    public function onProductAddedToCart($event)
-    {
-        try {
-            $product = $event->getProduct()->getId();
-            $count = $event->getProduct()->getQty();
-            $price = $event->getProduct()->getSpecialPrice() > 0 ? $event->getProduct()->getSpecialPrice() : $event->getProduct()->getPrice();
-            $currency = $this->storeManager->getStore()->getCurrentCurrencyCode();
-
-            $script = $this->bxHelperData->reportAddToBasket($product,$count,$price,$currency);
-            $this->addScript($script);
-        } catch (\Exception $e) {
-        }
     }
 
     public function onOrderSuccessPageView($event)
@@ -112,7 +91,6 @@ class Observer implements ObserverInterface
 
     public function onCategoryPageView($event)
     {
-
         try {
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());
             $this->addScript($script);
