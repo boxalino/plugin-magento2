@@ -470,6 +470,9 @@ class BxData
 	}
 	
 	public function publishOwnerChanges($publish=true) {
+		if($this->isDev) {
+			$publish = false;
+		}
 		$fields = array(
             'username' => $this->bxClient->getUsername(),
             'password' => $this->bxClient->getPassword(),
