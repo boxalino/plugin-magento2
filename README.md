@@ -1,4 +1,5 @@
-# boxalino Magento 2 plug-in
+# Boxalino Magento 2 plug-in
+
 ## Introduction
 
 Welcome to the Boxalino Magento 2.x plugin.
@@ -48,7 +49,7 @@ N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, 
 
 ## Documentation
 
-The documentation is currently being created, a link will be added soon.
+http://documentation.boxalino.com/boxalino-magento-1-x-and-2-x-plugin/
 
 ## Contact us!
 
