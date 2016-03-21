@@ -29,6 +29,7 @@ class IndexController extends \Magento\CatalogSearch\Controller\Result\Index
     public function execute()
     {
 		if($this->bxHelperData->isSearchEnabled()){
+
             $configuration = array('Magento\CatalogSearch\Block\SearchResult\ListProduct' =>
                 array('type'=>'Boxalino\Intelligence\Block\Product\BxListProducts')
             );

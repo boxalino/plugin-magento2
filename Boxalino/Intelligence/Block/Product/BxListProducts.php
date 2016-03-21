@@ -23,6 +23,7 @@ class BxListProducts extends ListProduct
     protected $_objectManager;
     protected $abstractAction;
     protected $urlFactory;
+    protected $bxHelperData;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
     public function __construct(
@@ -30,6 +31,7 @@ class BxListProducts extends ListProduct
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         CategoryRepositoryInterface $categoryRepository,
+        \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Magento\Framework\App\Action\AbstractAction $abstractAction,
@@ -37,6 +39,7 @@ class BxListProducts extends ListProduct
         \Magento\Framework\UrlFactory $urlFactory,
         array $data = [])
     {
+        $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
         if($p13nHelper->areThereSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
@@ -53,6 +56,9 @@ class BxListProducts extends ListProduct
     {
         $layer = $this->getLayer();
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
+            if(!$this->bxHelperData->isNavigationEnabled()){
+                return parent::_getProductCollection();
+            }
             if($this->p13nHelper->areThereSubPhrases()) {
                 $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
 

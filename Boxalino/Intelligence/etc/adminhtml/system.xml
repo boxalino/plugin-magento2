@@ -188,8 +188,31 @@
                 </field>
             </group>
 
-            <group id="left_facets" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="navigation" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Navigation</label>
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable navigation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino navigation active?</comment>
+                </field>
+            </group>
+
+            <group id="filter" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Filter</label>
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable boxalino filter layout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino filter layout active?</comment>
+                </field>
+            </group>
+
+            <group id="left_facets" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Left facets</label>
+                <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable left filter</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino left filter active?</comment>
+                </field>
                 <field id="fields" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Field names</label>
                     <comment>The list of the field names of the facets to display on the left (extends Magento Search Layered Naviagation). Ordered list (from top to bottom) of the field names to be used as left facets (values separated by ','). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountPrice and categories).N.b.: value for categories is "categories"; field name of price is "discountedPrice"</comment>
@@ -208,8 +231,13 @@
                 </field>
             </group>
 
-            <group id="top_facet" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="top_facet" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Top facet</label>
+                <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable top filter</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino top filter active?</comment>
+                </field>
                 <field id="field" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Field name</label>
                     <comment>Optional: display a list of filter values on top of the search results (typically "value-oriented" facets with icons like: "in discount", "new", "top ranked", etc.). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountPrice and categories)</comment>
@@ -220,7 +248,7 @@
                 </field>
             </group>
 
-            <group id="autocomplete" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="autocomplete" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
@@ -237,7 +265,7 @@
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="advanced" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <field id="search_choice_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Search choice ID</label>

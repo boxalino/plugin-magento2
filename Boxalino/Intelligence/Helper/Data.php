@@ -313,7 +313,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     public function isAutocompleteEnabled(){
-        return (bool)$this->isPluginEnabled() && $this->isSearchEnabled() && $this->config->getValue('bxSearch/autocomplete/enabled', $this->scopeStore);
+        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/autocomplete/enabled', $this->scopeStore);
     }
 
     public function isTrackerEnabled()
@@ -334,6 +334,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function isUpsellEnabled()
     {
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/upsell/status', $this->scopeStore);
+    }
+
+    public function isNavigationEnabled()
+    {
+        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/navigation/enabled', $this->scopeStore);
+    }
+
+    public function isLeftFilterEnabled(){
+        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/left_facets/enabled', $this->scopeStore);
+    }
+
+    public function isTopFilterEnabled(){
+        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/top_facet/enabled', $this->scopeStore);
+    }
+
+    public function isFilterLayoutEnabled(){
+        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/filter/enabled', $this->scopeStore);
     }
 
 }

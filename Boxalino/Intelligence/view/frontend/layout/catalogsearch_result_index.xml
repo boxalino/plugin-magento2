@@ -22,5 +22,15 @@
                    template="Boxalino_Intelligence::slider.phtml">
             </block>
         </referenceContainer>
+        <referenceBlock name="catalogsearch.navigation.renderer">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="catalogsearch.leftnav">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/view.phtml</argument>
+            </action>
+        </referenceBlock>
     </body>
 </page>

@@ -11,4 +11,6 @@
     <preference for="Magento\Catalog\Block\Product\ProductList\Upsell" type="Boxalino\Intelligence\Block\Product\ProductList\Upsell"/>
     <preference for="Magento\Catalog\Block\Product\ProductList\Crosssell" type="Boxalino\Intelligence\Block\Product\ProductList\Crosssell"/>
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Boxalino\Intelligence\Block\Cart\Crosssell" />
+
+    <preference for="Magento\Catalog\Model\Layer\Filter\Item\DataBuilder" type="Boxalino\Intelligence\Model\BxDataBuilder" />
 </config>

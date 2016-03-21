@@ -237,10 +237,19 @@ class BxClient
 		}
 		throw $e;
 	}
-	
+
 	private function p13nchoose($choiceRequest) {
 		try {
-			return $this->getP13n()->choose($choiceRequest);
+			$choiceResponse = $this->getP13n()->choose($choiceRequest);
+			if(isset($_REQUEST['dev_bx_disp']) && $_REQUEST['dev_bx_disp'] == 'true') {
+				echo "<pre><h1>Choice Request</h1>";
+				var_dump($choiceRequest);
+				echo "<br><h1>Choice Response</h1>";
+				var_dump($choiceResponse);
+				echo "</pre>";
+				exit;
+			}
+			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
 		}

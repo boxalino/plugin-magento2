@@ -17,6 +17,7 @@ class Adapter
     protected $collectionFactory;
     protected $storeManager;
 	protected $_catalogLayer;
+	protected $bxHelperData;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -30,6 +31,7 @@ class Adapter
         \Boxalino\Intelligence\Helper\Data $bxHelperData
     )
     {
+		$this->bxHelperData = $bxHelperData;
         $this->scopeConfig = $scopeConfig;
         $this->catalogCategory = $catalogCategory;
 		$this->request = $request;
@@ -287,12 +289,13 @@ class Adapter
 	}
 
 	private function getLeftFacets() {
+
 		$fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
 		$labels = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/labels',$this->scopeStore));
 		$types = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/types',$this->scopeStore));
 		$orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));
 		
-		if($fields[0] == "") {
+		if($fields[0] == "" || !$this->bxHelperData->isLeftFilterEnabled()) {
 			return array();
 		}
 		
@@ -315,9 +318,13 @@ class Adapter
 	}
 	
 	private function getTopFacetValues() {
-		$field = $this->scopeConfig->getValue('bxSearch/top_facet/field',$this->scopeStore);
-		$order = $this->scopeConfig->getValue('bxSearch/top_facet/order',$this->scopeStore);
-		return array($field, $order);
+		if($this->bxHelperData->isTopFilterEnabled()){
+			$field = $this->scopeConfig->getValue('bxSearch/top_facet/field',$this->scopeStore);
+			$order = $this->scopeConfig->getValue('bxSearch/top_facet/order',$this->scopeStore);
+			return array($field, $order);
+		}
+		return null;
+
 	}
 	
 	public function getLeftFacetFieldNames() {
@@ -338,33 +345,35 @@ class Adapter
 
     private function prepareFacets()
     {
+		if($this->bxHelperData->isSearchEnabled()){
+			$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 
-		$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
-		
-		$selectedValues = array();
-		foreach ($_REQUEST as $key => $values) {
-			if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
-				$fieldName = substr($key, 3);
-				$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
+			$selectedValues = array();
+			foreach ($_REQUEST as $key => $values) {
+				if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
+					$fieldName = substr($key, 3);
+					$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
+				}
 			}
-        }
-		
-		$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
 
-		$bxFacets->addCategoryFacet($catId);
-        
-		foreach($this->getLeftFacets() as $fieldName => $facetValues) {
-			$selectedValue = isset($selectedValues[$fieldName][0]) ? $selectedValues[$fieldName][0] : null;
-			$bxFacets->addFacet($fieldName, $selectedValue, $facetValues[1], $facetValues[0], $facetValues[2]);
+			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+
+			$bxFacets->addCategoryFacet($catId);
+			foreach($this->getLeftFacets() as $fieldName => $facetValues) {
+				$selectedValue = isset($selectedValues[$fieldName][0]) ? $selectedValues[$fieldName][0] : null;
+				$bxFacets->addFacet($fieldName, $selectedValue, $facetValues[1], $facetValues[0], $facetValues[2]);
+			}
+
+
+			list($topField, $topOrder) = $this->getTopFacetValues();
+			if($topField) {
+				$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
+				$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder); // 1 ?? *iku*
+			}
+
+			return $bxFacets;
 		}
-		
-		list($topField, $topOrder) = $this->getTopFacetValues();
-		if($topField) {
-			$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
-			$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder); // 1 ?? *iku*
-		}
-		
-        return $bxFacets;
+		return null;
     }
 	
 	public function getTopFacetFieldName() {
