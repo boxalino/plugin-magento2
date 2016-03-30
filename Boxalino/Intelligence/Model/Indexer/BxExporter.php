@@ -1,5 +1,4 @@
 <?php
-
 namespace Boxalino\Intelligence\Model\Indexer;
 
 use Boxalino\Intelligence\Helper\BxindexConfig;
@@ -9,18 +8,15 @@ use Boxalino\Intelligence\Helper\BxGeneral;
 use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem;
-use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Config\ConfigOptionsListConstants;
 use Magento\Catalog\Model\ProductFactory;
-use Magento\Catalog\Helper\Image;
-use Magento\Catalog\Block\Product\Context;
 
 use \Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
-
 class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface{
 
 	/**
+	 *
      * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $storeManager;
@@ -41,7 +37,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     protected $productHelper;
 	
 	/**
-     * @var Boxalino\Intelligence\Helper\BxGeneral
+     * @var \Boxalino\Intelligence\Helper\BxGeneral
      */
     protected $bxGeneral;
 	
@@ -56,17 +52,17 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     protected $deploymentConfig;
 	
 	/**
-     * @var Magento\Catalog\Model\ProductFactory;
+     * @var \Magento\Catalog\Model\ProductFactory;
      */
     protected $productFactory;
 	
 	/**
-     * @var Magento\Catalog\Helper\Image;
+     * @var \Magento\Catalog\Helper\Image;
      */
     protected $_imageHelper;
 	
 	/**
-     * @var Magento\Catalog\Block\Product\Context;
+     * @var \Magento\Catalog\Block\Product\Context;
      */
     protected $context;
 	
@@ -76,12 +72,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	protected $rs;
 	
 	/**
-	* @var Magento\Framework\App\ProductMetadata
+	* @var \Magento\Framework\App\ProductMetadata
 	*/
 	protected $productMetaData;
 	
 	/**
-	* @var Magento\Catalog\Model\Product\Type\Price
+	* @var \Magento\Catalog\Model\Product\Type\Price
 	*/
 	private $typePrice;
 	
@@ -91,7 +87,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	protected $deltaIds = array();
 	
 	/**
-	* @var Boxalino\Intelligence\Helper\BxIndexConfig : containing the access to the configuration of each store to export
+	* @var \Boxalino\Intelligence\Helper\BxIndexConfig : containing the access to the configuration of each store to export
 	*/
 	private $config = null;
 	
@@ -111,20 +107,25 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	*/
     protected $_productsThumbnails = array();
 
-
 	/**
 	 * Cache of product default Urls
 	 */
 	protected $_productsDefaultUrls = array();
 
 	/**
-	* keeps the information whether a product property has been set at least once in the product export
-	* key: name of the property
-	* value: if true ==> set at least once
-	*/
-	private $_attrProdCount = array();
+	 * Indexer model, responsible for loading our $boxalinoIndexer
+	 */
+	protected $indexer;
+
+	/**
+	 * Boxalino indexer class
+	 */
+	protected $boxalinoIndexer = null;
+
 
 	private $bxData = null;
+
+	protected $linkedProductAttributes;
 
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -137,9 +138,11 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		ProductFactory $productFactory,
 		\Magento\Catalog\Block\Product\Context $context,
 		\Magento\Framework\App\ProductMetadata $productMetaData,
-		\Magento\Catalog\Model\Product\Type\Price $typePrice
+		\Magento\Catalog\Model\Product\Type\Price $typePrice,
+		\Magento\Indexer\Model\Indexer $indexer
     )
     {
+	   $this->indexer = $indexer;
        $this->storeManager = $storeManager;
 	   $this->logger = $logger;
 	   $this->filesystem = $filesystem;
@@ -169,14 +172,18 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     }
 
     public function execute($ids){
-		$this->logger->info("mview execute");
 		$this->exportStores($ids);
     }
 	
     public function executeFull(){
+		$this->boxalinoIndexer = $this->indexer->load('boxalino_indexer');
+		if($this->boxalinoIndexer->isScheduled()){
+			//enable delta export
+			$this->boxalinoIndexer->setScheduled(true);
+		};
 		$this->exportStores($this->checkForDeltaIds());
 	}
-	
+
 	protected function exportStores($deltaIds=array()) {
 		$this->logger->info("bxLog: starting exportStores");
 
@@ -197,7 +204,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$this->bxData->verifyCredentials();
 			
 			$this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
-			$attributesValuesByName = array();
 			$categories = array();
 			$attributes = null;
 			foreach ($this->config->getAccountLanguages($account) as $language) {
@@ -206,35 +212,29 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				
 				$this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
 				$attributes = $this->getStoreProductAttributes($account, $store);
-				
-				$this->logger->info('bxLog: Start getStoreProductAttributesValues for language . ' . $language . ' on store:' . $store->getId());
-				$attributesValuesByName = $this->getStoreProductAttributesValues($account, $attributes, $store, $language, $attributesValuesByName);
-				
 				$this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
 				$categories = $this->exportCategories($store, $language, $categories);
 			}
 
 			$this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-			$customer_attributes = $this->exportCustomers($account, $files);
+			$this->exportCustomers($account, $files);
+
 			$this->exportTransactions($account, $files);
 
-			$this->exportProducts($account, $files, $attributes, $attributesValuesByName, $categories);
-			$this->logger->info('bxLog: Remove unused attributes: ' . $account);
-
-			list($attributes, $attributesValuesByName) = $this->removeUnusedAttributes($attributes, $attributesValuesByName);
-			
+			$this->exportProducts($account, $files, $attributes);
 			$this->logger->info('bxLog: Prepare the final files: ' . $account);
-			$file = $files->prepareGeneralFiles($attributesValuesByName, $categories);
-			
+
 			$this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
-			$this->prepareData($account, $files, $file . '.xml', $attributes, $attributesValuesByName, $customer_attributes);
+			$this->prepareData($account, $files);
 
 			if($this->getIndexType() != 'delta') {
 				try {
 					$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
 					$this->bxData->pushDataSpecifications();
 				} catch(\Exception $e) {
+					$this->boxalinoIndexer->setReset(true);
 					$value = @json_decode($e->getMessage(), true);
+
 					if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
 						$this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
 						$this->bxData->pushDataSpecifications();
@@ -253,92 +253,26 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			}
 
 			$this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
-			$this->bxData->pushData();
-            $this->_attrProdCount = array();
-			
+			try{
+				$this->bxData->pushData();
+			}catch(\Exception $e){
+				$this->boxalinoIndexer->setReset(true);
+				throw $e;
+			}
+
             $this->logger->info('bxLog: Finished account: ' . $account);
         }
-		
+		if($this->getIndexType() == 'delta'){
+			$this->clearDeltaIds();
+		}
 		$this->logger->info("bxLog: finished exportStores");
 	}
-	
-	protected function prepareData($account, $files, $name, $attributes, $attributesValuesByName, $customer_attributes, $tags = null, $productTags = null) {
+
+	protected function prepareData($account, $files, $tags = null, $productTags = null) {
 		$withTag = ($tags != null && $productTags != null) ? true : false;
 		$languages = $this->config->getAccountLanguages($account);
 
-		$sourceKey = $this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
-
-        $attrs = array_keys($attributesValuesByName);
-        if ($withTag) { //$this->_storeConfig['export_tags'] && 
-            $attrs[] = 'tag';
-        }
-
-//		if ($this->config->exportProductUrl($account)) {
-//            $attrs[] = 'default_url';
-//        }
-        foreach ($attrs as $attr) {
-            if ($attr == 'visibility' || $attr == 'status') {
-                continue;
-            }
-            $attr = $this->bxGeneral->sanitizeFieldName($attr);
-			
-			$labelColumns = array();
-            foreach ($languages as $lang) {
-                $labelColumns[$lang] = 'value_' . $lang;
-            }
-			$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $attr . '.csv'), 'entity_id');
-			$attributeReferenceSourceKey = null;
-			$reference = false;
-            if (isset($attributesValuesByName[$attr]) && $attr != 'visibility' && $attr != 'status') {
-                $attributeReferenceSourceKey = $this->bxData->addResourceFile($files->getPath($attr . '.csv'), $attr . '_id', $labelColumns);
-				
-				$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $attr, $attr . '_id', $attributeReferenceSourceKey);
-				
-            } else {
-				
-				$columnLabels = array();
-				foreach ($languages as $lang) {
-					$labelColumns[$lang] = $this->bxGeneral->sanitizeFieldName($attr) . '_' . $lang;
-				}
-				
-				$fieldId = $this->bxGeneral->sanitizeFieldName($attr);
-				
-				switch ($attr) {
-					case 'category_ids':
-						break;
-					case 'name':
-						$this->bxData->addSourceTitleField($attributeSourceKey, $labelColumns);
-						break;
-					case 'description':
-						$this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
-						break;
-					case 'price':
-						$this->bxData->addSourceListPriceField($attributeSourceKey, $attr);
-						break;
-					case 'special_price':
-						$this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $attr);
-						break;
-					case 'entity_id':
-						break;
-					case 'short_description':
-					case 'status':
-					case 'visibility':
-						$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
-						break;
-					case 'weight':
-					case 'width':
-					case 'height':
-					case 'length':
-						$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, $labelColumns);
-						break;
-					default:
-						$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, $attr);
-						break;
-				}
-			}
-        }
-
-        if (true) { //$this->_storeConfig['export_categories']
+		if (!$this->config->isCustomersExportEnabled($account)) { //$this->_storeConfig['export_categories']
 			$labelColumns = array();
             foreach ($languages as $lang) {
                 $labelColumns[$lang] = 'value_' . $lang;
@@ -347,60 +281,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$productToCategoriesSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_categories.csv'), 'entity_id');
 			$this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
         }
-
-		if ( $this->config->exportProductUrl($account)) {
-
-			$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
-			$this->bxData->addSourceStringField($sourceKey,'entity_id','default_url_' . $lang);
-		}
-
-        if ( $this->config->exportProductImages($account)) {
-			
-			$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_url.csv'), 'entity_id');
-			$this->bxData->addSourceStringField($sourceKey,'entity_id','cache_image_url');
-			
-			$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_thumbnail_url.csv'), 'entity_id');
-			$this->bxData->addSourceStringField($sourceKey,'entity_id', 'cache_image_thumbnail_url');
-        }
-
-        if ($this->config->isCustomersExportEnabled($account)) {
-			
-			$customerSourceKey = $this->bxData->addMainCSVCustomerFile($files->getPath('customers.csv'), 'customer_id');
-
-            foreach (
-                $customer_attributes as $prop
-            ) {
-                if($prop == 'id') {
-					continue;
-				}
-
-                $this->bxData->addSourceStringField($customerSourceKey, $prop, $prop);
-            }
-        }
-
-        if ($this->config->isTransactionsExportEnabled($account)) {
-			
-			//todo: add  $customerIdColumn->addAttribute('guest_property_id', 'guest_id');
-			
-			//add a csv file as main customer file
-			$this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
-        }
-	}
-	
-	protected function removeUnusedAttributes($attributes, $attributesValuesByName) {
-		foreach ($attributes as $k => $attr) {
-			if (
-				!isset($attributesValuesByName[$attr]) ||
-				(isset($this->_attrProdCount[$attr]) &&
-					$this->_attrProdCount[$attr])
-			) {
-				continue;
-			} else {
-				unset($attributesValuesByName[$attr]);
-				unset($attributes[$k]);
-			}
-		}
-		return array($attributes, $attributesValuesByName);
 	}
 
     /**
@@ -409,28 +289,29 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      */
     protected function exportCategories($store, $language, $transformedCategories)
     {
-		$this->logger->info('bxLog: starts loading categories for store: ' . $store->getId());
-		$categories = $this->categoryCollection->setProductStoreId($store->getId())->setStoreId($store->getId())->addAttributeToSelect('*');
-		$categories->clear();
+		$db = $this->rs->getConnection();
+		$select = $db->select()
+			->from(
+				array('c_t' => $this->rs->getTableName('catalog_category_entity')),
+				array('entity_id', 'parent_id')
+			)
+			->joinInner(
+				array('c_v' => $this->rs->getTableName('catalog_category_entity_varchar')),
+				'c_v.entity_id = c_t.entity_id',
+				array('c_v.value', 'c_v.store_id')
+			)->where('c_v.attribute_id = ?', 42)->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId());
 
-		$this->logger->info('bxLog: prepare transformed categories for store: ' . $store->getId());
-		foreach ($categories as $category) {
-			if ($category->getParentId() == null) {
+		$result = $db->fetchAll($select);
+		foreach($result as $r){
+			if (!$r['parent_id'])  {
 				continue;
 			}
-
-			if (isset($transformedCategories[$category->getId()])) {
-				$transformedCategories[$category->getId()]['value_' . $language] = $this->bxGeneral->escapeString($category->getName());
-			} else {
-				$parentId = null;
-				if ($category->getParentId() != 0) {
-					$parentId = $category->getParentId();
-				}
-				$transformedCategories[$category->getId()] = array('category_id' => $category->getId(), 'parent_id' => $parentId, 'value_' . $language => $this->bxGeneral->escapeString($category->getName()));
+			if(isset($transformedCategories[$r['entity_id']])) {
+				$transformedCategories[$r['entity_id']]['value_' .$language] = $r['value'];
+				continue;
 			}
+			$transformedCategories[$r['entity_id']] = array('category_id' => $r['entity_id'], 'parent_id' => $r['parent_id'], 'value_' . $language => $r['value']);
 		}
-		
-		$this->logger->info('bxLog: returning transformed categories for store: ' . $store->getId());
 		return $transformedCategories;
     }
 
@@ -463,6 +344,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             'visibility',
             'status'
         );
+
 		$this->logger->info('bxLog: get configured product attributes for store: ' . $store->getId());
 		$filteredAttributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
 		
@@ -475,42 +357,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$this->logger->info('bxLog: returning configured product attributes for store ' . $store->getId() . ': ' . implode(',', array_values($attributes)));
 		return $attributes;
     }
-	
-	
-    /**
-     * @description Get labels for all Attributes where is optionsId = optionValue
-     * @return void
-     */
-    protected function getStoreProductAttributesValues($account, $attributeCodes, $store, $language, $attributesValuesByName)
-    {	
-        foreach ($this->productHelper->getAttributes() as $attribute) {
-			if(isset($attributeCodes[$attribute->getId()])) {
-				$options = $attribute->setStoreId($store->getId())->getSource()->getAllOptions();
-				foreach ($options as $option) {
-                    if (!empty($option['value'])) {
-						
-						$value = intval($option['value']);
-                        $name = 'value_' . $language;
-						
-                        if (!isset($attributesValuesByName[$attribute->getAttributeCode()])) {
-							$attributesValuesByName[$attribute->getAttributeCode()] = array();
-						}
-						
-						if (!isset($attributesValuesByName[$attribute->getAttributeCode()][$value])) {
-							$attributesValuesByName[$attribute->getAttributeCode()][$value] = array($attribute->getAttributeCode() . '_id' => $value);
-						}
-						
-						$attributesValuesByName[$attribute->getAttributeCode()][$value][$name] = $this->bxGeneral->escapeString($option['label']);
-                    }
-                }
-                unset($options);
-            }
-        }
-		
-		return $attributesValuesByName;
-    }
-	
-	
 
     /**
      * @description Preparing customers to export
@@ -747,9 +593,21 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
         } while ($count >= $limit);
         $customers = null;
 
+		if ($this->config->isCustomersExportEnabled($account)) {
+
+			$customerSourceKey = $this->bxData->addMainCSVCustomerFile($files->getPath('customers.csv'), 'customer_id');
+
+			foreach (
+				$customer_attributes as $prop
+			) {
+				if($prop == 'id') {
+					continue;
+				}
+
+				$this->bxData->addSourceStringField($customerSourceKey, $prop, $prop);
+			}
+		}
         $this->logger->info('bxLog: Customers - end of exporting for account: ' . $account);
-		
-		return $customer_attributes;
     }
 
     /**
@@ -846,6 +704,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			}
 		}
 		$this->logger->info('bxLog: returning configured customer attributes for account ' . $account . ': ' . implode(',', array_values($attributes)));
+
 		return $attributes;
     }
 
@@ -867,14 +726,24 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				if(!isset($r)){
 					continue;
 				}
-				$ids[] = $r['entity_id'];
-				$db->delete('boxalino_indexer_cl','entity_id = ' . $r['entity_id']);
+				$ids[] = $r['entity_id'];;
 			}
 			return $ids;
 		}
 		return array();
 	}
 
+	protected function clearDeltaIds(){
+		$this->deltaIds;
+		$db = $this->rs->getConnection();
+		foreach ($this->deltaIds as $id){
+			$db->delete('boxalino_indexer_cl', 'entity_id =' . $id);
+		}
+	}
+
+	protected function getLastIndex(){
+		return $this->boxalinoIndexer->getResetDate();
+	}
 
     /**
      * @return string Index type
@@ -896,14 +765,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		}
 
         $this->logger->info('bxLog: starting transaction export for account ' . $account);
-		
-        $db = $this->rs->getConnection();
 
+        $db = $this->rs->getConnection();
         $limit = 1000;
         $count = $limit;
         $page = 1;
         $header = true;
-		
+		$transactions_to_save = array();
 		// We use the crypt key as salt when generating the guest user hash
         // this way we can still optimize on those users behaviour, whitout
         // exposing any personal data. The server salt is there to guarantee
@@ -915,9 +783,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
         while ($count >= $limit) {
 			$this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
-            $transactions_to_save = array();
-            $configurable = array();
 
+            $configurable = array();
             $select = $db
                 ->select()
                 ->from(
@@ -954,6 +821,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 ->where('order.status <> ?', 'canceled')
                 ->order(array('order.entity_id', 'item.product_type'))
                 ->limit($limit, ($page - 1) * $limit);
+			if(false){
+				$select->where('order.created_at >= ?', $this->getLastIndex())->orWhere('order.updated_at >= ?', $this->getLastIndex());
+			}
 
             $transaction_attributes = $this->getTransactionAttributes($account);
             if (count($transaction_attributes)) {
@@ -971,16 +841,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                            array('shipping_address' => $this->rs->getTableName('sales_order_address')),
                            'order.shipping_address_id = shipping_address.entity_id',
                            $shipping_columns
-                       );
+					   );
             }
-            // when in full transaction export mode, don't limit the query
-			//TODO: ENABLE A MODE TO ONLY EXPORT THE TRANSACTIONS SINCE LAST EXPORT AND NOT ALL THE TRANSACTIONS
-            /*if (!$this->_storeConfig['export_transactions_full']) {
-                $select->where('order.created_at >= ?', $this->_getLastIndex())
-                       ->orWhere('order.updated_at >= ?', $this->_getLastIndex());
-            }*/
 
             $transactions = $db->fetchAll($select);
+
+
 			$this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
 
             foreach ($transactions as $transaction) {
@@ -1057,550 +923,414 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     }
                 }
                 $transactions_to_save[] = $final_transaction;
+				$final_transaction = null;
             }
 
-            $data = $transactions_to_save;
-            $count = count($transactions);
 
+            $data[] = $transactions_to_save;
+			$count = count($transactions);
             $configurable = null;
             $transactions = null;
-
-            if ($count == 0 && $header) {
-                return;
-            }
 
             if ($header) {
                 $data = array_merge(array(array_keys(end($transactions_to_save))), $transactions_to_save);
                 $header = false;
+				$transactions_to_save = null;
             }
 
 			$this->logger->info('bxLog: Transactions - save to file for account ' . $account);
+
             $files->savePartToCsv('transactions.csv', $data);
+
             $data = null;
-
-            $page++;
-
+			$page++;
         }
+		$this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
+
 
 		$this->logger->info('bxLog: Transactions - end of export for account ' . $account);
     }
+
+	protected function exportProductAttributes($attrs = array(), $languages, $account, $files){
+
+		$db = $this->rs->getConnection();
+		$columns = array(
+			'entity_id',
+			'attribute_id',
+			'value',
+			'store_id'
+		);
+		$attrs['misc'][] = array('attribute_code' => 'categories');
+		$files->prepareProductFiles($attrs);
+		unset($attrs['misc']);
+
+		foreach($attrs as $attrKey => $types){
+
+			$select = $db->select()->from(
+				array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
+				$columns
+			)->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 't_d.attribute_id = ea.attribute_id', array());
+			$this->getIndexType() == 'delta' ? $select->where('t_d.entity_id IN(?)', $this->deltaIds) : '';
+
+			foreach ($types as $typeKey => $type) {
+				$data = array();
+				$addtionalData = array();
+				$d = array();
+				$mapping = array();
+
+				foreach ($languages as $lang) {
+					$labelColumns[$lang] = 'value_' . $lang;
+					$storeObject = $this->config->getStore($account, $lang);
+					$storeId = $storeObject->getId();
+					$storeBaseUrl = $storeObject->getBaseUrl();
+					if ($type['attribute_code'] == 'url_key') {
+						if ($this->productMetaData->getEdition() != "Community") {
+							$select1 = $db->select()
+								->from(
+									array('t_g' => $this->rs->getTableName('catalog_product_entity_url_key')),
+									array('entity_id', 'attribute_id')
+								)
+								->joinLeft(
+									array('t_s' => $this->rs->getTableName('catalog_product_entity_url_key')),
+									't_s.attribute_id = t_g.attribute_id AND t_s.entity_id = t_g.entity_id',
+									array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
+								)
+								->where('t_g.attribute_id = ?', $typeKey)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
+							$this->getIndexType() == 'delta' ? $select1->where('t_g.entity_id IN(?)', $this->deltaIds) : '';
+
+							foreach ($db->fetchAll($select1) as $r) {
+								$data[] = $r;
+							}
+							continue;
+						}
+					}
+					$whereClause = clone $select;
+					$whereClause->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = ? OR t_d.store_id = 0', $storeId);
+					$fetchedResult = $db->fetchAll($whereClause);
+
+					if (sizeof($fetchedResult) > 0) {
+
+						foreach ($fetchedResult as $row) {
+							if (isset($data[$row['entity_id']]) && isset($mapping[$row['entity_id']])) {
+								if($row['store_id'] > $mapping[$row['entity_id']]) {
+									$data[$row['entity_id']]['value_' . $lang] = $row['value'];
+									if(isset($addtionalData[$row['entity_id']])){
+										if ($type['attribute_code'] == 'url_key') {
+											$url = $storeBaseUrl . $row['value'] . '.html';
+											$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+										} else {
+											$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+											$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+										}
+									}
+									$mapping[$row['entity_id']] = 0;
+									continue;
+								}
+								$data[$row['entity_id']]['value_' . $lang] = $row['value'];
+
+								if (isset($addtionalData[$row['entity_id']])) {
+									if ($type['attribute_code'] == 'url_key') {
+										$url = $storeBaseUrl . $row['value'] . '.html';
+										$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+									} else {
+										$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+										$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+									}
+								}
+								continue;
+							} else {
+								if ($type['is_global'] > 0) {
+									$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], $type['attribute_code'] . '_id' => $row['attribute_id'], 'value' => $row['value']);
+									continue;
+								}
+								if ($type['attribute_code'] == 'url_key') {
+									if ($this->config->exportProductUrl($account)) {
+										$url = $storeBaseUrl . $row['value'] . '.html';
+										$addtionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+									}
+								}
+								if ($type['attribute_code'] == 'image') {
+									if ($this->config->exportProductImages($account)) {
+										$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+										$addtionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+									}
+								}
+								$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], $type['attribute_code'] . '_id' => $row['attribute_id'], 'value_' . $lang => $row['value']);
+								$mapping[$row['entity_id']] = $row['store_id'];
+							}
+						}
+						if($type['is_global'] > 0){
+							$labelColumns = null;
+							break;
+						}
+					}
+					$whereClause = null;
+				}
+
+				if (sizeof($data)) {
+					if(sizeof($addtionalData)){
+						$d = array_merge(array(array_keys(end($addtionalData))), $addtionalData);
+						if ($type['attribute_code'] == 'url_key') {
+							$files->savepartToCsv('product_default_url.csv', $d);
+							$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
+							$this->bxData->addSourceLocalizedTextField($sourceKey, 'default_url', $labelColumns);
+
+						} else {
+							$files->savepartToCsv('product_cache_image_url.csv', $d);
+							$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_url.csv'), 'entity_id');
+							$this->bxData->addSourceLocalizedTextField($sourceKey, 'cache_image_url',$labelColumns);
+						}
+					}
+					$d = array_merge(array(array_keys(end($data))), $data);
+					$files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
+
+					$fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
+					$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
+					switch($type['attribute_code']){
+						case 'name':
+							$this->bxData->addSourceTitleField($attributeSourceKey, $labelColumns);
+							break;
+						case 'description':
+							$this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
+							break;
+						case 'price':
+							$this->bxData->addSourceListPriceField($attributeSourceKey, $type['attribute_code'] . '_id');
+							break;
+						case 'special_price':
+							$this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $type['attribute_code'] . '_id');
+							break;
+						case ($attrKey == ('int' || 'decimal')) && $type['is_global'] > 0:
+							$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
+							break;
+						case $attrKey == 'datetime':
+							$this->bxData->addSourceDateField($attributeSourceKey, $fieldId, 'value');
+							break;
+						default:
+							if(sizeof($labelColumns) > 0){
+								$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
+							}else{
+								$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
+							}
+							break;
+					}
+				}
+				$data = null;
+				$addtionalData = null;
+				$mapping = null;
+				$d = null;
+				$labelColumns = null;
+			}
+		}
+	}
+
+	protected function exportProductInformation($files){
+		$db = $this->rs->getConnection();
+		$fieldId = 'status';
+		//product stock
+		$select = $db->select()
+			->from(
+				$this->rs->getTableName('cataloginventory_stock_status'),
+				array(
+					'entity_id' => 'product_id',
+					'stock_status',
+					'qty'
+				)
+			)
+			->where('stock_id = ?', 1);
+		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
+
+		foreach ($db->fetchAll($select) as $r) {
+			$data[] = $r;
+		}
+		$d = array_merge(array(array_keys(end($data))), $data);
+		$files->savePartToCsv('product_stock.csv', $d);
+		$data = null;
+		$d = null;
+		$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_stock.csv'), 'entity_id');
+		$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'qty');
+
+		//product website
+		$fieldId = 'website';
+		$select = $db->select()
+			->from(
+				array('c_p_w' => $this->rs->getTableName('catalog_product_website')),
+				array(
+					'entity_id' => 'product_id',
+					'website_id',
+				)
+			)->joinLeft(array('s_w' => $this->rs->getTableName('store_website')),
+				's_w.website_id = c_p_w.website_id',
+				array('s_w.name')
+			);
+		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
+
+		foreach ($db->fetchAll($select) as $r) {
+			$data[] = $r;
+		}
+		$d = array_merge(array(array_keys(end($data))), $data);
+		$files->savePartToCsv('product_website.csv', $d);
+		$data = null;
+		$d = null;
+		$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_website.csv'), 'entity_id');
+		$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'name');
+
+		//product super link
+		$fieldId = 'parent';
+		$select = $db->select()
+			->from(
+				$this->rs->getTableName('catalog_product_super_link'),
+				array(
+					'entity_id' => 'product_id',
+					'parent_id',
+					'link_id'
+				)
+			);
+		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
+
+		foreach ($db->fetchAll($select) as $r) {
+			$data[] = $r;
+		}
+		if(sizeof($data) > 0) {
+			$d = array_merge(array(array_keys(end($data))), $data);
+			$files->savePartToCsv('product_parent.csv', $d);
+			$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_parent.csv'), 'entity_id');
+			$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'link_id');
+		}
+		$data = null;
+		$d = null;
+
+		//product categories
+		$select = $db->select()
+			->from(
+				$this->rs->getTableName('catalog_category_product'),
+				array(
+					'entity_id' => 'product_id',
+					'category_id',
+					'position'
+				)
+			);
+		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
+
+		foreach ($db->fetchAll($select) as $r) {
+			$data[] = $r;
+		}
+		$d = array_merge(array(array_keys(end($data))), $data);
+		$files->savePartToCsv('product_categories.csv', $d);
+		$data = null;
+		$d = null;
+
+		//product link
+		$select = $db->select()
+			->from(
+				array('pl'=> $this->rs->getTableName('catalog_product_link')),
+				array(
+					'product_id',
+					'linked_product_id',
+					'lt.code'
+				)
+			)
+			->joinLeft(
+				array('lt' => $this->rs->getTableName('catalog_product_link_type')),
+				'pl.link_type_id = lt.link_type_id', array()
+			)
+			->where('lt.link_type_id = pl.link_type_id');
+		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
+
+		foreach($db->fetchAll($select) as $r){
+			$data[] = $r;
+		}
+		$d = array_merge(array(array_keys(end($data))), $data);
+		$files->savePartToCsv('product_links.csv', $d);
+	}
 
     /**
      * @description Preparing products to export
      * @param array $languages language structure
      * @return void
      */
-    protected function exportProducts($account, $files, $attributes, $attributesValuesByName, $transformedCategories)
-    {
+    protected function exportProducts($account, $files, $attributes)
+	{
 		$languages = $this->config->getAccountLanguages($account);
 
-		$transformedProducts = array();
-		
 		$this->logger->info('bxLog: Products - start of export for account ' . $account);
-        $attrs = $attributes;
+		$attrs = $attributes;
 		$this->logger->info('bxLog: Products - get info about attributes - before for account ' . $account);
 
-        $db = $this->rs->getConnection();
-        $select = $db->select()
-            ->from(
-                array('main_table' => $this->rs->getTableName('eav_attribute')),
-                array(
-                    'attribute_id',
-                    'attribute_code',
-                    'backend_type',
-                )
-            )
-            ->joinInner(
-                array('additional_table' => $this->rs->getTableName('catalog_eav_attribute')),
-                'additional_table.attribute_id = main_table.attribute_id'
-            )
-            ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
-            ->where('main_table.attribute_code IN(?)', $attrs);
+		$db = $this->rs->getConnection();
+		$select = $db->select()
+			->from(
+				array('main_table' => $this->rs->getTableName('eav_attribute')),
+				array(
+					'attribute_id',
+					'attribute_code',
+					'backend_type',
+				)
+			)
+			->joinInner(
+				array('additional_table' => $this->rs->getTableName('catalog_eav_attribute'), 'is_global'),
+				'additional_table.attribute_id = main_table.attribute_id'
+			)
+			->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
+			->where('main_table.attribute_code IN(?)', $attrs);
 
 		$this->logger->info('bxLog: Products - connected to DB, built attribute info query for account ' . $account);
 
-        $attrsFromDb = array(
-            'int' => array(),
-            'varchar' => array(),
-            'text' => array(),
-            'decimal' => array(),
-            'datetime' => array(),
-        );
+		$attrsFromDb = array(
+			'int' => array(),
+			'varchar' => array(),
+			'text' => array(),
+			'decimal' => array(),
+			'datetime' => array(),
+		);
 
-        foreach ($db->fetchAll($select) as $r) {
-            $type = $r['backend_type'];
-            if (isset($attrsFromDb[$type])) {
-                $attrsFromDb[$type][] = $r['attribute_id'];
-            }
-        }
-		$this->logger->info('bxLog: Products - attributes preparing done for account ' . $account);
+		foreach ($db->fetchAll($select) as $r) {
+			$type = $r['backend_type'];
+			if (isset($attrsFromDb[$type])) {
+				$attrsFromDb[$type][$r['attribute_id']] = array('attribute_code' => $r['attribute_code'], 'is_global' => $r['is_global']);
+			}
+		}
 
-        $countMax = 1000000; //$this->_storeConfig['maximum_population'];
-        $localeCount = 0;
-
-        $limit = 1000; //$this->_storeConfig['export_chunk'];
-        $count = $limit;
+		$countMax = 1000000; //$this->_storeConfig['maximum_population'];
+		$limit = 1000; //$this->_storeConfig['export_chunk'];
 		$totalCount = 0;
-        $page = 1;
-        $header = true;
+		$page = 1;
+		$header = true;
 
-        //prepare files
-		$tmpFiles = array_keys($attributesValuesByName);
-        $tmpFiles[] = 'categories';
-//		$filename = fopen('C:/Users/Tapun/Documents/CSV/attr.txt', 'w');
-//		fputs($filename,json_encode($tmpFiles));
-//		fclose($filename);
+		while (true) {
+			if ($countMax > 0 && $totalCount >= $countMax) {
+				break;
+			}
 
-        $files->prepareProductFiles($tmpFiles);
+			$select = $db->select()
+				->from(
+					array('e' => $this->rs->getTableName('catalog_product_entity'))
+				)
+				->limit($limit, ($page - 1) * $limit);
 
-        while ($count >= $limit) {
-            if ($countMax > 0 && $totalCount >= $countMax) {
-                break;
-            }
+			$this->getIndexType() == 'delta' ? $select->where('entity_id IN (?)', $this->deltaIds) : '';
 
-            foreach ($languages as $lang) {
-				
-				$storeObject = $this->config->getStore($account, $lang);
-                $storeId = $storeObject->getId();
-                $storeBaseUrl = $storeObject->getBaseUrl();
-                $storeCode = $storeObject->getCode();
-
-				
-				$this->logger->info('bxLog: Products - fetch products - before for account ' . $account . ' for languge ' . $lang);
-                $select = $db->select()
-                    ->from(
-                        array('e' => $this->rs->getTableName('catalog_product_entity')), 'e.entity_id'
-                    )
-                    ->limit($limit, ($page - 1) * $limit);
-
-                $this->getIndexType() == 'delta' ? $select->where('entity_id IN (?)', $this->deltaIds) : '';
-
-				$this->logger->info('bxLog: Products - fetch products - after for account ' . $account . ' for languge ' . $lang);
-
-                $products = array();
-                $ids = array();
-                $count = 0;
-
-                foreach ($db->fetchAll($select) as $r) {
-                    $products[$r['entity_id']] = $r;
-                    $ids[] = $r['entity_id'];
-                    $products[$r['entity_id']]['website'] = array();
-                    $products[$r['entity_id']]['categories'] = array();
-                    $count++;
-                }
-
-
-                // we have to check for settings on the different levels: Store(View) & Global
-				$this->logger->info('bxLog: Products - get attributes - before for account ' . $account . ' for languge ' . $lang);
-                $columns = array(
-                    'entity_id',
-                    'attribute_id',
-					'value'
-                );
-//                $joinCondition = $db->quoteInto('t_s.attribute_id = t_d.attribute_id AND t_s.entity_id = t_d.entity_id AND t_s.store_id = ?', $storeId);
-//                $joinColumns = array('value' => 'IF(t_s.value_id IS NULL, t_d.value, t_s.value)');
-				$queryArray = array();
-                $select1 = $db->select()
-                    ->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 't_d.attribute_id = ea.attribute_id', 'ea.attribute_code')
-                    ->where('t_d.store_id = ?', 0);
-
-				$this->getIndexType() == 'delta' ? $select1->where('t_d.entity_id IN(?)', $this->deltaIds) : '';
-
-                $select2 = clone $select1;
-                $select3 = clone $select1;
-                $select4 = clone $select1;
-                $select5 = clone $select1;
-
-				$select1->from(
-					array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
-					$columns
-				);
-
-				$select2->from(
-					array('t_d' => $this->rs->getTableName('catalog_product_entity_text')),
-					$columns
-				);
-
-				$select3->from(
-					array('t_d' => $this->rs->getTableName('catalog_product_entity_decimal')),
-					$columns
-				);
-
-				$select4->from(
-					array('t_d' => $this->rs->getTableName('catalog_product_entity_int')),
-					$columns
-				);
-				$select5->from(
-					array('t_d' => $this->rs->getTableName('catalog_product_entity_datetime')),
-					$columns
-				);
-
-				$all = array($select1,$select2,$select3,$select4,$select5);
-				foreach($all as $query){
-					$statement = $db->query($query);
-					while($row = $statement->fetch()){
-						isset($products[$row['entity_id']]) ? $products[$row['entity_id']][$row['attribute_code']] = $row['value'] : '' ;
-					}
+			$data = array();
+			$fetchedResult = $db->fetchAll($select);
+			if(sizeof($fetchedResult) > 0 ){
+				foreach ($fetchedResult as $r) {
+					$data[$r['entity_id']] = $r;
+					$totalCount++;
 				}
+			}else{
+				break;
+			}
 
-                $select1 = null;
-                $select2 = null;
-                $select3 = null;
-                $select4 = null;
-                $select5 = null;
+			if ($header && count($data) > 0) {
+				$data = array_merge(array(array_keys(end($data))), $data);
+				$header = false;
+			}
 
-				$this->logger->info('bxLog: Products - get attributes - after for account ' . $account . ' for languge ' . $lang);
-
-				$this->logger->info('bxLog: Products - get stock - before for account ' . $account . ' for languge ' . $lang);
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('cataloginventory_stock_status'),
-                        array(
-                            'product_id',
-                            'stock_status',
-                        )
-                    )
-                    ->where('stock_id = ?', 1)
-                    ->where('website_id = ?', 1);
-
-				$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
-
-                foreach ($db->fetchAll($select) as $r) {
-                    $products[$r['product_id']]['stock_status'] = $r['stock_status'];
-                }
-				$this->logger->info('bxLog: Products - get stock - after for account ' . $account . ' for languge ' . $lang);
-
-				$this->logger->info('bxLog: Products - get products from website - before for account ' . $account . ' for languge ' . $lang);
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('catalog_product_website'),
-                        array(
-                            'product_id',
-                            'website_id',
-                        )
-                    );
-
-				$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
-
-                foreach ($db->fetchAll($select) as $r) {
-                    $products[$r['product_id']]['website'][] = $r['website_id'];
-                }
-				$this->logger->info('bxLog: Products - get products from website - after for account ' . $account . ' for languge ' . $lang);
-
-				$this->logger->info('bxLog: Products - get products connections - before for account ' . $account . ' for languge ' . $lang);
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('catalog_product_super_link'),
-                        array(
-                            'product_id',
-                            'parent_id',
-                        )
-                    );
-
-				$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
-
-				foreach ($db->fetchAll($select) as $r) {
-                    $products[$r['product_id']]['parent_id'] = $r['parent_id'];
-                }
-				$this->logger->info('bxLog: Products - get products connections - after for account ' . $account . ' for languge ' . $lang);
-
-				$this->logger->info('bxLog: Products - get categories - before for account ' . $account . ' for languge ' . $lang);
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('catalog_category_product'),
-                        array(
-                            'product_id',
-                            'category_id',
-                        )
-                    );
-
-				$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
-
-				foreach ($db->fetchAll($select) as $r) {
-                    $products[$r['product_id']]['categories'][] = $r['category_id'];
-                }
-                $select = null;
-				$this->logger->info('bxLog: Products - get categories - after for account ' . $account . ' for languge ' . $lang);
-
-				if ($this->productMetaData->getEdition() != "Community") {
-					$this->logger->info('bxLog: Products - get EE URL key  - before for account ' . $account . ' for languge ' . $lang);
-                    $select = $db->select()
-                        ->from(
-                            array('t_g' => $this->rs->getTableName('catalog_product_entity_url_key')),
-                            array('entity_id')
-                        )
-                        ->joinLeft(
-                            array('t_s' => $this->rs->getTableName('catalog_product_entity_url_key')),
-                            $db->quoteInto('t_s.attribute_id = t_g.attribute_id AND t_s.entity_id = t_g.entity_id AND t_s.store_id = ?', $storeId),
-                            array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
-                        )
-                        ->where('t_g.store_id = ?', 0);
-
-					$this->getIndexType() == 'delta' ? $select->where('t_g.entity_id IN(?)', $this->deltaIds) : '';
-
-                    foreach ($db->fetchAll($select) as $r) {
-                        $products[$r['entity_id']]['url_key'] = $r['value'];
-                    }
-					$select = null;
-					$this->logger->info('bxLog: Products - get EE URL key  - after for account ' . $account . ' for languge ' . $lang);
-                }
-
-                $select = $db->select()
-                    ->from(
-                        array('pl'=> $this->rs->getTableName('catalog_product_link')),
-                        array(
-                            'link_id',
-                            'product_id',
-                            'linked_product_id',
-                            'link_type_id'
-                        )
-                    )
-					->from(
-                        array('lt' => $this->rs->getTableName('catalog_product_link_type')),
-                        array(
-                            'link_type_id',
-                            'code'
-                        )
-                    )
-                    ->where('lt.link_type_id = pl.link_type_id');
-
-				$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
-
-                $linkCodes = array();
-				foreach ($db->fetchAll($select) as $r) {
-					$linkCodes[$r['code']] = 'linked_products_' . $r['code'];
-				    if(!isset($products[$r['product_id']]['linked_products_' . $r['code']])) {
-						$products[$r['product_id']]['linked_products_' . $r['code']] = $r['linked_product_id'];
-					} else {
-						$products[$r['product_id']]['linked_products_' . $r['code']] .= ',' . $r['linked_product_id'];
-					}
-                }
-				foreach($linkCodes as $code => $codeFieldName) {
-					$attrs[] = $codeFieldName;
-				}
-                $ids = null;
-
-				$this->logger->info('bxLog: Products - start transform for account ' . $account . ' for languge ' . $lang);
-
-
-                foreach ($products as $product) {
-					// TODO: FIGURE OUT HOW THE GROUP LOGIC WORKS EXACTLY
-                    if (count($product['website']) == 0) { // || !in_array($storeObject->getGroupId(), $product['website'])) {
-                        $product = null;
-                        continue;
-                    }
-
-					if(!isset($product['entity_id'])){
-						continue;
-					}
-                    $id = $product['entity_id'];
-                    $productParam = array();
-                    $haveParent = false;
-
-                    if (array_key_exists('parent_id', $product)) {
-                        $id = $product['parent_id'];
-                        $haveParent = true;
-                    }
-					
-					if(!isset($product['special_from_date'])) {
-						$product['special_from_date'] = null;
-					}
-					if(!isset($product['special_to_date'])) {
-						$product['special_to_date'] = null;
-					}
-
-                    // apply special price time range
-                    if
-					(
-                        !empty($product['special_price']) &&
-                        $product['price'] > $product['special_price'] &&
-						(
-                            !empty($product['special_from_date']) ||
-                            !empty($product['special_to_date'])
-                        )
-                    )
-					{
-                        $product['special_price'] = $this->typePrice->calculateSpecialPrice(
-                            $product['price'],
-                            $product['special_price'],
-                            $product['special_from_date'],
-                            $product['special_to_date'],
-                            $storeObject
-                        );
-                    }
-
-                    foreach ($attrs as $attr) {
-
-                        if (isset($attributesValuesByName[$attr])) {
-
-                            $val = array_key_exists($attr, $product) ? $this->bxGeneral->escapeString($product[$attr]) : '';
-                            if ($val == null) {
-                                continue;
-                            }
-
-                            $attr = $this->bxGeneral->sanitizeFieldName($attr);
-
-                            $this->_attrProdCount[$attr] = true;
-
-                            // visibility as defined in Mage_Catalog_Model_Product_Visibility:
-                            // 4 - VISIBILITY_BOTH
-                            // 3 - VISIBILITY_IN_SEARCH
-                            // 2 - VISIBILITY_IN_CATALOG
-                            // 1 - VISIBILITY_NOT_VISIBLE
-                            // status as defined in Mage_Catalog_Model_Product_Status:
-                            // 2 - STATUS_DISABLED
-                            // 1 - STATUS_ENABLED
-                            if ($attr == 'visibility' || $attr == 'status') {
-                                $productParam[$attr . '_' . $lang] = $val;
-                            } else {
-								$files->addToCSV($attr, array($id, $val));
-                            }
-
-                            $val = null;
-                            continue;
-                        }
-
-                        $val = array_key_exists($attr, $product) ? $this->bxGeneral->escapeString($product[$attr]) : '';
-                        switch ($attr) {
-                            case 'category_ids':
-                                break;
-                            case 'description':
-                            case 'short_description':
-                            case 'name':
-                            case 'status':
-                                $productParam[$attr . '_' . $lang] = $val;
-                                break;
-                            default:
-                                $productParam[$attr] = $val;
-                                break;
-                        }
-
-                    }
-
-                    if ($haveParent) {
-                        $product = null;
-                        continue;
-                    }
-
-                    if (!isset($transformedProducts['products'][$id])) {
-                        if ($countMax > 0 && $totalCount >= $countMax) {
-                            $product = null;
-                            $products = null;
-                            break;
-                        }
-                        $productParam['entity_id'] = $id;
-                        $transformedProducts['products'][$id] = $productParam;
-
-                        // Add categories
-                        if (isset($product['categories']) && count($product['categories']) > 0) {
-                            foreach ($product['categories'] as $cat) {
-
-                                while ($cat != null) {
-									
-									$files->addToCSV('categories', array($id, $cat));
-                                    if (isset($transformedCategories[$cat]['parent_id'])) {
-                                        $cat = $transformedCategories[$cat]['parent_id'];
-                                    } else {
-                                        $cat = null;
-                                    }
-                                }
-                            }
-                        }
-                        $totalCount++;
-                        $localeCount++;
-
-                        // Add url to image cache
-                        if ($this->config->exportProductImages($account)) {
-							$url = $storeBaseUrl . "pub/media/catalog/product" . $product['image'];
-							$url_tbm = $storeBaseUrl . "pub/media/catalog/product" . $product['thumbnail'];
-
-							$this->_productsImages[] = array($id, $url);
-							$this->_productsThumbnails[] = array($id, $url_tbm);
-                        }
-
-                    } elseif (isset($transformedProducts['products'][$id])) {
-                        $transformedProducts['products'][$id] = array_merge($transformedProducts['products'][$id], $productParam);
-                    }
-
-                    // Add url to product for each languages
-                    if ( $this->config->exportProductUrl($account)) {
-                        if (array_key_exists('url_key', $product)) {
-                            $url_path = $product['url_key'] . '.html';
-                        } else {
-                            $url_path = $this->bxGeneral->rewrittenProductUrl(
-                                $id, $storeId
-                            );
-                        }
-						if(!isset($this->_productsDefaultUrls[$id])){
-							$this->_productsDefaultUrls[$id] = array(
-								'entity_id' => $id,
-								'default_url_' . $lang => $storeBaseUrl . $url_path . '?___store=' . $storeCode
-							);
-						}else{
-							$this->_productsDefaultUrls[$id] = array('default_url_' . $lang => $storeBaseUrl . $url_path . '?___store=' . $storeCode);
-						}
-                    }
-
-                    $productParam = null;
-                    $product = null;
-
-                    ksort($transformedProducts['products'][$id]);
-                }
-				$this->logger->info('bxLog: Products - end transform for account ' . $account . ' for languge ' . $lang);
-            }
-
-            if (isset($transformedProducts['products']) && count($transformedProducts['products']) > 0) {
-				
-				$this->logger->info('bxLog: Products - validate names start for account ' . $account);
-
-                $data = $transformedProducts['products'];
-
-
-
-                if ($header && count($data) > 0) {
-                    $data = array_merge(array(array_keys(end($data))), $data);
-                    $header = false;
-                }
-
-				$this->logger->info('bxLog: Products - save to file for account ' . $account);
-
-                $files->savePartToCsv('products.csv', $data);
-
-                $data = null;
-                $transformedProducts['products'] = null;
-                $transformedProducts['products'] = array();
-
-                if ($this->config->exportProductImages($account)) {
-					$this->logger->info('bxLog: Products - save images for account ' . $account);
-
-                    $d = $this->_productsImages;
-                    $files->savePartToCsv('product_cache_image_url.csv', $d);
-                    $d = null;
-
-                    $d = $this->_productsThumbnails;
-                    $files->savePartToCsv('product_cache_image_thumbnail_url.csv', $d);
-                    $d = null;
-                    $this->_productsImages = array();
-                    $this->_productsThumbnails = array();
-                }
-				if ( $this->config->exportProductUrl($account)) {
-
-					$d = array_merge(array(array_keys(end($this->_productsDefaultUrls))), $this->_productsDefaultUrls);
-					$files->savePartToCsv('product_default_url.csv', $d);
-					$d = null;
-					$this->_productsDefaultUrls = null;
-				}
-            }
-            $page++;
-            $products = null;
-        }
-
-        $attrFDB = null;
-        $attrsFromDb = null;
-        $attrs = null;
-        $transformedProducts = null;
-        $db = null;
-		
-		$files->closeFiles($tmpFiles);
+			$files->savePartToCsv('products.csv', $data);
+			$data = null;
+			$page++;
+		}
+		$sourceKey = $this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
+		$this->exportProductAttributes($attrsFromDb, $languages, $account, $files);
+		$this->exportProductInformation($files);
 	}
 }

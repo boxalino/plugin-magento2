@@ -3,6 +3,7 @@
 namespace Boxalino\Intelligence\Helper;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 class BxFiles
 {
@@ -44,7 +45,7 @@ class BxFiles
 	protected $logger;
 	
 	protected $bxGeneral;
-	
+
 	public function __construct($filesystem, $logger, $account, $config) {
 		$this->filesystem = $filesystem;
 		$this->logger = $logger;
@@ -90,7 +91,7 @@ class BxFiles
         }
         return rmdir($dir);
     }
-	
+
 	public function getPath($file) {
 		if (!file_exists($this->_dir)) {
             mkdir($this->_dir);
@@ -106,6 +107,7 @@ class BxFiles
 
     public function savePartToCsv($file, &$data)
     {
+
 		$path = $this->getPath($file);
 		$fh = fopen($path, 'a');
         foreach ($data as $dataRow) {
@@ -114,7 +116,6 @@ class BxFiles
         fclose($fh);
         $data = null;
         $fh = null;
-
     }
 	
 	public function printFile($file) {
@@ -126,48 +127,31 @@ class BxFiles
 	private $filesMtM = array();
 	public function prepareProductFiles($files) {
 		
-        foreach ($files as $attr) {
+        foreach ($files as $attrs) {
+            foreach($attrs as $attr){
+                $key = $attr['attribute_code'];
 
-            $key = $attr;
 
-            if ($attr == 'categories') {
-                $key = 'category';
+                if ($attr['attribute_code'] == 'categories') {
+                    $key = 'category';
+                }
+
+                if (!file_exists($this->_dir)) {
+                    mkdir($this->_dir);
+                }
+
+                $file = 'product_' . $attr['attribute_code'] . '.csv';
+
+                //save
+                if (!in_array($file, $this->_files)) {
+                    $this->_files[] = $file;
+                }
+
+                $fh = fopen($this->_dir . '/' . $file, 'a');
+//                fputcsv($fh, array('entity_id', $key . '_id', 'value'), $this->XML_DELIMITER, $this->XML_ENCLOSURE);
+
+                $this->filesMtM[$attr['attribute_code']] = $fh;
             }
-
-            if (!file_exists($this->_dir)) {
-                mkdir($this->_dir);
-            }
-
-            $file = 'product_' . $attr . '.csv';
-
-            //save
-            if (!in_array($file, $this->_files)) {
-                $this->_files[] = $file;
-            }
-
-            $fh = fopen($this->_dir . '/' . $file, 'a');
-            fputcsv($fh, array('entity_id', $key . '_id'), $this->XML_DELIMITER, $this->XML_ENCLOSURE);
-
-            $this->filesMtM[$attr] = $fh;
-
-        }
-
-        if ($this->config->exportProductImages($this->account)) {
-            $file = 'product_cache_image_url.csv';
-            if (!in_array($file, $this->_files)) {
-                $this->_files[] = $file;
-            }
-            $fh = fopen($this->_dir . '/' . $file, 'a');
-            $h = array('entity_id', 'cache_image_url');
-            fputcsv($fh, $h, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
-			
-            $file = 'product_cache_image_thumbnail_url.csv';
-            if (!in_array($file, $this->_files)) {
-                $this->_files[] = $file;
-            }
-            $fh = fopen($this->_dir . '/' . $file, 'a');
-            $h = array('entity_id', 'cache_image_thumbnail_url');
-            fputcsv($fh, $h, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
         }
 	}
 
@@ -196,50 +180,6 @@ class BxFiles
         $this->_files[] = $file;
 
         return $file;
-    }
-
-    /**
-     * @description Preparing files to send
-     */
-    public function prepareGeneralFiles($attributesValuesByName, &$categories = null, &$tags = null, $productTags = null)
-    {
-
-        //Prepare attributes
-        $csvFiles = array();
-        if (!file_exists($this->_dir)) {
-            mkdir($this->_dir);
-        }
-
-        //create csvs
-        //save attributes
-        foreach ($attributesValuesByName as $attrName => $attrValues) {
-            $csvFiles[] = $this->createCsv($this->bxGeneral->sanitizeFieldName($attrName), $attrValues);
-        }
-
-        //save categories
-        if ($categories != null) {
-            $csvFiles[] = $this->createCsv('categories', $categories);
-            $categories = null;
-        }
-
-        //save tags
-        if ($tags != null && $productTags != null) {
-            $csvFiles[] = $this->createCsv('tag', $tags);
-
-            $loop = 1;
-            foreach ($productTags as $product_id => $tag_id) {
-                $csvdata[] = array('id' => $loop++, 'entity_id' => $product_id, 'tag_id' => $tag_id);
-            }
-
-            $csvFiles[] = $this->createCsv('product_tag', $csvdata);
-        }
-        //csvs done
-
-        //Create name for file
-        $exportFile = $this->_dir . '/' . $this->account;
-        $csvFiles = array_filter($csvFiles);
-
-        return $exportFile;
     }
 	
 	public function addToCSV($file, $values) {

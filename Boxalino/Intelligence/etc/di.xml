@@ -13,4 +13,5 @@
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Boxalino\Intelligence\Block\Cart\Crosssell" />
 
     <preference for="Magento\Catalog\Model\Layer\Filter\Item\DataBuilder" type="Boxalino\Intelligence\Model\BxDataBuilder" />
+    <preference for="Magento\Indexer\Model\Indexer\State" type="Boxalino\Intelligence\Model\Indexer\State" />
 </config>
