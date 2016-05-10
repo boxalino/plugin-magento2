@@ -821,7 +821,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 ->where('order.status <> ?', 'canceled')
                 ->order(array('order.entity_id', 'item.product_type'))
                 ->limit($limit, ($page - 1) * $limit);
-			if(false){
+			if($this->getIndexType() == 'delta'){
 				$select->where('order.created_at >= ?', $this->getLastIndex())->orWhere('order.updated_at >= ?', $this->getLastIndex());
 			}
 
@@ -905,7 +905,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     'order_id' => $transaction['entity_id'],
                     'entity_id' => $transaction['product_id'],
                     'customer_id' => $transaction['customer_id'],
-                    'guest_id' => $transaction['guest_id'],
+					'guest_id' => $transaction['guest_id'],
                     'price' => $transaction['original_price'],
                     'discounted_price' => $transaction['price'],
                     'quantity' => $transaction['qty_ordered'],
@@ -916,17 +916,18 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
                     'shipping_date' => $status == 2 ? $transaction['updated_at'] : null,
                     'status' => $transaction['status'],
                 );
+
                 if (count($transaction_attributes)) {
                     foreach ($transaction_attributes as $attribute) {
                         $final_transaction['billing_' . $attribute] = $transaction['billing_' . $attribute];
                         $final_transaction['shipping_' . $attribute] = $transaction['shipping_' . $attribute];
                     }
                 }
+
                 $transactions_to_save[] = $final_transaction;
+				$guest_id_transaction = null;
 				$final_transaction = null;
             }
-
-
             $data[] = $transactions_to_save;
 			$count = count($transactions);
             $configurable = null;
@@ -939,14 +940,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             }
 
 			$this->logger->info('bxLog: Transactions - save to file for account ' . $account);
-
             $files->savePartToCsv('transactions.csv', $data);
-
             $data = null;
 			$page++;
         }
-		$this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
 
+		$sourceKey = $this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
+		$this->bxData->addSourceCustomerGuestProperty($sourceKey,'guest_id');
 
 		$this->logger->info('bxLog: Transactions - end of export for account ' . $account);
     }
@@ -974,7 +974,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
 			foreach ($types as $typeKey => $type) {
 				$data = array();
-				$addtionalData = array();
+				$additionalData = array();
 				$d = array();
 				$mapping = array();
 
@@ -1014,13 +1014,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 							if (isset($data[$row['entity_id']]) && isset($mapping[$row['entity_id']])) {
 								if($row['store_id'] > $mapping[$row['entity_id']]) {
 									$data[$row['entity_id']]['value_' . $lang] = $row['value'];
-									if(isset($addtionalData[$row['entity_id']])){
+									if(isset($additionalData[$row['entity_id']])){
 										if ($type['attribute_code'] == 'url_key') {
 											$url = $storeBaseUrl . $row['value'] . '.html';
-											$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+											$additionalData[$row['entity_id']]['value_' . $lang] = $url;
 										} else {
 											$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
-											$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+											$additionalData[$row['entity_id']]['value_' . $lang] = $url;
 										}
 									}
 									$mapping[$row['entity_id']] = 0;
@@ -1028,13 +1028,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 								}
 								$data[$row['entity_id']]['value_' . $lang] = $row['value'];
 
-								if (isset($addtionalData[$row['entity_id']])) {
+								if (isset($additionalData[$row['entity_id']])) {
 									if ($type['attribute_code'] == 'url_key') {
 										$url = $storeBaseUrl . $row['value'] . '.html';
-										$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+										$additionalData[$row['entity_id']]['value_' . $lang] = $url;
 									} else {
 										$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
-										$addtionalData[$row['entity_id']]['value_' . $lang] = $url;
+										$additionalData[$row['entity_id']]['value_' . $lang] = $url;
 									}
 								}
 								continue;
@@ -1046,13 +1046,13 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 								if ($type['attribute_code'] == 'url_key') {
 									if ($this->config->exportProductUrl($account)) {
 										$url = $storeBaseUrl . $row['value'] . '.html';
-										$addtionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+										$additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
 									}
 								}
 								if ($type['attribute_code'] == 'image') {
 									if ($this->config->exportProductImages($account)) {
 										$url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
-										$addtionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+										$additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
 									}
 								}
 								$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], $type['attribute_code'] . '_id' => $row['attribute_id'], 'value_' . $lang => $row['value']);
@@ -1068,8 +1068,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 				}
 
 				if (sizeof($data)) {
-					if(sizeof($addtionalData)){
-						$d = array_merge(array(array_keys(end($addtionalData))), $addtionalData);
+					if(sizeof($additionalData)){
+						$d = array_merge(array(array_keys(end($additionalData))), $additionalData);
 						if ($type['attribute_code'] == 'url_key') {
 							$files->savepartToCsv('product_default_url.csv', $d);
 							$sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
@@ -1115,7 +1115,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 					}
 				}
 				$data = null;
-				$addtionalData = null;
+				$additionalData = null;
 				$mapping = null;
 				$d = null;
 				$labelColumns = null;
@@ -1329,7 +1329,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$data = null;
 			$page++;
 		}
-		$sourceKey = $this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
+		$this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
 		$this->exportProductAttributes($attrsFromDb, $languages, $account, $files);
 		$this->exportProductInformation($files);
 	}

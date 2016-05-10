@@ -97,7 +97,7 @@ class BxData
 		$params['totalOrderValueColumn'] = $totalOrderValueColumn;
 		$params['orderReceptionDateColumn'] = $orderDateIdColumn;
 		
-		$this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
+		return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
 	}
 	
 	public function addSourceFile($filePath, $sourceId, $container, $type, $format='CSV', $params=array(), $validate=true) {
@@ -233,6 +233,18 @@ class BxData
 				}
 			}
 		}
+	}
+
+	public function addSourceCustomerGuestProperty($sourceKey, $parameterValue) {
+		$this->addSourceParameter($sourceKey, "guest_property_id", $parameterValue);
+	}
+
+	public function addSourceParameter($sourceKey, $parameterName, $parameterValue) {
+		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+		if(!isset($this->sources[$container][$sourceId])) {
+			throw new \Exception("trying to add a source parameter on sourceId '$sourceId', container '$container' while this source doesn't exist");
+		}
+		$this->sources[$container][$sourceId][$parameterName] = $parameterValue;
 	}
 	
 	public function addFieldParameter($sourceKey, $fieldName, $parameterName, $parameterValue) {
