@@ -127,7 +127,7 @@ class BxIndexConfig
 	}
 	
 	public function isAccountDev($account) {
-		return $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/dev') != 1;
+		return $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/dev');
 	}
 	
 	public function getAccountExportServer($account) {
