@@ -17,8 +17,6 @@ class Autocomplete
 			$value['url'] = $product->getProductUrl();
 			$value['price'] = strip_tags($product->getFormatedPrice());
 			$value['image'] = "http" . (isset($_SERVER['HTTPS']) ? 's' : '') . "://" . $_SERVER['SERVER_NAME'] . "/magento/pub/media/catalog/product/" . $product->getImage();
-			preg_match("/<p>(.*?)<\/p>/s",$product->getDescription(),$match);
-			$value['description'] = $match[1];
 			$values[$product->getId()] = $value;
 		}
 		return $values;
