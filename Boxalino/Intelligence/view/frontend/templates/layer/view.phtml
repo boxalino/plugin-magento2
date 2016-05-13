@@ -4,7 +4,7 @@
     if(!$data->isFilterLayoutEnabled()):
 ?>
 <?php
-    include "vendor/magento/theme-frontend-luma/Magento_LayeredNavigation/templates/layer/view.phtml";
+        include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml'));
 ?>
 <?php else: ?>
     <?php if ($block->canShowBlock()): ?>

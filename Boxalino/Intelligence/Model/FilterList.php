@@ -21,7 +21,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
 
     public function getFilters(\Magento\Catalog\Model\Layer $layer)
     {
-        if($this->bxHelperData->isLeftFilterEnabled()) {
+        if($this->bxHelperData->isLeftFilterEnabled() && $this->bxHelperData->isFilterLayoutEnabled()) {
             $filters = array();
             $facets = $this->p13nHelper->getFacets();
             foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {

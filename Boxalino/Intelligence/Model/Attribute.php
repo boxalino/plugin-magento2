@@ -68,8 +68,6 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     protected function _getItemsData()
     {
         if (!$this->bxDataHelper->isFilterLayoutEnabled()) {
-            echo "disabled";
-            exit;
             $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
             if (!$this->bxFacets->isSelected($this->fieldName, true)) {
                 foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {

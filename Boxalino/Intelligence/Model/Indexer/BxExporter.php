@@ -225,7 +225,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			$this->logger->info('bxLog: Prepare the final files: ' . $account);
 
 			$this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
-			$this->prepareData($account, $files);
+			$this->prepareData($account, $files, $categories);
 
 			if($this->getIndexType() != 'delta') {
 				try {
@@ -268,19 +268,20 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$this->logger->info("bxLog: finished exportStores");
 	}
 
-	protected function prepareData($account, $files, $tags = null, $productTags = null) {
+	protected function prepareData($account, $files, $categories, $tags = null, $productTags = null) {
 		$withTag = ($tags != null && $productTags != null) ? true : false;
 		$languages = $this->config->getAccountLanguages($account);
+		$categories = array_merge(array(array_keys(end($categories))), $categories);
+		$files->savePartToCsv('categories.csv', $categories);
 
-		if (!$this->config->isCustomersExportEnabled($account)) { //$this->_storeConfig['export_categories']
-			$labelColumns = array();
-            foreach ($languages as $lang) {
-                $labelColumns[$lang] = 'value_' . $lang;
-            }
-			$this->bxData->addCategoryFile($files->getPath('categories.csv'), 'category_id', 'parent_id', $labelColumns);
-			$productToCategoriesSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_categories.csv'), 'entity_id');
-			$this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
-        }
+		$labelColumns = array();
+		foreach ($languages as $lang) {
+			$labelColumns[$lang] = 'value_' . $lang;
+		}
+		$this->bxData->addCategoryFile($files->getPath('categories.csv'), 'category_id', 'parent_id', $labelColumns);
+		$productToCategoriesSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_categories.csv'), 'entity_id');
+		$this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
+
 	}
 
     /**

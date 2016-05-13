@@ -3,7 +3,7 @@ $om = \Magento\Framework\App\ObjectManager::getInstance();
 $data = $om->get("\Boxalino\Intelligence\Helper\Data");
 if(!$data->isFilterLayoutEnabled()): ?>
 <?php
-include "vendor/magento/module-layered-navigation/view/frontend/templates/layer/filter.phtml";
+    include ($block->getTemplateFile('Magento_LayeredNavigation::layer/filter.phtml'));
 ?>
 <?php else: ?>
 <ol class="items">

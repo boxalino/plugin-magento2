@@ -27,7 +27,7 @@ class Facets extends \Magento\Framework\View\Element\Template
 
     public function getTopFilters()
     {
-		if($this->bxDatahelper->isTopFilterEnabled()) {
+		if($this->bxDatahelper->isTopFilterEnabled() && $this->bxDatahelper->isFilterLayoutEnabled()) {
 			$facets = $this->p13nHelper->getFacets();
 			$fieldName = $this->p13nHelper->getTopFacetFieldName();
 			$attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
