@@ -448,14 +448,20 @@ class Adapter
 				}
 				self::$bxClient->addRequest($bxRequest);
 			} else {
-				foreach ($recommendations as $key => $recommendation) {
 
+				foreach ($recommendations as $key => $recommendation) {
 					$type = 'others';
 					if($key == 'cart') {
 						$type = 'basket';
+						if($recommendation['widget'] == ''){
+							$recommendation['widget'] = 'basket';
+						}
 					}
 					if($key == 'related' || $key == 'upsell') {
 						$type = 'product';
+						if($recommendation['widget'] == ''){
+							$recommendation['widget'] = $key == 'related'? 'similar' : 'complementary';
+						}
 					}
 
 					if (

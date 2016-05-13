@@ -20,6 +20,9 @@ class BxRequest
 	protected $orFilters = false;
 	
 	public function __construct($language, $choiceId, $max=10, $min=0) {
+		if($choiceId == ''){
+			throw new \Exception('BxRequest created with null choiceId');
+		}
 		$this->language = $language;
 		$this->choiceId = $choiceId;
 		$this->min = (float)$min;

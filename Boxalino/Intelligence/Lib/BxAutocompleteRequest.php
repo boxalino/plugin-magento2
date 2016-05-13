@@ -16,6 +16,9 @@ class BxAutocompleteRequest
 		$this->language = $language;
 		$this->queryText = $queryText;
 		$this->textualSuggestionsHitCount = $textualSuggestionsHitCount;
+		if($autocompleteChoiceId == null) {
+			$autocompleteChoiceId = 'autocomplete';
+		}
 		$this->choiceId = $autocompleteChoiceId;
 		$this->bxSearchRequest = new BxSearchRequest($language, $queryText, $productSuggestionHitCount, $searchChoiceId);
 	}
