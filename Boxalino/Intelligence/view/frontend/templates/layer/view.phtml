@@ -1,7 +1,12 @@
 <?php
     $om = \Magento\Framework\App\ObjectManager::getInstance();
     $data = $om->get("\Boxalino\Intelligence\Helper\Data");
-    if(!$data->isFilterLayoutEnabled()):
+    if(
+        !$data->isFilterLayoutEnabled() ||
+        (!$data->isNavigationEnabled() &&
+            $block->getLayer() instanceof \Magento\Catalog\Model\Layer\Category\Interceptor
+        )
+    ):
 ?>
 <?php
         include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml'));

@@ -31,7 +31,7 @@ class Slider extends \Magento\Framework\View\Element\Template
             if (empty($facets) || empty($facets->getFacetValues($facets->getPriceFieldName()))) {
                 return null;
             }
-            $priceRange = $this->explodePrice($facets->getFacetValues($facets->getPriceFieldName())[0]);
+            $priceRange = $this->explodePrice($facets->getPriceRanges()[0]);
             $selectedPrice = $this->getRequest()->getParam('bx_discountedPrice') !== null ?
                 $this->explodePrice($this->getRequest()->getParam('bx_discountedPrice')) : $priceRange;
             return array_merge($selectedPrice, $priceRange);

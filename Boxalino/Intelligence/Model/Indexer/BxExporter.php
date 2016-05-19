@@ -1041,7 +1041,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 								continue;
 							} else {
 								if ($type['is_global'] > 0) {
-									$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], $type['attribute_code'] . '_id' => $row['attribute_id'], 'value' => $row['value']);
+									$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value' => $row['value']);
 									continue;
 								}
 								if ($type['attribute_code'] == 'url_key') {
@@ -1095,10 +1095,10 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 							$this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
 							break;
 						case 'price':
-							$this->bxData->addSourceListPriceField($attributeSourceKey, $type['attribute_code'] . '_id');
+							$this->bxData->addSourceListPriceField($attributeSourceKey, 'value');
 							break;
 						case 'special_price':
-							$this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $type['attribute_code'] . '_id');
+							$this->bxData->addSourceDiscountedPriceField($attributeSourceKey, 'value');
 							break;
 						case ($attrKey == ('int' || 'decimal')) && $type['is_global'] > 0:
 							$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');

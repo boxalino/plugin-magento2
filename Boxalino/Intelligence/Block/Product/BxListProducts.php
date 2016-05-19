@@ -56,7 +56,7 @@ class BxListProducts extends ListProduct
     {
         $layer = $this->getLayer();
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
-            if(!$this->bxHelperData->isNavigationEnabled()){
+            if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
                 return parent::_getProductCollection();
             }
             if($this->p13nHelper->areThereSubPhrases()) {

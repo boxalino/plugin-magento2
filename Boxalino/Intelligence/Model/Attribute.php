@@ -67,85 +67,71 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
 
     protected function _getItemsData()
     {
-        if (!$this->bxDataHelper->isFilterLayoutEnabled()) {
-            $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
-            if (!$this->bxFacets->isSelected($this->fieldName, true)) {
-                foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
+        $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
+        if (!$this->bxDataHelper->isHierarchical($this->fieldName)) {
+            foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
+                if ($this->bxFacets->getSelectedValues($this->fieldName) && $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue) {
+                    $value = $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue ? true : false;
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue)
-                    );
-                }
-            }
-            return $this->itemDataBuilder->build();
-        } else {
-            $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
-            if (!$this->bxDataHelper->isHierarchical($this->fieldName)) {
-                foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
-                    if ($this->bxFacets->getSelectedValues($this->fieldName) && $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue) {
-                        $value = $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue ? true : false;
-                        $this->itemDataBuilder->addItemData(
-                            $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                            0,
-                            $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                            $value,
-                            'flat'
-                        );
-                    } else {
-                        $value = false;
-                        $this->itemDataBuilder->addItemData(
-                            $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                            $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                            $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                            $value,
-                            'flat'
-                        );
-                    }
-                }
-            } else {
-                $count = 1;
-                $parentCount = count($this->bxFacets->getParentCategories());
-                $value = false;
-                foreach ($this->bxFacets->getParentCategories() as $key => $facetvalue) {
-                    if ($count == 1) {
-                        $count++;
-                        continue;
-                    }
-                    if ($count == 2) {
-                        $count++;
-                        $this->itemDataBuilder->addItemData(
-                            $this->tagFilter->filter("Home"),
-                            2,
-                            $this->bxFacets->getParentCategoriesHitCount(1),
-                            $value,
-                            'home parent'
-                        );
-                        continue;
-                    }
-                    if ($parentCount == $count++) {
-                        $value = true;
-                    }
-                    $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter($facetvalue),
-                        $key,
-                        $this->bxFacets->getParentCategoriesHitCount($key),
+                        0,
+                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                         $value,
-                        'parent'
+                        'flat'
                     );
-                }
-                foreach ($this->bxFacets->getCategories() as $facetValue) {
+                } else {
+                    $value = false;
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
                         $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
                         $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        false,
-                        $value ? 'children' : 'home children'
+                        $value,
+                        'flat'
                     );
                 }
-
             }
-            return $this->itemDataBuilder->build();
+        } else {
+            $count = 1;
+            $parentCount = count($this->bxFacets->getParentCategories());
+            $value = false;
+            foreach ($this->bxFacets->getParentCategories() as $key => $facetvalue) {
+                if ($count == 1) {
+                    $count++;
+                    continue;
+                }
+                if ($count == 2) {
+                    $count++;
+                    $this->itemDataBuilder->addItemData(
+                        $this->tagFilter->filter("Home"),
+                        2,
+                        $this->bxFacets->getParentCategoriesHitCount($key),
+                        $value,
+                        'home parent'
+                    );
+                    continue;
+                }
+                if ($parentCount == $count++) {
+                    $value = true;
+                }
+                $this->itemDataBuilder->addItemData(
+                    $this->tagFilter->filter($facetvalue),
+                    $key,
+                    $this->bxFacets->getParentCategoriesHitCount($key),
+                    $value,
+                    'parent'
+                );
+            }
+
+            foreach ($this->bxFacets->getCategories() as $facetValue) {
+                $this->itemDataBuilder->addItemData(
+                    $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                    $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+                    $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                    false,
+                    $value ? 'children' : 'home children'
+                );
+            }
         }
+        return $this->itemDataBuilder->build();
     }
 }
