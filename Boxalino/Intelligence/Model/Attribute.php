@@ -35,6 +35,10 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
+    public function getFieldName(){
+        return $this->fieldName;
+    }
+
     public function _initItems()
     {
         if($this->bxDataHelper->isFilterLayoutEnabled()){
