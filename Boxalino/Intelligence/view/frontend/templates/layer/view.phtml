@@ -34,7 +34,7 @@
                     <div data-role="collapsible" class="filter-options-item">
                         <div data-role="title" class="filter-options-title"><?php /* @escapeNotVerified */ echo __($filter->getName()) ?></div>
                         <div data-role="content" class="filter-options-content">
-                            <?php if($filter->getName() == 'Price'): ?>
+                            <?php if($filter->getFieldName() == 'discountedPrice'): ?>
                                 <div id="bxslider"></div>
                                 <span id="slider-snap-value-lower"></span>
                                 <span id="slider-snap-value-upper"></span>

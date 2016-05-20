@@ -35,6 +35,11 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
+    public function getFieldName()
+    {
+        return $this->fieldName;
+    }
+
 
     /**
      * Get filter instance
