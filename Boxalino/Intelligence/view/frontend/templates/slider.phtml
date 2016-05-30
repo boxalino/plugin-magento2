@@ -4,8 +4,9 @@
 <script>
     require([
         'jquery',
-        'nouislider'
-    ], function ($,nouislider) {
+        'nouislider',
+        'mage/translate'
+    ], function ($,nouislider, $t) {
         'use strict';
 
         var slider = document.getElementById('bxslider');
@@ -26,7 +27,9 @@
         ];
 
         slider.noUiSlider.on('update', function (values, handle) {
-            var handlename = (handle == 1) ? 'bis ' : 'von ';
+            var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
+            "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
+
             snapValues[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
         });
 

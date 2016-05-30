@@ -113,14 +113,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	protected $_productsDefaultUrls = array();
 
 	/**
-	 * Indexer model, responsible for loading our $boxalinoIndexer
+	 * Indexer model, loads boxalino_indexer
 	 */
 	protected $indexer;
-
-	/**
-	 * Boxalino indexer class
-	 */
-	protected $boxalinoIndexer = null;
 
 
 	private $bxData = null;
@@ -142,7 +137,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		\Magento\Indexer\Model\Indexer $indexer
     )
     {
-	   $this->indexer = $indexer;
+	   $this->indexer = $indexer->load('boxalino_indexer');
        $this->storeManager = $storeManager;
 	   $this->logger = $logger;
 	   $this->filesystem = $filesystem;
@@ -176,10 +171,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     }
 	
     public function executeFull(){
-		$this->boxalinoIndexer = $this->indexer->load('boxalino_indexer');
-		if($this->boxalinoIndexer->isScheduled()){
+		if($this->indexer->isScheduled()){
 			//enable delta export
-			$this->boxalinoIndexer->setScheduled(true);
+			$this->indexer->setScheduled(true);
 		};
 		$this->exportStores($this->checkForDeltaIds());
 	}
@@ -232,7 +226,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 					$this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
 					$this->bxData->pushDataSpecifications();
 				} catch(\Exception $e) {
-					$this->boxalinoIndexer->setReset(true);
+					$this->indexer->setReset(true);
 					$value = @json_decode($e->getMessage(), true);
 
 					if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
@@ -256,7 +250,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 			try{
 				$this->bxData->pushData();
 			}catch(\Exception $e){
-				$this->boxalinoIndexer->setReset(true);
+				$this->indexer->setReset(true);
 				throw $e;
 			}
 
@@ -743,7 +737,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 	}
 
 	protected function getLastIndex(){
-		return $this->boxalinoIndexer->getResetDate();
+		return $this->indexer->getResetDate();
 	}
 
     /**
@@ -846,9 +840,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
             }
 
             $transactions = $db->fetchAll($select);
-
+			if(sizeof($transactions) < 1){
+				return;
+			}
 
 			$this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
+
 
             foreach ($transactions as $transaction) {
                 //is configurable
@@ -1056,7 +1053,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 										$additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
 									}
 								}
-								$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], $type['attribute_code'] . '_id' => $row['attribute_id'], 'value_' . $lang => $row['value']);
+								$data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $row['value']);
 								$mapping[$row['entity_id']] = $row['store_id'];
 							}
 						}
@@ -1104,7 +1101,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 							$this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
 							break;
 						case $attrKey == 'datetime':
-							$this->bxData->addSourceDateField($attributeSourceKey, $fieldId, 'value');
+							$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
 							break;
 						default:
 							if(sizeof($labelColumns) > 0){
@@ -1126,7 +1123,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
 	protected function exportProductInformation($files){
 		$db = $this->rs->getConnection();
-		$fieldId = 'status';
+		$fieldId = 'qty';
 		//product stock
 		$select = $db->select()
 			->from(
@@ -1141,7 +1138,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$this->getIndexType() == 'delta' ? $select->where('product_id IN(?)', $this->deltaIds) : '';
 
 		foreach ($db->fetchAll($select) as $r) {
-			$data[] = $r;
+			$data[] = array('entity_id'=>$r['entity_id'], 'qty'=>$r['qty']);
 		}
 		$d = array_merge(array(array_keys(end($data))), $data);
 		$files->savePartToCsv('product_stock.csv', $d);
@@ -1175,7 +1172,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
 		$attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_website.csv'), 'entity_id');
 		$this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'name');
 
-		//product super link
+		//product super link TODO
 		$fieldId = 'parent';
 		$select = $db->select()
 			->from(

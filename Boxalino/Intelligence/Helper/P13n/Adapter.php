@@ -71,8 +71,9 @@ class Adapter
 	public function getSystemFilters() {
 		
 		$filters = array();
-		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility', array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
 		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
+
 		return $filters;
 	}
 	
@@ -209,6 +210,7 @@ class Adapter
 		$bxRequest->setOffset($pageOffset);
 		$bxRequest->setSortFields($bxSortFields);
 		$bxRequest->setFacets($this->prepareFacets());
+		$bxRequest->setFilters($this->getSystemFilters());
 
 		if($categoryId != null) {
 			$filterField = "category_id";
