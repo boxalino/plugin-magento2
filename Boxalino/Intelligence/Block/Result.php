@@ -27,11 +27,12 @@ class Result extends Mage_Result
         array $data = [])
     {
         $this->p13nHelper = $p13nHelper;
-        if($p13nHelper->areThereSubPhrases()){
-            $this->queries = $p13nHelper->getSubPhrasesQueries();
-        }
         $this->bxHelperData = $bxHelperData;
         $this->queryFactory = $queryFactory;
+        if($this->bxHelperData->isSearchEnabled() && $p13nHelper->areThereSubPhrases()){
+            $this->queries = $p13nHelper->getSubPhrasesQueries();
+        }
+
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
@@ -41,16 +42,12 @@ class Result extends Mage_Result
 
     public function getSearchQueryText()
     {
-        if($this->bxHelperData->isSearchEnabled()) {
-            if($this->p13nHelper->areResultsCorrected()){
-                $query = $this->queryFactory->get();
-                $query->setQueryText($this->p13nHelper->getCorrectedQuery());
-                return __("Corrected search results for: '%1'", $this->catalogSearchData->getEscapedQueryText());
-            } else if($this->p13nHelper->areThereSubPhrases()){
-                return "";
-            } else{
-                return parent::getSearchQueryText();
-            }
+        if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
+            $query = $this->queryFactory->get();
+            $query->setQueryText($this->p13nHelper->getCorrectedQuery());
+            return __("Corrected search results for: '%1'", $this->catalogSearchData->getEscapedQueryText());
+        } else if($this->hasSubPhrases()){
+            return "";
         }
         return parent::getSearchQueryText();
     }
@@ -61,37 +58,36 @@ class Result extends Mage_Result
 
     protected function _prepareLayout()
     {
-        if($this->bxHelperData->isSearchEnabled()){
-            if($this->hasSubPhrases()){
-
-                $title = "Search result for: " . implode(" ",  $this->queries);
-                $this->pageConfig->getTitle()->set($title);
-                // add Home breadcrumb
-                $breadcrumbs = $this->getLayout()->getBlock('breadcrumbs');
-                if ($breadcrumbs) {
-                    $breadcrumbs->addCrumb(
-                        'home',
-                        [
-                            'label' => __('Home'),
-                            'title' => __('Go to Home Page'),
-                            'link' => $this->_storeManager->getStore()->getBaseUrl()
-                        ]
-                    )->addCrumb(
-                        'search',
-                        ['label' => $title, 'title' => $title]
-                    );
-                }
-                return $this;
-            }else{
-                return parent::_prepareLayout();
+        if($this->hasSubPhrases()){
+            $title = "Search result for: " . implode(" ",  $this->queries);
+            $this->pageConfig->getTitle()->set($title);
+            // add Home breadcrumb
+            $breadcrumbs = $this->getLayout()->getBlock('breadcrumbs');
+            if ($breadcrumbs) {
+                $breadcrumbs->addCrumb(
+                    'home',
+                    [
+                        'label' => __('Home'),
+                        'title' => __('Go to Home Page'),
+                        'link' => $this->_storeManager->getStore()->getBaseUrl()
+                    ]
+                )->addCrumb(
+                    'search',
+                    ['label' => $title, 'title' => $title]
+                );
             }
+            return $this;
         }
         return parent::_prepareLayout();
     }
 
     public function hasSubPhrases()
     {
-        return $this->p13nHelper->areThereSubPhrases();
+        if($this->bxHelperData->isSearchEnabled()){
+            return $this->p13nHelper->areThereSubPhrases();
+        }
+        return 0;
+        
     }
 
     public function getProductListHtml()

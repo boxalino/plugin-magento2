@@ -41,19 +41,22 @@ class BxListProducts extends ListProduct
     {
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
-        if($p13nHelper->areThereSubPhrases()){
-            $this->queries = $p13nHelper->getSubPhrasesQueries();
-        }
         $this->urlFactory = $urlFactory;
         $this->abstractAction = $abstractAction;
         $this->_objectManager = $objectManager;
         $this->p13nHelper = $p13nHelper;
+        if($this->bxHelperData->isSearchEnabled() && $p13nHelper->areThereSubPhrases()){
+            $this->queries = $p13nHelper->getSubPhrasesQueries();
+        }
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
 
     public function _getProductCollection()
     {
+        if(!$this->bxHelperData->isSearchEnabled()){
+           return parent::_getProductCollection();
+        }
         $layer = $this->getLayer();
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
             if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){

@@ -44,13 +44,14 @@ class Adapter
 	   $libPath = __DIR__ . '/../../Lib';
 		require_once($libPath . '/BxClient.php');
 		\com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
-		
-        $this->initializeBXClient();
+		if($this->bxHelperData->isPluginEnabled()){
+			$this->initializeBXClient();
 
+		}
     }
 	
 	protected function initializeBXClient() {
-		
+
 		if(self::$bxClient == null) {
 			
 			$account = $this->scopeConfig->getValue('bxGeneral/general/account_name',$this->scopeStore);
