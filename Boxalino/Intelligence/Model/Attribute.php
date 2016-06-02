@@ -7,6 +7,8 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $bxFacets = null;
     private $fieldName = array();
     private $bxDataHelper;
+    private $categoryHelper;
+    private $categoryTreeNodes;
     public function __construct(
         \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -16,9 +18,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Framework\Stdlib\StringUtils $string,
         \Magento\Framework\Filter\StripTags $tagFilter,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
+        \Magento\Catalog\Helper\Category $categoryHelper,
         array $data=[])
     {
         $this->bxDataHelper = $bxDataHelper;
+        $this->categoryHelper = $categoryHelper;
         parent::__construct($filterItemFactory, $storeManager, $layer, $itemDataBuilder, $filterAttributeFactory, $string, $tagFilter, $data);
     }
 
@@ -39,6 +43,13 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return $this->fieldName;
     }
 
+    private function getCategoryTreeNodes(){
+        return $this->categoryTreeNodes;
+    }
+
+    private function setCategoryTreeNodes($_categoryTreeNodes){
+        $this->categoryTreeNodes = $_categoryTreeNodes;
+    }
     public function _initItems()
     {
         if($this->bxDataHelper->isFilterLayoutEnabled()){
@@ -96,14 +107,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }
         } else {
             $count = 1;
-            $parentCount = count($this->bxFacets->getParentCategories());
+            $parentCategories = $this->bxFacets->getParentCategories();
+            $parentCount = count($parentCategories);
             $value = false;
-            foreach ($this->bxFacets->getParentCategories() as $key => $facetvalue) {
+            foreach ($parentCategories as $key => $parentCategory) {
                 if ($count == 1) {
-                    $count++;
-                    continue;
-                }
-                if ($count == 2) {
                     $count++;
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter("Home"),
@@ -118,24 +126,58 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $value = true;
                 }
                 $this->itemDataBuilder->addItemData(
-                    $this->tagFilter->filter($facetvalue),
+                    $this->tagFilter->filter($parentCategory),
                     $key,
                     $this->bxFacets->getParentCategoriesHitCount($key),
                     $value,
                     'parent'
                 );
             }
-
-            foreach ($this->bxFacets->getCategories() as $facetValue) {
+            
+            if($this->bxDataHelper->getCategoriesSortOrder() == 2){
+                $categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
+                $count = 0;
+                foreach ($parentCategories as $key => $category){
+                    if($count++){
+                        $categoryTree = $categoryTree->searchById($key)->getChildren();
+                    }
+                }
+                $_categoryTreeNodes = array();
+                $treeIterator = $categoryTree->getIterator();
+                while($treeIterator->valid()){
+                    if($treeIterator->current()->getIsActive()){
+                        $_categoryTreeNodes[] = $treeIterator->current()->getName();
+                    }
+                    $treeIterator->next();
+                }
+                $this->setCategoryTreeNodes($_categoryTreeNodes);
+                $facetValues = $this->sortCategories($this->bxFacets->getCategories(true));
+            }else{
+                $facetValues = $this->bxFacets->getCategories(true);
+            }
+            foreach ($facetValues as $facetValue) {
                 $this->itemDataBuilder->addItemData(
-                    $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                    $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                    $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                    $this->tagFilter->filter($facetValue[0]),
+                    $facetValue[1],
+                    $facetValue[2],
                     false,
                     $value ? 'children' : 'home children'
                 );
             }
         }
         return $this->itemDataBuilder->build();
+    }
+
+    private function sortCategories($categories){
+        $sortedCategories = array();
+        $categoryTreeNodes = $this->getCategoryTreeNodes();
+        foreach($categoryTreeNodes as $node){
+            foreach($categories as $key => $category) {
+                if(in_array($node, $category)){
+                    $sortedCategories[] = $category;
+                }
+            }
+        }
+        return $sortedCategories;
     }
 }

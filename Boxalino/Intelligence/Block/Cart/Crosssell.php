@@ -60,7 +60,7 @@ class Crosssell extends Mage_Crosssell
                 $products
             );
 
-            $entity_ids = array_keys($recommendations);
+            $entity_ids = $recommendations;
 
             if (empty($entity_ids)) {
                 return parent::getItems();

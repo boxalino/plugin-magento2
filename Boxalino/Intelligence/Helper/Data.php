@@ -353,4 +353,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/filter/enabled', $this->scopeStore);
     }
 
+    public function getCategoriesSortOrder(){
+        $fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
+        $orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));
+        foreach($fields as $index => $field){
+            if($field == 'categories'){
+                return (int)$orders[$index];
+            }
+        }
+        return 0;
+    }
 }

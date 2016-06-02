@@ -44,7 +44,7 @@ class Upsell extends MageUpsell
                 $products
             );
 
-            $entity_ids = array_keys($recommendations);
+            $entity_ids =  $recommendations;
 
             $this->_itemCollection = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');

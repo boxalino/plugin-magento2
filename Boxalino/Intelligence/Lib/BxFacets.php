@@ -330,7 +330,14 @@ class BxFacets
 		return $this->priceFieldName;
 	}
 	
-	public function getCategories() {
+	public function getCategories($asArray=false) {
+		if($asArray){
+			$categoryValueArray = array();
+			foreach ($this->getFacetValues($this->getCategoryFieldName()) as $v){
+				$categoryValueArray[] = $this->getFacetValueArray($this->getCategoryFieldName(), $v);
+			}
+			return $categoryValueArray;
+		}
 		return $this->getFacetValues($this->getCategoryFieldName());
 	}
 	
