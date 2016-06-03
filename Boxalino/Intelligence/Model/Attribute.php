@@ -133,17 +133,17 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     'parent'
                 );
             }
-            
+
             if($this->bxDataHelper->getCategoriesSortOrder() == 2){
-				
-				$categoryTree = array();
-				if(sizeof($parentCategories) < 2) {
-					$categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
-				} else {
-					$keys = array_keys($parentCategories);
-					$lastKey = $keys[sizeof($keys)-1];
-					$categoryTree = $this->categoryHelper->searchById($key)->getChildren();
-				}
+                $categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
+                $count = 0;
+
+                foreach ($parentCategories as $key => $category){
+                    if($count++){
+                        $categoryTree = $categoryTree->searchById($key)->getChildren();
+                    }
+                }
+
                 $_categoryTreeNodes = array();
                 $treeIterator = $categoryTree->getIterator();
                 while($treeIterator->valid()){

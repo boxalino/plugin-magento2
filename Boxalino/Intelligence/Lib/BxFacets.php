@@ -332,7 +332,7 @@ class BxFacets
 	
 	public function getCategoriesKeyLabels() {
 		$categoryValueArray = array();
-		foreach ($this->getCategories as $v){
+		foreach ($this->getCategories() as $v){
 			$label = $this->getCategoryValueLabel($v);
 			$categoryValueArray[$label] = $v;
 		}
