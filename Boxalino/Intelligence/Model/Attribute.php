@@ -135,13 +135,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }
             
             if($this->bxDataHelper->getCategoriesSortOrder() == 2){
-                $categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
-                $count = 0;
-                foreach ($parentCategories as $key => $category){
-                    if($count++){
-                        $categoryTree = $categoryTree->searchById($key)->getChildren();
-                    }
-                }
+				
+				$categoryTree = array();
+				if(sizeof($parentCategories) < 2) {
+					$categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
+				} else {
+					$keys = array_keys($parentCategories);
+					$lastKey = $keys[sizeof($keys)-1];
+					$categoryTree = $this->categoryHelper->searchById($key)->getChildren();
+				}
                 $_categoryTreeNodes = array();
                 $treeIterator = $categoryTree->getIterator();
                 while($treeIterator->valid()){
@@ -151,15 +153,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $treeIterator->next();
                 }
                 $this->setCategoryTreeNodes($_categoryTreeNodes);
-                $facetValues = $this->sortCategories($this->bxFacets->getCategories(true));
-            }else{
-                $facetValues = $this->bxFacets->getCategories(true);
+                $facetValues = $this->sortCategories($this->bxFacets->getCategoriesKeyLabels());
+            } else{
+                $facetValues = $this->bxFacets->getCategories();
             }
             foreach ($facetValues as $facetValue) {
                 $this->itemDataBuilder->addItemData(
-                    $this->tagFilter->filter($facetValue[0]),
-                    $facetValue[1],
-                    $facetValue[2],
+                    $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                    $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+                    $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                     false,
                     $value ? 'children' : 'home children'
                 );
@@ -171,13 +173,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private function sortCategories($categories){
         $sortedCategories = array();
         $categoryTreeNodes = $this->getCategoryTreeNodes();
-        foreach($categoryTreeNodes as $node){
-            foreach($categories as $key => $category) {
-                if(in_array($node, $category)){
-                    $sortedCategories[] = $category;
-                }
-            }
-        }
+		foreach($categoryTreeNodes as $node){
+			if(isset($categories[$node])) {
+				$sortedCategories[] = $categories[$node];
+			}
+		}		
         return $sortedCategories;
     }
 }
