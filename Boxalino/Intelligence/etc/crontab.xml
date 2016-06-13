@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="boxalino_index">
+        <job name="boxalino_full_index" instance="Boxalino\Intelligence\Model\Indexer\BxExporter" method="executeFull">
+            <schedule>0 0 * * * </schedule>
+        </job>
+    </group>
+    <group>
+        <job name="boxalino_delta_index" instance="Boxalino\Intelligence\Model\Indexer\BxDeltaExporter" method="executeFull">
+            <schedule>* * * * * </schedule>
+        </job>
+    </group>
+</config>

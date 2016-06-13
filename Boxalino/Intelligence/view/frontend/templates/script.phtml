@@ -57,18 +57,23 @@ $account = $this->getAccount();
             });
 
 
-            $( "#search" ).keydown(function() {
-                if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
-                    $("#search").data().mageQuickSearch.options.template =
-                        '<% if(data.type == "suggestion" ){ %>' +
-                        $("#search").data().mageQuickSearch.options.template +
-                        '<% }else{ %>' +
+            $( "#search" ).keydown(function(e) {
+                if(e.key == "Enter"){
+                    window.stop();
+                }else{
+                    if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
+                        $("#search").data().mageQuickSearch.options.template =
+                            '<% if(data.type == "suggestion" ){ %>' +
+                            $("#search").data().mageQuickSearch.options.template +
+                            '<% }else{ %>' +
                             '<% if(data.first){ %>'+
-                                '<h4 class="product-title">Products</h4>'+
+                            '<h4 class="product-title">Products</h4>'+
                             '<% }; %>'+
                             '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
-                        '<% }; %>';
+                            '<% }; %>';
+                    }
                 }
+
             });
         <?php endif; ?>
     });

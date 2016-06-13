@@ -115,7 +115,7 @@ class Adapter
 	}
 	
 	public function getLanguage() {
-		return substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);;
+		return substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 	}
 	
 	public function autocomplete($queryText, $autocomplete) {
@@ -130,18 +130,20 @@ class Adapter
 		if ($queryText) {
 			
 			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice());
+			$searchRequest = $bxRequest->getBxSearchRequest();
+//
+			$searchRequest->setReturnFields(array('products_group_id'));
+			$searchRequest->setFilters($this->getSystemFilters());
 			self::$bxClient->setAutocompleteRequest($bxRequest);
-			self::$bxClient->autocomplete($queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice());
-			
+			self::$bxClient->autocomplete();
 			$bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
-			
+
 			$entity_ids = array();
 			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds() as $id) {
 				$entity_ids[$id] = $id;
 			}
-			
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
-				
+
 				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
 				
                 if ($totalHitcount <= 0) {
@@ -199,7 +201,7 @@ class Adapter
 
     public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, $bxSortFields=null, $categoryId=null)
     {
-		$returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+		$returnFields = array('products_group_id'/*$this->getEntityIdFieldName()*/, 'categories', 'discountedPrice', 'title', 'score');
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
 
@@ -444,7 +446,7 @@ class Adapter
 				
 				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount);
 				$bxRequest->setMin($minAmount);
-				
+				$bxRequest->setFilters($this->getSystemFilters());
 				if (isset($products[0])) {
 					$product = $products[0];
 					$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
@@ -478,9 +480,8 @@ class Adapter
 
 							$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $recommendation['widget'], $recommendation['max']);
 							$bxRequest->setMin($recommendation['min']);
-
+							$bxRequest->setFilters($this->getSystemFilters());
 							if ($widgetType === 'basket') {
-							;
 								$basketProducts = array();
 								foreach($products as $product) {
 									$basketProducts[] = array('id'=>$product->getid(), 'price'=>$product->getPrice());

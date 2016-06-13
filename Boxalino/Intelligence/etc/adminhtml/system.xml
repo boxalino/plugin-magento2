@@ -227,7 +227,7 @@
                 </field>
                 <field id="orders" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Ordering of facet values</label>
-                    <comment>The ordering to sort the values in a facet. Ordered list matching the values of Field names (values separated by ','). 0 = "order by count values from biggest to smallest"; 1 = "order alphabetically the values from A to Z"</comment>
+                    <comment><![CDATA[The ordering to sort the values in a facet. Ordered list matching the values of Field names (values separated by ',').<br />0 = "order by count values from biggest to smallest"<br />1 = "order alphabetically the values from A to Z"<br />2 = "order by magento categorization" (only for category)]]></comment>
                 </field>
             </group>
 
@@ -244,7 +244,7 @@
                 </field>
                 <field id="order" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Ordering of facet values</label>
-                    <comment>The ordering to sort the values in a facet. 0 = "order by count values from biggest to smallest"; 1 = "order alphabetically the values from A to Z"</comment>
+                    <comment><![CDATA[The ordering to sort the values in a facet.<br />0 = "order by count values from biggest to smallest"<br />1 = "order alphabetically the values from A to Z"]]></comment>
                 </field>
             </group>
 

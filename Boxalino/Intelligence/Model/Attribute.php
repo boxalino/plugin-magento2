@@ -108,6 +108,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         } else {
             $count = 1;
             $parentCategories = $this->bxFacets->getParentCategories();
+            if(!in_array('category_id',$this->bxFacets->getFieldNames())){
+                return $this->itemDataBuilder->build();
+            }
             $parentCount = count($parentCategories);
             $value = false;
             foreach ($parentCategories as $key => $parentCategory) {
