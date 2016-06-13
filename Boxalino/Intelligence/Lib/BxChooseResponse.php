@@ -68,7 +68,7 @@ class BxChooseResponse
 				}
 			}else{
 				foreach ($searchResult->hitsGroups as $hitGroup){
-					$ids[] = $hitGroup->hits[0]['values']['id'][0]; //$hitGroup->groupValue
+					$ids[] = $hitGroup->groupValue;
 				}
 			}
 		}
