@@ -131,8 +131,9 @@ class Adapter
 			
 			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice());
 			$searchRequest = $bxRequest->getBxSearchRequest();
-//
+
 			$searchRequest->setReturnFields(array('products_group_id'));
+			$searchRequest->setGroupBy('products_group_id');
 			$searchRequest->setFilters($this->getSystemFilters());
 			self::$bxClient->setAutocompleteRequest($bxRequest);
 			self::$bxClient->autocomplete();
