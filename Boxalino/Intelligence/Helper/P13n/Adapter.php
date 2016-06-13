@@ -69,10 +69,14 @@ class Adapter
 		}
 	}
 	
-	public function getSystemFilters() {
+	public function getSystemFilters($queryText="") {
 		
 		$filters = array();
-		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+		if($queryText == "") {
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
+		} else {
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+		}
 		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
 
 		return $filters;
@@ -92,7 +96,15 @@ class Adapter
 		return $choice;
 	}
 	
-	public function getSearchChoice() {
+	public function getSearchChoice($queryText) {
+		
+		if($queryText == null) {
+			$choice = null; //$this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id',$this->scopeStore);
+			if($choice == null) {
+				$choice = "navigation";
+			}
+			return $choice;
+		}
 		
 		$choice = $this->scopeConfig->getValue('bxSearch/advanced/search_choice_id',$this->scopeStore);
 		if($choice == null) {
@@ -129,12 +141,12 @@ class Adapter
 			
 		if ($queryText) {
 			
-			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice());
+			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
 			$searchRequest = $bxRequest->getBxSearchRequest();
 
 			$searchRequest->setReturnFields(array('products_group_id'));
 			$searchRequest->setGroupBy('products_group_id');
-			$searchRequest->setFilters($this->getSystemFilters());
+			$searchRequest->setFilters($this->getSystemFilters($queryText));
 			self::$bxClient->setAutocompleteRequest($bxRequest);
 			self::$bxClient->autocomplete();
 			$bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
@@ -209,12 +221,12 @@ class Adapter
 		$hitCount = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 
 		//create search request
-		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->getLanguage(), $queryText, $hitCount, $this->getSearchChoice());
+		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
 		$bxRequest->setReturnFields($returnFields);
 		$bxRequest->setOffset($pageOffset);
 		$bxRequest->setSortFields($bxSortFields);
 		$bxRequest->setFacets($this->prepareFacets());
-		$bxRequest->setFilters($this->getSystemFilters());
+		$bxRequest->setFilters($this->getSystemFilters($queryText));
 
 		if($categoryId != null) {
 			$filterField = "category_id";
