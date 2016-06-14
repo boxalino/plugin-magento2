@@ -233,8 +233,6 @@ class Adapter
 			$filterValues = array($categoryId);
 			$filterNegative = false;
 			$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-			$navigationChoiceId = 'navigation';
-			$bxRequest->setChoiceId($navigationChoiceId);
 		}
 
 		self::$bxClient->addRequest($bxRequest);
