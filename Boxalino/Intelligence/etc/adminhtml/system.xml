@@ -272,8 +272,12 @@
                     <comment>Optional: default value is "search" and should normally not be changed</comment>
                 </field>
                 <field id="autocomplete_choice_id" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Autocomplete choice</label>
+                    <label>Autocomplete choice ID</label>
                     <comment>Optional: default value is "autocomplete" and should normally not be changed</comment>
+                </field>
+                <field id="navigation_choice_id" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Navigation choice ID</label>
+                    <comment>Optional: default value is "navigation" and should normally not be changed</comment>
                 </field>
             </group>
 

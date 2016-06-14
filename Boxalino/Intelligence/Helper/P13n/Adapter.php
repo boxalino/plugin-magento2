@@ -99,7 +99,7 @@ class Adapter
 	public function getSearchChoice($queryText) {
 		
 		if($queryText == null) {
-			$choice = null; //$this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id',$this->scopeStore);
+			$choice = $this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id',$this->scopeStore);
 			if($choice == null) {
 				$choice = "navigation";
 			}

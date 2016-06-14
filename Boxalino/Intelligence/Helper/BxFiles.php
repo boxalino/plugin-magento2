@@ -39,16 +39,11 @@ class BxFiles
      */
     protected $filesystem;
 	
-	/**
-	* @var \Psr\Log\LoggerInterface
-	*/
-	protected $logger;
 	
 	protected $bxGeneral;
 
-	public function __construct($filesystem, $logger, $account, $config) {
+	public function __construct($filesystem, $account, $config) {
 		$this->filesystem = $filesystem;
-		$this->logger = $logger;
 		$this->account = $account;
 		$this->config = $config;
 		
@@ -155,33 +150,6 @@ class BxFiles
         }
 	}
 
-    /**
-     * @param $name
-     * @param $data
-     * @return string
-     */
-    protected function createCsv($name, &$data)
-    {
-        $file = $name . '.csv';
-
-        if (!is_array($data) || count($data) == 0) {
-            $this->logger->warn("Data for $file is not an array or is empty. [" . gettype($data) . ']');
-        }
-
-        $csvdata = array_merge(array(array_keys(end($data))), $data);
-        $csvdata[0][0] = $this->bxGeneral->sanitizeFieldName($csvdata[0][0]);
-
-        $fh = fopen($this->_dir . '/' . $file, 'a');
-        foreach ($csvdata as $dataRow) {
-            fputcsv($fh, $dataRow, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
-        }
-        fclose($fh);
-
-        $this->_files[] = $file;
-
-        return $file;
-    }
-	
 	public function addToCSV($file, $values) {
 		fputcsv($this->filesMtM[$file], $values, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
 	}
