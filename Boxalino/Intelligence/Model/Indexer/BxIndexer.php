@@ -151,13 +151,13 @@ class BxIndexer {
             }
             $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
 
+            $exportProducts = $this->exportProducts($account, $files, $attributes);
             if($this->getIndexerType() == 'full'){
-                 $this->exportCustomers($account, $files);
+                $this->exportCustomers($account, $files);
                 $this->exportTransactions($account, $files);
                 $this->exportProducts($account, $files, $attributes);
                 $this->prepareData($account, $files, $categories);
             }
-            $exportProducts = $this->exportProducts($account, $files, $attributes);
 
             if(!$exportProducts){
                 $this->logger->info('bxLog: No Products found for account: ' . $account);
@@ -206,7 +206,6 @@ class BxIndexer {
         $languages = $this->config->getAccountLanguages($account);
         $categories = array_merge(array(array_keys(end($categories))), $categories);
         $files->savePartToCsv('categories.csv', $categories);
-
         $labelColumns = array();
         foreach ($languages as $lang) {
             $labelColumns[$lang] = 'value_' . $lang;
@@ -1181,6 +1180,29 @@ class BxIndexer {
         }
         $fetchedResult = null;
 
+        //product categories
+        $select = $db->select()
+            ->from(
+                $this->rs->getTableName('catalog_category_product'),
+                array(
+                    'entity_id' => 'product_id',
+                    'category_id',
+                    'position'
+                )
+            );
+        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        $fetchedResult = $db->fetchAll($select);
+        if(sizeof($fetchedResult)) {
+            foreach ($fetchedResult as $r) {
+                $data[] = $r;
+            }
+            $d = array_merge(array(array_keys(end($data))), $data);
+            $files->savePartToCsv('product_categories.csv', $d);
+            $data = null;
+            $d = null;
+        }
+        $fetchedResult = null;
+
         //product super link
         $select = $db->select()
             ->from(
@@ -1206,33 +1228,6 @@ class BxIndexer {
             $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_parent.csv'), 'entity_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'parent_id', 'parent_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'link_id', 'link_id');
-        }
-        $fetchedResult = null;
-
-        //product categories
-        $select = $db->select()
-            ->from(
-                $this->rs->getTableName('catalog_category_product'),
-                array(
-                    'entity_id' => 'product_id',
-                    'category_id',
-                    'position'
-                )
-            );
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
-
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)) {
-            foreach ($fetchedResult as $r) {
-                $data[] = $r;
-            }
-            $d = array_merge(array(array_keys(end($data))), $data);
-            $files->savePartToCsv('product_categories.csv', $d);
-            $data = null;
-            $d = null;
-            $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_categories.csv'), 'entity_id');
-            $this->bxData->addSourceStringField($attributeSourceKey, 'category_id', 'category_id');
-            $this->bxData->addSourceStringField($attributeSourceKey, 'position', 'position');
         }
         $fetchedResult = null;
 

@@ -9,46 +9,50 @@
     ], function ($,nouislider, $t) {
         'use strict';
 
-        var slider = document.getElementById('bxslider');
-        nouislider.create(slider, {
-            start: [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : null ?>,
-                <?php echo isset($sliderValues[1]) ? $sliderValues[1] : null; ?>],
-            connect: true,
-            behaviour: 'tap',
-            step: 1,
-            range: {
-                'min': <?php echo isset($sliderValues[2]) ? $sliderValues[2] : null; ?>,
-                'max': <?php echo isset($sliderValues[3]) ? $sliderValues[3] : null; ?>
-            }
-        });
-        var snapValues = [
-            document.getElementById('slider-snap-value-lower'),
-            document.getElementById('slider-snap-value-upper')
-        ];
-
-        slider.noUiSlider.on('update', function (values, handle) {
-            var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
-            "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
-
-            snapValues[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
-        });
-
-        slider.noUiSlider.on('change', function (values, handle) {
-            var params = location.search;
-            var newSrc = values[0] + "-" + values[1];
-            var name = 'bx_discountedPrice';
-            var paramSet = name + '=' + newSrc;
-            var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-            if (results && results[1]) {
-                params = params.replace(results[1], newSrc);
-                location.search = params;
-            } else {
-                if (params) {
-                    location.search = location.search + '&' + paramSet;
-                } else {
-                    location.search = location.search + '?' + paramSet;
+        if(document.getElementById('bxslider') !== null){
+            var slider = document.getElementById('bxslider');
+            var sliderMin = <?php echo isset($sliderValues[2]) ? $sliderValues[2] : "0"; ?>;
+            var sliderMax = <?php echo isset($sliderValues[3]) ? $sliderValues[3] : "0"; ?>;
+            nouislider.create(slider, {
+                start: [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : null ?>,
+                    <?php echo isset($sliderValues[1]) ? $sliderValues[1] : null; ?>],
+                connect: true,
+                behaviour: 'tap',
+                step: 1,
+                range: {
+                    'min': sliderMin,
+                    'max': sliderMax
                 }
-            }
-        });
+            });
+            var snapValues = [
+                document.getElementById('slider-snap-value-lower'),
+                document.getElementById('slider-snap-value-upper')
+            ];
+
+            slider.noUiSlider.on('update', function (values, handle) {
+                var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
+                "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
+
+                snapValues[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
+            });
+
+            slider.noUiSlider.on('change', function (values, handle) {
+                var params = location.search;
+                var newSrc = values[0] + "-" + values[1];
+                var name = 'bx_discountedPrice';
+                var paramSet = name + '=' + newSrc;
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                if (results && results[1]) {
+                    params = params.replace(results[1], newSrc);
+                    location.search = params;
+                } else {
+                    if (params) {
+                        location.search = location.search + '&' + paramSet;
+                    } else {
+                        location.search = location.search + '?' + paramSet;
+                    }
+                }
+            });
+        }
     });
 </script>
