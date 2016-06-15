@@ -7,8 +7,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $bxFacets = null;
     private $fieldName = array();
     private $bxDataHelper;
-    private $categoryHelper;
-    private $categoryTreeNodes;
+    private $categoryFactory;
     public function __construct(
         \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -18,11 +17,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Framework\Stdlib\StringUtils $string,
         \Magento\Framework\Filter\StripTags $tagFilter,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
-        \Magento\Catalog\Helper\Category $categoryHelper,
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         array $data=[])
     {
+        $this->categoryFactory = $categoryFactory;
         $this->bxDataHelper = $bxDataHelper;
-        $this->categoryHelper = $categoryHelper;
         parent::__construct($filterItemFactory, $storeManager, $layer, $itemDataBuilder, $filterAttributeFactory, $string, $tagFilter, $data);
     }
 
@@ -43,13 +42,6 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return $this->fieldName;
     }
 
-    private function getCategoryTreeNodes(){
-        return $this->categoryTreeNodes;
-    }
-
-    private function setCategoryTreeNodes($_categoryTreeNodes){
-        $this->categoryTreeNodes = $_categoryTreeNodes;
-    }
     public function _initItems()
     {
         if($this->bxDataHelper->isFilterLayoutEnabled()){
@@ -108,9 +100,6 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         } else {
             $count = 1;
             $parentCategories = $this->bxFacets->getParentCategories();
-            if(!in_array('category_id',$this->bxFacets->getFieldNames())){
-                return $this->itemDataBuilder->build();
-            }
             $parentCount = count($parentCategories);
             $value = false;
             foreach ($parentCategories as $key => $parentCategory) {
@@ -138,25 +127,13 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }
 
             if($this->bxDataHelper->getCategoriesSortOrder() == 2){
-                $categoryTree = $this->categoryHelper->getStoreCategories(true, false, true);
-                $count = 0;
-
-                foreach ($parentCategories as $key => $category){
-                    if($count++){
-                        $categoryTree = $categoryTree->searchById($key)->getChildren();
-                    }
+                $categorySorting = array();
+                end($parentCategories);
+                $cat = $this->categoryFactory->create()->load(key($parentCategories));
+                foreach($cat->getChildrenCategories() as $category){
+                    $categorySorting[] = $category->getName();
                 }
-
-                $_categoryTreeNodes = array();
-                $treeIterator = $categoryTree->getIterator();
-                while($treeIterator->valid()){
-                    if($treeIterator->current()->getIsActive()){
-                        $_categoryTreeNodes[] = $treeIterator->current()->getName();
-                    }
-                    $treeIterator->next();
-                }
-                $this->setCategoryTreeNodes($_categoryTreeNodes);
-                $facetValues = $this->sortCategories($this->bxFacets->getCategoriesKeyLabels());
+                $facetValues = $this->sortCategories($this->bxFacets->getCategoriesKeyLabels(), $categorySorting);
             } else{
                 $facetValues = $this->bxFacets->getCategories();
             }
@@ -173,10 +150,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return $this->itemDataBuilder->build();
     }
 
-    private function sortCategories($categories){
+    private function sortCategories($categories, $categorySorting){
         $sortedCategories = array();
-        $categoryTreeNodes = $this->getCategoryTreeNodes();
-		foreach($categoryTreeNodes as $node){
+		foreach($categorySorting as $node){
 			if(isset($categories[$node])) {
 				$sortedCategories[] = $categories[$node];
 			}

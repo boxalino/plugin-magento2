@@ -16,7 +16,6 @@ class Adapter
     protected $queryFactory;
     protected $collectionFactory;
     protected $storeManager;
-	protected $_catalogLayer;
 	protected $bxHelperData;
 
     public function __construct(
@@ -39,7 +38,6 @@ class Adapter
 		$this->queryFactory = $queryFactory;
 		$this->collectionFactory = $collectionFactory;
 		$this->storeManager = $storeManager;
-		$this->_catalogLayer = $layerResolver->get();
 		
 	   $libPath = __DIR__ . '/../../Lib';
 		require_once($libPath . '/BxClient.php');
@@ -129,7 +127,7 @@ class Adapter
 	public function getLanguage() {
 		return substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
 	}
-	
+
 	public function autocomplete($queryText, $autocomplete) {
 		$order = array();
 		$hash = null;
@@ -295,12 +293,7 @@ class Adapter
 		$overWriteLimit = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
 		$query = $this->queryFactory->get();
-		$categoryId = null;
 		$queryText = $query->getQueryText();
-		if($queryText == null) {
-			$category = $this->_catalogLayer->getCurrentCategory();
-			$categoryId = $category->getEntityId();
-		}
 		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
 

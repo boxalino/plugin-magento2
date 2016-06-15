@@ -24,8 +24,10 @@ class BxListProducts extends ListProduct
     protected $abstractAction;
     protected $urlFactory;
     protected $bxHelperData;
+    protected $request;
+    protected $categoryHelper;
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-
+    protected $categoryFactory;
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
@@ -36,9 +38,15 @@ class BxListProducts extends ListProduct
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Magento\Framework\App\Action\AbstractAction $abstractAction,
         \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\UrlFactory $urlFactory,
+        \Magento\Catalog\Helper\Category $categoryHelper,
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         array $data = [])
     {
+        $this->categoryFactory = $categoryFactory;
+        $this->categoryHelper = $categoryHelper;
+        $this->request = $request;
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
         $this->urlFactory = $urlFactory;
@@ -62,6 +70,16 @@ class BxListProducts extends ListProduct
             if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
                 return parent::_getProductCollection();
             }
+//            print_r($this->request->getParams());
+            if($this->request->getParam('bx_category_id') && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor) {
+                $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
+                if($selectedCategory->getLevel() != 1){
+                    $url = $selectedCategory->getUrl();
+                    $bxParams = $this->checkForBxParams($this->request->getParams());
+                    $this->abstractAction->getResponse()->setRedirect($url . $bxParams);
+                }
+            }
+
             if($this->p13nHelper->areThereSubPhrases()) {
                 $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
 
@@ -95,6 +113,26 @@ class BxListProducts extends ListProduct
         }else{
             return parent::_getProductCollection();
         }
+    }
+
+    private function checkForBxParams($params){
+        $paramString = '';
+        $first = true;
+        foreach($params as $key => $param){
+            if(preg_match("/^bx_/",$key)){
+                if(preg_match("/^bx_category_id/",$key)){
+                    continue;
+                }
+                if($first) {
+                    $paramString = '?';
+                    $first = false;
+                }else{
+                    $paramString = $paramString . "&";
+                }
+                $paramString = $paramString . $key . '=' . $param;
+            }
+        }
+        return $paramString;
     }
 
     protected function _beforeToHtml()
