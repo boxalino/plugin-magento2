@@ -99,6 +99,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }
         } else {
             $count = 1;
+            $facetValues = array();
             $parentCategories = $this->bxFacets->getParentCategories();
             $parentCount = count($parentCategories);
             $value = false;
@@ -134,9 +135,12 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $categorySorting[] = $category->getName();
                 }
                 $facetValues = $this->sortCategories($this->bxFacets->getCategoriesKeyLabels(), $categorySorting);
-            } else{
+
+            }
+            if($facetValues == null){
                 $facetValues = $this->bxFacets->getCategories();
             }
+
             foreach ($facetValues as $facetValue) {
                 $this->itemDataBuilder->addItemData(
                     $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
