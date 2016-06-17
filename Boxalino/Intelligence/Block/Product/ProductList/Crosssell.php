@@ -2,11 +2,33 @@
 namespace Boxalino\Intelligence\Block\Product\ProductList;
 use Magento\Catalog\Block\Product\ProductList\Crosssell as MageCrosssell;
 
+/**
+ * Class Crosssell
+ * @package Boxalino\Intelligence\Block\Product\ProductList
+ */
 class Crosssell extends MageCrosssell{
 
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
+     */
     protected $factory;
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+
+    /**
+     * Crosssell constructor.
+     * @param \Magento\Catalog\Block\Product\Context $context
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -21,6 +43,9 @@ class Crosssell extends MageCrosssell{
         parent::__construct($context, $data);
     }
 
+    /**
+     * @return $this|MageCrosssell
+     */
     protected function _prepareData()
     {
         if($this->bxHelperData->isCrosssellEnabled()){

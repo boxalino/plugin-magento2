@@ -1,6 +1,11 @@
 <?php
 namespace Boxalino\Intelligence\Model\Search;
 use Magento\Search\Model\QueryFactory;
+
+/**
+ * Class Catalog
+ * @package Boxalino\Intelligence\Model\Search
+ */
 class Catalog extends \Magento\Framework\DataObject
 {
     /**

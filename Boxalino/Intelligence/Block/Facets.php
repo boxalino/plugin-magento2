@@ -2,13 +2,41 @@
 
 namespace Boxalino\Intelligence\Block;
 
+/**
+ * Class Facets
+ * @package Boxalino\Intelligence\Block
+ */
 class Facets extends \Magento\Framework\View\Element\Template
-{	
+{
+	/**
+	 * @var \Magento\Framework\ObjectManagerInterface
+	 */
 	private $objectManager;
+
+	/**
+	 * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+	 */
 	private $p13nHelper;
+
+	/**
+	 * @var \Magento\Catalog\Model\Layer
+	 */
 	private $layer;
+
+	/**
+	 * @var \Boxalino\Intelligence\Helper\Data
+	 */
 	private $bxHelperData;
 
+	/**
+	 * Facets constructor.
+	 * @param \Magento\Framework\View\Element\Template\Context $context
+	 * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+	 * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+	 * @param \Magento\Framework\ObjectManagerInterface $objectManager
+	 * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
+	 * @param array $data
+	 */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -25,6 +53,9 @@ class Facets extends \Magento\Framework\View\Element\Template
 		$this->bxHelperData = $bxHelperData;
     }
 
+	/**
+	 * @return array
+	 */
     public function getTopFilters()
     {
 		if($this->layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()){

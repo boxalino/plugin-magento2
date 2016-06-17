@@ -1,14 +1,46 @@
 <?php
 namespace Boxalino\Intelligence\Block\Product\ProductList;
 use Magento\Catalog\Block\Product\ProductList\Related as MageRelated;
+
+/**
+ * Class Related
+ * @package Boxalino\Intelligence\Block\Product\ProductList
+ */
 class Related extends MageRelated
 {
 
+    /**
+     * @var string
+     */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
+     */
     protected $factory;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
 
+    /**
+     * Related constructor.
+     * @param \Magento\Catalog\Block\Product\Context $context
+     * @param \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart
+     * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Framework\Module\Manager $moduleManager
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart,
@@ -27,6 +59,9 @@ class Related extends MageRelated
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
     }
 
+    /**
+     * @return $this
+     */
     protected function _prepareData()
     {
         if($this->bxHelperData->isRelatedEnabled()){

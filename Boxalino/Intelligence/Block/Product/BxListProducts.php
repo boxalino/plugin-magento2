@@ -14,20 +14,89 @@ use Magento\Framework\Session\SessionManager;
 use Magento\Catalog\Model\Product\ProductList\Toolbar;
 use Magento\UrlRewrite\Helper\UrlRewrite;
 
+/**
+ * Class BxListProducts
+ * @package Boxalino\Intelligence\Block\Product
+ */
 class BxListProducts extends ListProduct
 {
+    /**
+     * @var int
+     */
     public static $number = 0;
+
+    /**
+     * @var int
+     */
     protected $count = -1;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+
+    /**
+     * @var mixed
+     */
     protected $queries;
+
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
     protected $_objectManager;
+
+    /**
+     * @var \Magento\Framework\App\Action\AbstractAction
+     */
     protected $abstractAction;
+
+    /**
+     * @var \Magento\Framework\UrlFactory
+     */
     protected $urlFactory;
+
+    /**
+     * @var Data
+     */
     protected $bxHelperData;
+
+    /**
+     * @var \Magento\Framework\App\Request\Http
+     */
     protected $request;
+
+    /**
+     * @var \Magento\Catalog\Helper\Category
+     */
     protected $categoryHelper;
+
+    /**
+     * @var string
+     */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+
+    /**
+     * @var \Magento\Catalog\Model\CategoryFactory
+     */
     protected $categoryFactory;
+
+    /**
+     * BxListProducts constructor.
+     * @param Context $context
+     * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
+     * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
+     * @param CategoryRepositoryInterface $categoryRepository
+     * @param Data $bxHelperData
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Magento\Framework\Url\Helper\Data $urlHelper
+     * @param \Magento\Framework\App\Action\AbstractAction $abstractAction
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Framework\App\Request\Http $request
+     * @param \Magento\Framework\UrlFactory $urlFactory
+     * @param \Magento\Catalog\Helper\Category $categoryHelper
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
@@ -59,7 +128,9 @@ class BxListProducts extends ListProduct
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
-
+    /**
+     * @return AbstractCollection|mixed
+     */
     public function _getProductCollection()
     {
         if(!$this->bxHelperData->isSearchEnabled()){
@@ -115,6 +186,10 @@ class BxListProducts extends ListProduct
         }
     }
 
+    /**
+     * @param $params
+     * @return string
+     */
     private function checkForBxParams($params){
         $paramString = '';
         $first = true;
@@ -135,6 +210,9 @@ class BxListProducts extends ListProduct
         return $paramString;
     }
 
+    /**
+     * @return $this
+     */
     protected function _beforeToHtml()
     {
         $toolbar = $this->getToolbarBlock();

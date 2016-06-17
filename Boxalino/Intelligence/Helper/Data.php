@@ -1,22 +1,79 @@
 <?php
 namespace Boxalino\Intelligence\Helper;
-
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+/**
+ * Class Data
+ * @package Boxalino\Intelligence\Helper
+ */
+class Data
 {
+    /**
+     * @var
+     */
     protected $reader;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
     protected $checkoutSession;
+
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
     protected $customerSession;
+
+    /**
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
     protected $config;
+
+    /**
+     * @var
+     */
     protected $catalogProduct;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory
+     */
     protected $factory;
+
+    /**
+     * @var \Magento\Catalog\Model\Category
+     */
     protected $catalogCategory;
+
+    /**
+     * @var \Magento\CatalogSearch\Helper\Data
+     */
     protected $catalogSearch;
+
+    /**
+     * @var \Magento\Framework\App\FrontControllerInterface
+     */
     protected $controllerInterface;
+
+    /**
+     * @var string
+     */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    
+
+    /**
+     * @var array
+     */
+    protected static $SCRIPTS = array();
+
+    /**
+     * Data constructor.
+     * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Catalog\Model\Category $catalogCategory
+     * @param \Magento\Catalog\Model\ResourceModel\Product $catalogProduct
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $factory
+     * @param \Magento\Framework\App\FrontControllerInterface $controllerInterface
+     */
     public function __construct(
         \Magento\CatalogSearch\Helper\Data $catalogSearch,
-        \Magento\Framework\App\Helper\Context $context,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -35,9 +92,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->factory = $factory;
         $this->catalogSearch = $catalogSearch;
         spl_autoload_register(array('\Boxalino\Intelligence\Helper\Data', '__loadClass'), TRUE, TRUE);
-        parent::__construct($context);
     }
 
+    /**
+     * @param $name
+     * @throws \Exception
+     */
     public static function __loadClass($name)
     {
         $om = \Magento\Framework\App\ObjectManager::getInstance();
@@ -55,19 +115,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    public function getBasketAmount()
-    {
-        $checkout = $this->checkoutSession;
-        $quote = $checkout->getQuote();
-        $amount = 0;
-        if ($quote) {
-            foreach ($quote->getAllVisibleItems() as $item) {
-                $amount += $item->getQty() * $item->getPrice();
-            }
-        }
-        return $amount;
-    }
-
+    /**
+     * @return array
+     */
     public function getBasketItems()
     {
         $items = array();
@@ -81,25 +131,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $items;
     }
 
-    public function getBasketContent()
-    {
-        $checkout = $this->checkoutSession;
-        $quote = $checkout->getQuote();
-        $items = array();
-        if ($quote) {
-            foreach ($quote->getAllVisibleItems() as $item) {
-                $items[] = array(
-                    'id' => $item->product_id,
-                    'name' => $item->getProduct()->getName(),
-                    'quantity' => $item->getQty(),
-                    'price' => $item->getPrice(),
-                    'widget' => $this->isProductFacilitated($item->product_id)
-                );
-            }
-        }
-        return @json_encode($items);
-    }
-
+    /**
+     * @param $term
+     * @param null $filters
+     * @return string
+     */
     public function reportSearch($term, $filters = null)
     {
         if ($this->isTrackerEnabled()) {
@@ -111,6 +147,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param $product
+     * @return string
+     */
     public function reportProductView($product)
     {
         if ($this->isTrackerEnabled()) {
@@ -121,6 +161,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param $product
+     * @param $count
+     * @param $price
+     * @param $currency
+     * @return string
+     */
     public function reportAddToBasket($product, $count, $price, $currency)
     {
         if ($this->isTrackerEnabled()) {
@@ -132,6 +179,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param $categoryID
+     * @return string
+     */
     public function reportCategoryView($categoryID)
     {
         if ($this->isTrackerEnabled()) {
@@ -142,6 +193,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param $customerId
+     * @return string
+     */
     public function reportLogin($customerId)
     {
         if ($this->isTrackerEnabled()) {
@@ -181,25 +236,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    protected static $SCRIPTS = array();
+    /**
+     * @param $script
+     */
     public function addScript($script) {
         self::$SCRIPTS[] = $script;
     }
 
+    /**
+     * @return array
+     */
     public function getScripts() {
         return self::$SCRIPTS;
     }
 
-    public function getLoggedInUserId()
-    {
-        if ($this->customerSession->isLoggedIn()) {
-            $customerData = $this->customerSession->getCustomer();
-            return $customerData->getId();
-        } else {
-            return null;
-        }
-    }
-
+    /**
+     * @param $params
+     * @return \stdClass
+     */
     public function getFiltersValues($params)
     {
         $filters = new \stdClass();
@@ -258,6 +312,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Modifies a string to remove all non ASCII characters and spaces.
+     * @param $text
+     * @return mixed|null|string
      */
     public function sanitizeFieldName($text)
     {
@@ -292,6 +348,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $text;
     }
 
+    /**
+     * @param $fieldName
+     * @return bool
+     */
     public function isHierarchical($fieldName){
         $facetConfig = $this->config->getValue('bxSearch/left_facets', $this->scopeStore);
 
@@ -304,55 +364,92 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
         return false;
     }
+
+    /**
+     * @return bool
+     */
     public function isPluginEnabled(){
         return (bool)$this->config->getValue('bxGeneral/general/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isSearchEnabled(){
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxSearch/search/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isAutocompleteEnabled(){
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/autocomplete/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isTrackerEnabled()
     {
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxGeneral/tracker/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isCrosssellEnabled()
     {
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/cart/status', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isRelatedEnabled()
     {
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/related/status', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isUpsellEnabled()
     {
         return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/upsell/status', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isNavigationEnabled()
     {
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/navigation/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isLeftFilterEnabled(){
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/left_facets/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isTopFilterEnabled(){
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/top_facet/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return bool
+     */
     public function isFilterLayoutEnabled(){
         return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/filter/enabled', $this->scopeStore);
     }
 
+    /**
+     * @return int
+     */
     public function getCategoriesSortOrder(){
         $fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
         $orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));

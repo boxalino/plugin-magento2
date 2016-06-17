@@ -1,11 +1,30 @@
 <?php
 
 namespace Boxalino\Intelligence\Model;
-
+/**
+ * Class FilterList
+ * @package Boxalino\Intelligence\Model
+ */
 class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
-
+    
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     private $p13nHelper;
+    
+    /**
+     * @var \BOxalino\Intelligence\Helper\Data
+     */
     private $bxHelperData;
+
+    /**
+     * FilterList constructor.
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \BOxalino\Intelligence\Helper\Data $bxHelperData
+     * @param array $filters
+     */
     public function __construct(
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes,
@@ -19,6 +38,10 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         $this->p13nHelper = $p13nHelper;
     }
 
+    /**
+     * @param \Magento\Catalog\Model\Layer $layer
+     * @return array|\Magento\Catalog\Model\Layer\Filter\AbstractFilter[]
+     */
     public function getFilters(\Magento\Catalog\Model\Layer $layer)
     {
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()){
@@ -39,9 +62,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                 $filters[] = $filter;
             }
             return $filters;
-
         }
-
         return array();
     }
 }

@@ -6,10 +6,28 @@ use Magento\Catalog\Model\Layer\Filter\Item;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\DataObject;
 
+/**
+ * Class State
+ * @package Boxalino\Intelligence\Block
+ */
 class State extends \Magento\Framework\DataObject
-{	
+{
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     private $p13nHelper;
+
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
 	private $objectManager;
+
+    /**
+     * State constructor.
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param array $data
+     */
 	public function __construct(
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
@@ -20,7 +38,7 @@ class State extends \Magento\Framework\DataObject
         $this->p13nHelper = $p13nHelper;
         $this->objectManager = $objectManager;
     }
-	
+
 	/**
      * Add filter item to layer state
      *

@@ -8,11 +8,26 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Search\Model\QueryFactory;
 
+/**
+ * Class IndexController
+ * @package Boxalino\Intelligence\Controller
+ */
 class IndexController extends \Magento\CatalogSearch\Controller\Result\Index
 {
-
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
 
+    /**
+     * IndexController constructor.
+     * @param Context $context
+     * @param Session $catalogSession
+     * @param StoreManagerInterface $storeManager
+     * @param QueryFactory $queryFactory
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param Resolver $layerResolver
+     */
     public function __construct(
         Context $context,
         Session $catalogSession,
@@ -26,6 +41,10 @@ class IndexController extends \Magento\CatalogSearch\Controller\Result\Index
         parent::__construct($context, $catalogSession, $storeManager, $queryFactory, $layerResolver);
     }
 
+    /**
+     * Setting Abstraction-Implementation mappings for Boxalino classes
+     * @inheritdoc
+     */
     public function execute()
     {
 		if($this->bxHelperData->isSearchEnabled()){

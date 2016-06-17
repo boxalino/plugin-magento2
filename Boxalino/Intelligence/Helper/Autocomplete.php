@@ -1,12 +1,24 @@
 <?php
 namespace Boxalino\Intelligence\Helper;
 
+/**
+ * Class Autocomplete
+ * @package Boxalino\Intelligence\Helper
+ */
 class Autocomplete
 {
+	/**
+	 * @param $string
+	 * @return mixed
+	 */
 	public function escapeHtml($string) {
 		return $string;
 	}
 
+	/**
+	 * @param $products
+	 * @return array
+	 */
 	public function getListValues($products) {
 		$values = array();
 		foreach($products as $product) {
@@ -22,6 +34,9 @@ class Autocomplete
 		return $values;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getProductACTemplate() {
 		$template = '<a href="<%- data.product.url %>">';
 		$template .= '<li class="<%- data.row_class %>" class="text_suggest_<%- data.suggestion %>" role="option">';

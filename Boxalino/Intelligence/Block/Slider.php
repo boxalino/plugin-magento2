@@ -1,11 +1,29 @@
 <?php
 namespace Boxalino\Intelligence\Block;
 
+/**
+ * Class Slider
+ * @package Boxalino\Intelligence\Block
+ */
 class Slider extends \Magento\Framework\View\Element\Template
 {
-
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+
+    /**
+     * Slider constructor.
+     * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param array $data
+     */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -18,12 +36,18 @@ class Slider extends \Magento\Framework\View\Element\Template
         parent::__construct($context, $data);
     }
 
+    /**
+     * @param $price
+     * @return array
+     */
     private function explodePrice($price)
     {
         return explode("-", $price);
     }
 
-    // returns array with price ranges
+    /**
+     * @return array|null
+     */
     public function getSliderValues()
     {
         if($this->bxHelperData->isLeftFilterEnabled()) {

@@ -1,12 +1,45 @@
 <?php
 namespace Boxalino\Intelligence\Block\Product\ProductList;
 use Magento\Catalog\Block\Product\ProductList\Upsell as  MageUpsell;
+
+/**
+ * Class Upsell
+ * @package Boxalino\Intelligence\Block\Product\ProductList
+ */
 class Upsell extends MageUpsell
 {
+    /**
+     * @var string
+     */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
+     */
     protected $factory;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+
+    /**
+     * Upsell constructor.
+     * @param \Magento\Catalog\Block\Product\Context $context
+     * @param \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart
+     * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Framework\Module\Manager $moduleManager
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart,
@@ -25,6 +58,9 @@ class Upsell extends MageUpsell
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
     }
 
+    /**
+     * @return $this
+     */
     protected function _prepareData()
     {
         if($this->bxHelperData->isUpsellEnabled()){

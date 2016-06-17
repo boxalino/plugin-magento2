@@ -4,16 +4,37 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\DataObject as Object;
 
 /**
- * Boxalino CemExport event observer
- *
- * @author nitro@boxalino.com
+ * Class Observer
+ * @package Boxalino\Intelligence\Model
  */
 class Observer implements ObserverInterface
 {
+    /**
+     * @var
+     */
     protected $messageManager;
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
     protected $storeManager;
+
+    /**
+     * @var \Magento\Sales\Model\Order
+     */
     protected $order;
+
+    /**
+     * Observer constructor.
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Sales\Model\Order $order
+     */
     public function __construct(
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -25,11 +46,17 @@ class Observer implements ObserverInterface
         $this->bxHelperData = $bxHelperData;
     }
 
-    public function addScript($script)
+    /**
+     * @param $script
+     */
+    protected function addScript($script)
     {
         $this->bxHelperData->addScript($script);
     }
 
+    /**
+     * @param \Magento\Framework\Event\Observer $observer
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
             $event = $observer->getEvent();
@@ -50,7 +77,10 @@ class Observer implements ObserverInterface
             }
     }
 
-    public function onOrderSuccessPageView($event)
+    /**
+     * @param $event
+     */
+    private function onOrderSuccessPageView($event)
     {
         try {
             $orders = $this->order->getCollection()
@@ -79,7 +109,7 @@ class Observer implements ObserverInterface
         }
     }
 
-    public function onProductPageView($event)
+    protected function onProductPageView($event)
     {
         try {
             $script = $this->bxHelperData->reportProductView($event->getProduct()->getId());
@@ -89,7 +119,7 @@ class Observer implements ObserverInterface
         }
     }
 
-    public function onCategoryPageView($event)
+    protected function onCategoryPageView($event)
     {
         try {
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());

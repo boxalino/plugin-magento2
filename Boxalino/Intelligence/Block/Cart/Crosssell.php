@@ -2,13 +2,46 @@
 namespace Boxalino\Intelligence\Block\Cart;
 use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
 
+/**
+ * Class Crosssell
+ * Cross sell for cart recommendation
+ * @package Boxalino\Intelligence\Block\Cart
+ */
 class Crosssell extends Mage_Crosssell
 {
-
+    /**
+     * @var string
+     */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    
+    /**
+     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     */
     protected $p13nHelper;
+    
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+    
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
+     */
     protected $factory;
+
+    /**
+     * Crosssell constructor.
+     * @param \Magento\Catalog\Block\Product\Context $context
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Catalog\Model\Product\Visibility $productVisibility
+     * @param \Magento\Catalog\Model\Product\LinkFactory $productLinkFactory
+     * @param \Magento\Quote\Model\Quote\Item\RelatedProducts $itemRelationsList
+     * @param \Magento\CatalogInventory\Helper\Stock $stockHelper
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Checkout\Model\Session $checkoutSession,

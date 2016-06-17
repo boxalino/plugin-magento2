@@ -2,12 +2,45 @@
 
 namespace Boxalino\Intelligence\Model;
 
+/**
+ * Class Attribute
+ * @package Boxalino\Intelligence\Model
+ */
 class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
 
+    /**
+     * @var null
+     */
     private $bxFacets = null;
+
+    /**
+     * @var array
+     */
     private $fieldName = array();
+
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     private $bxDataHelper;
+
+    /**
+     * @var \Magento\Catalog\Model\CategoryFactory
+     */
     private $categoryFactory;
+
+    /**
+     * Attribute constructor.
+     * @param \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Catalog\Model\Layer $layer
+     * @param \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder $itemDataBuilder
+     * @param \Magento\Catalog\Model\ResourceModel\Layer\Filter\AttributeFactory $filterAttributeFactory
+     * @param \Magento\Framework\Stdlib\StringUtils $string
+     * @param \Magento\Framework\Filter\StripTags $tagFilter
+     * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -25,31 +58,46 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         parent::__construct($filterItemFactory, $storeManager, $layer, $itemDataBuilder, $filterAttributeFactory, $string, $tagFilter, $data);
     }
 
+    /**
+     * @param $bxFacets
+     */
     public function setFacets($bxFacets) {
         $this->bxFacets = $bxFacets;
     }
 
+    /**
+     * @param $fieldName
+     */
     public function setFieldName($fieldName) {
         $this->fieldName = $fieldName;
     }
 
+    /**
+     * @return mixed
+     */
     public function getName()
     {
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
+    /**
+     * @return array
+     */
     public function getFieldName(){
         return $this->fieldName;
     }
 
+    /**
+     * @return $this|\Magento\Catalog\Model\Layer\Filter\AbstractFilter
+     */
     public function _initItems()
     {
         if($this->bxDataHelper->isFilterLayoutEnabled()){
             $data = $this->_getItemsData();
             $items = [];
             foreach ($data as $itemData) {
-                $selected = isset($itemData['selected']) ?$itemData['selected'] : null;
-                $type = isset($itemData['type']) ?$itemData['type'] : null;
+                $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
+                $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
             }
             $this->_items = $items;
@@ -58,6 +106,14 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return parent::_initItems();
     }
 
+    /**
+     * @param string $label
+     * @param mixed $value
+     * @param int $count
+     * @param null $selected
+     * @param null $type
+     * @return \Magento\Catalog\Model\Layer\Filter\Item
+     */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null)
     {
         if($this->bxDataHelper->isFilterLayoutEnabled()) {
@@ -72,6 +128,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return parent::_createItem($label, $value, $count);
     }
 
+    /**
+     * @return array
+     */
     protected function _getItemsData()
     {
         $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
@@ -154,6 +213,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         return $this->itemDataBuilder->build();
     }
 
+    /**
+     * @param array $categories
+     * @param array $categorySorting
+     * @return array
+     */
     private function sortCategories($categories, $categorySorting){
         $sortedCategories = array();
 		foreach($categorySorting as $node){

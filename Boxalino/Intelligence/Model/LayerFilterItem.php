@@ -1,15 +1,45 @@
 <?php
 
 namespace Boxalino\Intelligence\Model;
-
+/**
+ * Class LayerFilterItem
+ * @package Boxalino\Intelligence\Model
+ */
 class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
-
+    
+    /**
+     * @var
+     */
     private $filter;
+    
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
 	protected $objectManager;
+    
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
 	protected $bxDataHelper;
+
+    /**
+     * @var null
+     */
 	private $bxFacets = null;
+
+    /**
+     * @var array
+     */
     private $fieldName = array();
-	
+
+    /**
+     * LayerFilterItem constructor.
+     * @param \Magento\Framework\UrlInterface $url
+     * @param \Magento\Theme\Block\Html\Pager $htmlPagerBlock
+     * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param array $data
+     */
 	public function __construct(
         \Magento\Framework\UrlInterface $url,
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
@@ -22,14 +52,23 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         parent::__construct($url, $htmlPagerBlock, $data);
     }
 
+    /**
+     * @param $bxFacets
+     */
     public function setFacets($bxFacets) {
         $this->bxFacets = $bxFacets;
     }
 
+    /**
+     * @param $fieldName
+     */
     public function setFieldName($fieldName) {
         $this->fieldName = $fieldName;
     }
 
+    /**
+     * @return mixed
+     */
     public function getName()
     {
         return $this->bxFacets->getFacetLabel($this->fieldName);
@@ -57,7 +96,10 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 		}
 		return $this->filter;
     }
-	
+
+    /**
+     * @return mixed
+     */
 	public function getLabel() {
 		return $this->bxFacets->getSelectedValueLabel($this->fieldName);
 	}

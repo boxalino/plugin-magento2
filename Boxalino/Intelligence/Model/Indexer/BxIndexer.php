@@ -11,6 +11,11 @@ use Magento\Framework\Config\ConfigOptionsListConstants;
 use Magento\Catalog\Model\ProductFactory;
 
 use \Psr\Log\LoggerInterface;
+
+/**
+ * Class BxIndexer
+ * @package Boxalino\Intelligence\Model\Indexer
+ */
 class BxIndexer {
 
     /**
@@ -64,10 +69,33 @@ class BxIndexer {
      * Only used in function: getEntityIdFor
      */
     protected $_entityIds = null;
+
+    /**
+     * @var null
+     */
     private $bxData = null;
+
+    /**
+     * @var
+     */
     protected $deltaIds;
+
+    /**
+     * @var
+     */
     protected $indexerType;
 
+    /**
+     * BxIndexer constructor.
+     * @param StoreManagerInterface $storeManager
+     * @param LoggerInterface $logger
+     * @param Filesystem $filesystem
+     * @param \Magento\Catalog\Helper\Product\Flat\Indexer $productHelper
+     * @param \Magento\Framework\App\ResourceConnection $rs
+     * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
+     * @param ProductFactory $productFactory
+     * @param \Magento\Framework\App\ProductMetadata $productMetaData
+     */
     public function __construct(
         StoreManagerInterface $storeManager,
         LoggerInterface $logger,
@@ -94,6 +122,10 @@ class BxIndexer {
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }
 
+    /**
+     * @param null $type
+     * @return $this
+     */
     public function setIndexerType($type=null){
         $this->indexerType = $type;
         if($type == null){
@@ -102,19 +134,31 @@ class BxIndexer {
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getIndexerType(){
         return $this->indexerType;
     }
 
+    /**
+     * @return mixed
+     */
     protected function getDeltaIds(){
         return $this->deltaIds;
     }
 
+    /**
+     * @param $ids
+     */
     protected function setDeltaIds($ids){
         $this->deltaIds = $ids;
     }
 
-    
+    /**
+     * Starting point for export
+     * @throws \Exception
+     */
     public function exportStores() {
         if($this->getIndexerType() == 'delta'){
             $this->setDeltaIds($this->checkForDeltaIds());
@@ -200,7 +244,14 @@ class BxIndexer {
         }
         $this->logger->info("bxLog: finished exportStores");
     }
-    
+
+    /**
+     * @param $account
+     * @param $files
+     * @param $categories
+     * @param null $tags
+     * @param null $productTags
+     */
     protected function prepareData($account, $files, $categories, $tags = null, $productTags = null){
         $withTag = ($tags != null && $productTags != null) ? true : false;
         $languages = $this->config->getAccountLanguages($account);
@@ -215,6 +266,9 @@ class BxIndexer {
         $this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
     }
 
+    /**
+     * @return array Delta ids from change log table
+     */
     protected function checkForDeltaIds(){
         $db = $this->rs->getConnection();
         $ids = array();
@@ -238,6 +292,9 @@ class BxIndexer {
         return $ids;
     }
 
+    /**
+     * Clears change log table
+     */
     protected function clearChangeLog(){
         $db = $this->rs->getConnection();
         if($db->isTableExists('boxalino_indexer_delta_cl') && $db->tableColumnExists('boxalino_indexer_delta_cl' , 'entity_id')) {
@@ -245,6 +302,11 @@ class BxIndexer {
         }
     }
 
+    /**
+     * @param $attr_code
+     * @return mixed
+     * @throws \Exception
+     */
     protected function getAttributeId($attr_code){
         $db = $this->rs->getConnection();
         $select = $db->select()
@@ -260,6 +322,13 @@ class BxIndexer {
         }
     }
 
+    /**
+     * @param $store
+     * @param $language
+     * @param $transformedCategories
+     * @return mixed
+     * @throws \Exception
+     */
     protected function exportCategories($store, $language, $transformedCategories)
     {
         $db = $this->rs->getConnection();
@@ -289,6 +358,11 @@ class BxIndexer {
         return $transformedCategories;
     }
 
+    /**
+     * @param $account
+     * @param $store
+     * @return array
+     */
     protected function getStoreProductAttributes($account, $store)
     {
 
@@ -328,6 +402,11 @@ class BxIndexer {
         return $attributes;
     }
 
+    /**
+     * @param $account
+     * @param $files
+     * @throws \Zend_Db_Select_Exception
+     */
     protected function exportCustomers($account, $files)
     {
         if(!$this->config->isCustomersExportEnabled($account)) {
@@ -574,6 +653,10 @@ class BxIndexer {
         $this->logger->info('bxLog: Customers - end of exporting for account: ' . $account);
     }
 
+    /**
+     * @param $entityType
+     * @return mixed|null
+     */
     protected function getEntityIdFor($entityType)
     {
         if ($this->_entityIds == null) {
@@ -591,6 +674,10 @@ class BxIndexer {
         return array_key_exists($entityType, $this->_entityIds) ? $this->_entityIds[$entityType] : null;
     }
 
+    /**
+     * @param $account
+     * @return array
+     */
     protected function getTransactionAttributes($account) {
         $this->logger->info('bxLog: get all transaction attributes for account: ' . $account);
         $dbConfig = $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_DB);
@@ -627,6 +714,10 @@ class BxIndexer {
         return $attributes;
     }
 
+    /**
+     * @param $account
+     * @return array
+     */
     protected function getCustomerAttributes($account)
     {
         $attributes = array();
@@ -661,6 +752,10 @@ class BxIndexer {
         return $attributes;
     }
 
+    /**
+     * @param $account
+     * @param $files
+     */
     protected function exportTransactions($account, $files)
     {
         // don't export transactions in delta sync or when disabled
@@ -855,6 +950,12 @@ class BxIndexer {
         $this->logger->info('bxLog: Transactions - end of export for account ' . $account);
     }
 
+    /**
+     * @param $account
+     * @param $files
+     * @param $attributes
+     * @return bool
+     */
     protected function exportProducts($account, $files, $attributes)
     {
         $languages = $this->config->getAccountLanguages($account);
@@ -950,6 +1051,12 @@ class BxIndexer {
         return true;
     }
 
+    /**
+     * @param array $attrs
+     * @param $languages
+     * @param $account
+     * @param $files
+     */
     protected function exportProductAttributes($attrs = array(), $languages, $account, $files){
 
         $db = $this->rs->getConnection();
@@ -1120,6 +1227,9 @@ class BxIndexer {
         }
     }
 
+    /**
+     * @param $files
+     */
     protected function exportProductInformation($files){
 
         $fetchedResult = array();

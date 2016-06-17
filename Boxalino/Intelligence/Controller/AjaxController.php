@@ -1,37 +1,4 @@
 <?php
-/**
- * Magento
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    Mage
- * @package     Mage_CatalogSearch
- * @copyright   Copyright (c) 2014 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- */
-
-/**
- * Catalog Search Controller
- *
- * @category   Mage
- * @package    Mage_CatalogSearch
- * @module     Catalog
- */
-
 namespace Boxalino\Intelligence\Controller;
 
 use Magento\Framework\App\Action\Action;
@@ -39,10 +6,23 @@ use Magento\Framework\App\Action\Context;
 use Magento\Search\Model\AutocompleteInterface;
 use Magento\Framework\Controller\ResultFactory;
 
+/**
+ * Class AjaxController
+ * @package Boxalino\Intelligence\Controller
+ */
 class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
 {
-
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
+
+    /**
+     * AjaxController constructor.
+     * @param Context $context
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param AutocompleteInterface $autocomplete
+     */
 	public function __construct(
         Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
@@ -51,7 +31,10 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
         $this->bxHelperData = $bxHelperData;
         parent::__construct($context, $autocomplete);
     }
-	
+
+    /**
+     * @return \Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\Result\Redirect|null
+     */
 	public function execute()
     {
         if($this->bxHelperData->isAutocompleteEnabled()){
@@ -72,5 +55,6 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
             $resultJson->setData($responseData);
             return $resultJson;
         }
+        return null;
 	}
 }

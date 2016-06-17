@@ -1,9 +1,16 @@
 <?php
 
 namespace Boxalino\Intelligence\Helper;
-
+/**
+ * Class BxGeneral
+ * @package Boxalino\Intelligence\Helper
+ */
 class BxGeneral
 {
+    /**
+     * @param $string
+     * @return string
+     */
 	public function escapeString($string)
     {
         return htmlspecialchars(trim(preg_replace('/\s+/', ' ', $string)));
@@ -14,7 +21,6 @@ class BxGeneral
      */
     public function sanitizeFieldName($text)
     {
-
         $maxLength = 50;
         $delimiter = "_";
 
@@ -44,14 +50,5 @@ class BxGeneral
         $text = trim($text, $delimiter);
 
         return $text;
-    }
-
-    public function rewrittenProductUrl($productId, $storeId)
-    {
-		return "";
-        /*$coreUrl = Mage::getModel('core/url_rewrite');
-        $coreUrl->setStoreId($storeId);
-        $coreUrl->loadByIdPath(sprintf('product/%d', $productId));
-        return $coreUrl->getRequestPath();*/
     }
 }
