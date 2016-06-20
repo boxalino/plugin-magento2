@@ -199,7 +199,6 @@ class BxIndexer {
             if($this->getIndexerType() == 'full'){
                 $this->exportCustomers($account, $files);
                 $this->exportTransactions($account, $files);
-                $this->exportProducts($account, $files, $attributes);
                 $this->prepareData($account, $files, $categories);
             }
 
@@ -1082,8 +1081,9 @@ class BxIndexer {
                 $additionalData = array();
                 $d = array();
                 $mapping = array();
-
+                $headerLangRow = array();
                 foreach ($languages as $lang) {
+                    $headerLangRow[] = 'value_' . $lang;
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
                     $storeId = $storeObject->getId();
@@ -1123,7 +1123,7 @@ class BxIndexer {
                                             $url = $storeBaseUrl . $row['value'] . '.html';
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         } else {
-                                            $url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+                                            $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         }
                                     }
@@ -1137,12 +1137,13 @@ class BxIndexer {
                                         $url = $storeBaseUrl . $row['value'] . '.html';
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                     } else {
-                                        $url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+                                        $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                     }
                                 }
                                 continue;
                             } else {
+
                                 if ($type['is_global'] > 0) {
                                     $data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value' => $row['value']);
                                     continue;
@@ -1155,7 +1156,7 @@ class BxIndexer {
                                 }
                                 if ($type['attribute_code'] == 'image') {
                                     if ($this->config->exportProductImages($account)) {
-                                        $url = $storeBaseUrl . "pub/media/catalog/product" . $row['value'];
+                                        $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
                                     }
                                 }
@@ -1172,8 +1173,9 @@ class BxIndexer {
                 }
 
                 if (sizeof($data)) {
+                    array_unshift($headerLangRow, 'entity_id');
                     if(sizeof($additionalData)){
-                        $d = array_merge(array(array_keys(end($additionalData))), $additionalData);
+                        $d = array_merge(array($headerLangRow), $additionalData);
                         if ($type['attribute_code'] == 'url_key') {
                             $files->savepartToCsv('product_default_url.csv', $d);
                             $sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
@@ -1185,7 +1187,13 @@ class BxIndexer {
                             $this->bxData->addSourceLocalizedTextField($sourceKey, 'cache_image_url',$labelColumns);
                         }
                     }
-                    $d = array_merge(array(array_keys(end($data))), $data);
+
+                    if(sizeof($headerLangRow) > 2){
+                        $d = array_merge(array($headerLangRow), $data);
+                    }else{
+                        $d = array_merge(array(array_keys(end($data))), $data);
+                    }
+
                     $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
 
                     $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
@@ -1223,6 +1231,7 @@ class BxIndexer {
                 $mapping = null;
                 $d = null;
                 $labelColumns = null;
+                $headerLangRow = array();
             }
         }
     }
