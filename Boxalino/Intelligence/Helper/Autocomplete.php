@@ -8,6 +8,22 @@ namespace Boxalino\Intelligence\Helper;
 class Autocomplete
 {
 	/**
+	 * @var \Magento\Store\Model\StoreManagerInterface
+	 */
+	protected $_storeManager;
+
+	/**
+	 * Autocomplete constructor.
+	 * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+	 */
+	public function __construct(
+		\Magento\Store\Model\StoreManagerInterface $storeManager
+	)
+	{
+		$this->_storeManager = $storeManager;
+	}
+
+	/**
 	 * @param $string
 	 * @return mixed
 	 */
@@ -22,13 +38,13 @@ class Autocomplete
 	public function getListValues($products) {
 		$values = array();
 		foreach($products as $product) {
-
+			$mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
 			$value = array();
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();
 			$value['url'] = $product->getProductUrl();
 			$value['price'] = strip_tags($product->getFormatedPrice());
-			$value['image'] = "http" . (isset($_SERVER['HTTPS']) ? 's' : '') . "://" . $_SERVER['SERVER_NAME'] . "/magento/pub/media/catalog/product/" . $product->getImage();
+			$value['image'] = $mediaUrl . "catalog/product" . $product->getImage();
 			$values[$product->getId()] = $value;
 		}
 		return $values;

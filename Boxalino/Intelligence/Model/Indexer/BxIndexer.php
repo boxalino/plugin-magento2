@@ -1088,6 +1088,7 @@ class BxIndexer {
                     $storeObject = $this->config->getStore($account, $lang);
                     $storeId = $storeObject->getId();
                     $storeBaseUrl = $storeObject->getBaseUrl();
+                    $imageBaseUrl = $storeObject->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . "catalog/product";
                     if ($type['attribute_code'] == 'url_key') {
                         if ($this->productMetaData->getEdition() != "Community") {
                             $select1 = $db->select()
@@ -1123,7 +1124,7 @@ class BxIndexer {
                                             $url = $storeBaseUrl . $row['value'] . '.html';
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         } else {
-                                            $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
+                                            $url = $imageBaseUrl . $row['value'];
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         }
                                     }
@@ -1137,7 +1138,7 @@ class BxIndexer {
                                         $url = $storeBaseUrl . $row['value'] . '.html';
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                     } else {
-                                        $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
+                                        $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                     }
                                 }
@@ -1156,7 +1157,7 @@ class BxIndexer {
                                 }
                                 if ($type['attribute_code'] == 'image') {
                                     if ($this->config->exportProductImages($account)) {
-                                        $url = $storeBaseUrl . "media/catalog/product" . $row['value'];
+                                        $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
                                     }
                                 }
