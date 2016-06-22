@@ -451,8 +451,8 @@ class Data
      * @return int
      */
     public function getCategoriesSortOrder(){
-        $fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
-        $orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));
+        $fields = explode(',', $this->config->getValue('bxSearch/left_facets/fields',$this->scopeStore));
+        $orders = explode(',', $this->config->getValue('bxSearch/left_facets/orders',$this->scopeStore));
         foreach($fields as $index => $field){
             if($field == 'categories'){
                 return (int)$orders[$index];
