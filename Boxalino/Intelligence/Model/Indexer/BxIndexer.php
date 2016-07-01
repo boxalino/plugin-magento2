@@ -396,7 +396,6 @@ class BxIndexer {
                 unset($attributes[$k]);
             }
         }
-
         $this->logger->info('bxLog: returning configured product attributes for store ' . $store->getId() . ': ' . implode(',', array_values($attributes)));
         return $attributes;
     }
@@ -964,38 +963,6 @@ class BxIndexer {
         $this->logger->info('bxLog: Products - get info about attributes - before for account ' . $account);
 
         $db = $this->rs->getConnection();
-        $select = $db->select()
-            ->from(
-                array('main_table' => $this->rs->getTableName('eav_attribute')),
-                array(
-                    'attribute_id',
-                    'attribute_code',
-                    'backend_type',
-                )
-            )
-            ->joinInner(
-                array('additional_table' => $this->rs->getTableName('catalog_eav_attribute'), 'is_global'),
-                'additional_table.attribute_id = main_table.attribute_id'
-            )
-            ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
-            ->where('main_table.attribute_code IN(?)', $attrs);
-
-        $this->logger->info('bxLog: Products - connected to DB, built attribute info query for account ' . $account);
-
-        $attrsFromDb = array(
-            'int' => array(),
-            'varchar' => array(),
-            'text' => array(),
-            'decimal' => array(),
-            'datetime' => array(),
-        );
-
-        foreach ($db->fetchAll($select) as $r) {
-            $type = $r['backend_type'];
-            if (isset($attrsFromDb[$type])) {
-                $attrsFromDb[$type][$r['attribute_id']] = array('attribute_code' => $r['attribute_code'], 'is_global' => $r['is_global']);
-            }
-        }
 
         $countMax = 1000000; //$this->_storeConfig['maximum_population'];
         $limit = 1000; //$this->_storeConfig['export_chunk'];
@@ -1045,6 +1012,44 @@ class BxIndexer {
         $attributeSourceKey = $this->bxData->addMainCSVItemFile($files->getPath('products.csv'), 'entity_id');
         $this->bxData->addSourceStringField($attributeSourceKey, 'group_id', 'group_id');
         $this->bxData->addFieldParameter($attributeSourceKey, 'group_id', 'multiValued', 'false');
+
+        $select = $db->select()
+            ->from(
+                array('main_table' => $this->rs->getTableName('eav_attribute')),
+                array(
+                    'attribute_id',
+                    'attribute_code',
+                    'backend_type',
+                    'frontend_input',
+                )
+            )
+            ->joinInner(
+                array('additional_table' => $this->rs->getTableName('catalog_eav_attribute'), 'is_global'),
+                'additional_table.attribute_id = main_table.attribute_id'
+            )
+            ->where('main_table.entity_type_id = ?', $this->getEntityIdFor('catalog_product'))
+            ->where('main_table.attribute_code IN(?)', $attrs);
+
+        $this->logger->info('bxLog: Products - connected to DB, built attribute info query for account ' . $account);
+
+        $attrsFromDb = array(
+            'int' => array(),
+            'varchar' => array(),
+            'text' => array(),
+            'decimal' => array(),
+            'datetime' => array(),
+        );
+
+        foreach ($db->fetchAll($select) as $r) {
+            $type = $r['backend_type'];
+            if (isset($attrsFromDb[$type])) {
+                $attrsFromDb[$type][$r['attribute_id']] = array(
+                    'attribute_code' => $r['attribute_code'], 'is_global' => $r['is_global'],
+                    'frontend_input' => $r['frontend_input']
+                );
+            }
+        }
+
         $this->exportProductAttributes($attrsFromDb, $languages, $account, $files);
         $this->exportProductInformation($files);
         return true;
@@ -1068,27 +1073,32 @@ class BxIndexer {
         $attrs['misc'][] = array('attribute_code' => 'categories');
         $files->prepareProductFiles($attrs);
         unset($attrs['misc']);
-
+        
         foreach($attrs as $attrKey => $types){
 
-            $select = $db->select()->from(
-                array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
-                $columns
-            )->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 't_d.attribute_id = ea.attribute_id', array());
-            if($this->getIndexerType() == 'delta') $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
             foreach ($types as $typeKey => $type) {
+                $optionSelect = in_array($type['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
+                $global = false;
                 $d = array();
-                $mapping = array();
                 $headerLangRow = array();
+                $optionValues = array();
+
                 foreach ($languages as $lang) {
-                    $headerLangRow[] = 'value_' . $lang;
+
+                    $select = $db->select()->from(
+                        array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
+                        $columns
+                    );
+                    if($this->getIndexerType() == 'delta') $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
+
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
                     $storeId = $storeObject->getId();
                     $storeBaseUrl = $storeObject->getBaseUrl();
                     $imageBaseUrl = $storeObject->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . "catalog/product";
+
                     if ($type['attribute_code'] == 'url_key') {
                         if ($this->productMetaData->getEdition() != "Community") {
                             $select1 = $db->select()
@@ -1109,16 +1119,50 @@ class BxIndexer {
                             continue;
                         }
                     }
-                    $whereClause = clone $select;
-                    $whereClause->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = ? OR t_d.store_id = 0', $storeId);
-                    $fetchedResult = $db->fetchAll($whereClause);
+                    $attributeSelect = clone $select;
+                    $attributeSelect->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+                    $fetchedResult = $db->fetchAll($attributeSelect);
 
                     if (sizeof($fetchedResult)) {
+                        if($optionSelect){
 
-                        foreach ($fetchedResult as $row) {
-                            if (isset($data[$row['entity_id']]) && isset($mapping[$row['entity_id']])) {
-                                if($row['store_id'] > $mapping[$row['entity_id']]) {
+                            $optionValueSelect = $db->select()
+                                ->from(
+                                    array('a_o' => $this->rs->getTableName('eav_attribute_option')),
+                                    array(
+                                        'option_id',
+                                        new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
+                                        )
+                                )->joinLeft(array('b_o' => $this->rs->getTableName('eav_attribute_option_value')),
+                                    'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
+                                    array()
+                                )->joinLeft(array('c_o' => $this->rs->getTableName('eav_attribute_option_value')),
+                                    'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
+                                    array()
+                                )->where('a_o.attribute_id = ?', $typeKey);
+
+                            $fetchedOptionValues = $db->fetchAll($optionValueSelect);
+
+                            if($fetchedOptionValues){
+                                foreach($fetchedOptionValues as $v){
+                                    if(isset($optionValues[$v['option_id']])){
+                                        $optionValues[$v['option_id']]['value_' . $lang] = $v['value'];
+                                    }else{
+                                        $optionValues[$v['option_id']] = array($type['attribute_code'] . '_id' => $v['option_id'],
+                                            'value_' . $lang => $v['value']);
+                                    }
+                                }
+                            }else{
+                                $optionSelect = false;
+                            }
+                            $fetchedOptionValues = null;
+                        }
+
+                        foreach ($fetchedResult as $i => $row) {
+                            if (isset($data[$row['entity_id']]) && !$optionSelect) {
+                                if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
                                     $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                    $data[$row['entity_id']]['store_id'] = $row['store_id'];
                                     if(isset($additionalData[$row['entity_id']])){
                                         if ($type['attribute_code'] == 'url_key') {
                                             $url = $storeBaseUrl . $row['value'] . '.html';
@@ -1128,7 +1172,6 @@ class BxIndexer {
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         }
                                     }
-                                    $mapping[$row['entity_id']] = 0;
                                     continue;
                                 }
                                 $data[$row['entity_id']]['value_' . $lang] = $row['value'];
@@ -1144,62 +1187,103 @@ class BxIndexer {
                                 }
                                 continue;
                             } else {
-
-                                if ($type['is_global'] > 0) {
-                                    $data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value' => $row['value']);
-                                    continue;
-                                }
                                 if ($type['attribute_code'] == 'url_key') {
                                     if ($this->config->exportProductUrl($account)) {
                                         $url = $storeBaseUrl . $row['value'] . '.html';
-                                        $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+                                        $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            'store_id' => $row['store_id'],
+                                            'value_' . $lang => $url);
                                     }
                                 }
                                 if ($type['attribute_code'] == 'image') {
                                     if ($this->config->exportProductImages($account)) {
                                         $url = $imageBaseUrl . $row['value'];
-                                        $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $url);
+                                        $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            'value_' . $lang => $url);
                                     }
                                 }
-                                $data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $lang => $row['value']);
-                                $mapping[$row['entity_id']] = $row['store_id'];
+                                if ($type['is_global'] != 1) {
+                                    if($optionSelect){
+                                        $values = explode(',',$row['value']);
+                                        foreach($values as $v){
+                                            $data[] = array('entity_id' => $row['entity_id'],
+                                                $type['attribute_code'] . '_id' => $v);
+                                        }
+                                    }else{
+                                        if(!isset($data[$row['entity_id']]) || $data[$row['entity_id']]['store_id'] < $row['store_id']) {
+                                            $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                                'store_id' => $row['store_id'],'value_' . $lang => $row['value']);
+                                        }
+                                    }
+                                    continue;
+                                }else{
+                                    if($optionSelect){
+                                        $values = explode(',',$row['value']);
+                                        foreach($values as $v){
+                                            $data[] = array('entity_id' => $row['entity_id'],
+                                                $type['attribute_code'] . '_id' => $v);
+                                        }
+                                    }else{
+                                        $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            'store_id' => $row['store_id'],
+                                            'value' => $row['value']);
+                                    }
+                                }
                             }
                         }
-                        if($type['is_global'] > 0){
-                            $labelColumns = null;
+                        if($type['is_global'] == 1){
+                            $global = true;
                             break;
                         }
                     }
-                    $whereClause = null;
                 }
 
                 if (sizeof($data)) {
-                    array_unshift($headerLangRow, 'entity_id');
-                    if(sizeof($additionalData)){
-                        $d = array_merge(array($headerLangRow), $additionalData);
-                        if ($type['attribute_code'] == 'url_key') {
-                            $files->savepartToCsv('product_default_url.csv', $d);
-                            $sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
-                            $this->bxData->addSourceLocalizedTextField($sourceKey, 'default_url', $labelColumns);
-
-                        } else {
-                            $files->savepartToCsv('product_cache_image_url.csv', $d);
-                            $sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_url.csv'), 'entity_id');
-                            $this->bxData->addSourceLocalizedTextField($sourceKey, 'cache_image_url',$labelColumns);
-                        }
+                    if($optionSelect){
+                        $optionHeader = array_merge(array($type['attribute_code'] . '_id'),$labelColumns);
+                        $a = array_merge(array($optionHeader), $optionValues);
+                        $files->savepartToCsv( $type['attribute_code'].'.csv', $a);
+                        $optionValues = null;
+                        $a = null;
                     }
 
-                    if(sizeof($headerLangRow) > 2){
-                        $d = array_merge(array($headerLangRow), $data);
-                    }else{
+                    if(!$global){
+                        if(!$optionSelect){
+                            $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
+                            if(sizeof($additionalData)){
+                                $additionalHeader = array_merge(array('entity_id','store_id'), $labelColumns);
+                                $d = array_merge(array($additionalHeader), $additionalData);
+                                if ($type['attribute_code'] == 'url_key') {
+                                    $files->savepartToCsv('product_default_url.csv', $d);
+                                    $sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_default_url.csv'), 'entity_id');
+                                    $this->bxData->addSourceLocalizedTextField($sourceKey, 'default_url', $labelColumns);
+                                } else {
+                                    $files->savepartToCsv('product_cache_image_url.csv', $d);
+                                    $sourceKey = $this->bxData->addCSVItemFile($files->getPath('product_cache_image_url.csv'), 'entity_id');
+                                    $this->bxData->addSourceLocalizedTextField($sourceKey, 'cache_image_url',$labelColumns);
+                                }
+                            }
+                            $d = array_merge(array($headerLangRow), $data);
+                        }else{
+                            $d = array_merge(array(array('entity_id',$type['attribute_code'] . '_id')), $data);
+                        }
+                    }else {
                         $d = array_merge(array(array_keys(end($data))), $data);
                     }
 
-                    $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
 
+                    $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
                     $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                     $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
+
                     switch($type['attribute_code']){
+                        case $optionSelect == true:
+                            $optionSourceKey = $this->bxData->addResourceFile(
+                                $files->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
+                                $labelColumns);
+                            $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'],
+                                $type['attribute_code'] . '_id', $optionSourceKey);
+                            break;
                         case 'name':
                             $this->bxData->addSourceTitleField($attributeSourceKey, $labelColumns);
                             break;
@@ -1207,21 +1291,54 @@ class BxIndexer {
                             $this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
                             break;
                         case 'price':
-                            $this->bxData->addSourceListPriceField($attributeSourceKey, 'value');
+                            if(!$global){
+                                $col = null;
+                                foreach($labelColumns as $k => $v) {
+                                    $col = $v;
+                                    break;
+                                }
+                                $this->bxData->addSourceListPriceField($attributeSourceKey, $col);
+                            }else {
+                                $this->bxData->addSourceListPriceField($attributeSourceKey, 'value');
+                            }
+
+                            if(!$global){
+                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "price_localized", $labelColumns);
+                            } else {
+                                $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", 'value');
+                            }
                             break;
                         case 'special_price':
-                            $this->bxData->addSourceDiscountedPriceField($attributeSourceKey, 'value');
+                            if(!$global){
+                                $col = null;
+                                foreach($labelColumns as $k => $v) {
+                                    $col = $v;
+                                    break;
+                                }
+                                $this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $col);
+                            }else {
+                                $this->bxData->addSourceDiscountedPriceField($attributeSourceKey, 'value');
+                            }
+                            if(!$global){
+                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "special_price_localized", $labelColumns);
+                            } else {
+                                $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", 'value');
+                            }
                             break;
-                        case ($attrKey == ('int' || 'decimal')) && $type['is_global'] > 0:
+                        case ($attrKey == ('int' || 'decimal')) && $type['is_global'] == 1:
                             $this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
                             break;
                         case $attrKey == 'datetime':
-                            $this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
-                            break;
-                        default:
-                            if(sizeof($labelColumns)){
+                            if(!$global){
                                 $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
                             }else{
+                                $this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
+                            }
+                            break;
+                        default:
+                            if(!$global){
+                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
+                            }else {
                                 $this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
                             }
                             break;
@@ -1229,10 +1346,8 @@ class BxIndexer {
                 }
                 $data = null;
                 $additionalData = null;
-                $mapping = null;
                 $d = null;
                 $labelColumns = null;
-                $headerLangRow = array();
             }
         }
     }
