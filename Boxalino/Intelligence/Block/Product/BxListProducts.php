@@ -122,9 +122,6 @@ class BxListProducts extends ListProduct
         $this->abstractAction = $abstractAction;
         $this->_objectManager = $objectManager;
         $this->p13nHelper = $p13nHelper;
-        if($this->bxHelperData->isSearchEnabled() && $p13nHelper->areThereSubPhrases()){
-            $this->queries = $p13nHelper->getSubPhrasesQueries();
-        }
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
@@ -138,10 +135,11 @@ class BxListProducts extends ListProduct
         }
         $layer = $this->getLayer();
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
+
             if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
                 return parent::_getProductCollection();
             }
-//            print_r($this->request->getParams());
+
             if($this->request->getParam('bx_category_id') && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor) {
                 $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
                 if($selectedCategory->getLevel() != 1){
@@ -152,7 +150,8 @@ class BxListProducts extends ListProduct
             }
 
             if($this->p13nHelper->areThereSubPhrases()) {
-                $entity_ids = array_slice($this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]), 0, $this->_scopeConfig->getValue('bxSearch/advanced/limit',$this->scopeStore));
+                $this->queries = $this->p13nHelper->getSubPhrasesQueries();
+                $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
 
             }else{
                 $entity_ids = $this->p13nHelper->getEntitiesIds();

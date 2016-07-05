@@ -116,9 +116,6 @@ class Adapter
 			$p13n_username = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_username',$this->scopeStore);
 			$p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password',$this->scopeStore);
 			$domain = $this->scopeConfig->getValue('bxGeneral/general/domain',$this->scopeStore);
-			//$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
-			//$language = substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
-			
 			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
 			
 		}
@@ -335,8 +332,10 @@ class Adapter
 	 * 
 	 */
 	public function simpleSearch() {
-		
-		if(self::$bxClient->getRequest()!=null) {
+
+		$query = $this->queryFactory->get();
+		$queryText = $query->getQueryText();
+		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
 			return;
 		}
 		
@@ -374,8 +373,6 @@ class Adapter
 		}
 		$overWriteLimit = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
-		$query = $this->queryFactory->get();
-		$queryText = $query->getQueryText();
 		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
 
@@ -586,21 +583,34 @@ class Adapter
 	 * @param array $products
 	 * @return mixed Hit ids
 	 */
-    public function getRecommendation($widgetType, $widgetName, $minAmount = 3, $amount = 3, $products = array())
+    public function getRecommendation($widgetType, $widgetName, $minAmount = 3, $amount = 3, $context = array(), $execute=true)
     {
-		if(self::$bxClient->getRequest()==null) {
+		if(sizeof(self::$bxClient->getRecommendationRequests()) == 0) {
+
 			$recommendations = $this->scopeConfig->getValue('bxRecommendations',$this->scopeStore);
 			if ($widgetType == '') {
 				
 				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount);
 				$bxRequest->setMin($minAmount);
 				$bxRequest->setFilters($this->getSystemFilters());
-				if (isset($products[0])) {
-					$product = $products[0];
+				if (isset($context[0])) {
+					$product = $context[0];
 					$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
 				}
 				self::$bxClient->addRequest($bxRequest);
 			} else {
+				if($recommendations['others'] != null){
+					$widgetNames = explode(',',$recommendations['others']['widget']);
+					$widgetTypes = explode(',',$recommendations['others']['scenario']);
+					$widgetMin = explode(',',$recommendations['others']['min']);
+					$widgetMax = explode(',',$recommendations['others']['max']);
+					unset($recommendations['others']);
+					foreach($widgetTypes as $i => $type){
+						$recommendations[] = array('enabled' => 1,
+							'min' => $widgetMin[$i], 'max' => $widgetMax[$i], 'widget'=> $widgetNames[$i],
+							'scenario' => $type);
+					}
+				}
 
 				foreach ($recommendations as $key => $recommendation) {
 					$type = 'others';
@@ -616,6 +626,9 @@ class Adapter
 							$recommendation['widget'] = $key == 'related'? 'similar' : 'complementary';
 						}
 					}
+					if(isset($recommendation['scenario'])){
+						$type = $recommendation['scenario'];
+					}
 
 					if (
 						(!empty($recommendation['min']) || $recommendation['min'] >= 0) &&
@@ -623,22 +636,24 @@ class Adapter
 						($recommendation['min'] <= $recommendation['max']) &&
 						(!isset($recommendation['enabled']) || $recommendation['enabled'] == 1)
 					) {
-
 						if ($type == $widgetType) {
-
 							$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $recommendation['widget'], $recommendation['max']);
 							$bxRequest->setMin($recommendation['min']);
 							$bxRequest->setFilters($this->getSystemFilters());
 							if ($widgetType === 'basket') {
 								$basketProducts = array();
-								foreach($products as $product) {
+								foreach($context as $product) {
 									$basketProducts[] = array('id'=>$product->getid(), 'price'=>$product->getPrice());
 								}
 								$bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
-							} elseif ($widgetType === 'product' && isset($products[0])) {
-
-								$product = $products[0];
+							} elseif ($widgetType === 'product' && isset($context[0])) {
+								$product = $context[0];
 								$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
+							} elseif ($widgetType === 'category' && isset($context[0])){
+								$filterField = "category_id";
+								$filterValues = array($context[0]);
+								$filterNegative = false;
+								$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 							}
 							self::$bxClient->addRequest($bxRequest);
 						}
@@ -646,7 +661,9 @@ class Adapter
 				}
 			}
 		}
-		
+		if(!$execute) {
+			return array();
+		}
 		return self::$bxClient->getResponse()->getHitIds($widgetName);
     }
 

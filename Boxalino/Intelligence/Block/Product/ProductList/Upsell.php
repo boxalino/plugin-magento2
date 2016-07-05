@@ -105,6 +105,13 @@ class Upsell extends MageUpsell
         }
         return parent::_prepareData();
     }
-
+    
+    public function getItems()
+    {
+        if (is_null($this->_items)) {
+            $this->_items = $this->getItemCollection()->getItems();
+        }
+        return $this->_items;
+    }
 
 }

@@ -252,6 +252,8 @@ class BxClient
 			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
+		} finally{
+			return null;
 		}
 	}
 	
@@ -270,7 +272,26 @@ class BxClient
 		}
 		return $this->chooseRequests[$index];
 	}
-	
+
+	public function getChoiceIdRecommendationRequest($choiceId) {
+		foreach ($this->chooseRequests as $request){
+			if($request->getChoiceId() == $choiceId) {
+				return $request;
+			}
+		}
+		return null;
+	}
+
+	public function getRecommendationRequests(){
+		$requests = array();
+		foreach ($this->chooseRequests as $request){
+			if($request instanceof BxRecommendationRequest){
+				$requests[] = $request;
+			}
+		}
+		return $requests;
+	}
+
 	public function getThriftChoiceRequest() {
 		$choiceInquiries = array();
 		
@@ -321,6 +342,8 @@ class BxClient
 			return $this->getP13n()->autocomplete($autocompleteRequest);
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
+		}finally{
+			return null;
 		}
 	}
 	
@@ -349,11 +372,13 @@ class BxClient
 	
 	private function p13nautocompleteAll($requests) {
 		$requestBundle = new \com\boxalino\p13n\api\thrift\AutocompleteRequestBundle();
-	$requestBundle->requests = $requests;
+		$requestBundle->requests = $requests;
 		try {
 			return $this->getP13n()->autocompleteAll($requestBundle)->responses;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
+		} finally{
+			return null;
 		}
 	}
 			

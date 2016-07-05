@@ -59,6 +59,11 @@ class Related extends MageRelated
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
     }
 
+    protected function _beforeToHtml()
+    {
+        $this->_prepareData();
+    }
+
     /**
      * @return $this
      */
@@ -98,4 +103,5 @@ class Related extends MageRelated
         }
         return parent::_prepareData();
     }
+
 }
