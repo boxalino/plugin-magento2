@@ -2444,6 +2444,14 @@ class UserRecord {
    * @var string
    */
   public $username = null;
+  /**
+   * @var string
+   */
+  public $apiKey = null;
+  /**
+   * @var string
+   */
+  public $apiSecret = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2452,11 +2460,25 @@ class UserRecord {
           'var' => 'username',
           'type' => TType::STRING,
           ),
+        10 => array(
+          'var' => 'apiKey',
+          'type' => TType::STRING,
+          ),
+        20 => array(
+          'var' => 'apiSecret',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['username'])) {
         $this->username = $vals['username'];
+      }
+      if (isset($vals['apiKey'])) {
+        $this->apiKey = $vals['apiKey'];
+      }
+      if (isset($vals['apiSecret'])) {
+        $this->apiSecret = $vals['apiSecret'];
       }
     }
   }
@@ -2487,6 +2509,20 @@ class UserRecord {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->apiKey);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 20:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->apiSecret);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2503,6 +2539,16 @@ class UserRecord {
     if ($this->username !== null) {
       $xfer += $output->writeFieldBegin('username', TType::STRING, 1);
       $xfer += $output->writeString($this->username);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->apiKey !== null) {
+      $xfer += $output->writeFieldBegin('apiKey', TType::STRING, 10);
+      $xfer += $output->writeString($this->apiKey);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->apiSecret !== null) {
+      $xfer += $output->writeFieldBegin('apiSecret', TType::STRING, 20);
+      $xfer += $output->writeString($this->apiSecret);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -5127,6 +5173,10 @@ class AutocompleteRequest {
    * @var string[]
    */
   public $includeVariantIds = null;
+  /**
+   * @var \com\boxalino\p13n\api\thrift\PropertyQuery[]
+   */
+  public $propertyQueries = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5183,6 +5233,15 @@ class AutocompleteRequest {
             'type' => TType::STRING,
             ),
           ),
+        110 => array(
+          'var' => 'propertyQueries',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\com\boxalino\p13n\api\thrift\PropertyQuery',
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5215,6 +5274,9 @@ class AutocompleteRequest {
       }
       if (isset($vals['includeVariantIds'])) {
         $this->includeVariantIds = $vals['includeVariantIds'];
+      }
+      if (isset($vals['propertyQueries'])) {
+        $this->propertyQueries = $vals['propertyQueries'];
       }
     }
   }
@@ -5340,6 +5402,24 @@ class AutocompleteRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 110:
+          if ($ftype == TType::LST) {
+            $this->propertyQueries = array();
+            $_size235 = 0;
+            $_etype238 = 0;
+            $xfer += $input->readListBegin($_etype238, $_size235);
+            for ($_i239 = 0; $_i239 < $_size235; ++$_i239)
+            {
+              $elem240 = null;
+              $elem240 = new \com\boxalino\p13n\api\thrift\PropertyQuery();
+              $xfer += $elem240->read($input);
+              $this->propertyQueries []= $elem240;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5392,12 +5472,12 @@ class AutocompleteRequest {
       {
         $output->writeSetBegin(TType::STRING, count($this->excludeVariantIds));
         {
-          foreach ($this->excludeVariantIds as $iter235 => $iter236)
+          foreach ($this->excludeVariantIds as $iter241 => $iter242)
           {
-            if (is_scalar($iter236)) {
-            $xfer += $output->writeString($iter235);
+            if (is_scalar($iter242)) {
+            $xfer += $output->writeString($iter241);
             } else {
-            $xfer += $output->writeString($iter236);
+            $xfer += $output->writeString($iter242);
             }
           }
         }
@@ -5434,17 +5514,402 @@ class AutocompleteRequest {
       {
         $output->writeSetBegin(TType::STRING, count($this->includeVariantIds));
         {
-          foreach ($this->includeVariantIds as $iter237 => $iter238)
+          foreach ($this->includeVariantIds as $iter243 => $iter244)
           {
-            if (is_scalar($iter238)) {
-            $xfer += $output->writeString($iter237);
+            if (is_scalar($iter244)) {
+            $xfer += $output->writeString($iter243);
             } else {
-            $xfer += $output->writeString($iter238);
+            $xfer += $output->writeString($iter244);
             }
           }
         }
         $output->writeSetEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->propertyQueries !== null) {
+      if (!is_array($this->propertyQueries)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('propertyQueries', TType::LST, 110);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->propertyQueries));
+        {
+          foreach ($this->propertyQueries as $iter245)
+          {
+            $xfer += $iter245->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class PropertyQuery {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $name = null;
+  /**
+   * @var int
+   */
+  public $hitCount = null;
+  /**
+   * @var bool
+   */
+  public $evaluateTotal = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        11 => array(
+          'var' => 'name',
+          'type' => TType::STRING,
+          ),
+        21 => array(
+          'var' => 'hitCount',
+          'type' => TType::I32,
+          ),
+        31 => array(
+          'var' => 'evaluateTotal',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+      if (isset($vals['hitCount'])) {
+        $this->hitCount = $vals['hitCount'];
+      }
+      if (isset($vals['evaluateTotal'])) {
+        $this->evaluateTotal = $vals['evaluateTotal'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'PropertyQuery';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 11:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 21:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->hitCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 31:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->evaluateTotal);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('PropertyQuery');
+    if ($this->name !== null) {
+      $xfer += $output->writeFieldBegin('name', TType::STRING, 11);
+      $xfer += $output->writeString($this->name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hitCount !== null) {
+      $xfer += $output->writeFieldBegin('hitCount', TType::I32, 21);
+      $xfer += $output->writeI32($this->hitCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->evaluateTotal !== null) {
+      $xfer += $output->writeFieldBegin('evaluateTotal', TType::BOOL, 31);
+      $xfer += $output->writeBool($this->evaluateTotal);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class PropertyResult {
+  static $_TSPEC;
+
+  /**
+   * @var \com\boxalino\p13n\api\thrift\PropertyHit[]
+   */
+  public $hits = null;
+  /**
+   * @var string
+   */
+  public $name = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        11 => array(
+          'var' => 'hits',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\com\boxalino\p13n\api\thrift\PropertyHit',
+            ),
+          ),
+        21 => array(
+          'var' => 'name',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['hits'])) {
+        $this->hits = $vals['hits'];
+      }
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'PropertyResult';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 11:
+          if ($ftype == TType::LST) {
+            $this->hits = array();
+            $_size246 = 0;
+            $_etype249 = 0;
+            $xfer += $input->readListBegin($_etype249, $_size246);
+            for ($_i250 = 0; $_i250 < $_size246; ++$_i250)
+            {
+              $elem251 = null;
+              $elem251 = new \com\boxalino\p13n\api\thrift\PropertyHit();
+              $xfer += $elem251->read($input);
+              $this->hits []= $elem251;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 21:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('PropertyResult');
+    if ($this->hits !== null) {
+      if (!is_array($this->hits)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('hits', TType::LST, 11);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->hits));
+        {
+          foreach ($this->hits as $iter252)
+          {
+            $xfer += $iter252->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->name !== null) {
+      $xfer += $output->writeFieldBegin('name', TType::STRING, 21);
+      $xfer += $output->writeString($this->name);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class PropertyHit {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $value = null;
+  /**
+   * @var string
+   */
+  public $label = null;
+  /**
+   * @var int
+   */
+  public $totalHitCount = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        11 => array(
+          'var' => 'value',
+          'type' => TType::STRING,
+          ),
+        21 => array(
+          'var' => 'label',
+          'type' => TType::STRING,
+          ),
+        31 => array(
+          'var' => 'totalHitCount',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['value'])) {
+        $this->value = $vals['value'];
+      }
+      if (isset($vals['label'])) {
+        $this->label = $vals['label'];
+      }
+      if (isset($vals['totalHitCount'])) {
+        $this->totalHitCount = $vals['totalHitCount'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'PropertyHit';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 11:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->value);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 21:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->label);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 31:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->totalHitCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('PropertyHit');
+    if ($this->value !== null) {
+      $xfer += $output->writeFieldBegin('value', TType::STRING, 11);
+      $xfer += $output->writeString($this->value);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->label !== null) {
+      $xfer += $output->writeFieldBegin('label', TType::STRING, 21);
+      $xfer += $output->writeString($this->label);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->totalHitCount !== null) {
+      $xfer += $output->writeFieldBegin('totalHitCount', TType::I64, 31);
+      $xfer += $output->writeI64($this->totalHitCount);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -5465,6 +5930,10 @@ class AutocompleteResponse {
    * @var \com\boxalino\p13n\api\thrift\SearchResult
    */
   public $prefixSearchResult = null;
+  /**
+   * @var \com\boxalino\p13n\api\thrift\PropertyResult[]
+   */
+  public $propertyResults = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5483,6 +5952,15 @@ class AutocompleteResponse {
           'type' => TType::STRUCT,
           'class' => '\com\boxalino\p13n\api\thrift\SearchResult',
           ),
+        31 => array(
+          'var' => 'propertyResults',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\com\boxalino\p13n\api\thrift\PropertyResult',
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5491,6 +5969,9 @@ class AutocompleteResponse {
       }
       if (isset($vals['prefixSearchResult'])) {
         $this->prefixSearchResult = $vals['prefixSearchResult'];
+      }
+      if (isset($vals['propertyResults'])) {
+        $this->propertyResults = $vals['propertyResults'];
       }
     }
   }
@@ -5517,15 +5998,15 @@ class AutocompleteResponse {
         case 11:
           if ($ftype == TType::LST) {
             $this->hits = array();
-            $_size239 = 0;
-            $_etype242 = 0;
-            $xfer += $input->readListBegin($_etype242, $_size239);
-            for ($_i243 = 0; $_i243 < $_size239; ++$_i243)
+            $_size253 = 0;
+            $_etype256 = 0;
+            $xfer += $input->readListBegin($_etype256, $_size253);
+            for ($_i257 = 0; $_i257 < $_size253; ++$_i257)
             {
-              $elem244 = null;
-              $elem244 = new \com\boxalino\p13n\api\thrift\AutocompleteHit();
-              $xfer += $elem244->read($input);
-              $this->hits []= $elem244;
+              $elem258 = null;
+              $elem258 = new \com\boxalino\p13n\api\thrift\AutocompleteHit();
+              $xfer += $elem258->read($input);
+              $this->hits []= $elem258;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -5536,6 +6017,24 @@ class AutocompleteResponse {
           if ($ftype == TType::STRUCT) {
             $this->prefixSearchResult = new \com\boxalino\p13n\api\thrift\SearchResult();
             $xfer += $this->prefixSearchResult->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 31:
+          if ($ftype == TType::LST) {
+            $this->propertyResults = array();
+            $_size259 = 0;
+            $_etype262 = 0;
+            $xfer += $input->readListBegin($_etype262, $_size259);
+            for ($_i263 = 0; $_i263 < $_size259; ++$_i263)
+            {
+              $elem264 = null;
+              $elem264 = new \com\boxalino\p13n\api\thrift\PropertyResult();
+              $xfer += $elem264->read($input);
+              $this->propertyResults []= $elem264;
+            }
+            $xfer += $input->readListEnd();
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -5561,9 +6060,9 @@ class AutocompleteResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->hits));
         {
-          foreach ($this->hits as $iter245)
+          foreach ($this->hits as $iter265)
           {
-            $xfer += $iter245->write($output);
+            $xfer += $iter265->write($output);
           }
         }
         $output->writeListEnd();
@@ -5576,6 +6075,23 @@ class AutocompleteResponse {
       }
       $xfer += $output->writeFieldBegin('prefixSearchResult', TType::STRUCT, 21);
       $xfer += $this->prefixSearchResult->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->propertyResults !== null) {
+      if (!is_array($this->propertyResults)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('propertyResults', TType::LST, 31);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->propertyResults));
+        {
+          foreach ($this->propertyResults as $iter266)
+          {
+            $xfer += $iter266->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -5636,15 +6152,15 @@ class AutocompleteRequestBundle {
         case 11:
           if ($ftype == TType::LST) {
             $this->requests = array();
-            $_size246 = 0;
-            $_etype249 = 0;
-            $xfer += $input->readListBegin($_etype249, $_size246);
-            for ($_i250 = 0; $_i250 < $_size246; ++$_i250)
+            $_size267 = 0;
+            $_etype270 = 0;
+            $xfer += $input->readListBegin($_etype270, $_size267);
+            for ($_i271 = 0; $_i271 < $_size267; ++$_i271)
             {
-              $elem251 = null;
-              $elem251 = new \com\boxalino\p13n\api\thrift\AutocompleteRequest();
-              $xfer += $elem251->read($input);
-              $this->requests []= $elem251;
+              $elem272 = null;
+              $elem272 = new \com\boxalino\p13n\api\thrift\AutocompleteRequest();
+              $xfer += $elem272->read($input);
+              $this->requests []= $elem272;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -5672,9 +6188,9 @@ class AutocompleteRequestBundle {
       {
         $output->writeListBegin(TType::STRUCT, count($this->requests));
         {
-          foreach ($this->requests as $iter252)
+          foreach ($this->requests as $iter273)
           {
-            $xfer += $iter252->write($output);
+            $xfer += $iter273->write($output);
           }
         }
         $output->writeListEnd();
@@ -5739,15 +6255,15 @@ class AutocompleteResponseBundle {
         case 11:
           if ($ftype == TType::LST) {
             $this->responses = array();
-            $_size253 = 0;
-            $_etype256 = 0;
-            $xfer += $input->readListBegin($_etype256, $_size253);
-            for ($_i257 = 0; $_i257 < $_size253; ++$_i257)
+            $_size274 = 0;
+            $_etype277 = 0;
+            $xfer += $input->readListBegin($_etype277, $_size274);
+            for ($_i278 = 0; $_i278 < $_size274; ++$_i278)
             {
-              $elem258 = null;
-              $elem258 = new \com\boxalino\p13n\api\thrift\AutocompleteResponse();
-              $xfer += $elem258->read($input);
-              $this->responses []= $elem258;
+              $elem279 = null;
+              $elem279 = new \com\boxalino\p13n\api\thrift\AutocompleteResponse();
+              $xfer += $elem279->read($input);
+              $this->responses []= $elem279;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -5775,9 +6291,9 @@ class AutocompleteResponseBundle {
       {
         $output->writeListBegin(TType::STRUCT, count($this->responses));
         {
-          foreach ($this->responses as $iter259)
+          foreach ($this->responses as $iter280)
           {
-            $xfer += $iter259->write($output);
+            $xfer += $iter280->write($output);
           }
         }
         $output->writeListEnd();
@@ -5896,17 +6412,17 @@ class ChoiceUpdateRequest {
         case 31:
           if ($ftype == TType::MAP) {
             $this->variantIds = array();
-            $_size260 = 0;
-            $_ktype261 = 0;
-            $_vtype262 = 0;
-            $xfer += $input->readMapBegin($_ktype261, $_vtype262, $_size260);
-            for ($_i264 = 0; $_i264 < $_size260; ++$_i264)
+            $_size281 = 0;
+            $_ktype282 = 0;
+            $_vtype283 = 0;
+            $xfer += $input->readMapBegin($_ktype282, $_vtype283, $_size281);
+            for ($_i285 = 0; $_i285 < $_size281; ++$_i285)
             {
-              $key265 = '';
-              $val266 = 0;
-              $xfer += $input->readString($key265);
-              $xfer += $input->readI32($val266);
-              $this->variantIds[$key265] = $val266;
+              $key286 = '';
+              $val287 = 0;
+              $xfer += $input->readString($key286);
+              $xfer += $input->readI32($val287);
+              $this->variantIds[$key286] = $val287;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -5947,10 +6463,10 @@ class ChoiceUpdateRequest {
       {
         $output->writeMapBegin(TType::STRING, TType::I32, count($this->variantIds));
         {
-          foreach ($this->variantIds as $kiter267 => $viter268)
+          foreach ($this->variantIds as $kiter288 => $viter289)
           {
-            $xfer += $output->writeString($kiter267);
-            $xfer += $output->writeI32($viter268);
+            $xfer += $output->writeString($kiter288);
+            $xfer += $output->writeI32($viter289);
           }
         }
         $output->writeMapEnd();

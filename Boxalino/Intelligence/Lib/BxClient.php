@@ -22,8 +22,18 @@ class BxClient
 	private $chooseResponses = null;
 	
 	const VISITOR_COOKIE_TIME = 31536000;
+	
+	private $requestContextParameters = array();
+	
+	private $sessionId = null;
+	private $profileId = null;
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
+		if (isset($_REQUEST['_d_bx_account']) && isset($_REQUEST['_d_bx_password'])) {
+			// for debug purposes only, never include credentials in request
+			$account = $_REQUEST['_d_bx_account'];
+			$password = $_REQUEST['_d_bx_password'];
+		}
 		$this->account = $account;
 		$this->password = $password;
 		$this->isDev = $isDev;
@@ -91,38 +101,44 @@ class BxClient
 	}
 	
 	private function getSessionAndProfile() {
+		
+		if($this->sessionId != null && $this->profileId != null) {
+			return array($this->sessionId, $this->profileId);
+		}
+		
 		if (empty($_COOKIE['cems'])) {
-			$sessionid = session_id();
-			if (empty($sessionid)) {
+			$sessionId = session_id();
+			if (empty($sessionId)) {
 				session_start();
-				$sessionid = session_id();
+				$sessionId = session_id();
 			}
 		} else {
-			$sessionid = $_COOKIE['cems'];
+			$sessionId = $_COOKIE['cems'];
 		}
 
 		if (empty($_COOKIE['cemv'])) {
-			$profileid = '';
-			if (function_exists('openssl_random_pseudo_bytes')) {
-				$profileid = bin2hex(openssl_random_pseudo_bytes(16));
-			}
-			if (empty($profileid)) {
-				$profileid = uniqid('', true);
+			$profileId = session_id();
+			if (empty($profileId)) {
+				session_start();
+				$profileId = session_id();
 			}
 		} else {
-			$profileid = $_COOKIE['cemv'];
+			$profileId = $_COOKIE['cemv'];
 		}
 
 		// Refresh cookies
 		if (empty($this->domain)) {
-			setcookie('cems', $sessionid, 0);
-			setcookie('cemv', $profileid, time() + self::VISITOR_COOKIE_TIME);
+			setcookie('cems', $sessionId, 0);
+			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME);
 		} else {
-			setcookie('cems', $sessionid, 0, '/', $this->domain);
-			setcookie('cemv', $profileid, time() + 1800, '/', self::VISITOR_COOKIE_TIME);
+			setcookie('cems', $sessionId, 0, '/', $this->domain);
+			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME, '/', $this->domain);
 		}
 		
-		return array($sessionid, $profileid);
+		$this->sessionId = $sessionId;
+		$this->profileId = $profileId;
+		
+		return array($this->sessionId, $this->profileId);
 	}
 	
 	private function getUserRecord() {
@@ -190,6 +206,17 @@ class BxClient
 		return $protocol . '://' . $hostname . $requesturi;
 	}
 	
+	public function addRequestContextParameter($name, $values) {
+		if(!is_array($values)) {
+			$values = array($values);
+		}
+		$this->requestContextParameters[$name] = $values;
+	}
+	
+	public function resetRequestContextParameter() {
+		$this->requestContextParameters = array();
+	}
+	
 	protected function getRequestContext()
 	{
 		list($sessionid, $profileid) = $this->getSessionAndProfile();
@@ -202,6 +229,9 @@ class BxClient
 			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
 			'User-URL'	   => array($this->getCurrentURL())
 		);
+		foreach($this->requestContextParameters as $k => $v) {
+			$requestContext->parameters[$k] = $v;
+		}
 
 		if (isset($_REQUEST['p13nRequestContext']) && is_array($_REQUEST['p13nRequestContext'])) {
 			$requestContext->parameters = array_merge(
@@ -234,6 +264,9 @@ class BxClient
 			$pieces = explode('	at ', $parts[1]);
 			$field = str_replace(':', '', trim($pieces[0]));
 			throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist.");
+		}
+		if(strpos($e->getMessage(), 'All choice variants are excluded') !== false) {
+			throw new \Exception("You have an invalid configuration for with a choice defined, but having no defined strategies. This is a quite unusual case, please contact support@boxalino.com to get support.");
 		}
 		throw $e;
 	}
@@ -289,7 +322,7 @@ class BxClient
 		}
 		return $requests;
 	}
-
+	
 	public function getThriftChoiceRequest() {
 		$choiceInquiries = array();
 		

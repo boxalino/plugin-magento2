@@ -234,6 +234,10 @@ class BxData
 			}
 		}
 	}
+	
+	public function setFieldIsMultiValued($sourceKey, $fieldName, $multiValued = true) {
+		$this->addFieldParameter($sourceKey, $fieldName, 'multiValued', $multiValued ? 'true' : 'false');
+	}
 
 	public function addSourceCustomerGuestProperty($sourceKey, $parameterValue) {
 		$this->addSourceParameter($sourceKey, "guest_property_id", $parameterValue);
@@ -246,7 +250,7 @@ class BxData
 		}
 		$this->sources[$container][$sourceId][$parameterName] = $parameterValue;
 	}
-	
+
 	public function addFieldParameter($sourceKey, $fieldName, $parameterName, $parameterValue) {
 		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
 		if(!isset($this->sources[$container][$sourceId]['fields'][$fieldName])) {

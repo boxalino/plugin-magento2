@@ -16,7 +16,7 @@ class BxAutocompleteRequest
 		$this->language = $language;
 		$this->queryText = $queryText;
 		$this->textualSuggestionsHitCount = $textualSuggestionsHitCount;
-		if($autocompleteChoiceId == null) {
+		if($autocompleteChoiceId == null){
 			$autocompleteChoiceId = 'autocomplete';
 		}
 		$this->choiceId = $autocompleteChoiceId;
@@ -80,14 +80,27 @@ class BxAutocompleteRequest
 	
 	private function getAutocompleteQuery() {
 		$autocompleteQuery = new \com\boxalino\p13n\api\thrift\AutocompleteQuery();
-        $autocompleteQuery->indexId = $this->getIndexId();
-        $autocompleteQuery->language = $this->language;
-        $autocompleteQuery->queryText = $this->queryText;
-        $autocompleteQuery->suggestionsHitCount = $this->textualSuggestionsHitCount;
-        $autocompleteQuery->highlight = true;
-        $autocompleteQuery->highlightPre = '<em>';
-        $autocompleteQuery->highlightPost = '</em>';
+		$autocompleteQuery->indexId = $this->getIndexId();
+		$autocompleteQuery->language = $this->language;
+		$autocompleteQuery->queryText = $this->queryText;
+		$autocompleteQuery->suggestionsHitCount = $this->textualSuggestionsHitCount;
+		$autocompleteQuery->highlight = true;
+		$autocompleteQuery->highlightPre = '<em>';
+		$autocompleteQuery->highlightPost = '</em>';
 		return $autocompleteQuery;
+	}
+	
+	private $propertyQueries = array();
+	public function addPropertyQuery($field, $hitCount, $evaluateTotal=false) {
+		$propertyQuery = new \com\boxalino\p13n\api\thrift\PropertyQuery();
+		$propertyQuery->name = $field;
+		$propertyQuery->hitCount = $hitCount;
+		$propertyQuery->evaluateTotal = $evaluateTotal;
+		$this->propertyQueries[] = $propertyQuery;
+	}
+	
+	public function resetPropertyQueries() {
+		$this->propertyQueries = array();
 	}
 	
 	public function getAutocompleteThriftRequest($profileid, $thriftUserRecord) {
@@ -95,9 +108,14 @@ class BxAutocompleteRequest
 		$autocompleteRequest->userRecord = $thriftUserRecord;
 		$autocompleteRequest->profileId = $profileid;
 		$autocompleteRequest->choiceId = $this->choiceId;
-        $autocompleteRequest->searchQuery = $this->bxSearchRequest->getSimpleSearchQuery();
+		$autocompleteRequest->searchQuery = $this->bxSearchRequest->getSimpleSearchQuery();
         $autocompleteRequest->searchChoiceId = $this->bxSearchRequest->getChoiceId();
 		$autocompleteRequest->autocompleteQuery = $this->getAutocompleteQuery();
+		
+		if(sizeof($this->propertyQueries)>0) {
+			$autocompleteRequest->propertyQueries = $this->propertyQueries;
+		}
+		
 		return $autocompleteRequest;
 	}
 

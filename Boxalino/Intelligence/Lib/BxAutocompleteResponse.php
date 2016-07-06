@@ -49,4 +49,46 @@ class BxAutocompleteResponse
 		$searchResult = $textualSuggestion == null ? $this->getResponse()->prefixSearchResult : $this->getTextualSuggestionHit($textualSuggestion)->searchResult;
 		return new \com\boxalino\bxclient\v1\BxChooseResponse($searchResult, $this->bxAutocompleteRequest->getBxSearchRequest());
 	}
+	
+	public function getPropertyHits($field) {
+		foreach ($this->getResponse()->propertyResults as $propertyResult) {
+			if ($propertyResult->name == $field) {
+				return $propertyResult->hits;
+			}
+		}
+		return array();
+	}
+	
+	public function getPropertyHit($field, $hitValue) {
+		foreach ($this->getPropertyHits($field) as $hit) {
+			if($hit->value == $hitValue) {
+				return $hit;
+			}
+		}
+		return null;
+	}
+	
+	public function getPropertyHitValues($field) {
+		$hitValues = array();
+		foreach ($this->getPropertyHits($field) as $hit) {
+			$hitValues[] = $hit->value;
+		}
+		return $hitValues;
+	}
+	
+	public function getPropertyHitValueLabel($field, $hitValue) {
+		$hit = $this->getPropertyHit($field, $hitValue);
+		if($hit != null) {
+			return $hit->label;
+		}
+		return null;
+	}
+	
+	public function getPropertyHitValueTotalHitCount($field, $hitValue) {
+		$hit = $this->getPropertyHit($field, $hitValue);
+		if($hit != null) {
+			return $hit->totalHitCount;
+		}
+		return null;
+	}
 }

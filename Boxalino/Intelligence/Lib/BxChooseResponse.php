@@ -80,11 +80,15 @@ class BxChooseResponse
 		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation));
     }
 	
-	public function getSearchHitFieldValues($searchResult, $fields) {
+	public function getSearchHitFieldValues($searchResult, $fields=null) {
 		$fieldValues = array();
 		if($searchResult) {
 			foreach ($searchResult->hits as $item) {
-				foreach ($fields as $field) {
+				$finalFields = $fields;
+				if($finalFields == null) {
+					$finalFields = array_keys($item->values);
+				}
+				foreach ($finalFields as $field) {
 					if (isset($item->values[$field])) {
 						if (!empty($item->values[$field])) {
 							$fieldValues[$item->values['id'][0]][$field] = $item->values[$field];
@@ -129,6 +133,29 @@ class BxChooseResponse
 		$variant = $this->getChoiceResponseVariant($choice);
 		return $this->getSearchHitFieldValues($this->getVariantSearchResult($variant, $considerRelaxation), $fields);
     }
+	
+	public function getFirstHitFieldValue($field=null, $returnOneValue=true, $hitIndex=0) {
+		$fieldNames = null;
+		if($field != null) {
+			$fieldNames = array($field);
+		}
+		$count = 0;
+		foreach($this->getHitFieldValues($fieldNames) as $id => $fieldValueMap) {
+			if($count++ < $hitIndex) {
+				continue;
+			}
+			foreach($fieldValueMap as $fieldName => $fieldValues) {
+				if(sizeof($fieldValues)>0) {
+					if($returnOneValue) {
+						return $fieldValues[0];
+					} else {
+						return $fieldValues;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
     public function getTotalHitCount($choice=null, $considerRelaxation=true) {
 		$variant = $this->getChoiceResponseVariant($choice);
