@@ -256,12 +256,12 @@
                     <comment>Is Boxalino search as you type (autocomplete) active?</comment>
                 </field>
                 <field id="limit" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Limit</label>
-                    <comment>Maximum number of search textual suggestions to display und the search bar while the user is typing</comment>
+                    <label>Limit of textual suggestions</label>
+                    <comment>Maximum number of search textual suggestions to display under the search bar while the user is typing</comment>
                 </field>
                 <field id="products_limit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Autocomplete choice</label>
-                    <comment>Maximum number of product suggestions to display und the search bar while the user is typing</comment>
+                    <label>Limit of product suggestions</label>
+                    <comment>Maximum number of product suggestions to display under the search bar while the user is typing</comment>
                 </field>
             </group>
 
@@ -382,12 +382,6 @@
                 <field id="scenario" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
                     <label>Types</label>
                     <comment>Optional: if define other recommendation types, for each one: on which page the recommendation appear (separated by coma, same order). Possible values: 'product' if appear on a product page, 'basket' if appear on the basket, 'category' if appear on a category page, 'search' if appear on a search page, 'others' in other cases. </comment>
-                </field>
-            </group>
-            <group id="test" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
-                <label>Test</label>
-                <field id="asdasd">
-
                 </field>
             </group>
         </section>
