@@ -252,8 +252,6 @@ class BxClient
 			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
-		} finally{
-			return null;
 		}
 	}
 	
@@ -342,8 +340,6 @@ class BxClient
 			return $this->getP13n()->autocomplete($autocompleteRequest);
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
-		}finally{
-			return null;
 		}
 	}
 	
@@ -377,8 +373,6 @@ class BxClient
 			return $this->getP13n()->autocompleteAll($requestBundle)->responses;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
-		} finally{
-			return null;
 		}
 	}
 			
