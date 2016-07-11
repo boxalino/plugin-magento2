@@ -280,9 +280,9 @@ class BxIndexConfig
 		}
 		
 		$finalProperties = array();
-		foreach($allProperties as $p) {
+		foreach($allProperties as $i => $p) {
 			if(!in_array($p, $excludes)) {
-				$finalProperties[] = $p;
+				$finalProperties[$i] = $p;
 			}
 		}
 		return $finalProperties;

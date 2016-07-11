@@ -183,11 +183,10 @@ class BxIndexer {
 
             $this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
             $categories = array();
-            $attributes = null;
             foreach ($this->config->getAccountLanguages($account) as $language) {
                 $store = $this->config->getStore($account, $language);
                 $this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
-                $attributes = $this->getStoreProductAttributes($account, $store);
+
                 if($this->getIndexerType() == 'full'){
                     $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
                     $categories = $this->exportCategories($store, $language, $categories);
@@ -195,7 +194,7 @@ class BxIndexer {
             }
             $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
 
-            $exportProducts = $this->exportProducts($account, $files, $attributes);
+            $exportProducts = $this->exportProducts($account, $files);
             if($this->getIndexerType() == 'full'){
                 $this->exportCustomers($account, $files);
                 $this->exportTransactions($account, $files);
@@ -362,15 +361,26 @@ class BxIndexer {
      * @param $store
      * @return array
      */
-    protected function getStoreProductAttributes($account, $store)
+    protected function getStoreProductAttributes($account)
     {
+        $db = $this->rs->getConnection();
+        $select = $db->select()
+            ->from(
+                array('a_t' => $this->rs->getTableName('eav_attribute')),
+                array('a_t.attribute_id', 'a_t.attribute_code')
+            )
+            ->joinInner(
+                array('ca_t' => $this->rs->getTableName('catalog_eav_attribute')),
+                'ca_t.attribute_id = a_t.attribute_id'
+            );
 
-        $this->logger->info('bxLog: get all product attributes for store: ' . $store->getId());
+        $fetchedProductAttributes = $db->fetchAll($select);
+
+        $this->logger->info('bxLog: get all product attributes.');
         $attributes = array();
-        foreach ($this->productHelper->getAttributes() as $attribute) {
-            if ($attribute->getAttributeCode() != null && strlen($attribute->getAttributeCode()) > 0) {
-                $attributes[$attribute->getId()] = $attribute->getAttributeCode();
-            }
+        foreach ($fetchedProductAttributes as $attribute) {
+            $attributes[$attribute['attribute_id']] = $attribute['attribute_code'];
+
         }
 
         $requiredProperties = array(
@@ -388,15 +398,10 @@ class BxIndexer {
             'status'
         );
 
-        $this->logger->info('bxLog: get configured product attributes for store: ' . $store->getId());
-        $filteredAttributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
+        $this->logger->info('bxLog: get configured product attributes.');
+        $attributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
 
-        foreach($attributes as $k => $attribute) {
-            if(!in_array($attribute, $filteredAttributes)) {
-                unset($attributes[$k]);
-            }
-        }
-        $this->logger->info('bxLog: returning configured product attributes for store ' . $store->getId() . ': ' . implode(',', array_values($attributes)));
+        $this->logger->info('bxLog: returning configured product attributes: ' . implode(',', array_values($attributes)));
         return $attributes;
     }
 
@@ -954,12 +959,12 @@ class BxIndexer {
      * @param $attributes
      * @return bool
      */
-    protected function exportProducts($account, $files, $attributes)
+    protected function exportProducts($account, $files)
     {
         $languages = $this->config->getAccountLanguages($account);
 
         $this->logger->info('bxLog: Products - start of export for account ' . $account);
-        $attrs = $attributes;
+        $attrs = $this->getStoreProductAttributes($account);
         $this->logger->info('bxLog: Products - get info about attributes - before for account ' . $account);
 
         $db = $this->rs->getConnection();
@@ -1037,7 +1042,7 @@ class BxIndexer {
             'varchar' => array(),
             'text' => array(),
             'decimal' => array(),
-            'datetime' => array(),
+            'datetime' => array()
         );
 
         foreach ($db->fetchAll($select) as $r) {
