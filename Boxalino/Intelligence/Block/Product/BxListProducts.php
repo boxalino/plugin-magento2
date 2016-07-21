@@ -121,7 +121,6 @@ class BxListProducts extends ListProduct
         $this->urlFactory = $urlFactory;
         $this->abstractAction = $abstractAction;
         $this->_objectManager = $objectManager;
-        $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 

@@ -251,7 +251,7 @@
             <group id="autocomplete" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enabled</label>
+                    <label>Enable autocomplete</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search as you type (autocomplete) active?</comment>
                 </field>

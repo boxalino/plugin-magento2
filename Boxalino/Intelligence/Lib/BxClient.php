@@ -66,10 +66,10 @@ class BxClient
 	
 	public static function LOAD_CLASSES($libPath) {
 		
-		require_once($libPath . '/Thrift/ClassLoader/ThriftClassLoader.php');		
+		require_once($libPath . '/Thrift/ClassLoader/ThriftClassLoader.php');
 		$cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
 		$cl->registerNamespace('Thrift', $libPath);
-		$cl->register();
+		$cl->register(true);
 		require_once($libPath . '/P13nService.php');
 		require_once($libPath . '/Types.php');
 

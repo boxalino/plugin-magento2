@@ -91,28 +91,6 @@ class Data
         $this->customerSession = $customerSession;
         $this->factory = $factory;
         $this->catalogSearch = $catalogSearch;
-        spl_autoload_register(array('\Boxalino\Intelligence\Helper\Data', '__loadClass'), TRUE, TRUE);
-    }
-
-    /**
-     * @param $name
-     * @throws \Exception
-     */
-    public static function __loadClass($name)
-    {
-        $om = \Magento\Framework\App\ObjectManager::getInstance();
-        $reader = $om->get('Magento\Framework\Module\Dir\Reader');
-        if (strpos($name, 'Thrift\\') !== false) {
-            try {
-                $file = '/'.str_replace('Boxalino/Intelligence/', '', str_replace('\\', '/', $name)) . '.php';
-                if(strpos($file, 'Lib')===false) {
-                    $file = "/Lib" . $file;
-                }
-                include_once($reader->getModuleDir('', 'Boxalino_Intelligence') . $file);
-            } catch (\Exception $e) {
-                throw new \Exception($e->getMessage());
-            }
-        }
     }
 
     /**
