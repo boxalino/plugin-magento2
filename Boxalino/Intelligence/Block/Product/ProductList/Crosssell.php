@@ -41,30 +41,38 @@ class Crosssell extends MageCrosssell{
         $this->factory = $factory;
         $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $data);
+        $this->_prepareData(false);
     }
 
     /**
      * @return $this|MageCrosssell
      */
-    protected function _prepareData()
+    protected function _prepareData($execute = true)
     {
         if($this->bxHelperData->isCrosssellEnabled()){
             $products = $this->_coreRegistry->registry('product');
 
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
 
-            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'related';
+            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
 
-            $recommendations = $this->p13nHelper->getRecommendation(
-                'basket',
+            $entity_ids = $this->p13nHelper->getRecommendation(
                 $choiceId,
+                'basket',
                 $config['min'],
                 $config['max'],
-                $products
+                $products,
+                $execute
             );
+            
+            if(!$execute){
+                return null;
+            }
 
-            $entity_ids = array_keys($recommendations);
-
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+            
             $this->_itemCollection = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
 

@@ -59,6 +59,7 @@ class Crosssell extends Mage_Crosssell
         $this->p13nHelper = $p13nHelper;
         $this->factory = $factory;
         parent::__construct($context, $checkoutSession, $productVisibility, $productLinkFactory, $itemRelationsList, $stockHelper, $data);
+        $this->getItems(false);
     }
 
     /**
@@ -66,14 +67,10 @@ class Crosssell extends Mage_Crosssell
      *
      * @return array
      */
-    public function getItems()
+    public function getItems($execute = true)
     {
         if($this->bxHelperData->isCrosssellEnabled()){
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
-
-            if(!$config['enabled']){
-                return parent::getItems();
-            }
 
             $products = array();
             foreach ($this->getQuote()->getAllItems() as $item) {
@@ -86,17 +83,22 @@ class Crosssell extends Mage_Crosssell
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
 
             $recommendations = $this->p13nHelper->getRecommendation(
-                'basket',
                 $choiceId,
+                'basket',
                 $config['min'],
                 $config['max'],
-                $products
+                $products,
+                $execute
             );
 
+            if(!$execute){
+                return null;
+            }
+            
             $entity_ids = $recommendations;
 
-            if (empty($entity_ids)) {
-                return parent::getItems();
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
             }
 
             $items = $this->factory->create()

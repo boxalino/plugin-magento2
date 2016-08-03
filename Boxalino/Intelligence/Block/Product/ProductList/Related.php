@@ -57,35 +57,38 @@ class Related extends MageRelated
         $this->factory = $factory;
         $this->p13nHelper = $p13nHelper;
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
-    }
-
-    protected function _beforeToHtml()
-    {
-        $this->_prepareData();
+        $this->_prepareData(false);
     }
 
     /**
      * @return $this
      */
-    protected function _prepareData()
+    protected function _prepareData($execute = true)
     {
         if($this->bxHelperData->isRelatedEnabled()){
-            $products = array($this->_coreRegistry->registry('product'));
 
+            $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
 
-            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'related';
+            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
 
-            $recommendations = $this->p13nHelper->getRecommendation(
-                'product',
+            $entity_ids = $this->p13nHelper->getRecommendation(
                 $choiceId,
+                'product',
                 $config['min'],
                 $config['max'],
-                $products
+                $products,
+                $execute
             );
 
-            $entity_ids = $recommendations;
+            if(!$execute){
+                return null;
+            }
 
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+            
             $this->_itemCollection = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
 

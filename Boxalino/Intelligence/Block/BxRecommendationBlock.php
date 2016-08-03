@@ -25,7 +25,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     /**
      * @var mixed
      */
-    protected $widgetName;
+    protected $_data;
 
     /**
      * @var mixed
@@ -60,8 +60,18 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     /**
      * @var
      */
-    protected $recommendationCollection;
+    protected $cmsPage;
 
+    /**
+     * @var
+     */
+    protected $bxHelperData;
+
+    /**
+     * @var
+     */
+    protected $isCmsPage;
+    
     /**
      * BxRecommendationBlock constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
@@ -76,104 +86,150 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\Registry $registry,
+        \Magento\Framework\App\Request\Http $request,
+        \Magento\Cms\Model\Page $cmsPage,
         array $data)
     {
+        $this->isCmsPage = $request->getModuleName() == 'cms' ? true : false;
+        $this->cmsPage = $cmsPage;
+        $this->bxHelperData = $bxHelperData;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->factory = $factory;
         $this->registry = $registry;
         $this->p13nHelper = $p13nHelper;
         $this->config = $scopeConfig;
         $this->_checkoutSession = $checkoutSession;
-        $this->widgetName = $data['widget'];
+        $this->_data = $data;
         $this->othersWidgetConfig = $this->config->getValue('bxRecommendations/others', $this->scopeStore);
         parent::__construct($context, $data);
-        $this->_prepareData(false);
+    }
+
+    public function _construct()
+    {
+        if($this->bxHelperData->isSetup() && $this->isCmsPage){
+            $recommendationBlocks = $this->getCmsRecommendationBlocks();
+            $this->prepareRecommendations($recommendationBlocks);
+            $this->bxHelperData->setSetup(false);
+        }elseif(!$this->isCmsPage){
+            $this->prepareRecommendations(array($this->_data));
+        }
+    }
+
+    protected function getCmsRecommendationBlocks(){
+        $results = array();
+        $recommendations = array();
+        preg_match_all("/\{\{(.*?)\}\}/",$this->cmsPage->getContent(), $results);
+
+        if(isset($results[1])){
+            foreach($results[1] as $index => $result){
+                if(strpos($result,'Boxalino\Intelligence')){
+                    preg_match_all("/[-^\s](.*?)\=\"(.*?)\"/",$result, $sectionResults);
+                    $result_holder = array();
+                    foreach($sectionResults[1] as $index => $sectionResult){
+                        $result_holder[$sectionResult] = $sectionResults[2][$index];
+                    }
+                    $recommendations[] = $result_holder;
+                }
+            }
+        }
+        return $recommendations;
+    }
+
+    protected function prepareRecommendations($recommendations = array()){
+        $otherWidgetConfiguration = $this->bxHelperData->getOtherWidgetConfiguration();
+        if($recommendations){
+            foreach($recommendations as $index => $widget){
+
+                if(isset($otherWidgetConfiguration[$widget['widget']])){
+                    $config = $otherWidgetConfiguration[$widget['widget']];
+                    $context = isset($widget['context']) ? $widget['context'] :
+                        $this->getWidgetContext($config['scenario']);
+
+                    $this->p13nHelper->getRecommendation(
+                        $widget['widget'],
+                        $config['scenario'],
+                        $config['min'],
+                        $config['max'],
+                        $context,
+                        false
+                    );
+                }
+            }
+        }
+        return null;
     }
 
     /**
      * @return $this
      */
-    protected function _prepareData($execute=true){
-        $widgetNames = explode(',',$this->othersWidgetConfig['widget']);
+    protected function _prepareData(){
 
-        if(in_array($this->widgetName,$widgetNames)){
-            $index = array_search($this->widgetName,$widgetNames);
-            $types = explode(',',$this->othersWidgetConfig['scenario']);
-            $min = explode(',',$this->othersWidgetConfig['min']);
-            $max = explode(',',$this->othersWidgetConfig['max']);
-            $context = array();
-
-            switch($types[$index]){
-                case 'category':
-                    if($this->registry->registry('current_category') != null){
-                        $context[] = $this->registry->registry('current_category')->getId();
-                    }
-                    break;
-                case 'product':
-                    if($this->_coreRegistry->registry('product') != null){
-                        $context = array($this->_coreRegistry->registry('product'));
-                    }
-                    break;
-                case 'basket':
-                    if($this->getQuote() != null){
-                        foreach ($this->getQuote()->getAllItems() as $item) {
-                            $product = $item->getProduct();
-                            if ($product) {
-                                $context[] = $product;
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-            
-            $recommendations = $this->p13nHelper->getRecommendation(
-                $types[$index],
-                $this->widgetName,
-                $min[$index],
-                $max[$index],
-                $context,
-                $execute
-            );
-
-            $entity_ids = $recommendations;
-            
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
-            }
-
-            $this->_itemCollection = $this->factory->create()
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-
-            $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
-
-            $this->_itemCollection->load();
-            
-            foreach ($this->_itemCollection as $product) {
-                $product->setDoNotUseCategoryId(true);
-            }
-            $this->recommendationCollection[$this->widgetName] = $this->_itemCollection;
+        $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget']);
+        
+        if ((count($entity_ids) == 0)) {
+            $entity_ids = array(0);
         }
+
+        $this->_itemCollection = $this->factory->create()
+            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+
+        $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
+
+        $this->_itemCollection->load();
+
+        foreach ($this->_itemCollection as $product) {
+            $product->setDoNotUseCategoryId(true);
+        }
+
         return $this;
     }
 
     /**
-     * @param $choiceId
-     * @return itemCollection for choice Id
+     * @param $scenario
+     * @return array
      */
-    public function getRecommendation($choiceId){
-        if($choiceId!= null){
-            return $this->recommendationCollection[$choiceId];
+    protected function getWidgetContext($scenario){
+        $context = array();
+        switch($scenario){
+            case 'category':
+                if($this->registry->registry('current_category') != null){
+                    $context[] = $this->registry->registry('current_category')->getId();
+                }
+                break;
+            case 'product':
+                if($this->_coreRegistry->registry('product') != null){
+                    $context = array($this->_coreRegistry->registry('product'));
+                }
+                break;
+            case 'basket':
+                if($this->getQuote() != null){
+                    foreach ($this->getQuote()->getAllItems() as $item) {
+                        $product = $item->getProduct();
+                        if ($product) {
+                            $context[] = $product;
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
         }
-        return null;
+        return $context;
     }
 
+    /**
+     * @return mixed|string
+     */
+    public function getRecommendationTitle(){
+        return isset($this->_data['title']) ? $this->_data['title'] : 'Recommendation';
+    }
+    
     /**
      * @return \Magento\Quote\Model\Quote
      */

@@ -56,32 +56,37 @@ class Upsell extends MageUpsell
         $this->p13nHelper = $p13nHelper;
         $this->factory = $factory;
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
+        $this->_prepareData(false);
+        
     }
 
     /**
      * @return $this
      */
-    protected function _prepareData()
+    protected function _prepareData($execute = true)
     {
         if($this->bxHelperData->isUpsellEnabled()){
-            $products = array($this->_coreRegistry->registry('product'));
+            $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/upsell',$this->scopeStore);
-            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'related';
+            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
 
-            if(!$config['enabled']){
-                return parent::_prepareData();
-            }
-
-            $recommendations = $this->p13nHelper->getRecommendation(
-                'product',
+            $entity_ids = $this->p13nHelper->getRecommendation(
                 $choiceId,
+                'product',
                 $config['min'],
                 $config['max'],
-                $products
+                $products,
+                $execute
             );
 
-            $entity_ids =  $recommendations;
-
+            if(!$execute){
+                return null;
+            }
+            
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+            
             $this->_itemCollection = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
 
@@ -105,13 +110,4 @@ class Upsell extends MageUpsell
         }
         return parent::_prepareData();
     }
-    
-    public function getItems()
-    {
-        if (is_null($this->_items)) {
-            $this->_items = $this->getItemCollection()->getItems();
-        }
-        return $this->_items;
-    }
-
 }

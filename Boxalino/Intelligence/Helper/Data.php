@@ -62,6 +62,16 @@ class Data
     protected static $SCRIPTS = array();
 
     /**
+     * @var array
+     */
+    protected $bxConfig = array();
+
+    /**
+     * @var bool
+     */
+    protected $setup = true;
+
+    /**
      * Data constructor.
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
      * @param \Magento\Checkout\Model\Session $checkoutSession
@@ -343,99 +353,161 @@ class Data
         return false;
     }
 
+    public function getOtherWidgetConfiguration(){
+        if(!isset($this->bxConfig['bxRecommendations'])){
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+        $widgetConfig = array();
+        $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
+        $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
+        $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
+        $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
+        foreach($widgetNames as $index => $widget){
+            $widgetConfig[$widget] = array('scenario' => $widgetScenarios[$index],
+                'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
+        }
+        return $widgetConfig;
+    }
     /**
      * @return bool
      */
     public function isPluginEnabled(){
-        return (bool)$this->config->getValue('bxGeneral/general/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxGeneral'])) {
+            $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
+        }
+        return (bool) $this->bxConfig['bxGeneral']['general']['enabled'];
     }
 
     /**
      * @return bool
      */
     public function isSearchEnabled(){
-        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxSearch/search/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['search']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isAutocompleteEnabled(){
-        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/autocomplete/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['autocomplete']['enabled']);
     }
 
     /**
      * @return bool
      */
-    public function isTrackerEnabled()
-    {
-        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxGeneral/tracker/enabled', $this->scopeStore);
+    public function isTrackerEnabled(){
+        if(!isset($this->bxConfig['bxGeneral'])) {
+            $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxGeneral']['tracker']['enabled']);
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isCrosssellEnabled(){
+        if(!isset($this->bxConfig['bxRecommendations'])) {
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['cart']['status']);
     }
 
     /**
      * @return bool
      */
-    public function isCrosssellEnabled()
-    {
-        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/cart/status', $this->scopeStore);
+    public function isRelatedEnabled(){
+        if(!isset($this->bxConfig['bxRecommendations'])) {
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['related']['status']);
     }
 
     /**
      * @return bool
      */
-    public function isRelatedEnabled()
-    {
-        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/related/status', $this->scopeStore);
+    public function isUpsellEnabled(){
+        if(!isset($this->bxConfig['bxRecommendations'])) {
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['upsell']['status']);
     }
 
     /**
      * @return bool
      */
-    public function isUpsellEnabled()
-    {
-        return (bool)$this->isPluginEnabled() && $this->config->getValue('bxRecommendations/upsell/status', $this->scopeStore);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNavigationEnabled()
-    {
-        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/navigation/enabled', $this->scopeStore);
+    public function isNavigationEnabled(){
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isLeftFilterEnabled(){
-        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/left_facets/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['left_facets']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isTopFilterEnabled(){
-        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/top_facet/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['top_facet']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isFilterLayoutEnabled(){
-        return (bool)$this->isSearchEnabled() && $this->config->getValue('bxSearch/filter/enabled', $this->scopeStore);
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['filter']['enabled']);
     }
 
     /**
      * @return int
      */
     public function getCategoriesSortOrder(){
-        $fields = explode(',', $this->config->getValue('bxSearch/left_facets/fields',$this->scopeStore));
-        $orders = explode(',', $this->config->getValue('bxSearch/left_facets/orders',$this->scopeStore));
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
+        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
         foreach($fields as $index => $field){
             if($field == 'categories'){
                 return (int)$orders[$index];
             }
         }
         return 0;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isSetup()
+    {
+        return $this->setup;
+    }
+
+    /**
+     * @param boolean $setup
+     */
+    public function setSetup($setup)
+    {
+        $this->setup = $setup;
     }
 }

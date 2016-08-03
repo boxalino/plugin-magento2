@@ -2,7 +2,7 @@
 if($this->hasSubPhrases()): ?>
     <h1><a href="<?php echo $block->getSearchQueryLink(0); ?>"><?php echo $block->getSubPhrasesResultText(0); ?></a></h1>
     <?php echo $block->getProductListHtml();
-    Boxalino\Intelligence\Block\Product\bxListProducts::$number++; ?>
+    Boxalino\Intelligence\Block\Product\BxListProducts::$number++; ?>
     <h1><a href="<?php echo $block->getSearchQueryLink(1); ?>"><?php echo $block->getSubPhrasesResultText(1); ?></a></h1>
     <?php echo $block->getProductListHtml(); ?>
 <?php else: ?>

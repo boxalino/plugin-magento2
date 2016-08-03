@@ -16,13 +16,11 @@ class BxChooseResponse
 	}
 	
 	public function getChoiceResponseVariant($choice=null) {
-        $id = 0;
 		foreach($this->bxRequests as $k => $bxRequest) {
 			if($choice != null && $choice == $bxRequest->getChoiceId()) {
-				$id = $k;
+				return $this->getChoiceIdResponseVariant($k);
 			}
 		}
-		return $this->getChoiceIdResponseVariant($id);
 	}
 	
 	protected function getChoiceIdResponseVariant($id=0) {

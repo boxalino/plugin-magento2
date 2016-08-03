@@ -61,6 +61,11 @@ class Adapter
 	protected $bxHelperData;
 
 	/**
+	 * @var
+	 */
+	protected $currentSearchChoice;
+	
+	/**
 	 * Adapter constructor.
 	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
 	 * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -161,6 +166,7 @@ class Adapter
 			if($choice == null) {
 				$choice = "navigation";
 			}
+			$this->currentSearchChoice = $choice;
 			return $choice;
 		}
 		
@@ -168,6 +174,7 @@ class Adapter
 		if($choice == null) {
 			$choice = "search";
 		}
+		$this->currentSearchChoice = $choice;
 		return $choice;
 	}
 
@@ -500,7 +507,7 @@ class Adapter
     public function getTotalHitCount()
     {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getTotalHitCount();
+		return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
     }
 
 	/**
@@ -509,7 +516,7 @@ class Adapter
     public function getEntitiesIds()
     {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getHitIds();
+		return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice);
     }
 
 	/**
@@ -517,7 +524,8 @@ class Adapter
 	 */
 	public function getFacets() {
 		$this->simpleSearch();
-		$facets = self::$bxClient->getResponse()->getFacets();
+		$facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
+
 		if(empty($facets)){
 			return null;
 		}
@@ -530,7 +538,7 @@ class Adapter
 	 */
 	public function getCorrectedQuery() {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getCorrectedQuery();
+		return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
 	}
 
 	/**
@@ -538,7 +546,7 @@ class Adapter
 	 */
 	public function areResultsCorrected() {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->areResultsCorrected();
+		return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
 	}
 
 	/**
@@ -546,7 +554,7 @@ class Adapter
 	 */
 	public function areThereSubPhrases() {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->areThereSubPhrases();
+		return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
 	}
 
 	/**
@@ -554,7 +562,7 @@ class Adapter
 	 */
 	public function getSubPhrasesQueries() {
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhrasesQueries();
+		return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
 	}
 
 	/**
@@ -583,13 +591,10 @@ class Adapter
 	 * @param array $products
 	 * @return mixed Hit ids
 	 */
-    public function getRecommendation($widgetType, $widgetName, $minAmount = 3, $amount = 3, $context = array(), $execute=true)
+    public function getRecommendation($widgetName, $widgetType = '', $minAmount = 3, $amount = 3, $context = array(), $execute=true)
     {
-		if(sizeof(self::$bxClient->getRecommendationRequests()) == 0) {
-
-			$recommendations = $this->scopeConfig->getValue('bxRecommendations',$this->scopeStore);
+		if(!$execute) {
 			if ($widgetType == '') {
-				
 				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount);
 				$bxRequest->setMin($minAmount);
 				$bxRequest->setFilters($this->getSystemFilters());
@@ -599,65 +604,25 @@ class Adapter
 				}
 				self::$bxClient->addRequest($bxRequest);
 			} else {
-				if($recommendations['others'] != null){
-					$widgetNames = explode(',',$recommendations['others']['widget']);
-					$widgetTypes = explode(',',$recommendations['others']['scenario']);
-					$widgetMin = explode(',',$recommendations['others']['min']);
-					$widgetMax = explode(',',$recommendations['others']['max']);
-					unset($recommendations['others']);
-					foreach($widgetTypes as $i => $type){
-						$recommendations[] = array('enabled' => 1,
-							'min' => $widgetMin[$i], 'max' => $widgetMax[$i], 'widget'=> $widgetNames[$i],
-							'scenario' => $type);
-					}
-				}
-
-				foreach ($recommendations as $key => $recommendation) {
-					$type = 'others';
-					if($key == 'cart') {
-						$type = 'basket';
-						if($recommendation['widget'] == ''){
-							$recommendation['widget'] = 'basket';
+				if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
+					$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount, $minAmount);
+					$bxRequest->setFilters($this->getSystemFilters());
+					if ($widgetType === 'basket' && is_array($context)) {
+						$basketProducts = array();
+						foreach($context as $product) {
+							$basketProducts[] = array('id'=>$product->getId(), 'price'=>$product->getPrice());
 						}
+						$bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
+					} elseif ($widgetType === 'product' && $context != null) {
+						$product = $context;
+						$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
+					} elseif ($widgetType === 'category' && $context != null){
+						$filterField = "category_id";
+						$filterValues = array($context);
+						$filterNegative = false;
+						$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 					}
-					if($key == 'related' || $key == 'upsell') {
-						$type = 'product';
-						if($recommendation['widget'] == ''){
-							$recommendation['widget'] = $key == 'related'? 'similar' : 'complementary';
-						}
-					}
-					if(isset($recommendation['scenario'])){
-						$type = $recommendation['scenario'];
-					}
-
-					if (
-						(!empty($recommendation['min']) || $recommendation['min'] >= 0) &&
-						(!empty($recommendation['max']) || $recommendation['max'] >= 0) &&
-						($recommendation['min'] <= $recommendation['max']) &&
-						(!isset($recommendation['enabled']) || $recommendation['enabled'] == 1)
-					) {
-						if ($type == $widgetType) {
-							$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $recommendation['widget'], $recommendation['max']);
-							$bxRequest->setMin($recommendation['min']);
-							$bxRequest->setFilters($this->getSystemFilters());
-							if ($widgetType === 'basket') {
-								$basketProducts = array();
-								foreach($context as $product) {
-									$basketProducts[] = array('id'=>$product->getid(), 'price'=>$product->getPrice());
-								}
-								$bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
-							} elseif ($widgetType === 'product' && isset($context[0])) {
-								$product = $context[0];
-								$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
-							} elseif ($widgetType === 'category' && isset($context[0])){
-								$filterField = "category_id";
-								$filterValues = array($context[0]);
-								$filterNegative = false;
-								$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-							}
-							self::$bxClient->addRequest($bxRequest);
-						}
-					}
+					self::$bxClient->addRequest($bxRequest);
 				}
 			}
 		}
