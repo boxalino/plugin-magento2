@@ -72,6 +72,11 @@ class Data
     protected $setup = true;
 
     /**
+     * @var array
+     */
+    protected $cmsBlock = array();
+
+    /**
      * Data constructor.
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
      * @param \Magento\Checkout\Model\Session $checkoutSession
@@ -509,5 +514,19 @@ class Data
     public function setSetup($setup)
     {
         $this->setup = $setup;
+    }
+
+    /**
+     * @param $block
+     */
+    public function setCmsBlock($block){
+        $this->cmsBlock = $block;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCmsBlock(){
+        return $this->cmsBlock;
     }
 }

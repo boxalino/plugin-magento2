@@ -81,6 +81,11 @@ class BxListProducts extends ListProduct
     protected $categoryFactory;
 
     /**
+     * @var
+     */
+    protected $categoryViewBlock;
+
+    /**
      * BxListProducts constructor.
      * @param Context $context
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
@@ -111,8 +116,10 @@ class BxListProducts extends ListProduct
         \Magento\Framework\UrlFactory $urlFactory,
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Magento\Catalog\Block\Category\View $categoryViewBlock,
         array $data = [])
     {
+        $this->categoryViewBlock = $categoryViewBlock;
         $this->categoryFactory = $categoryFactory;
         $this->categoryHelper = $categoryHelper;
         $this->request = $request;
@@ -129,17 +136,19 @@ class BxListProducts extends ListProduct
      */
     public function _getProductCollection()
     {
-        if(!$this->bxHelperData->isSearchEnabled()){
+        if(!$this->bxHelperData->isSearchEnabled() || $this->categoryViewBlock->isContentMode()){
            return parent::_getProductCollection();
         }
         $layer = $this->getLayer();
-        if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor || $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor ){
+        $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor;
+        $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor;
+        if($categoryLayer || $searchLayer){
 
-            if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor){
+            if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
                 return parent::_getProductCollection();
             }
 
-            if($this->request->getParam('bx_category_id') && $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor) {
+            if($this->request->getParam('bx_category_id') && $categoryLayer) {
                 $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
                 if($selectedCategory->getLevel() != 1){
                     $url = $selectedCategory->getUrl();
@@ -147,12 +156,15 @@ class BxListProducts extends ListProduct
                     $this->abstractAction->getResponse()->setRedirect($url . $bxParams);
                 }
             }
-
-            if($this->p13nHelper->areThereSubPhrases()) {
-                $this->queries = $this->p13nHelper->getSubPhrasesQueries();
-                $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
-
-            }else{
+            $entity_ids = array();
+            if($searchLayer) {
+                if ($this->p13nHelper->areThereSubPhrases()) {
+                    $this->queries = $this->p13nHelper->getSubPhrasesQueries();
+                    $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
+                }
+            }
+            
+            if(empty($entity_ids)){
                 $entity_ids = $this->p13nHelper->getEntitiesIds();
             }
 

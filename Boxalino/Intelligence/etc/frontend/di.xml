@@ -11,4 +11,6 @@
             <argument name="filterList" xsi:type="object">Boxalino\Intelligence\Model\FilterList</argument>
         </arguments>
     </virtualType>
+
+    <preference for="Magento\Cms\Block\Block" type="Boxalino\Intelligence\Block\CmsBlock" />
 </config>

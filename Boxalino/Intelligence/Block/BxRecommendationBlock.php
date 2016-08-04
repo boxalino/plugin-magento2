@@ -94,7 +94,8 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Framework\Registry $registry,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Cms\Model\Page $cmsPage,
-        array $data)
+        array $data
+    )
     {
         $this->isCmsPage = $request->getModuleName() == 'cms' ? true : false;
         $this->cmsPage = $cmsPage;
@@ -112,19 +113,28 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
 
     public function _construct()
     {
-        if($this->bxHelperData->isSetup() && $this->isCmsPage){
-            $recommendationBlocks = $this->getCmsRecommendationBlocks();
-            $this->prepareRecommendations($recommendationBlocks);
-            $this->bxHelperData->setSetup(false);
-        }elseif(!$this->isCmsPage){
-            $this->prepareRecommendations(array($this->_data));
+        if($this->bxHelperData->isSetup()){
+            $cmsBlock = $this->bxHelperData->getCmsBlock();
+            if($cmsBlock){
+                $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
+                $this->prepareRecommendations($recommendationBlocks);
+                $this->bxHelperData->setSetup(false);
+            }else{
+                if ($this->isCmsPage){
+                    $recommendationBlocks = $this->getCmsRecommendationBlocks($this->cmsPage->getContent());
+                    $this->prepareRecommendations($recommendationBlocks);
+                    $this->bxHelperData->setSetup(false);
+                }else{
+                    $this->prepareRecommendations(array($this->_data));
+                }
+            }
         }
     }
 
-    protected function getCmsRecommendationBlocks(){
+    protected function getCmsRecommendationBlocks($content){
         $results = array();
         $recommendations = array();
-        preg_match_all("/\{\{(.*?)\}\}/",$this->cmsPage->getContent(), $results);
+        preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
 
         if(isset($results[1])){
             foreach($results[1] as $index => $result){
@@ -248,7 +258,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _beforeToHtml(){
-        $this->_prepareData(true);
+        $this->_prepareData();
         return parent::_beforeToHtml();
     }
 
