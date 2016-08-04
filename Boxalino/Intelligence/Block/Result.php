@@ -13,8 +13,8 @@ use Magento\Search\Model\QueryFactory;
  * Class Result
  * @package Boxalino\Intelligence\Block
  */
-class Result extends Mage_Result
-{
+class Result extends Mage_Result{
+    
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -44,6 +44,11 @@ class Result extends Mage_Result
      * @var BxData
      */
     protected $bxHelperData;
+
+    /**
+     * @var null
+     */
+    protected $subPhrases = null;
     
     /**
      * Result constructor.
@@ -62,15 +67,16 @@ class Result extends Mage_Result
         QueryFactory $queryFactory,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        array $data = [])
+        array $data = []
+    )
     {
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
         $this->queryFactory = $queryFactory;
-        if($this->bxHelperData->isSearchEnabled() && $p13nHelper->areThereSubPhrases()){
+        if($this->bxHelperData->isSearchEnabled() && $this->hasSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
         }
-
+        
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
@@ -79,14 +85,15 @@ class Result extends Mage_Result
      * @return \Magento\Framework\Phrase
      */
     public function getSubPhrasesResultText($index){
+        
         return __("Search result for: '%1'", $this->queries[$index] );
     }
 
     /**
      * @return \Magento\Framework\Phrase|string
      */
-    public function getSearchQueryText()
-    {
+    public function getSearchQueryText(){
+        
         if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
             $query = $this->queryFactory->get();
             $query->setQueryText($this->p13nHelper->getCorrectedQuery());
@@ -102,6 +109,7 @@ class Result extends Mage_Result
      * @return string
      */
     public function getSearchQueryLink($index){
+        
         return $this->_storeManager->getStore()->getBaseUrl() . "catalogsearch/result/?q=" . $this->queries[$index];
     }
 
@@ -109,8 +117,8 @@ class Result extends Mage_Result
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function _prepareLayout()
-    {
+    protected function _prepareLayout(){
+        
         if($this->hasSubPhrases()){
             $title = "Search result for: " . implode(" ",  $this->queries);
             $this->pageConfig->getTitle()->set($title);
@@ -137,20 +145,22 @@ class Result extends Mage_Result
     /**
      * @return int|mixed
      */
-    public function hasSubPhrases()
-    {
+    public function hasSubPhrases(){
+        
         if($this->bxHelperData->isSearchEnabled()){
-            return $this->p13nHelper->areThereSubPhrases();
+            if($this->subPhrases == null){
+                $this->subPhrases = $this->p13nHelper->areThereSubPhrases();
+            }
+            return $this->subPhrases;
         }
         return 0;
-        
     }
 
     /**
      * @return string
      */
-    public function getProductListHtml()
-    {
+    public function getProductListHtml(){
+        
         return $this->getChildHtml('search_result_list', false);
     }
-}?>
+}

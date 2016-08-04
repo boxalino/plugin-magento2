@@ -6,8 +6,7 @@ use Magento\Catalog\Block\Product\ProductList\Related as MageRelated;
  * Class Related
  * @package Boxalino\Intelligence\Block\Product\ProductList
  */
-class Related extends MageRelated
-{
+class Related extends MageRelated{
 
     /**
      * @var string
@@ -69,7 +68,6 @@ class Related extends MageRelated
 
             $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
-
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
 
             $entity_ids = $this->p13nHelper->getRecommendation(
@@ -96,7 +94,6 @@ class Related extends MageRelated
                 $this->_addProductAttributesAndPrices($this->_itemCollection);
             }
             $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
-
             $this->_itemCollection->load();
 
             foreach ($this->_itemCollection as $product) {
@@ -106,5 +103,4 @@ class Related extends MageRelated
         }
         return parent::_prepareData();
     }
-
 }

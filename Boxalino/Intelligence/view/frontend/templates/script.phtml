@@ -6,7 +6,6 @@
 $_helper = $this->getBxHelperData();
 $_autocompleteHelper = $this->getAutocompleteHelper();
 $account = $this->getAccount();
-
 ?>
 <script>
     require([
@@ -77,18 +76,14 @@ $account = $this->getAccount();
             });
         <?php endif; ?>
     });
-
+<?php if($_helper->isTrackerEnabled()): ?>
     var _bxq = _bxq || []
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
-
-    <?php if ($_helper->isTrackerEnabled()): ?>
+    
     _bxq.push(['trackPageView']);
-    <?php endif; ?>
 
-    <?php if ($this->isSearch()): ?>
-    <?php echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
-    <?php endif; ?>
+    <?php if ($this->isSearch()) echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
 
     (function () {
         var s = document.createElement('script');
@@ -96,4 +91,5 @@ $account = $this->getAccount();
         s.src = '//cdn.bx-cloud.com/frontend/rc/js/ba.min.js';
         document.getElementsByTagName('head')[0].appendChild(s);
     })();
+<?php endif; ?>
 </script>

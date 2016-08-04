@@ -7,8 +7,8 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection as MagentoCollection;
  * Class Collection
  * @package Boxalino\Intelligence\Model
  */
-class Collection extends MagentoCollection
-{
+class Collection extends MagentoCollection{
+    
     /**
      * @var int
      */
@@ -28,6 +28,7 @@ class Collection extends MagentoCollection
      * @param $bxCurPage
      */
     public function setCurBxPage($bxCurPage) {
+        
         $this->bxCurPage = $bxCurPage;
     }
 
@@ -35,6 +36,7 @@ class Collection extends MagentoCollection
      * @param $bxLastPage
      */
     public function setLastBxPage($bxLastPage) {
+        
         $this->bxLastPage = $bxLastPage;
     }
 
@@ -42,6 +44,7 @@ class Collection extends MagentoCollection
      * @param $bxTotal
      */
     public function setBxTotal($bxTotal) {
+        
         $this->bxTotal = $bxTotal;
     }
 
@@ -49,6 +52,7 @@ class Collection extends MagentoCollection
      * @return int
      */
     public function getSize() {
+        
         return $this->bxTotal;
     }
 
@@ -57,6 +61,7 @@ class Collection extends MagentoCollection
      * @return int
      */
     public function getCurPage($displacement = 0) {
+        
         return $this->bxCurPage + $displacement;
     }
 
@@ -64,6 +69,7 @@ class Collection extends MagentoCollection
      * @return int
      */
     public function getLastPageNumber() {
+        
         return $this->bxLastPage;
     }
 }

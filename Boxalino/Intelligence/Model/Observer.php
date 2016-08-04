@@ -7,8 +7,8 @@ use Magento\Framework\DataObject as Object;
  * Class Observer
  * @package Boxalino\Intelligence\Model
  */
-class Observer implements ObserverInterface
-{
+class Observer implements ObserverInterface{
+    
     /**
      * @var
      */
@@ -49,16 +49,17 @@ class Observer implements ObserverInterface
     /**
      * @param $script
      */
-    protected function addScript($script)
-    {
+    protected function addScript($script){
+        
         $this->bxHelperData->addScript($script);
     }
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
+     * @throws \Exception
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
-    {
+    public function execute(\Magento\Framework\Event\Observer $observer){
+        
             $event = $observer->getEvent();
             switch($event->getName()){
                 case "checkout_cart_add_product_complete": //onProductAddedToCart
@@ -79,9 +80,10 @@ class Observer implements ObserverInterface
 
     /**
      * @param $event
+     * @throws \Exception
      */
-    private function onOrderSuccessPageView($event)
-    {
+    private function onOrderSuccessPageView($event){
+        
         try {
             $orders = $this->order->getCollection()
                 ->setOrder('entity_id', 'DESC')
@@ -106,25 +108,36 @@ class Observer implements ObserverInterface
 
             $this->addScript($script);
         } catch (\Exception $e) {
+            throw $e;
         }
     }
 
-    protected function onProductPageView($event)
-    {
+    /**
+     * @param $event
+     * @throws \Exception
+     */
+    protected function onProductPageView($event){
+        
         try {
             $script = $this->bxHelperData->reportProductView($event->getProduct()->getId());
             $this->addScript($script);
 
         } catch (\Exception $e) {
+            throw $e;
         }
     }
 
-    protected function onCategoryPageView($event)
-    {
+    /**
+     * @param $event
+     * @throws \Exception
+     */
+    protected function onCategoryPageView($event){
+        
         try {
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());
             $this->addScript($script);
         } catch (\Exception $e) {
+            throw $e;
         }
     }
 }

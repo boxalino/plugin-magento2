@@ -47,13 +47,11 @@ class Crosssell extends MageCrosssell{
     /**
      * @return $this|MageCrosssell
      */
-    protected function _prepareData($execute = true)
-    {
+    protected function _prepareData($execute = true){
+        
         if($this->bxHelperData->isCrosssellEnabled()){
             $products = $this->_coreRegistry->registry('product');
-
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
-
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
 
             $entity_ids = $this->p13nHelper->getRecommendation(
@@ -75,9 +73,8 @@ class Crosssell extends MageCrosssell{
             
             $this->_itemCollection = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-
             $this->_itemCollection->load();
-
+            
             foreach ($this->_itemCollection as $product) {
                 $product->setDoNotUseCategoryId(true);
             }

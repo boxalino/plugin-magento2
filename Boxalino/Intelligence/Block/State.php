@@ -10,8 +10,8 @@ use Magento\Framework\DataObject;
  * Class State
  * @package Boxalino\Intelligence\Block
  */
-class State extends \Magento\Framework\DataObject
-{
+class State extends \Magento\Framework\DataObject{
+    
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -32,11 +32,12 @@ class State extends \Magento\Framework\DataObject
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
 		array $data = []
-		)
+    )
     {
         $this->_data = $data;
         $this->p13nHelper = $p13nHelper;
         $this->objectManager = $objectManager;
+        parent::__construct($data);
     }
 
 	/**
@@ -45,8 +46,8 @@ class State extends \Magento\Framework\DataObject
      * @param   Item $filter
      * @return  $this
      */
-    public function addFilter($filter)
-    {
+    public function addFilter($filter){
+        
         $filters = $this->getFilters();
         $filters[] = $filter;
         $this->setFilters($filters);
@@ -60,8 +61,8 @@ class State extends \Magento\Framework\DataObject
      * @return $this
      * @throws LocalizedException
      */
-    public function setFilters($filters)
-    {
+    public function setFilters($filters){
+        
         if (!is_array($filters)) {
             throw new LocalizedException(__('The filters must be an array.'));
         }
@@ -74,8 +75,8 @@ class State extends \Magento\Framework\DataObject
      *
      * @return Item[]
      */
-    public function getFilters()
-    {
+    public function getFilters(){
+        
 		$filters = array();
         $facets = $this->p13nHelper->getFacets();
         foreach($this->p13nHelper->getAllFacetFieldNames() as $fieldName) {

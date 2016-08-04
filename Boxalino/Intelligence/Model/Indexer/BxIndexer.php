@@ -127,6 +127,7 @@ class BxIndexer {
      * @return $this
      */
     public function setIndexerType($type=null){
+        
         $this->indexerType = $type;
         if($type == null){
             $this->indexerType = 'full';
@@ -138,6 +139,7 @@ class BxIndexer {
      * @return mixed
      */
     public function getIndexerType(){
+        
         return $this->indexerType;
     }
 
@@ -145,6 +147,7 @@ class BxIndexer {
      * @return mixed
      */
     protected function getDeltaIds(){
+        
         return $this->deltaIds;
     }
 
@@ -152,6 +155,7 @@ class BxIndexer {
      * @param $ids
      */
     protected function setDeltaIds($ids){
+        
         $this->deltaIds = $ids;
     }
 
@@ -160,12 +164,15 @@ class BxIndexer {
      * @throws \Exception
      */
     public function exportStores() {
+        
         if($this->getIndexerType() == 'delta'){
             $this->setDeltaIds($this->checkForDeltaIds());
+            
             if($this->getDeltaIds() == null){
                 return;
             }
         }
+        
         $this->logger->info("bxLog: starting exportStores");
         $this->config = new BxIndexConfig($this->storeManager->getWebsites());
         $this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
@@ -183,6 +190,7 @@ class BxIndexer {
 
             $this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
             $categories = array();
+            
             foreach ($this->config->getAccountLanguages($account) as $language) {
                 $store = $this->config->getStore($account, $language);
                 $this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
@@ -192,8 +200,8 @@ class BxIndexer {
                     $categories = $this->exportCategories($store, $language, $categories);
                 }
             }
+            
             $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-
             $exportProducts = $this->exportProducts($account, $files);
             if($this->getIndexerType() == 'full'){
                 $this->exportCustomers($account, $files);
@@ -206,8 +214,10 @@ class BxIndexer {
                 $this->logger->info('bxLog: Finished account: ' . $account);
             }else{
                 if($this->getIndexerType() == 'full'){
+                    
                     $this->logger->info('bxLog: Prepare the final files: ' . $account);
                     $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
+                    
                     try {
                         $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
                         $this->bxData->pushDataSpecifications();
@@ -220,6 +230,7 @@ class BxIndexer {
                             throw $e;
                         }
                     }
+                    
                     $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
                     $publish = $this->config->publishConfigurationChanges($account);
                     $changes = $this->bxData->publishChanges($publish);
@@ -251,6 +262,7 @@ class BxIndexer {
      * @param null $productTags
      */
     protected function prepareData($account, $files, $categories, $tags = null, $productTags = null){
+        
         $withTag = ($tags != null && $productTags != null) ? true : false;
         $languages = $this->config->getAccountLanguages($account);
         $categories = array_merge(array(array_keys(end($categories))), $categories);
@@ -268,6 +280,7 @@ class BxIndexer {
      * @return array Delta ids from change log table
      */
     protected function checkForDeltaIds(){
+        
         $db = $this->rs->getConnection();
         $ids = array();
         if($db->isTableExists('boxalino_indexer_delta_cl') && $db->tableColumnExists('boxalino_indexer_delta_cl' , 'entity_id')){
@@ -294,6 +307,7 @@ class BxIndexer {
      * Clears change log table
      */
     protected function clearChangeLog(){
+        
         $db = $this->rs->getConnection();
         if($db->isTableExists('boxalino_indexer_delta_cl') && $db->tableColumnExists('boxalino_indexer_delta_cl' , 'entity_id')) {
             $db->truncateTable($db->getTableName('boxalino_indexer_delta_cl'));
@@ -306,6 +320,7 @@ class BxIndexer {
      * @throws \Exception
      */
     protected function getAttributeId($attr_code){
+        
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -327,8 +342,8 @@ class BxIndexer {
      * @return mixed
      * @throws \Exception
      */
-    protected function exportCategories($store, $language, $transformedCategories)
-    {
+    protected function exportCategories($store, $language, $transformedCategories){
+        
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -361,8 +376,8 @@ class BxIndexer {
      * @param $store
      * @return array
      */
-    protected function getStoreProductAttributes($account)
-    {
+    protected function getStoreProductAttributes($account){
+        
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -410,8 +425,8 @@ class BxIndexer {
      * @param $files
      * @throws \Zend_Db_Select_Exception
      */
-    protected function exportCustomers($account, $files)
-    {
+    protected function exportCustomers($account, $files){
+        
         if(!$this->config->isCustomersExportEnabled($account)) {
             return;
         }
@@ -660,8 +675,8 @@ class BxIndexer {
      * @param $entityType
      * @return mixed|null
      */
-    protected function getEntityIdFor($entityType)
-    {
+    protected function getEntityIdFor($entityType){
+        
         if ($this->_entityIds == null) {
             $db = $this->rs->getConnection();
             $select = $db->select()
@@ -682,6 +697,7 @@ class BxIndexer {
      * @return array
      */
     protected function getTransactionAttributes($account) {
+        
         $this->logger->info('bxLog: get all transaction attributes for account: ' . $account);
         $dbConfig = $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_DB);
         if(!isset($dbConfig['connection']['default']['dbname'])) {
@@ -721,8 +737,8 @@ class BxIndexer {
      * @param $account
      * @return array
      */
-    protected function getCustomerAttributes($account)
-    {
+    protected function getCustomerAttributes($account){
+        
         $attributes = array();
 
         $this->logger->info('bxLog: get all customer attributes for account: ' . $account);
@@ -759,8 +775,8 @@ class BxIndexer {
      * @param $account
      * @param $files
      */
-    protected function exportTransactions($account, $files)
-    {
+    protected function exportTransactions($account, $files){
+        
         // don't export transactions in delta sync or when disabled
         if(!$this->config->isTransactionsExportEnabled($account)) {
             return;
@@ -959,8 +975,8 @@ class BxIndexer {
      * @param $attributes
      * @return bool
      */
-    protected function exportProducts($account, $files)
-    {
+    protected function exportProducts($account, $files){
+        
         $languages = $this->config->getAccountLanguages($account);
 
         $this->logger->info('bxLog: Products - start of export for account ' . $account);

@@ -10,8 +10,8 @@ use Magento\Framework\Controller\ResultFactory;
  * Class AjaxController
  * @package Boxalino\Intelligence\Controller
  */
-class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
-{
+class AjaxController extends \Magento\Search\Controller\Ajax\Suggest{
+    
     /**
      * @var \Boxalino\Intelligence\Helper\Data
      */
@@ -21,6 +21,7 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
      * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $storeManager;
+    
     /**
      * AjaxController constructor.
      * @param Context $context
@@ -32,7 +33,8 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         AutocompleteInterface $autocomplete,
         \Magento\Store\Model\StoreManagerInterface $storeManager
-    ) {
+    ) 
+    {
         $this->bxHelperData = $bxHelperData;
         $this->storeManager = $storeManager;
         parent::__construct($context, $autocomplete);
@@ -41,9 +43,10 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest
     /**
      * @return \Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\Result\Redirect|null
      */
-	public function execute()
-    {
+	public function execute(){
+        
         if($this->bxHelperData->isAutocompleteEnabled()){
+            
             if (!$this->getRequest()->getParam('q', false)) {
                 /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
                 $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);

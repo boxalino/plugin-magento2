@@ -3,14 +3,13 @@
     $data = $om->get("\Boxalino\Intelligence\Helper\Data");
     if(
         !$data->isFilterLayoutEnabled() ||
-        (!$data->isNavigationEnabled() &&
+        (
+            !$data->isNavigationEnabled() &&
             $block->getLayer() instanceof \Magento\Catalog\Model\Layer\Category\Interceptor
         )
     ):
 ?>
-<?php
-        include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml'));
-?>
+<?php include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml')); ?>
 <?php else: ?>
     <?php if ($block->canShowBlock()): ?>
         <div class="block filter" id="layered-filter-block" data-mage-init='{"collapsible":{"openedState": "active", "collapsible": true, "active": false, "collateral": { "openedState": "filter-active", "element": "body" } }}'>

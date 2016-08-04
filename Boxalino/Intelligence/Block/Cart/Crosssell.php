@@ -7,8 +7,8 @@ use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
  * Cross sell for cart recommendation
  * @package Boxalino\Intelligence\Block\Cart
  */
-class Crosssell extends Mage_Crosssell
-{
+class Crosssell extends Mage_Crosssell{
+    
     /**
      * @var string
      */
@@ -67,9 +67,10 @@ class Crosssell extends Mage_Crosssell
      *
      * @return array
      */
-    public function getItems($execute = true)
-    {
+    public function getItems($execute = true){
+        
         if($this->bxHelperData->isCrosssellEnabled()){
+            
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
 
             $products = array();
@@ -81,8 +82,7 @@ class Crosssell extends Mage_Crosssell
             }
 
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
-
-            $recommendations = $this->p13nHelper->getRecommendation(
+            $entity_ids = $this->p13nHelper->getRecommendation(
                 $choiceId,
                 'basket',
                 $config['min'],
@@ -95,17 +95,14 @@ class Crosssell extends Mage_Crosssell
                 return null;
             }
             
-            $entity_ids = $recommendations;
-
             if ((count($entity_ids) == 0)) {
                 $entity_ids = array(0);
             }
 
             $items = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-
             $items->load();
-
+            
             foreach ($items as $product) {
                 $product->setDoNotUseCategoryId(true);
             }

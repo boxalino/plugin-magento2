@@ -31,6 +31,7 @@ class LayerFilterFilter {
 	 * @param $requestVar
 	 */
 	public function setRequestVar($requestVar) {
+		
 		$this->requestVar = $requestVar;
 	}
 
@@ -38,6 +39,7 @@ class LayerFilterFilter {
 	 * @return null
 	 */
 	public function getRequestVar() {
+		
 		return $this->requestVar;
 	}
 	
@@ -45,6 +47,7 @@ class LayerFilterFilter {
 	 * @param $cleanValue
 	 */
 	public function setCleanValue($cleanValue) {
+		
 		$this->cleanValue = $cleanValue;
 	}
 
@@ -52,6 +55,7 @@ class LayerFilterFilter {
 	 * @return null
 	 */
 	public function getCleanValue() {
+		
 		return $this->cleanValue;
 	}
 
@@ -59,6 +63,7 @@ class LayerFilterFilter {
 	 * @param $clearLinkText
 	 */
 	public function setClearLinkText($clearLinkText) {
+		
 		$this->clearLinkText = $clearLinkText;
 	}
 
@@ -66,6 +71,7 @@ class LayerFilterFilter {
 	 * @return null
 	 */
 	public function getClearLinkText() {
+		
 		return $this->clearLinkText;
 	}
 
@@ -73,6 +79,7 @@ class LayerFilterFilter {
 	 * @param $resetValue
 	 */
 	public function setResetValue($resetValue) {
+		
 		$this->resetValue = $resetValue;
 	}
 
@@ -80,6 +87,7 @@ class LayerFilterFilter {
 	 * @return null
 	 */
 	public function getResetValue() {
+		
 		return $this->resetValue;
 	}
 }

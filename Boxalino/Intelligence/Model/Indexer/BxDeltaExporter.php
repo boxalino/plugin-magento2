@@ -18,10 +18,8 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * BxDeltaExporter constructor.
      * @param BxIndexer $bxIndexer
      */
-    public function __construct(
-       BxIndexer $bxIndexer
-    )
-    {
+    public function __construct(BxIndexer $bxIndexer){
+        
         $this->bxIndexer = $bxIndexer;
     }
 
@@ -29,6 +27,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * @throws \Exception
      */
     public function executeFull(){
+        
         $this->bxIndexer->setIndexerType('delta')->exportStores();
     }
 

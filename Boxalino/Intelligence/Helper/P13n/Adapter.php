@@ -64,7 +64,7 @@ class Adapter
 	 * @var
 	 */
 	protected $currentSearchChoice;
-	
+
 	/**
 	 * Adapter constructor.
 	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -122,7 +122,6 @@ class Adapter
 			$p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password',$this->scopeStore);
 			$domain = $this->scopeConfig->getValue('bxGeneral/general/domain',$this->scopeStore);
 			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
-			
 		}
 	}
 
@@ -134,9 +133,9 @@ class Adapter
 		
 		$filters = array();
 		if($queryText == "") {
-			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
 		} else {
-			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
 		}
 		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
 
@@ -182,6 +181,7 @@ class Adapter
 	 * @return mixed|string
 	 */
 	public function getEntityIdFieldName() {
+		
 		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
 		if (!isset($entity_id) || $entity_id === '') {
 			$entityIdFieldName = 'id';
@@ -190,29 +190,22 @@ class Adapter
 	}
 
 	/**
-	 * @return string Store language (ex. en, de, es)
-	 */
-	public function getLanguage() {
-		return substr($this->scopeConfig->getValue('general/locale/code',$this->scopeStore), 0, 2);
-	}
-
-	/**
 	 * @param string $queryText
 	 * @param \Boxalino\Intelligence\Helper\Autocomplete $autocomplete
 	 * @return array
 	 */
 	public function autocomplete($queryText, \Boxalino\Intelligence\Helper\Autocomplete $autocomplete) {
-		$order = array();
-		$hash = null;
 		
+		$order = array();
 		$data = array();
+		$hash = null;
 		
 		$autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit',$this->scopeStore);
 		$products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit',$this->scopeStore);
 			
 		if ($queryText) {
 			
-			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
+			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
 			$searchRequest = $bxRequest->getBxSearchRequest();
 
 			$searchRequest->setReturnFields(array('products_group_id'));
@@ -223,9 +216,10 @@ class Adapter
 			$bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 
 			$entity_ids = array();
-			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds() as $id) {
+			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice) as $id) {
 				$entity_ids[$id] = $id;
 			}
+
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
 
 				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
@@ -242,7 +236,7 @@ class Adapter
 					'row_class' => 'acsuggestions'
                 );
 				
-				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds() as $id) {
+				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
 					$entity_ids[$id] = $id;
 				}
 
@@ -263,7 +257,7 @@ class Adapter
 			$productValues = $autocomplete->getListValues($list);
 			
 			$first = true;
-			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds() as $id) {
+			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice) as $id) {
 				$row = array();
 				$row['type'] = 'global_products';
 				$row['row_class'] = 'suggestion-item global_product_suggestions';
@@ -274,12 +268,11 @@ class Adapter
 			}
 			
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
-				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds() as $id) {
+				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
 					$data[] = array("type"=>"sub_products","product"=> $productValues[$id], 'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $i);
 				}
 			}
 		}
-
 		return $data;
 	}
 
@@ -290,8 +283,8 @@ class Adapter
 	 * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
 	 * @param null $categoryId
 	 */
-    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null)
-    {
+    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
+		
 		$returnFields = array('products_group_id'/*$this->getEntityIdFieldName()*/, 'categories', 'discountedPrice', 'title', 'score');
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
@@ -299,7 +292,7 @@ class Adapter
 		$hitCount = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 
 		//create search request
-		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
 		$bxRequest->setReturnFields($returnFields);
 		$bxRequest->setOffset($pageOffset);
 		$bxRequest->setSortFields($bxSortFields);
@@ -320,18 +313,14 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getMagentoStoreConfigPageSize() {
+		
 		$storeConfig = $this->scopeConfig->getValue('catalog/frontend');
-			
 		$storeDisplayMode = $storeConfig['list_mode'];
 
 		//we may get grid-list, list-grid, grid or list
-
 		$storeMainMode = explode('-', $storeDisplayMode);
-
 		$storeMainMode = $storeMainMode[0];
-
 		$hitCount = $storeConfig[$storeMainMode . '_per_page'];
-		
 		return $hitCount;
 	}
 
@@ -345,7 +334,7 @@ class Adapter
 		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
 			return;
 		}
-		
+
 		$field = '';
 		$dir = '';
 		$order = $this->request->getParam('product_list_order');
@@ -357,6 +346,7 @@ class Adapter
 				$field = 'discountedPrice';
 			}
 		}
+		
 		$dirOrder = $this->request->getParam('product_list_dir');
 		if($dirOrder){
 			$dir = $dirOrder == 'asc' ? false : true;
@@ -370,6 +360,7 @@ class Adapter
 			$category = $this->registry->registry('current_category');
 			if (!empty($category)) {
 				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
+//				$categoryId = $category->getId();
 			}
 			// GET param 'cat' may override the current_category,
 			// i.e. when clicking on subcategories in a category page
@@ -378,63 +369,19 @@ class Adapter
 				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
 			}
 		}
+		
 		$overWriteLimit = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
 		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
-
-	/**
-	 * @return array
-	 * @throws \Exception
-	 */
-	private function getLeftFacets() {
-
-		$fields = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/fields',$this->scopeStore));
-		$labels = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/labels',$this->scopeStore));
-		$types = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/types',$this->scopeStore));
-		$orders = explode(',', $this->scopeConfig->getValue('bxSearch/left_facets/orders',$this->scopeStore));
-		
-		if($fields[0] == "" || !$this->bxHelperData->isLeftFilterEnabled()) {
-			return array();
-		}
-		
-		if(sizeof($fields) != sizeof($labels)) {
-			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
-		}
-		if(sizeof($fields) != sizeof($types)) {
-			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet types: " . implode(',', $fields) . " versus " . implode(',', $types));
-		}
-		if(sizeof($fields) != sizeof($orders)) {
-			throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
-		}
-		
-		$facets = array();
-		foreach($fields as $k => $field){
-			$facets[$field] = array($labels[$k], $types[$k], $orders[$k]);
-		}
-		
-		return $facets;
-	}
-
-	/**
-	 * @return array|null
-	 */
-	private function getTopFacetValues() {
-		if($this->bxHelperData->isTopFilterEnabled()){
-			$field = $this->scopeConfig->getValue('bxSearch/top_facet/field',$this->scopeStore);
-			$order = $this->scopeConfig->getValue('bxSearch/top_facet/order',$this->scopeStore);
-			return array($field, $order);
-		}
-		return null;
-
-	}
-
+	
 	/**
 	 * @return array
 	 * @throws \Exception
 	 */
 	public function getLeftFacetFieldNames() {
-		return array_keys($this->getLeftFacets());
+		
+		return array_keys($this->bxHelperData->getLeftFacets());
 	}
 
 	/**
@@ -442,7 +389,8 @@ class Adapter
 	 * @throws \Exception
 	 */
 	public function getAllFacetFieldNames() {
-		$allFacets = array_keys($this->getLeftFacets());
+		
+		$allFacets = array_keys($this->bxHelperData->getLeftFacets());
 		if($this->getTopFacetFieldName() != null) {
 			$allFacets[] = $this->getTopFacetFieldName();
 		}
@@ -453,6 +401,7 @@ class Adapter
 	 * @return string
 	 */
 	private function getUrlParameterPrefix() {
+		
 		return 'bx_';
 	}
 
@@ -460,8 +409,8 @@ class Adapter
 	 * @return \com\boxalino\bxclient\v1\BxFacets|null
 	 * @throws \Exception
 	 */
-    private function prepareFacets()
-    {
+    private function prepareFacets(){
+		
 		if($this->bxHelperData->isSearchEnabled()){
 			$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 
@@ -476,13 +425,13 @@ class Adapter
 			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
 
 			$bxFacets->addCategoryFacet($catId);
-			foreach($this->getLeftFacets() as $fieldName => $facetValues) {
+			foreach($this->bxHelperData->getLeftFacets() as $fieldName => $facetValues) {
 				$selectedValue = isset($selectedValues[$fieldName][0]) ? $selectedValues[$fieldName][0] : null;
 				$bxFacets->addFacet($fieldName, $selectedValue, $facetValues[1], $facetValues[0], $facetValues[2]);
 			}
 
 
-			list($topField, $topOrder) = $this->getTopFacetValues();
+			list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
 			if($topField) {
 				$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
 				$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder); // 1 ?? *iku*
@@ -497,15 +446,16 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getTopFacetFieldName() {
-		list($topField, $topOrder) = $this->getTopFacetValues();
+		
+		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
 		return $topField;
 	}
 
 	/**
 	 * @return mixed
 	 */
-    public function getTotalHitCount()
-    {
+    public function getTotalHitCount(){
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
     }
@@ -513,8 +463,8 @@ class Adapter
 	/**
 	 * @return mixed
 	 */
-    public function getEntitiesIds()
-    {
+    public function getEntitiesIds(){
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice);
     }
@@ -523,12 +473,13 @@ class Adapter
 	 * @return null
 	 */
 	public function getFacets() {
+		
 		$this->simpleSearch();
 		$facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
-
 		if(empty($facets)){
 			return null;
 		}
+		
 		$facets->setParameterPrefix($this->getUrlParameterPrefix());
 		return $facets;
 	}
@@ -537,6 +488,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getCorrectedQuery() {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
 	}
@@ -545,6 +497,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function areResultsCorrected() {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
 	}
@@ -553,6 +506,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function areThereSubPhrases() {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
 	}
@@ -561,6 +515,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhrasesQueries() {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
 	}
@@ -570,6 +525,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhraseTotalHitCount($queryText) {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText);
 	}
@@ -579,23 +535,25 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhraseEntitiesIds($queryText) {
+		
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->getEntityIdFieldName());
 	}
 
 	/**
-	 * @param $widgetType
 	 * @param $widgetName
+	 * @param string $widgetType
 	 * @param int $minAmount
 	 * @param int $amount
-	 * @param array $products
-	 * @return mixed Hit ids
+	 * @param array $context
+	 * @param bool $execute
+	 * @return array
 	 */
-    public function getRecommendation($widgetName, $widgetType = '', $minAmount = 3, $amount = 3, $context = array(), $execute=true)
-    {
+    public function getRecommendation($widgetName, $widgetType = '', $minAmount = 3, $amount = 3, $context = array(), $execute=true){
+		
 		if(!$execute) {
 			if ($widgetType == '') {
-				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount);
+				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount);
 				$bxRequest->setMin($minAmount);
 				$bxRequest->setFilters($this->getSystemFilters());
 				if (isset($context[0])) {
@@ -605,7 +563,7 @@ class Adapter
 				self::$bxClient->addRequest($bxRequest);
 			} else {
 				if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
-					$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount, $minAmount);
+					$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
 					$bxRequest->setFilters($this->getSystemFilters());
 					if ($widgetType === 'basket' && is_array($context)) {
 						$basketProducts = array();
@@ -625,11 +583,8 @@ class Adapter
 					self::$bxClient->addRequest($bxRequest);
 				}
 			}
-		}
-		if(!$execute) {
 			return array();
 		}
 		return self::$bxClient->getResponse()->getHitIds($widgetName);
     }
-
 }

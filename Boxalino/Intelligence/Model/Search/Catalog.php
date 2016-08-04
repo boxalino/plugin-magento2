@@ -6,8 +6,8 @@ use Magento\Search\Model\QueryFactory;
  * Class Catalog
  * @package Boxalino\Intelligence\Model\Search
  */
-class Catalog extends \Magento\Framework\DataObject
-{
+class Catalog extends \Magento\Framework\DataObject{
+    
     /**
      * Catalog search data
      *
@@ -34,7 +34,6 @@ class Catalog extends \Magento\Framework\DataObject
      * @param \Magento\Framework\Stdlib\StringUtils $string
      * @param QueryFactory $queryFactory
      */
-
     public function __construct(
         \Magento\Backend\Helper\Data $adminhtmlData,
         \Magento\Framework\Stdlib\StringUtils $string,
@@ -50,8 +49,8 @@ class Catalog extends \Magento\Framework\DataObject
      *
      * @return $this
      */
-    public function load()
-    {
+    public function load(){
+        
         $result = [];
         if (!$this->hasStart() || !$this->hasLimit() || !$this->hasQuery()) {
             $this->setResults($result);
@@ -79,7 +78,6 @@ class Catalog extends \Magento\Framework\DataObject
         }
 
         $this->setResults(null);
-
         return $this;
     }
-}?>
+}

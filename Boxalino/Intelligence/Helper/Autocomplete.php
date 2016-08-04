@@ -5,8 +5,8 @@ namespace Boxalino\Intelligence\Helper;
  * Class Autocomplete
  * @package Boxalino\Intelligence\Helper
  */
-class Autocomplete
-{
+class Autocomplete{
+	
 	/**
 	 * @var \Magento\Store\Model\StoreManagerInterface
 	 */
@@ -16,10 +16,8 @@ class Autocomplete
 	 * Autocomplete constructor.
 	 * @param \Magento\Store\Model\StoreManagerInterface $storeManager
 	 */
-	public function __construct(
-		\Magento\Store\Model\StoreManagerInterface $storeManager
-	)
-	{
+	public function __construct(\Magento\Store\Model\StoreManagerInterface $storeManager){
+		
 		$this->_storeManager = $storeManager;
 	}
 
@@ -28,6 +26,7 @@ class Autocomplete
 	 * @return mixed
 	 */
 	public function escapeHtml($string) {
+		
 		return $string;
 	}
 
@@ -36,6 +35,7 @@ class Autocomplete
 	 * @return array
 	 */
 	public function getListValues($products) {
+		
 		$values = array();
 		foreach($products as $product) {
 			$mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
@@ -54,6 +54,7 @@ class Autocomplete
 	 * @return string
 	 */
 	public function getProductACTemplate() {
+		
 		$template = '<a href="<%- data.product.url %>">';
 		$template .= '<li class="<%- data.row_class %>" class="text_suggest_<%- data.suggestion %>" role="option">';
 		$template .= '<span class="product-image"><img src="<%- data.product.image %>"></span>';
@@ -62,6 +63,4 @@ class Autocomplete
 		$template .= '</li></a>';
 		return $template;
 	}
-
-
 }

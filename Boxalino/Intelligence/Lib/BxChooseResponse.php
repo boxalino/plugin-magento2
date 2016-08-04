@@ -8,7 +8,7 @@ class BxChooseResponse
 	private $bxRequests;
 	public function __construct($response, $bxRequests=array()) {
 		$this->response = $response;
-		$this->bxRequests = $bxRequests;
+		$this->bxRequests = is_array($bxRequests) ? $bxRequests : array($bxRequests);
 	}
 	
 	public function getResponse() {
@@ -16,6 +16,7 @@ class BxChooseResponse
 	}
 	
 	public function getChoiceResponseVariant($choice=null) {
+
 		foreach($this->bxRequests as $k => $bxRequest) {
 			if($choice != null && $choice == $bxRequest->getChoiceId()) {
 				return $this->getChoiceIdResponseVariant($k);
@@ -74,6 +75,7 @@ class BxChooseResponse
 	}
 
     public function getHitIds($choice=null, $considerRelaxation=true) {
+
 		$variant = $this->getChoiceResponseVariant($choice);
 		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation));
     }

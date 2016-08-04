@@ -18,8 +18,8 @@ use Magento\UrlRewrite\Helper\UrlRewrite;
  * Class BxListProducts
  * @package Boxalino\Intelligence\Block\Product
  */
-class BxListProducts extends ListProduct
-{
+class BxListProducts extends ListProduct{
+    
     /**
      * @var int
      */
@@ -71,11 +71,6 @@ class BxListProducts extends ListProduct
     protected $categoryHelper;
 
     /**
-     * @var string
-     */
-    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-
-    /**
      * @var \Magento\Catalog\Model\CategoryFactory
      */
     protected $categoryFactory;
@@ -85,6 +80,11 @@ class BxListProducts extends ListProduct
      */
     protected $categoryViewBlock;
 
+    /**
+     * @var
+     */
+    protected $bxListCollection;
+    
     /**
      * BxListProducts constructor.
      * @param Context $context
@@ -117,7 +117,8 @@ class BxListProducts extends ListProduct
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
-        array $data = [])
+        array $data = []
+    )
     {
         $this->categoryViewBlock = $categoryViewBlock;
         $this->categoryFactory = $categoryFactory;
@@ -136,12 +137,19 @@ class BxListProducts extends ListProduct
      */
     public function _getProductCollection()
     {
-        if(!$this->bxHelperData->isSearchEnabled() || $this->categoryViewBlock->isContentMode()){
-           return parent::_getProductCollection();
+        if(count($this->bxListCollection)){
+            return $this->bxListCollection;
         }
+        
         $layer = $this->getLayer();
         $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor;
         $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor;
+        $contentMode = $categoryLayer ? $this->categoryViewBlock->isContentMode() : false;
+        
+        if(!$this->bxHelperData->isSearchEnabled() || $contentMode){
+            return parent::_getProductCollection();
+        }
+        
         if($categoryLayer || $searchLayer){
 
             if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
@@ -150,12 +158,14 @@ class BxListProducts extends ListProduct
 
             if($this->request->getParam('bx_category_id') && $categoryLayer) {
                 $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
+                
                 if($selectedCategory->getLevel() != 1){
                     $url = $selectedCategory->getUrl();
                     $bxParams = $this->checkForBxParams($this->request->getParams());
                     $this->abstractAction->getResponse()->setRedirect($url . $bxParams);
                 }
             }
+            
             $entity_ids = array();
             if($searchLayer) {
                 if ($this->p13nHelper->areThereSubPhrases()) {
@@ -178,6 +188,7 @@ class BxListProducts extends ListProduct
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
             $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
             $list->load();
+            
             $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
             $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
             $totalHitCount = $this->p13nHelper->getTotalHitCount();
@@ -187,9 +198,11 @@ class BxListProducts extends ListProduct
                 $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
                 $this->abstractAction->getResponse()->setRedirect($url);
             }
+            
             $lastPage = ceil($totalHitCount /$limit);
             $list->setLastBxPage($lastPage);
             $list->setBxTotal($totalHitCount);
+            $this->bxListCollection = $list;
             return $list;
         }else{
             return parent::_getProductCollection();
@@ -201,6 +214,7 @@ class BxListProducts extends ListProduct
      * @return string
      */
     private function checkForBxParams($params){
+        
         $paramString = '';
         $first = true;
         foreach($params as $key => $param){
@@ -223,8 +237,8 @@ class BxListProducts extends ListProduct
     /**
      * @return $this
      */
-    protected function _beforeToHtml()
-    {
+    protected function _beforeToHtml(){
+        
         $toolbar = $this->getToolbarBlock();
 
         // called prepare sortable parameters
@@ -242,6 +256,7 @@ class BxListProducts extends ListProduct
         if ($dir) {
             $toolbar->setDefaultDirection($dir);
         }
+        
         $modes = $this->getModes();
         if ($modes) {
             $toolbar->setModes($modes);
@@ -249,7 +264,6 @@ class BxListProducts extends ListProduct
 
         // set collection to toolbar and apply sort
         $toolbar->setCollection($collection);
-
         $this->setChild('toolbar', $toolbar);
         $this->_eventManager->dispatch(
             'catalog_block_product_list_collection',
@@ -257,7 +271,6 @@ class BxListProducts extends ListProduct
         );
 
         $this->_getProductCollection()->load();
-
         return parent::_beforeToHtml();
     }
 }

@@ -6,8 +6,8 @@ use Magento\Catalog\Block\Product\ProductList\Upsell as  MageUpsell;
  * Class Upsell
  * @package Boxalino\Intelligence\Block\Product\ProductList
  */
-class Upsell extends MageUpsell
-{
+class Upsell extends MageUpsell{
+    
     /**
      * @var string
      */
@@ -63,9 +63,10 @@ class Upsell extends MageUpsell
     /**
      * @return $this
      */
-    protected function _prepareData($execute = true)
-    {
+    protected function _prepareData($execute = true){
+        
         if($this->bxHelperData->isUpsellEnabled()){
+            
             $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/upsell',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
@@ -91,21 +92,11 @@ class Upsell extends MageUpsell
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
 
             $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
-
             $this->_itemCollection->load();
-
-            /**
-             * Updating collection with desired items
-             */
-//        $this->_eventManager->dispatch(
-//            'catalog_product_upsell',
-//            ['product' => $products, 'collection' => $this->_itemCollection, 'limit' => $config['max']]
-//        );
 
             foreach ($this->_itemCollection as $product) {
                 $product->setDoNotUseCategoryId(true);
             }
-
             return $this;
         }
         return parent::_prepareData();

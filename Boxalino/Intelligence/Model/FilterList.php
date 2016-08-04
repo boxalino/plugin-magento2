@@ -18,6 +18,11 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     private $bxHelperData;
 
     /**
+     * @var
+     */
+    private $bxFacets;
+
+    /**
      * FilterList constructor.
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
@@ -42,14 +47,15 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      * @param \Magento\Catalog\Model\Layer $layer
      * @return array|\Magento\Catalog\Model\Layer\Filter\AbstractFilter[]
      */
-    public function getFilters(\Magento\Catalog\Model\Layer $layer)
-    {
+    public function getFilters(\Magento\Catalog\Model\Layer $layer){
+        
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()){
             return parent::getFilters($layer);
         }
+        
         if($this->bxHelperData->isLeftFilterEnabled() && $this->bxHelperData->isFilterLayoutEnabled()) {
             $filters = array();
-            $facets = $this->p13nHelper->getFacets();
+            $facets = $this->getBxFacets();
             foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
                 $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
                 $filter = $this->objectManager->create(
@@ -64,5 +70,13 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
             return $filters;
         }
         return array();
+    }
+    
+    private function getBxFacets(){
+        
+        if($this->bxFacets == null){
+            $this->bxFacets = $this->p13nHelper->getFacets();
+        }
+        return $this->bxFacets;
     }
 }

@@ -5,8 +5,8 @@ namespace Boxalino\Intelligence\Helper;
  * Class BxIndexConfig
  * @package Boxalino\Intelligence\Helper
  */
-class BxIndexConfig
-{
+class BxIndexConfig{
+	
 	/**
 	 * @var array
 	 */
@@ -17,6 +17,7 @@ class BxIndexConfig
 	 * @param $websites
 	 */
 	public function __construct($websites) {
+		
 		$this->initialize($websites);
 	}
 
@@ -25,13 +26,15 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function initialize($websites) {
+		
 		$this->indexConfig = array();
 		foreach($websites  as $website) {
+			
 			foreach ($website->getGroups(true) as $group) {
+				
 				foreach ($group->getStores() as $store) {
 					
 					$enabled = $store->getConfig('bxExporter/exporter/enabled');
-					
 					if($enabled == '1') {
 
 						$account = $store->getConfig('bxGeneral/general/account_name');
@@ -59,6 +62,7 @@ class BxIndexConfig
 								"Configuration error detected: Language '$language' can only be pushed to account '$account' once. Please review and correct your boxalino plugin's configuration, including the various configuration levels per website, store view, etc."
 							);
 						}
+						
 						$this->indexConfig[$account][$language] = array(
 							'website' => $website,
 							'group'   => $group,
@@ -74,6 +78,7 @@ class BxIndexConfig
 	 * @return array
 	 */
 	public function getAccounts() {
+		
 		return array_keys($this->indexConfig);
 	}
 
@@ -83,6 +88,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getAccountLanguages($account) {
+		
 		return array_keys($this->getAccountArray($account));
 	}
 
@@ -93,6 +99,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getStore($account, $language) {
+		
 		$array = $this->getAccountLanguageArray($account, $language);
 		return $array['store'];
 	}
@@ -103,6 +110,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	private function getAccountArray($account) {
+		
 		if(isset($this->indexConfig[$account])) {
 			return $this->indexConfig[$account];
 		}
@@ -115,6 +123,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	private function getAccountFirstLanguageArray($account) {
+		
 		$accountArray = $this->getAccountArray($account);
 		foreach($accountArray as $l => $vals) {
 			return $vals;
@@ -129,6 +138,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	private function getAccountLanguageArray($account, $language) {
+		
 		$accountArray = $this->getAccountArray($account);
 		if(isset($accountArray[$language])) {
 			return $accountArray[$language];
@@ -142,6 +152,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getFirstAccountStore($account) {
+		
 		$array = $this->getAccountFirstLanguageArray($account);
 		return $array['store'];
 	}
@@ -151,6 +162,7 @@ class BxIndexConfig
 	 * @return bool
 	 */
 	public function isCustomersExportEnabled($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/enabled') == 1;
 	}
 
@@ -159,6 +171,7 @@ class BxIndexConfig
 	 * @return bool
 	 */
 	public function isTransactionsExportEnabled($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/enabled') == 1;
 	}
 
@@ -166,6 +179,7 @@ class BxIndexConfig
 	 * @return string
 	 */
 	public function toString() {
+		
 		$lines = array();
 		foreach($this->indexConfig as $a => $vs) {
 			$lines[] = $a . " - " . implode(',', array_keys($vs));
@@ -178,6 +192,7 @@ class BxIndexConfig
 	 * @return mixed
 	 */
 	public function getAccountUsername($account) {
+		
 		$username = $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/username');
 		return $username != "" ? $username : $account;
 	}
@@ -188,6 +203,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getAccountPassword($account) {
+		
 		$password = $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/password');
 		if($password == '') {
 			throw new \Exception("you must defined a password in Boxalino -> General configuration section");
@@ -200,6 +216,7 @@ class BxIndexConfig
 	 * @return mixed
 	 */
 	public function isAccountDev($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxGeneral/general/dev');
 	}
 
@@ -208,6 +225,7 @@ class BxIndexConfig
 	 * @return string
 	 */
 	public function getAccountExportServer($account) {
+		
 		$exportServer = $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/export_server');
 		return $exportServer == '' ? 'http://di1.bx-cloud.com' : $exportServer;
 	}
@@ -217,6 +235,7 @@ class BxIndexConfig
 	 * @return bool
 	 */
 	public function exportProductImages($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/products/export_images') == 1;
 	}
 
@@ -225,6 +244,7 @@ class BxIndexConfig
 	 * @return bool
 	 */
 	public function exportProductUrl($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/products/export_url') == 1;
 	}
 
@@ -233,6 +253,7 @@ class BxIndexConfig
 	 * @return bool
 	 */
 	public function publishConfigurationChanges($account) {
+		
 		return $this->getFirstAccountStore($account)->getConfig('bxExporter/advanced/publish_configuration_changes') == 1;
 	}
 
@@ -245,6 +266,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	protected function getFinalProperties($allProperties, $includes, $excludes, $requiredProperties=array()) {
+		
 		foreach($includes as $k => $incl) {
 			if($incl == "") {
 				unset($includes[$k]);
@@ -296,6 +318,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getAccountProductsProperties($account, $allProperties, $requiredProperties=array()) {
+		
 		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/products/include_properties'));
 		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/products/exclude_properties'));
 		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
@@ -309,6 +332,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getAccountCustomersProperties($account, $allProperties, $requiredProperties=array()) {
+		
 		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/include_properties'));
 		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/exclude_properties'));
 		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
@@ -322,6 +346,7 @@ class BxIndexConfig
 	 * @throws \Exception
 	 */
 	public function getAccountTransactionsProperties($account, $allProperties, $requiredProperties=array()) {
+		
 		$includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/include_properties'));
 		$excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/exclude_properties'));
 		return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);

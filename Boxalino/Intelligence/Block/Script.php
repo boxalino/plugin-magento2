@@ -5,8 +5,8 @@ namespace Boxalino\Intelligence\Block;
  * Class Script
  * @package Boxalino\Intelligence\Block
  */
-class Script extends \Magento\Framework\View\Element\Template
-{
+class Script extends \Magento\Framework\View\Element\Template{
+    
     /**
      * @var string
      */
@@ -77,6 +77,7 @@ class Script extends \Magento\Framework\View\Element\Template
      * @return \Boxalino\Intelligence\Helper\Data
      */
     public function getBxHelperData(){
+        
         return $this->bxHelperData;
     }
 
@@ -84,6 +85,7 @@ class Script extends \Magento\Framework\View\Element\Template
      * @return \Boxalino\Intelligence\Helper\Autocomplete
      */
     public function getAutocompleteHelper(){
+        
         return $this->bxAutoCompleteHelper;
     }
 
@@ -91,6 +93,7 @@ class Script extends \Magento\Framework\View\Element\Template
      * @return mixed
      */
     public function getAccount(){
+        
         return $this->_scopeConfig->getValue('bxGeneral/general/account_name',$this->scopeStore);
     }
 }

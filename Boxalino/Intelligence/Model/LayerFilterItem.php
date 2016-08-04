@@ -46,7 +46,8 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []
-    ) {
+    )
+    {
 		$this->objectManager = $objectManager;
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
@@ -56,6 +57,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @param $bxFacets
      */
     public function setFacets($bxFacets) {
+        
         $this->bxFacets = $bxFacets;
     }
 
@@ -63,14 +65,15 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @param $fieldName
      */
     public function setFieldName($fieldName) {
+        
         $this->fieldName = $fieldName;
     }
 
     /**
      * @return mixed
      */
-    public function getName()
-    {
+    public function getName(){
+        
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
@@ -80,8 +83,8 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @return \Magento\Catalog\Model\Layer\Filter\AbstractFilter
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function getFilter()
-    {
+    public function getFilter(){
+        
 		if($this->filter == null) {
 			$this->filter = $this->objectManager->create(
                 "Boxalino\Intelligence\Model\LayerFilterFilter"
@@ -101,6 +104,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @return mixed
      */
 	public function getLabel() {
+        
 		return $this->bxFacets->getSelectedValueLabel($this->fieldName);
 	}
 }

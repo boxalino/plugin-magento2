@@ -3,8 +3,20 @@ namespace Boxalino\Intelligence\Block;
 
 class CmsBlock extends \Magento\Cms\Block\Block{
 
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     private $bxHelperData;
-    
+
+    /**
+     * CmsBlock constructor.
+     * @param \Magento\Framework\View\Element\Context $context
+     * @param \Magento\Cms\Model\Template\FilterProvider $filterProvider
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Cms\Model\BlockFactory $blockFactory
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param array $data
+     */
     public function __construct(
         \Magento\Framework\View\Element\Context $context, 
         \Magento\Cms\Model\Template\FilterProvider $filterProvider, 
@@ -18,8 +30,11 @@ class CmsBlock extends \Magento\Cms\Block\Block{
         parent::__construct($context, $filterProvider, $storeManager, $blockFactory, $data);
     }
 
-    protected function _toHtml()
-    {
+    /**
+     * @return string
+     */
+    protected function _toHtml(){
+        
         $blockId = $this->getBlockId();
         $html = '';
         if ($blockId) {

@@ -23,6 +23,7 @@ class State extends Mage_State{
      * @param $bool
      */
     public function setReset($bool){
+        
         self::$reset = $bool;
     }
 
@@ -30,17 +31,19 @@ class State extends Mage_State{
      * @return null
      */
     public function getResetDate(){
+        
         return self::$resetDate;
     }
 
     /**
      * @return $this
      */
-    public function beforeSave()
-    {
+    public function beforeSave(){
+        
         if(self::$resetDate == null){
             self::$resetDate = $this->getUpdated();
         }
+        
         $date = self::$resetDate != null && self::$reset ? self::$resetDate : time();
         $this->setUpdated($date);
         return \Magento\Framework\Model\AbstractModel::beforeSave();

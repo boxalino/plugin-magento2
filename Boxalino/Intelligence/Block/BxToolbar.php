@@ -20,7 +20,12 @@ class BxToolbar extends Toolbar{
      */
     protected $bxHelperData;
 
-    /**$
+    /**
+     * @var
+     */
+    protected $subPhrases;
+    
+    /**
      * BxToolbar constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Catalog\Model\Session $catalogSession
@@ -43,7 +48,8 @@ class BxToolbar extends Toolbar{
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        array $data = [])
+        array $data = []
+    )
     {
         $this->p13Helper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
@@ -54,9 +60,13 @@ class BxToolbar extends Toolbar{
      * @return int|mixed
      */
     public function hasSubPhrases(){
+        
         if($this->bxHelperData->isSearchEnabled()){
-            return $this->p13Helper->areThereSubPhrases();
+            if($this->subPhrases == null){
+                $this->subPhrases = $this->p13Helper->areThereSubPhrases();
+            }
+            return $this->subPhrases;
         }
-        return 0;
+        return false;
     }
-}?>
+}

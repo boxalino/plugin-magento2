@@ -5,22 +5,22 @@ namespace Boxalino\Intelligence\Helper;
  * Class BxGeneral
  * @package Boxalino\Intelligence\Helper
  */
-class BxGeneral
-{
+class BxGeneral{
+    
     /**
      * @param $string
      * @return string
      */
-	public function escapeString($string)
-    {
+	public function escapeString($string){
+        
         return htmlspecialchars(trim(preg_replace('/\s+/', ' ', $string)));
     }
 
     /**
      * Modifies a string to remove all non ASCII characters and spaces.
      */
-    public function sanitizeFieldName($text)
-    {
+    public function sanitizeFieldName($text){
+        
         $maxLength = 50;
         $delimiter = "_";
 
@@ -48,7 +48,6 @@ class BxGeneral
         // max $maxLength (50) chars
         $text = substr($text, 0, $maxLength);
         $text = trim($text, $delimiter);
-
         return $text;
     }
 }

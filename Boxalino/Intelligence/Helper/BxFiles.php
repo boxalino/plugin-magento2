@@ -7,8 +7,8 @@ use Magento\Framework\App\Filesystem\DirectoryList;
  * Class BxFiles
  * @package Boxalino\Intelligence\Helper
  */
-class BxFiles
-{
+class BxFiles{
+    
     /**
      * @var string
      */
@@ -120,6 +120,7 @@ class BxFiles
      * @param $config
      */
 	public function __construct($filesystem, $account, $config) {
+        
 		$this->filesystem = $filesystem;
 		$this->account = $account;
 		$this->config = $config;
@@ -154,8 +155,8 @@ class BxFiles
      * @param $dir
      * @return bool|void
      */
-    public function delTree($dir)
-    {
+    public function delTree($dir){
+        
         if (!file_exists($dir)) {
             return;
         }
@@ -175,6 +176,7 @@ class BxFiles
      * @return string
      */
 	public function getPath($file) {
+        
 		if (!file_exists($this->_dir)) {
             mkdir($this->_dir);
         }
@@ -191,13 +193,15 @@ class BxFiles
      * @param $file
      * @param $data
      */
-    public function savePartToCsv($file, &$data)
-    {
+    public function savePartToCsv($file, &$data){
+        
 		$path = $this->getPath($file);
 		$fh = fopen($path, 'a');
+        
         foreach ($data as $dataRow) {
             fputcsv($fh, $dataRow, $this->XML_DELIMITER, $this->XML_ENCLOSURE);
         }
+        
         fclose($fh);
         $data = null;
         $fh = null;
@@ -207,6 +211,7 @@ class BxFiles
      * @param $file
      */
 	public function printFile($file) {
+        
 		$path = $this->getPath($file);
 		echo file_get_contents($path);
 	}

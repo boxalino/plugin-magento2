@@ -4,8 +4,8 @@ namespace Boxalino\Intelligence\Helper;
  * Class Data
  * @package Boxalino\Intelligence\Helper
  */
-class Data
-{
+class Data{
+
     /**
      * @var
      */
@@ -109,19 +109,11 @@ class Data
     }
 
     /**
-     * @return array
+     * @return string language code
      */
-    public function getBasketItems()
-    {
-        $items = array();
-        $checkout = $this->checkoutSession;
-        $quote = $checkout->getQuote();
-        if ($quote) {
-            foreach ($quote->getAllVisibleItems() as $item) {
-                $items[] = $item->product_id;
-            }
-        }
-        return $items;
+    public function getLanguage() {
+
+        return substr($this->config->getValue('general/locale/code',$this->scopeStore), 0, 2);
     }
 
     /**
@@ -129,29 +121,27 @@ class Data
      * @param null $filters
      * @return string
      */
-    public function reportSearch($term, $filters = null)
-    {
+    public function reportSearch($term, $filters = null){
+
         if ($this->isTrackerEnabled()) {
             $logTerm = addslashes($term);
             $script = "_bxq.push(['trackSearch', '" . $logTerm . "', " . json_encode($filters) . "]);" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
      * @param $product
      * @return string
      */
-    public function reportProductView($product)
-    {
+    public function reportProductView($product){
+
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackProductView', '" . $product . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -161,43 +151,40 @@ class Data
      * @param $currency
      * @return string
      */
-    public function reportAddToBasket($product, $count, $price, $currency)
-    {
+    public function reportAddToBasket($product, $count, $price, $currency){
+
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
             print_r($script);
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
      * @param $categoryID
      * @return string
      */
-    public function reportCategoryView($categoryID)
-    {
+    public function reportCategoryView($categoryID){
+
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackCategoryView', '" . $categoryID . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
      * @param $customerId
      * @return string
      */
-    public function reportLogin($customerId)
-    {
+    public function reportLogin($customerId){
+
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackLogin', '" . $customerId . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -212,8 +199,8 @@ class Data
      * @param $price number
      * @param $currency string
      */
-    public function reportPurchase($products, $orderId, $price, $currency)
-    {
+    public function reportPurchase($products, $orderId, $price, $currency){
+
         $productsJson = json_encode($products);
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push([" . PHP_EOL;
@@ -224,9 +211,8 @@ class Data
             $script .= $orderId . "" . PHP_EOL;
             $script .= "]);" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -247,10 +233,11 @@ class Data
      * @param $params
      * @return \stdClass
      */
-    public function getFiltersValues($params)
-    {
+    public function getFiltersValues($params){
+
         $filters = new \stdClass();
         if (isset($params['cat'])) {
+
             $filters->filter_hc_category = '';
             $category = $this->catalogCategory->load($params['cat']);
             $categories = explode('/', $category->getPath());
@@ -275,6 +262,7 @@ class Data
             }
             unset($params['price']);
         }
+
         if (isset($params)) {
             $list = $this->factory->create();
             $list->load();
@@ -308,8 +296,8 @@ class Data
      * @param $text
      * @return mixed|null|string
      */
-    public function sanitizeFieldName($text)
-    {
+    public function sanitizeFieldName($text){
+
         $maxLength = 50;
         $delimiter = "_";
 
@@ -346,10 +334,11 @@ class Data
      * @return bool
      */
     public function isHierarchical($fieldName){
-        $facetConfig = $this->config->getValue('bxSearch/left_facets', $this->scopeStore);
 
+        $facetConfig = $this->config->getValue('bxSearch/left_facets', $this->scopeStore);
         $fields = explode(",", $facetConfig['fields']);
         $type = explode(",", $facetConfig['types']);
+
         if(in_array($fieldName,$fields )){
             if($type[array_search($fieldName, $fields)] == 'hierarchical'){
                 return true;
@@ -358,7 +347,11 @@ class Data
         return false;
     }
 
+    /**
+     * @return array
+     */
     public function getOtherWidgetConfiguration(){
+
         if(!isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -367,16 +360,19 @@ class Data
         $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
         $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
         $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
+
         foreach($widgetNames as $index => $widget){
             $widgetConfig[$widget] = array('scenario' => $widgetScenarios[$index],
                 'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
         }
         return $widgetConfig;
     }
+
     /**
      * @return bool
      */
     public function isPluginEnabled(){
+
         if(!isset($this->bxConfig['bxGeneral'])) {
             $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
         }
@@ -387,6 +383,7 @@ class Data
      * @return bool
      */
     public function isSearchEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -397,6 +394,7 @@ class Data
      * @return bool
      */
     public function isAutocompleteEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -407,6 +405,7 @@ class Data
      * @return bool
      */
     public function isTrackerEnabled(){
+
         if(!isset($this->bxConfig['bxGeneral'])) {
             $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
         }
@@ -417,6 +416,7 @@ class Data
      * @return bool
      */
     public function isCrosssellEnabled(){
+
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -427,6 +427,7 @@ class Data
      * @return bool
      */
     public function isRelatedEnabled(){
+
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -437,6 +438,7 @@ class Data
      * @return bool
      */
     public function isUpsellEnabled(){
+
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -447,6 +449,7 @@ class Data
      * @return bool
      */
     public function isNavigationEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -457,26 +460,29 @@ class Data
      * @return bool
      */
     public function isLeftFilterEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['left_facets']['enabled']);
+        return (bool)($this->isFilterLayoutEnabled() && $this->bxConfig['bxSearch']['left_facets']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isTopFilterEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['top_facet']['enabled']);
+        return (bool)($this->isFilterLayoutEnabled() && $this->bxConfig['bxSearch']['top_facet']['enabled']);
     }
 
     /**
      * @return bool
      */
     public function isFilterLayoutEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -484,14 +490,28 @@ class Data
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getCategoriesSortOrder(){
+    public function isSliderEnabled(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
+        return (bool)strpos($this->bxConfig['bxSearch']['left_facets']['fields'],'discountedPrice');
+    }
+
+    /**
+     * @return int
+     */
+    public function getCategoriesSortOrder(){
+
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+
         $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
         $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
+
         foreach($fields as $index => $field){
             if($field == 'categories'){
                 return (int)$orders[$index];
@@ -501,18 +521,71 @@ class Data
     }
 
     /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getLeftFacets() {
+
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
+        $labels = explode(',', $this->bxConfig['bxSearch']['left_facets']['labels']);
+        $types = explode(',', $this->bxConfig['bxSearch']['left_facets']['types']);
+        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
+
+        if($fields[0] == "" || !$this->isLeftFilterEnabled()) {
+            return array();
+        }
+
+        if(sizeof($fields) != sizeof($labels)) {
+            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
+        }
+        if(sizeof($fields) != sizeof($types)) {
+            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet types: " . implode(',', $fields) . " versus " . implode(',', $types));
+        }
+        if(sizeof($fields) != sizeof($orders)) {
+            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
+        }
+
+        $facets = array();
+        foreach($fields as $k => $field){
+            $facets[$field] = array($labels[$k], $types[$k], $orders[$k]);
+        }
+
+        return $facets;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getTopFacetValues() {
+
+        if($this->isTopFilterEnabled()){
+
+            if(!isset($this->bxConfig['bxSearch'])){
+                $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+            }
+            $field = $this->bxConfig['bxSearch']['top_facet']['field'];
+            $order = $this->bxConfig['bxSearch']['top_facet']['order'];
+            return array($field, $order);
+        }
+        return null;
+    }
+    
+    /**
      * @return boolean
      */
-    public function isSetup()
-    {
+    public function isSetup(){
+
         return $this->setup;
     }
 
     /**
      * @param boolean $setup
      */
-    public function setSetup($setup)
-    {
+    public function setSetup($setup){
+
         $this->setup = $setup;
     }
 
@@ -520,6 +593,7 @@ class Data
      * @param $block
      */
     public function setCmsBlock($block){
+
         $this->cmsBlock = $block;
     }
 
@@ -527,6 +601,7 @@ class Data
      * @return array
      */
     public function getCmsBlock(){
+
         return $this->cmsBlock;
     }
 }

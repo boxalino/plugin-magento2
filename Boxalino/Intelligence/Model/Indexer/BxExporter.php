@@ -18,10 +18,8 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * BxExporter constructor.
      * @param \Boxalino\Intelligence\Model\Indexer\BxIndexer $bxIndexer
      */
-    public function __construct(
-		BxIndexer $bxIndexer
-    )
-    {
+    public function __construct(BxIndexer $bxIndexer){
+        
 		$this->bxIndexer = $bxIndexer;
     }
 
@@ -29,7 +27,6 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @param int $id
      */
     public function executeRow($id){
-		
     }
 
     /**
@@ -48,6 +45,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @throws \Exception
      */
     public function executeFull(){
+        
 		$this->bxIndexer->setIndexerType('full')->exportStores();
 	}
 }

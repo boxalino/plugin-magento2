@@ -11,8 +11,8 @@ class View extends Mage_View{
     /**
      * @return \Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
-    {
+    public function execute(){
+        
         $configuration = array('categoryFilterList' =>
             array('type'=>'Boxalino\Intelligence\Model\FilterList')
         );

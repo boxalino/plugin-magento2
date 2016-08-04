@@ -51,7 +51,8 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Framework\Filter\StripTags $tagFilter,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
-        array $data=[])
+        array $data=[]
+    )
     {
         $this->categoryFactory = $categoryFactory;
         $this->bxDataHelper = $bxDataHelper;
@@ -62,6 +63,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param $bxFacets
      */
     public function setFacets($bxFacets) {
+        
         $this->bxFacets = $bxFacets;
     }
 
@@ -69,14 +71,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param $fieldName
      */
     public function setFieldName($fieldName) {
+        
         $this->fieldName = $fieldName;
     }
 
     /**
      * @return mixed
      */
-    public function getName()
-    {
+    public function getName(){
+        
         return $this->bxFacets->getFacetLabel($this->fieldName);
     }
 
@@ -84,14 +87,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return array
      */
     public function getFieldName(){
+        
         return $this->fieldName;
     }
 
     /**
      * @return $this|\Magento\Catalog\Model\Layer\Filter\AbstractFilter
      */
-    public function _initItems()
-    {
+    public function _initItems(){
+        
         if($this->bxDataHelper->isFilterLayoutEnabled()){
             $data = $this->_getItemsData();
             $items = [];
@@ -114,8 +118,8 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param null $type
      * @return \Magento\Catalog\Model\Layer\Filter\Item
      */
-    public function _createItem($label, $value, $count = 0, $selected = null, $type = null)
-    {
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
+        
         if($this->bxDataHelper->isFilterLayoutEnabled()) {
             return $this->_filterItemFactory->create()
                 ->setFilter($this)
@@ -131,8 +135,8 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     /**
      * @return array
      */
-    protected function _getItemsData()
-    {
+    protected function _getItemsData(){
+        
         $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
         if (!$this->bxDataHelper->isHierarchical($this->fieldName)) {
             foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
@@ -219,6 +223,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return array
      */
     private function sortCategories($categories, $categorySorting){
+        
         $sortedCategories = array();
 		foreach($categorySorting as $node){
 			if(isset($categories[$node])) {

@@ -111,8 +111,11 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         parent::__construct($context, $data);
     }
 
-    public function _construct()
-    {
+    /**
+     * 
+     */
+    public function _construct(){
+        
         if($this->bxHelperData->isSetup()){
             $cmsBlock = $this->bxHelperData->getCmsBlock();
             if($cmsBlock){
@@ -131,7 +134,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         }
     }
 
+    /**
+     * @param $content
+     * @return array
+     */
     protected function getCmsRecommendationBlocks($content){
+        
         $results = array();
         $recommendations = array();
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
@@ -151,7 +159,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         return $recommendations;
     }
 
+    /**
+     * @param array $recommendations
+     * @return null
+     */
     protected function prepareRecommendations($recommendations = array()){
+        
         $otherWidgetConfiguration = $this->bxHelperData->getOtherWidgetConfiguration();
         if($recommendations){
             foreach($recommendations as $index => $widget){
@@ -179,18 +192,15 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _prepareData(){
-
-        $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget']);
         
+        $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget']);
         if ((count($entity_ids) == 0)) {
             $entity_ids = array(0);
         }
 
         $this->_itemCollection = $this->factory->create()
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-
         $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
-
         $this->_itemCollection->load();
 
         foreach ($this->_itemCollection as $product) {
@@ -205,6 +215,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     protected function getWidgetContext($scenario){
+        
         $context = array();
         switch($scenario){
             case 'category':
@@ -237,6 +248,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed|string
      */
     public function getRecommendationTitle(){
+        
         return isset($this->_data['title']) ? $this->_data['title'] : 'Recommendation';
     }
     
@@ -244,6 +256,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return \Magento\Quote\Model\Quote
      */
     protected function getQuote(){
+        
         return $this->_checkoutSession->getQuote();
     }
 
@@ -251,6 +264,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed
      */
     public function getItems(){
+        
         return $this->_itemCollection;
     }
 
@@ -258,6 +272,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _beforeToHtml(){
+        
         $this->_prepareData();
         return parent::_beforeToHtml();
     }
@@ -266,6 +281,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     public function getIdentities(){
+        
         $identities = [];
         if($this->getItems() != null){
             foreach ($this->getItems() as $item) {
@@ -279,6 +295,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return bool
      */
     public function canItemsAddToCart(){
+        
         foreach ($this->getItems() as $item) {
             if (!$item->isComposite() && $item->isSaleable() && !$item->getRequiredOptions()) {
                 return true;

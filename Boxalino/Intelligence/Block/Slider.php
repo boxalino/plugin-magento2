@@ -5,8 +5,8 @@ namespace Boxalino\Intelligence\Block;
  * Class Slider
  * @package Boxalino\Intelligence\Block
  */
-class Slider extends \Magento\Framework\View\Element\Template
-{
+class Slider extends \Magento\Framework\View\Element\Template{
+    
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -40,16 +40,24 @@ class Slider extends \Magento\Framework\View\Element\Template
      * @param $price
      * @return array
      */
-    private function explodePrice($price)
-    {
+    private function explodePrice($price){
+        
         return explode("-", $price);
     }
 
     /**
+     * @return bool
+     */
+    public function isSliderEnabled(){
+        
+        return $this->bxHelperData->isSliderEnabled();
+    }
+    
+    /**
      * @return array|null
      */
-    public function getSliderValues()
-    {
+    public function getSliderValues(){
+        
         if($this->bxHelperData->isLeftFilterEnabled()) {
             $facets = $this->p13nHelper->getFacets();
             if (empty($facets) || empty($facets->getFacetValues($facets->getPriceFieldName()))) {
@@ -65,4 +73,4 @@ class Slider extends \Magento\Framework\View\Element\Template
         }
         return array();
     }
-}?>
+}

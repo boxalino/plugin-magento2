@@ -1,5 +1,1 @@
-<?php
-    if(!$this->hasSubPhrases()){
-        include ($block->getTemplateFile('Magento_Catalog::product/list/toolbar.phtml'));
-    }
-?>
+<?php if(!$this->hasSubPhrases()) include ($block->getTemplateFile('Magento_Catalog::product/list/toolbar.phtml')); ?>
