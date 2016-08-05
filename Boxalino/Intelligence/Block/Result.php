@@ -21,11 +21,6 @@ class Result extends Mage_Result{
     protected $p13nHelper;
 
     /**
-     * @var QueryFactory
-     */
-    protected $queryFactory;
-
-    /**
      * @var
      */
     protected $bxListProducts;
@@ -72,7 +67,6 @@ class Result extends Mage_Result{
     {
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
-        $this->queryFactory = $queryFactory;
         if($this->bxHelperData->isSearchEnabled() && $this->hasSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
         }
@@ -95,9 +89,9 @@ class Result extends Mage_Result{
     public function getSearchQueryText(){
         
         if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
-            $query = $this->queryFactory->get();
-            $query->setQueryText($this->p13nHelper->getCorrectedQuery());
-            return __("Corrected search results for: '%1'", $this->catalogSearchData->getEscapedQueryText());
+            
+            $correctedQuery = $this->p13nHelper->getCorrectedQuery();
+            return __("Corrected search results for: '%1'", $correctedQuery);
         } else if($this->hasSubPhrases()){
             return "";
         }
@@ -109,7 +103,7 @@ class Result extends Mage_Result{
      * @return string
      */
     public function getSearchQueryLink($index){
-        
+
         return $this->_storeManager->getStore()->getBaseUrl() . "catalogsearch/result/?q=" . $this->queries[$index];
     }
 

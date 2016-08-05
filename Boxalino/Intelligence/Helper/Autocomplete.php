@@ -8,17 +8,19 @@ namespace Boxalino\Intelligence\Helper;
 class Autocomplete{
 	
 	/**
-	 * @var \Magento\Store\Model\StoreManagerInterface
+	 * @var \Magento\Catalog\Block\Product\AbstractProduct
 	 */
-	protected $_storeManager;
+	protected $abstractProduct;
 
 	/**
 	 * Autocomplete constructor.
-	 * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+	 * @param \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
 	 */
-	public function __construct(\Magento\Store\Model\StoreManagerInterface $storeManager){
-		
-		$this->_storeManager = $storeManager;
+	public function __construct(
+		\Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
+	)
+	{
+		$this->abstractProduct = $abstractProduct;
 	}
 
 	/**
@@ -35,16 +37,16 @@ class Autocomplete{
 	 * @return array
 	 */
 	public function getListValues($products) {
-		
+
 		$values = array();
 		foreach($products as $product) {
-			$mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+
 			$value = array();
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();
 			$value['url'] = $product->getProductUrl();
 			$value['price'] = strip_tags($product->getFormatedPrice());
-			$value['image'] = $mediaUrl . "catalog/product" . $product->getImage();
+			$value['image'] = $this->abstractProduct->getImage($product,'category_page_grid')->getImageUrl();
 			$values[$product->getId()] = $value;
 		}
 		return $values;
