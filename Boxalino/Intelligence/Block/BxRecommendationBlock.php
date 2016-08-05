@@ -169,20 +169,26 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         if($recommendations){
             foreach($recommendations as $index => $widget){
 
-                if(isset($otherWidgetConfiguration[$widget['widget']])){
-                    $config = $otherWidgetConfiguration[$widget['widget']];
-                    $context = isset($widget['context']) ? $widget['context'] :
-                        $this->getWidgetContext($config['scenario']);
+                $config = $otherWidgetConfiguration[$widget['widget']];
+                $scenario = isset($widget['scenario']) ? $widget['scenario'] :
+                    $config['scenario'];
+                $min = isset($widget['min']) ? $widget['min'] : $config['min'];
+                $max = isset($widget['max']) ? $widget['max'] : $config['max'];
 
-                    $this->p13nHelper->getRecommendation(
-                        $widget['widget'],
-                        $config['scenario'],
-                        $config['min'],
-                        $config['max'],
-                        $context,
-                        false
-                    );
+                if (isset($widget['context'])) {
+                    $context = explode(',', str_replace(' ', '', $widget['context']));
+                } else {
+                    $context = $this->getWidgetContext($config['scenario']);
                 }
+                
+                $this->p13nHelper->getRecommendation(
+                    $widget['widget'],
+                    $scenario,
+                    $min,
+                    $max,
+                    $context,
+                    false
+                );
             }
         }
         return null;
@@ -220,12 +226,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         switch($scenario){
             case 'category':
                 if($this->registry->registry('current_category') != null){
-                    $context[] = $this->registry->registry('current_category')->getId();
+                    $context = $this->registry->registry('current_category')->getId();
                 }
                 break;
             case 'product':
                 if($this->_coreRegistry->registry('product') != null){
-                    $context = array($this->_coreRegistry->registry('product'));
+                    $context = $this->_coreRegistry->registry('product');
                 }
                 break;
             case 'basket':

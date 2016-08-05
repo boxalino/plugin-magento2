@@ -184,7 +184,7 @@ class Adapter
 		
 		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
 		if (!isset($entity_id) || $entity_id === '') {
-			$entityIdFieldName = 'id';
+			$entityIdFieldName = 'products_group_id';
 		}
 		return $entityIdFieldName;
 	}
@@ -205,7 +205,10 @@ class Adapter
 			
 		if ($queryText) {
 			
-			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
+			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), 
+				$queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), 
+				$this->getSearchChoice($queryText)
+			);
 			$searchRequest = $bxRequest->getBxSearchRequest();
 
 			$searchRequest->setReturnFields(array('products_group_id'));
@@ -215,63 +218,44 @@ class Adapter
 			self::$bxClient->autocomplete();
 			$bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 
-			$entity_ids = array();
-			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice) as $id) {
-				$entity_ids[$id] = $id;
-			}
-
-			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
-
-				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
-				
-                if ($totalHitcount <= 0) {
-                    continue;
-                }
-				
-				$_data = array(
-                    'title' => $suggestion,
-                    'num_results' => $totalHitcount,
-                    'type' => 'suggestion',
-					'id' => $i,
-					'row_class' => 'acsuggestions'
-                );
-				
-				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
-					$entity_ids[$id] = $id;
-				}
-
-				if ($_data['title'] == $queryText) {
-					array_unshift($data, $_data);
-				} else {
-					$data[] = $_data;
-				}
-            }
-		}
-
-		if(sizeof($entity_ids) > 0) {
-
-			$list = $this->collectionFactory->create()->setStoreId($this->storeManager->getStore()->getId())
-				->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-			$list->load();
-
-			$productValues = $autocomplete->getListValues($list);
-			
 			$first = true;
+			$global = [];
 			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice) as $id) {
 				$row = array();
 				$row['type'] = 'global_products';
 				$row['row_class'] = 'suggestion-item global_product_suggestions';
-				$row['product'] = $productValues[$id];
+				$row['product'] = $autocomplete->getListValues($id);
 				$row['first'] = $first;
 				$first = false;
-				$data[] = $row;
+				$global[] = $row;
 			}
-			
+
+			$suggestions = [];
+			$suggestionProducts = [];
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
-				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
-					$data[] = array("type"=>"sub_products","product"=> $productValues[$id], 'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $i);
+
+				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
+
+                if ($totalHitcount <= 0) {
+                    continue;
+                }
+
+				$_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
+					'id' => $i, 'row_class' => 'acsuggestions');
+				
+				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as  $id) {
+					$suggestionProducts[]= array("type"=>"sub_products","product"=> $autocomplete->getListValues($id),
+						'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $i);
 				}
-			}
+
+				if ($_data['title'] == $queryText) {
+					array_unshift($suggestions, $_data);
+				} else {
+					$suggestions[] = $_data;
+				}
+            }
+			$data = array_merge($suggestions, $global);
+			$data = array_merge($data, $suggestionProducts);
 		}
 		return $data;
 	}
@@ -565,18 +549,19 @@ class Adapter
 				if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
 					$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
 					$bxRequest->setFilters($this->getSystemFilters());
+					$bxRequest->setReturnFields(array($this->getEntityIdFieldName()));
 					if ($widgetType === 'basket' && is_array($context)) {
 						$basketProducts = array();
 						foreach($context as $product) {
 							$basketProducts[] = array('id'=>$product->getId(), 'price'=>$product->getPrice());
 						}
 						$bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
-					} elseif ($widgetType === 'product' && $context != null) {
+					} elseif ($widgetType === 'product' && !is_array($context)) {
 						$product = $context;
 						$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
 					} elseif ($widgetType === 'category' && $context != null){
 						$filterField = "category_id";
-						$filterValues = array($context);
+						$filterValues = is_array($context) ? $context : array($context);
 						$filterNegative = false;
 						$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 					}

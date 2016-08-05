@@ -497,7 +497,8 @@ class Data{
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)strpos($this->bxConfig['bxSearch']['left_facets']['fields'],'discountedPrice');
+        return (bool)(strpos($this->bxConfig['bxSearch']['left_facets']['fields'],'discountedPrice') !== false) && 
+            $this->isLeftFilterEnabled();
     }
 
     /**

@@ -51,6 +51,7 @@ class BxChooseResponse
 	}
 	
 	public function getVariantSearchResult($variant, $considerRelaxation=true) {
+
 		$searchResult = $variant->searchResult;
 		if($considerRelaxation && $variant->searchResult->totalHitCount == 0) {
 			return $this->getFirstPositiveSuggestionSearchResult($variant);
@@ -63,7 +64,7 @@ class BxChooseResponse
 		if($searchResult) {
 			if($searchResult->hits){
 				foreach ($searchResult->hits as $item) {
-					$ids[] = $item->values['id'][0];
+					$ids[] = $item->values['products_group_id'][0];
 				}
 			}else{
 				foreach ($searchResult->hitsGroups as $hitGroup){
@@ -123,6 +124,7 @@ class BxChooseResponse
 		$variant = $this->getChoiceResponseVariant($choice);
 		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation);
 		$facets = $this->getRequestFacets($choice);
+
 		if(empty($facets)){
 			return null;
 		}

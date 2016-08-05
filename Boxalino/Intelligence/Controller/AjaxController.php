@@ -23,6 +23,10 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest{
     protected $abstractProduct;
 
     /**
+     * @var \Magento\Catalog\Model\Product
+     */
+    protected $productModel;
+    /**
      * AjaxController constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
@@ -33,9 +37,11 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest{
         Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         AutocompleteInterface $autocomplete,
-        \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
+        \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct,
+        \Magento\Catalog\Model\Product $productModel
     ) 
     {
+        $this->productModel = $productModel;
         $this->abstractProduct = $abstractProduct;
         $this->bxHelperData = $bxHelperData;
         parent::__construct($context, $autocomplete);
@@ -57,7 +63,7 @@ class AjaxController extends \Magento\Search\Controller\Ajax\Suggest{
 
             $p13n = $this->_objectManager->create("\Boxalino\Intelligence\Helper\P13n\Adapter");
 
-            $autocomplete = new \Boxalino\Intelligence\Helper\Autocomplete($this->abstractProduct);
+            $autocomplete = new \Boxalino\Intelligence\Helper\Autocomplete($this->abstractProduct, $this->productModel);
             $responseData = $p13n->autocomplete($this->getRequest()->getParam('q', false), $autocomplete);
 
             /** @var \Magento\Framework\Controller\Result\Json $resultJson */

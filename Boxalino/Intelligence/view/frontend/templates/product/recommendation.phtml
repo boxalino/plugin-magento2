@@ -2,9 +2,10 @@
 $productCollection = $this->getItems();
 $widget = $this->getData('widget');
 $image = 'upsell_products_list';
+if($productCollection):
 ?>
 <div class="block <?php echo $widget ?>">
-    <div class="block-title title"><strong><?php echo $this->getRecommendationTitle(); ?></strong></div>
+    <div class="block-title title"><strong><?php echo $block->escapeHtml($this->getRecommendationTitle()); ?></strong></div>
     <div class="block-content content">
         <div class="products wrapper grid products-grid products-<?php echo $widget; ?>">
             <ol class="products list items product-items">
@@ -32,3 +33,4 @@ $image = 'upsell_products_list';
         </div>
     </div>
 </div>
+<?php endif; ?>
