@@ -168,21 +168,37 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         $otherWidgetConfiguration = $this->bxHelperData->getOtherWidgetConfiguration();
         if($recommendations){
             foreach($recommendations as $index => $widget){
+                
+                if (!isset($widget['widget']))
+                    continue;
+                $name = $widget['widget'];
 
-                if(isset($otherWidgetConfiguration[$widget['widget']])){
-                    $config = $otherWidgetConfiguration[$widget['widget']];
-                    $context = isset($widget['context']) ? $widget['context'] :
-                        $this->getWidgetContext($config['scenario']);
-
-                    $this->p13nHelper->getRecommendation(
-                        $widget['widget'],
-                        $config['scenario'],
-                        $config['min'],
-                        $config['max'],
-                        $context,
-                        false
-                    );
+                if (isset($otherWidgetConfiguration[$name])) {
+                    $config = $otherWidgetConfiguration[$name];
+                } else {
+                    $config = array('scenario' => '', 'min' => 3, 'max' => 3);
                 }
+
+                if (isset($widget['scenario']))
+                    $config['scenario'] = $widget['scenario'];
+
+                if (isset($widget['min']) && is_numeric($widget['min']))
+                    $config['min'] = $widget['min'];
+
+                if (isset($widget['max']) && is_numeric($widget['max']))
+                    $config['max'] = $widget['max'];
+
+                $context = isset($widget['context']) ? $widget['context'] :
+                    $this->getWidgetContext($config['scenario']);
+
+                $this->p13nHelper->getRecommendation(
+                    $name,
+                    $config['scenario'],
+                    $config['min'],
+                    $config['max'],
+                    $context,
+                    false
+                );
             }
         }
         return null;
