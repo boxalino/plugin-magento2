@@ -171,8 +171,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
 
                 if(isset($otherWidgetConfiguration[$widget['widget']])){
                     $config = $otherWidgetConfiguration[$widget['widget']];
-                    $context = isset($widget['context']) ? $widget['context'] :
-                        $this->getWidgetContext($config['scenario']);
+                    
+                    if (isset($widget['context'])) {
+                        $context = explode(',', str_replace(' ', '', $widget['context']));
+                    } else {
+                        $context = $this->getWidgetContext($config['scenario']);
+                    }
 
                     $this->p13nHelper->getRecommendation(
                         $widget['widget'],
