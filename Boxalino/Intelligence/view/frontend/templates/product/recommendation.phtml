@@ -11,7 +11,7 @@ $image = 'upsell_products_list';
                 <?php foreach($productCollection as $product): ?>
                     <li class="item product product-item">
                         <div class="product-item-info ">
-                            <a href="<?php $block->getProductUrl($product); ?>" class="product photo product-item-photo">
+                            <a href="<?php echo $block->getProductUrl($product); ?>" class="product photo product-item-photo">
                                 <?php echo $block->getImage($product, $image)->toHtml(); ?>
                             </a>
                             <div class="product details product-item-details">
