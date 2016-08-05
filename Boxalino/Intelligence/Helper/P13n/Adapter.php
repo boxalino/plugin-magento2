@@ -576,7 +576,12 @@ class Adapter
 						$bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
 					} elseif ($widgetType === 'category' && $context != null){
 						$filterField = "category_id";
-						$filterValues = array($context);
+						
+						if (!is_array($context)) {
+							$filterValues = array($context);
+						} else {
+							$filterValues = $context;
+						}
 						$filterNegative = false;
 						$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 					}
