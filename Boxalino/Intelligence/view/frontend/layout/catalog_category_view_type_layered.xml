@@ -13,12 +13,7 @@
     <body>
         <referenceContainer name="content">
             <block class="Boxalino\Intelligence\Block\Facets" name="catalog.bxfilter.top"
-                   template="Boxalino_Intelligence::top_filters.phtml" before="-">
-            </block>
-        </referenceContainer>
-        <referenceContainer name="before.body.end">
-            <block class="Boxalino\Intelligence\Block\Slider" name="catalog.bxSlider"
-                   template="Boxalino_Intelligence::slider.phtml">
+                   template="Boxalino_Intelligence::top_filters.phtml" before="-" ifconfig="bxSearch/top_facet/enabled">
             </block>
         </referenceContainer>
         <referenceBlock name="catalog.navigation.renderer">
@@ -31,7 +26,5 @@
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/view.phtml</argument>
             </action>
         </referenceBlock>
-
-
     </body>
 </page>

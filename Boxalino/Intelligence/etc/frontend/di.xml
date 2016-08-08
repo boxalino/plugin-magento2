@@ -13,4 +13,5 @@
     </virtualType>
 
     <preference for="Magento\Cms\Block\Block" type="Boxalino\Intelligence\Block\CmsBlock" />
+    <preference for="Magento\Cms\Block\Widget\Block" type="Boxalino\Intelligence\Block\CmsWidgetBlock" />
 </config>

@@ -139,7 +139,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     protected function getCmsRecommendationBlocks($content){
-        
+
         $results = array();
         $recommendations = array();
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
@@ -164,21 +164,20 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return null
      */
     protected function prepareRecommendations($recommendations = array()){
-        
-        $otherWidgetConfiguration = $this->bxHelperData->getOtherWidgetConfiguration();
-        if($recommendations){
+
+        if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
 
-                $config = $otherWidgetConfiguration[$widget['widget']];
+                $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
                 $scenario = isset($widget['scenario']) ? $widget['scenario'] :
-                    $config['scenario'];
-                $min = isset($widget['min']) ? $widget['min'] : $config['min'];
-                $max = isset($widget['max']) ? $widget['max'] : $config['max'];
+                    $widgetConfig['scenario'];
+                $min = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
+                $max = isset($widget['max']) ? $widget['max'] : $widgetConfig['max'];
 
                 if (isset($widget['context'])) {
                     $context = explode(',', str_replace(' ', '', $widget['context']));
                 } else {
-                    $context = $this->getWidgetContext($config['scenario']);
+                    $context = $this->getWidgetContext($widgetConfig['scenario']);
                 }
                 
                 $this->p13nHelper->getRecommendation(

@@ -39,6 +39,7 @@ if($this->isSliderEnabled()){
     
                 slider.noUiSlider.on('change', function (values, handle) {
                     var params = location.search;
+                    if(values[0] == values[1])values[1]++;
                     var newSrc = values[0] + "-" + values[1];
                     var name = 'bx_discountedPrice';
                     var paramSet = name + '=' + newSrc;

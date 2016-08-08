@@ -18,6 +18,7 @@
                 <strong data-role="title"><?php /* @escapeNotVerified */ echo __('Shop By') ?></strong>
             </div>
             <div class="block-content filter-content">
+                <?php echo $block->getChildHtml('state') ?>
                 <?php if ($block->getLayer()->getState()->getFilters()): ?>
                     <div class="block-actions filter-actions">
                         <a href="<?php /* @escapeNotVerified */ echo $block->getClearUrl() ?>" class="action clear filter-clear"><span><?php /* @escapeNotVerified */ echo __('Clear All') ?></span></a>
@@ -37,7 +38,9 @@
                                 <div id="bxslider"></div>
                                 <span id="slider-snap-value-lower"></span>
                                 <span id="slider-snap-value-upper"></span>
-                            <?php else: ?>
+                                <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Slider")
+                                    ->setTemplate("Boxalino_Intelligence::slider.phtml")->toHtml();?>
+                              <?php else: ?>
                                 <?php /* @escapeNotVerified */ echo $block->getChildBlock('renderer')->render($filter); ?>
                             <?php endif; ?>
                         </div>

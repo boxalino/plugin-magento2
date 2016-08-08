@@ -29,6 +29,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $categoryFactory;
 
     /**
+     * @var \Magento\Catalog\Helper\Category
+     */
+    private $categoryHelper;
+
+    /**
      * Attribute constructor.
      * @param \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -51,9 +56,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Framework\Filter\StripTags $tagFilter,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Magento\Catalog\Helper\Category $categoryHelper,
         array $data=[]
     )
     {
+        $this->categoryHelper = $categoryHelper;
         $this->categoryFactory = $categoryFactory;
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($filterItemFactory, $storeManager, $layer, $itemDataBuilder, $filterAttributeFactory, $string, $tagFilter, $data);
@@ -170,7 +177,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 if ($count == 1) {
                     $count++;
                     $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter("Home"),
+                        $this->tagFilter->filter("All Categories"),
                         2,
                         $this->bxFacets->getParentCategoriesHitCount($key),
                         $value,
@@ -189,47 +196,39 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     'parent'
                 );
             }
-
-            if($this->bxDataHelper->getCategoriesSortOrder() == 2){
-                $categorySorting = array();
+            $sortOrder = $this->bxDataHelper->getCategoriesSortOrder();
+            if($sortOrder == 2){
+                $facetLabels = $this->bxFacets->getCategoriesKeyLabels();
+                $childId = explode('/',end($facetLabels))[0];
+                $childParentId = $this->categoryFactory->create()->load($childId)->getParentId();
                 end($parentCategories);
-                $cat = $this->categoryFactory->create()->load(key($parentCategories));
-                foreach($cat->getChildrenCategories() as $category){
-                    $categorySorting[] = $category->getName();
-                }
-                $facetValues = $this->sortCategories($this->bxFacets->getCategoriesKeyLabels(), $categorySorting);
+                $parentId = key($parentCategories);
 
+                $id = $parentId == null ? 2 : $parentId == $childParentId ? $parentId : $childParentId;
+
+                $cat = $this->categoryFactory->create()->load($id);
+
+                foreach($cat->getChildrenCategories() as $category){
+                    $facetValues[] = $this->bxFacets->getCategoriesKeyLabels()[$category->getName()];
+                }
             }
             if($facetValues == null){
                 $facetValues = $this->bxFacets->getCategories();
             }
 
             foreach ($facetValues as $facetValue) {
-                $this->itemDataBuilder->addItemData(
-                    $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                    $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                    $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                    false,
-                    $value ? 'children' : 'home children'
-                );
+                $id =  $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue);
+                if($sortOrder == 2 || $this->categoryHelper->canShow($this->categoryFactory->create()->load($id))){
+                    $this->itemDataBuilder->addItemData(
+                        $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                        $id,
+                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                        false,
+                        $value ? 'children' : 'home children'
+                    );
+                }
             }
         }
         return $this->itemDataBuilder->build();
-    }
-
-    /**
-     * @param array $categories
-     * @param array $categorySorting
-     * @return array
-     */
-    private function sortCategories($categories, $categorySorting){
-        
-        $sortedCategories = array();
-		foreach($categorySorting as $node){
-			if(isset($categories[$node])) {
-				$sortedCategories[] = $categories[$node];
-			}
-		}		
-        return $sortedCategories;
     }
 }

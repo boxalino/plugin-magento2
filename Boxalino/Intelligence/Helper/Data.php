@@ -350,19 +350,21 @@ class Data{
     /**
      * @return array
      */
-    public function getOtherWidgetConfiguration(){
+    public function getWidgetConfig($widgetName){
 
         if(!isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
-        $widgetConfig = array();
+
         $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
         $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
         $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
         $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
 
-        foreach($widgetNames as $index => $widget){
-            $widgetConfig[$widget] = array('scenario' => $widgetScenarios[$index],
+        $index =  array_search($widgetName, $widgetNames);
+        $widgetConfig = array();
+        if($index !== false){
+            $widgetConfig = array('widget' => $widgetNames[$index], 'scenario' => $widgetScenarios[$index],
                 'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
         }
         return $widgetConfig;

@@ -16,7 +16,6 @@ div.top_filters>ol.items>li.item>a>span.count>.filter-count-label{
 }
 li.selected.parent{
     font-weight: bold;
-    padding-left: 10px;
 }
 li.home.children{
     padding-left:10px;
