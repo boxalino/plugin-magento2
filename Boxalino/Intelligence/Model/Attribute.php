@@ -209,7 +209,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 $cat = $this->categoryFactory->create()->load($id);
 
                 foreach($cat->getChildrenCategories() as $category){
-                    $facetValues[] = $this->bxFacets->getCategoriesKeyLabels()[$category->getName()];
+                    if(isset($facetLabels[$category->getName()])) {
+                        $facetValues[] = $facetLabels[$category->getName()];
+                    }
                 }
             }
             if($facetValues == null){

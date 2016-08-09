@@ -12,6 +12,7 @@
         </arguments>
     </virtualType>
 
-    <preference for="Magento\Cms\Block\Block" type="Boxalino\Intelligence\Block\CmsBlock" />
-    <preference for="Magento\Cms\Block\Widget\Block" type="Boxalino\Intelligence\Block\CmsWidgetBlock" />
+    <type name="Magento\Widget\Model\Template\Filter">
+        <plugin name="boxalino_cms_block" type="Boxalino\Intelligence\Plugin\FilterPlugin" sortOrder="1"/>
+    </type>
 </config>
