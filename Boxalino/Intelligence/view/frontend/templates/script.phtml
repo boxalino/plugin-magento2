@@ -55,10 +55,13 @@ $account = $this->getAccount();
                 $('.sub_product_suggestions').hide();
             });
 
+            $( "#search" ).click(function(e){
+                $("#search_autocomplete").show();
+            });
 
             $( "#search" ).keydown(function(e) {
+                window.stop();
                 if(e.key == "Enter"){
-                    window.stop();
                 }else{
                     if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
                         $("#search").data().mageQuickSearch.options.template =
@@ -72,7 +75,6 @@ $account = $this->getAccount();
                             '<% }; %>';
                     }
                 }
-
             });
         <?php endif; ?>
     });
