@@ -48,28 +48,28 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      * @return array|\Magento\Catalog\Model\Layer\Filter\AbstractFilter[]
      */
     public function getFilters(\Magento\Catalog\Model\Layer $layer){
-        
+
         if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()){
             return parent::getFilters($layer);
         }
-        
+        $filters = array();
         if($this->bxHelperData->isLeftFilterEnabled() && $this->bxHelperData->isFilterLayoutEnabled()) {
-            $filters = array();
             $facets = $this->getBxFacets();
-            foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
-                $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
-                $filter = $this->objectManager->create(
-                    "Boxalino\Intelligence\Model\Attribute",
-                    ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
-                );
+            if($facets){
+                foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
+                    $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
+                    $filter = $this->objectManager->create(
+                        "Boxalino\Intelligence\Model\Attribute",
+                        ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
+                    );
 
-                $filter->setFacets($facets);
-                $filter->setFieldName($fieldName);
-                $filters[] = $filter;
+                    $filter->setFacets($facets);
+                    $filter->setFieldName($fieldName);
+                    $filters[] = $filter;
+                }
             }
-            return $filters;
         }
-        return array();
+        return $filters;
     }
     
     private function getBxFacets(){

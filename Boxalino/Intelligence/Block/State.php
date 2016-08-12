@@ -79,19 +79,21 @@ class State extends \Magento\Framework\DataObject{
         
 		$filters = array();
         $facets = $this->p13nHelper->getFacets();
-        foreach($this->p13nHelper->getAllFacetFieldNames() as $fieldName) {
-            
-			if($facets->isSelected($fieldName)) {
-				$filter = $this->objectManager->create(
-					"Boxalino\Intelligence\Model\LayerFilterItem"
-				);
+        if($facets){
+            foreach($this->p13nHelper->getAllFacetFieldNames() as $fieldName) {
 
-				$filter->setFacets($facets);
-				$filter->setFieldName($fieldName);
-                $filter->setClearLinkUrl("abc");
-				$filters[] = $filter;
-			}
+                if($facets->isSelected($fieldName)) {
+                    $filter = $this->objectManager->create(
+                        "Boxalino\Intelligence\Model\LayerFilterItem"
+                    );
+
+                    $filter->setFacets($facets);
+                    $filter->setFieldName($fieldName);
+                    $filter->setClearLinkUrl("abc");
+                    $filters[] = $filter;
+                }
+            }
         }
-		return $filters;
+        return $filters;
     }
 }
