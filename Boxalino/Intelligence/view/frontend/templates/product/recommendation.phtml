@@ -5,7 +5,7 @@ $image = 'upsell_products_list';
 if($productCollection):
 ?>
 <div class="block <?php echo $widget ?>">
-    <div class="block-title title"><strong><?php echo $block->escapeHtml($this->getRecommendationTitle()); ?></strong></div>
+    <?php if ($this->getRecommendationTitle()): ?><div class="block-title title"><strong><?php echo $block->escapeHtml($this->getRecommendationTitle()) ?></strong></div><?php endif; ?>
     <div class="block-content content">
         <div class="products wrapper grid products-grid products-<?php echo $widget; ?>">
             <ol class="products list items product-items">
