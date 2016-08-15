@@ -87,11 +87,9 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Catalog\Block\Product\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
-        \Magento\Framework\Registry $registry,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Cms\Model\Page $cmsPage,
         array $data
@@ -102,9 +100,9 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         $this->bxHelperData = $bxHelperData;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->factory = $factory;
-        $this->registry = $registry;
+        $this->registry = $context->getRegistry();
         $this->p13nHelper = $p13nHelper;
-        $this->config = $scopeConfig;
+        $this->config = $context->getScopeConfig();
         $this->_checkoutSession = $checkoutSession;
         $this->_data = $data;
         $this->othersWidgetConfig = $this->config->getValue('bxRecommendations/others', $this->scopeStore);

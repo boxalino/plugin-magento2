@@ -279,6 +279,10 @@
                     <label>Navigation choice ID</label>
                     <comment>Optional: default value is "navigation" and should normally not be changed</comment>
                 </field>
+                <field id="search_sub_phrases_limit" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Search limit for sub-phrases</label>
+                    <comment>Optional: default value is 3 and should normally not be changed.</comment>
+                </field>
             </group>
 
 

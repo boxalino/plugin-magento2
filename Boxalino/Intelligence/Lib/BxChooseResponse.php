@@ -200,7 +200,7 @@ class BxChooseResponse
 	}
 	
 	protected function getSubPhraseSearchResult($queryText, $choice=null) {
-		if(!$this->areThereSubPhrases()) {
+		if(!$this->areThereSubPhrases($choice)) {
 			return null;
 		}
 		$variant = $this->getChoiceResponseVariant($choice);

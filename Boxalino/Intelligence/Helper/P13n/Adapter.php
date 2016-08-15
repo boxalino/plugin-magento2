@@ -511,7 +511,7 @@ class Adapter
 	public function getSubPhraseTotalHitCount($queryText) {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText);
+		return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
 	}
 
 	/**
@@ -521,7 +521,7 @@ class Adapter
 	public function getSubPhraseEntitiesIds($queryText) {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->getEntityIdFieldName());
+		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice);
 	}
 
 	/**

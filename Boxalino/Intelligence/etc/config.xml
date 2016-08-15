@@ -31,6 +31,9 @@
                     <limit>7</limit>
                     <products_limit>1</products_limit>
                 </autocomplete>
+                <advanced>
+                    <search_sub_phrases_limit>3</search_sub_phrases_limit>
+                </advanced>
             </bxSearch>
             <bxRecommendations>
                 <cart>

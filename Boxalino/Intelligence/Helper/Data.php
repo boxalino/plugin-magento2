@@ -504,6 +504,16 @@ class Data{
     }
 
     /**
+     * @return mixed
+     */
+    public function getSubPhrasesLimit(){
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
+    }
+
+    /**
      * @return int
      */
     public function getCategoriesSortOrder(){

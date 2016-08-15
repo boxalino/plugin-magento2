@@ -112,9 +112,9 @@ class Result extends Mage_Result{
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareLayout(){
-        
+
         if($this->hasSubPhrases()){
-            $title = "Search result for: " . implode(" ",  $this->queries);
+            $title = "Search result for: " . implode(", ",  $this->queries);
             $this->pageConfig->getTitle()->set($title);
             // add Home breadcrumb
             $breadcrumbs = $this->getLayout()->getBlock('breadcrumbs');

@@ -171,6 +171,7 @@ class BxListProducts extends ListProduct{
                 if ($this->p13nHelper->areThereSubPhrases()) {
                     $this->queries = $this->p13nHelper->getSubPhrasesQueries();
                     $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
+                    $entity_ids = array_slice($entity_ids,0,$this->bxHelperData->getSubPhrasesLimit());
                 }
             }
             
