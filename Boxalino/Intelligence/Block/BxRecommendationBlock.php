@@ -76,11 +76,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * BxRecommendationBlock constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
-     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\App\Request\Http $request
+     * @param \Magento\Cms\Model\Page $cmsPage
      * @param array $data
      */
     public function __construct(
