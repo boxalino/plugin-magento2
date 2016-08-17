@@ -56,7 +56,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         if($this->bxHelperData->isLeftFilterEnabled() && $this->bxHelperData->isFilterLayoutEnabled()) {
             $facets = $this->getBxFacets();
             if($facets){
-                foreach ($this->p13nHelper->getLeftFacetFieldNames() as $fieldName) {
+                foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {
                     $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
                     $filter = $this->objectManager->create(
                         "Boxalino\Intelligence\Model\Attribute",

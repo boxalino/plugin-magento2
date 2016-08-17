@@ -26,11 +26,6 @@ class BxListProducts extends ListProduct{
     public static $number = 0;
 
     /**
-     * @var int
-     */
-    protected $count = -1;
-
-    /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
     protected $p13nHelper;
@@ -44,11 +39,6 @@ class BxListProducts extends ListProduct{
      * @var \Magento\Framework\ObjectManagerInterface
      */
     protected $_objectManager;
-
-    /**
-     * @var \Magento\Framework\App\Action\AbstractAction
-     */
-    protected $abstractAction;
 
     /**
      * @var \Magento\Framework\UrlFactory
@@ -76,30 +66,30 @@ class BxListProducts extends ListProduct{
     protected $categoryFactory;
 
     /**
-     * @var
+     * @var \Magento\Catalog\Block\Category\View
      */
     protected $categoryViewBlock;
 
     /**
-     * @var
+     * @var \Boxalino\Intelligence\Model\Collection
      */
     protected $bxListCollection;
-    
+
     /**
      * BxListProducts constructor.
      * @param Context $context
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param CategoryRepositoryInterface $categoryRepository
+     * @param \Magento\Framework\Url\Helper\Data $urlHelper
      * @param Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param \Magento\Framework\Url\Helper\Data $urlHelper
-     * @param \Magento\Framework\App\Action\AbstractAction $abstractAction
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Framework\App\Request\Http $request
      * @param \Magento\Framework\UrlFactory $urlFactory
      * @param \Magento\Catalog\Helper\Category $categoryHelper
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
      * @param array $data
      */
     public function __construct(
@@ -107,10 +97,9 @@ class BxListProducts extends ListProduct{
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         CategoryRepositoryInterface $categoryRepository,
+        \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        \Magento\Framework\Url\Helper\Data $urlHelper,
-        \Magento\Framework\App\Action\AbstractAction $abstractAction,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\UrlFactory $urlFactory,
@@ -127,7 +116,6 @@ class BxListProducts extends ListProduct{
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
         $this->urlFactory = $urlFactory;
-        $this->abstractAction = $abstractAction;
         $this->_objectManager = $objectManager;
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
@@ -197,7 +185,8 @@ class BxListProducts extends ListProduct{
             if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
                 $url = $this->urlFactory->create()->getCurrentUrl();
                 $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
-                $this->abstractAction->getResponse()->setRedirect($url);
+                $abstractAction = $this->_objectManager->create('\Magento\Framework\App\Action\AbstractAction');
+                $abstractAction->getResponse()->setRedirect($url);
             }
             
             $lastPage = ceil($totalHitCount /$limit);

@@ -18,16 +18,6 @@ class AjaxPlugin{
     protected $bxHelperData;
 
     /**
-     * @var \Magento\Catalog\Block\Product\AbstractProduct
-     */
-    protected $abstractProduct;
-
-    /**
-     * @var \Magento\Catalog\Model\Product
-     */
-    protected $productModel;
-
-    /**
      * @var ResultFactory
      */
     protected $resultFactory;
@@ -48,29 +38,30 @@ class AjaxPlugin{
     protected $url;
 
     /**
+     * @var \Boxalino\Intelligence\Helper\Autocomplete
+     */
+    protected $autocompleteHelper;
+
+    /**
      * AjaxPlugin constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param AutocompleteInterface $autocomplete
-     * @param \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
-     * @param \Magento\Catalog\Model\Product $productModel
+     * @param \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
      */
     public function __construct(
         Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        AutocompleteInterface $autocomplete,
-        \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct,
-        \Magento\Catalog\Model\Product $productModel
+        \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
     )
     {
+        $this->autocompleteHelper = $autocompleteHelper;
         $this->url =  $context->getUrl();
         $this->request = $context->getRequest();
         $this->p13nHelper = $p13nHelper;
         $this->resultFactory = $context->getResultFactory();
-        $this->productModel = $productModel;
-        $this->abstractProduct = $abstractProduct;
         $this->bxHelperData = $bxHelperData;
     }
 
@@ -87,9 +78,7 @@ class AjaxPlugin{
         }
 
         if($this->bxHelperData->isAutocompleteEnabled()){
-            
-            $autocomplete = new \Boxalino\Intelligence\Helper\Autocomplete($this->abstractProduct, $this->productModel);
-            $responseData = $this->p13nHelper->autocomplete($query, $autocomplete);
+            $responseData = $this->p13nHelper->autocomplete($query, $this->autocompleteHelper);
 
             /** @var \Magento\Framework\Controller\Result\Json $resultJson */
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);

@@ -534,6 +534,61 @@ class Data{
     }
 
     /**
+     * @return string
+     */
+    private function getProductAttributePrefix(){
+        return 'products_';
+    }
+    
+    /**
+     * @return array
+     */
+    public function getFilterProductAttributes(){
+        $attributes = [];
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $storeId = $objectManager->create('\Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
+
+        $attributeCollection = $objectManager->create('\Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection')
+            ->addIsFilterableFilter()->addVisibleFilter()->setOrder('position','ASC')->load();
+        $leftFacets = $this->getLeftFacets();
+
+        $allowedTypes = array('multiselect', 'price', 'select');
+        foreach($attributeCollection as $attribute){
+            $data = $attribute->getData();
+            if(!in_array($data['frontend_input'], $allowedTypes)){
+                continue;
+            }
+            $position = $data['position'];
+            $code = $data['attribute_code'];
+            $type = 'list';
+            
+            if($code == 'price'){
+                $type = 'ranged';
+            }
+            $code = $code == 'price' ? 'discountedPrice' : $this->getProductAttributePrefix() . $code;
+            $attributes[$code] = array(
+                'label' => $attribute->getStoreLabel($storeId),
+                'type' => $type, 
+                'order' => 0,
+                'position' => $position
+            );
+        }
+        
+        $attributes = array_merge($attributes, $leftFacets);
+        uasort($attributes, function($a, $b){
+            if($a['position'] == $b['position']){
+                return strcmp($a['label'],$b['label']);
+            }
+           return $a['position'] - $b['position'];
+        });
+        
+        return $attributes;
+    }
+
+    public function getLeftFacetFieldNames(){
+        return array_keys($this->getFilterProductAttributes());
+    }
+    /**
      * @return array
      * @throws \Exception
      */
@@ -546,6 +601,7 @@ class Data{
         $labels = explode(',', $this->bxConfig['bxSearch']['left_facets']['labels']);
         $types = explode(',', $this->bxConfig['bxSearch']['left_facets']['types']);
         $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
+        $position = explode(',', $this->bxConfig['bxSearch']['left_facets']['position']);
 
         if($fields[0] == "" || !$this->isLeftFilterEnabled()) {
             return array();
@@ -560,10 +616,17 @@ class Data{
         if(sizeof($fields) != sizeof($orders)) {
             throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
         }
+        if(sizeof($fields) != sizeof($position)) {
+            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet position: " . implode(',', $fields) . " versus " . implode(',', $position));
+        }
 
         $facets = array();
         foreach($fields as $k => $field){
-            $facets[$field] = array($labels[$k], $types[$k], $orders[$k]);
+            $facets[$field] = array(
+                'label' => $labels[$k],
+                'type' =>$types[$k],
+                'order' => $orders[$k],
+                'position' => $position[$k]);
         }
 
         return $facets;

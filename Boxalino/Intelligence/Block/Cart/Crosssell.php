@@ -4,7 +4,6 @@ use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
 
 /**
  * Class Crosssell
- * Cross sell for cart recommendation
  * @package Boxalino\Intelligence\Block\Cart
  */
 class Crosssell extends Mage_Crosssell{
@@ -63,9 +62,8 @@ class Crosssell extends Mage_Crosssell{
     }
 
     /**
-     * Get crosssell items
-     *
-     * @return array
+     * @param bool $execute
+     * @return $this|array|null
      */
     public function getItems($execute = true){
         

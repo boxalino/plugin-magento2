@@ -268,7 +268,7 @@ class Adapter
 	 * @param null $categoryId
 	 */
     public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
-		
+
 		$returnFields = array('products_group_id'/*$this->getEntityIdFieldName()*/, 'categories', 'discountedPrice', 'title', 'score');
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
@@ -289,7 +289,6 @@ class Adapter
 			$filterNegative = false;
 			$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 		}
-
 		self::$bxClient->addRequest($bxRequest);
     }
 
@@ -315,6 +314,7 @@ class Adapter
 
 		$query = $this->queryFactory->get();
 		$queryText = $query->getQueryText();
+
 		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
 			return;
 		}
@@ -363,15 +363,6 @@ class Adapter
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function getLeftFacetFieldNames() {
-		
-		return array_keys($this->bxHelperData->getLeftFacets());
-	}
-
-	/**
-	 * @return array
-	 * @throws \Exception
-	 */
 	public function getAllFacetFieldNames() {
 		
 		$allFacets = array_keys($this->bxHelperData->getLeftFacets());
@@ -394,36 +385,38 @@ class Adapter
 	 * @throws \Exception
 	 */
     private function prepareFacets(){
-		
-		if($this->bxHelperData->isSearchEnabled()){
-			$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 
-			$selectedValues = array();
-			foreach ($_REQUEST as $key => $values) {
-				if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
-					$fieldName = substr($key, 3);
-					$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
-				}
+		$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
+
+		$selectedValues = array();
+		foreach ($_REQUEST as $key => $values) {
+			if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
+				$fieldName = substr($key, 3);
+				$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
 			}
-
-			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
-
-			$bxFacets->addCategoryFacet($catId);
-			foreach($this->bxHelperData->getLeftFacets() as $fieldName => $facetValues) {
-				$selectedValue = isset($selectedValues[$fieldName][0]) ? $selectedValues[$fieldName][0] : null;
-				$bxFacets->addFacet($fieldName, $selectedValue, $facetValues[1], $facetValues[0], $facetValues[2]);
-			}
-
-
-			list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
-			if($topField) {
-				$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
-				$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder); // 1 ?? *iku*
-			}
-
-			return $bxFacets;
 		}
-		return null;
+
+		$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+		$bxFacets->addCategoryFacet($catId);
+		$attributes = [];
+		$attributeCollection = $this->bxHelperData->getFilterProductAttributes();
+
+		foreach($attributeCollection as $code => $attribute){
+			$bound = $code == 'discountedPrice' ? true : false;
+			list($label, $type, $order, $position) = array_values($attribute);
+
+			$selectedValue = isset($selectedValues[$code][0]) ? $selectedValues[$code][0] : null;
+			$bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+		}
+
+		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
+
+		if($topField) {
+			$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
+			$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder);
+		}
+
+		return $bxFacets;
     }
 
 	/**
@@ -490,7 +483,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function areThereSubPhrases() {
-		
+
 		$this->simpleSearch();
 		return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
 	}

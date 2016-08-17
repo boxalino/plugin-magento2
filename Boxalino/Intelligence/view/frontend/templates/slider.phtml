@@ -1,5 +1,4 @@
 <?php
-if($this->isSliderEnabled()){
     $sliderValues = $this->getSliderValues();
 ?>
     <script>
@@ -25,19 +24,25 @@ if($this->isSliderEnabled()){
                         'max': sliderMax
                     }
                 });
-                var snapValues = [
+                
+                var snapElements = [
                     document.getElementById('slider-snap-value-lower'),
                     document.getElementById('slider-snap-value-upper')
                 ];
     
+				var snapValues = [
+                    <?php echo isset($sliderValues[0]) ? $sliderValues[0] : "0" ?>,
+                    <?php echo isset($sliderValues[1]) ? $sliderValues[1] : "0" ?>
+                ];
+				
                 slider.noUiSlider.on('update', function (values, handle) {
                     var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
                     "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
-    
-                    snapValues[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
+                    snapElements[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
                 });
     
                 slider.noUiSlider.on('change', function (values, handle) {
+					if(snapValues[handle] == values[handle]) return null;
                     var params = location.search;
                     if(values[0] == values[1])values[1]++;
                     var newSrc = values[0] + "-" + values[1];
@@ -58,6 +63,3 @@ if($this->isSliderEnabled()){
             }
         });
     </script>
-<?php 
-} 
-?>

@@ -229,6 +229,10 @@
                     <label>Ordering of facet values</label>
                     <comment><![CDATA[The ordering to sort the values in a facet. Ordered list matching the values of Field names (values separated by ',').<br />0 = "order by count values from biggest to smallest"<br />1 = "order alphabetically the values from A to Z"<br />2 = "order by Magento categorization" (only for category)]]></comment>
                 </field>
+                <field id="position" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Position of facet values</label>
+                    <comment><![CDATA[The position of the facet appearing in the filter. Ordered list matching the values of Field names (values separated by ',').<br />If the position overlaps with other attributes defined in magento, the position is determined alphabetical.]]></comment>
+                </field>
             </group>
 
             <group id="top_facet" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -23,7 +23,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     protected $p13nHelper;
 
     /**
-     * @var mixed
+     * @var array
      */
     protected $_data;
 
@@ -58,29 +58,29 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     protected $_catalogProductVisibility;
 
     /**
-     * @var
+     * @var \Magento\Cms\Model\Page
      */
     protected $cmsPage;
 
     /**
-     * @var
+     * @var \Boxalino\Intelligence\Helper\Data
      */
     protected $bxHelperData;
 
     /**
-     * @var
+     * @var bool
      */
     protected $isCmsPage;
-    
+
     /**
      * BxRecommendationBlock constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
-     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\App\Request\Http $request
      * @param array $data
      */
     public function __construct(
@@ -91,12 +91,9 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
-        \Magento\Cms\Model\Page $cmsPage,
         array $data
     )
     {
-        $this->isCmsPage = $request->getModuleName() == 'cms' ? true : false;
-        $this->cmsPage = $cmsPage;
         $this->bxHelperData = $bxHelperData;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->factory = $factory;
@@ -110,10 +107,10 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     }
 
     /**
-     * 
+     * Recommendation setup
      */
     public function _construct(){
-        
+
         if($this->bxHelperData->isSetup()){
             $cmsBlock = $this->bxHelperData->getCmsBlock();
             if($cmsBlock){
@@ -121,13 +118,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                 $this->prepareRecommendations($recommendationBlocks);
                 $this->bxHelperData->setSetup(false);
             }else{
-                if ($this->isCmsPage){
-                    $recommendationBlocks = $this->getCmsRecommendationBlocks($this->cmsPage->getContent());
-                    $this->prepareRecommendations($recommendationBlocks);
-                    $this->bxHelperData->setSetup(false);
-                }else{
-                    $this->prepareRecommendations(array($this->_data));
-                }
+                $this->prepareRecommendations(array($this->_data));
             }
         }
     }
@@ -215,7 +206,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
 
     /**
      * @param $scenario
-     * @return array
+     * @return array|mixed
      */
     protected function getWidgetContext($scenario){
         

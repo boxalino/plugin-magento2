@@ -46,18 +46,9 @@ class Slider extends \Magento\Framework\View\Element\Template{
     }
 
     /**
-     * @return bool
-     */
-    public function isSliderEnabled(){
-        
-        return $this->bxHelperData->isSliderEnabled();
-    }
-    
-    /**
      * @return array|null
      */
     public function getSliderValues(){
-
         $facets = $this->p13nHelper->getFacets();
         if (empty($facets) || empty($facets->getFacetValues($facets->getPriceFieldName()))) {
             return null;

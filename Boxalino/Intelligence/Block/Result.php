@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Block;
 use Magento\CatalogSearch\Block\Result as Mage_Result;
-use Boxalino\Intelligence\Helper\Data as BxData;
+use Boxalino\Intelligence\Helper\Data as BxHelperData;
 use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
 use Magento\CatalogSearch\Helper\Data;
 use Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection;
@@ -36,7 +36,7 @@ class Result extends Mage_Result{
     protected $phrase;
 
     /**
-     * @var BxData
+     * @var BxHelperData
      */
     protected $bxHelperData;
 
@@ -44,7 +44,7 @@ class Result extends Mage_Result{
      * @var null
      */
     protected $subPhrases = null;
-    
+
     /**
      * Result constructor.
      * @param Context $context
@@ -52,7 +52,7 @@ class Result extends Mage_Result{
      * @param Data $catalogSearchData
      * @param QueryFactory $queryFactory
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param BxData $bxHelperData
+     * @param BxHelperData $bxHelperData
      * @param array $data
      */
     public function __construct(
@@ -87,7 +87,7 @@ class Result extends Mage_Result{
      * @return \Magento\Framework\Phrase|string
      */
     public function getSearchQueryText(){
-        
+
         if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
             
             $correctedQuery = $this->p13nHelper->getCorrectedQuery();

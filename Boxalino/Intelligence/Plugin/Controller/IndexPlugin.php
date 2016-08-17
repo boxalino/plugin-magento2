@@ -7,8 +7,8 @@ use Magento\Search\Model\AutocompleteInterface;
 use Magento\Framework\Controller\ResultFactory;
 
 /**
- * Class AjaxController
- * @package Boxalino\Intelligence\Controller
+ * Class IndexPlugin
+ * @package Boxalino\Intelligence\Plugin\Controller
  */
 class IndexPlugin{
 
@@ -19,11 +19,9 @@ class IndexPlugin{
 
 
     /**
-     * AjaxController constructor.
+     * IndexPlugin constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
-     * @param AutocompleteInterface $autocomplete
-     * @param \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
      */
     public function __construct(
         Context $context,
@@ -35,7 +33,7 @@ class IndexPlugin{
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\Result\Redirect|null
+     * 
      */
     public function beforeExecute(){
 
