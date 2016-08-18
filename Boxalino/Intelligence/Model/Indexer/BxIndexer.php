@@ -1101,6 +1101,7 @@ class BxIndexer {
                 $optionSelect = in_array($type['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
+                $exportAttribute = false;
                 $global = false;
                 $d = array();
                 $headerLangRow = array();
@@ -1168,6 +1169,9 @@ class BxIndexer {
                                         'value_' . $lang => $v['value']);
                                 }
                             }
+                        }else{
+                            $exportAttribute = true;
+                            $optionSelect = false;
                         }
                         $fetchedOptionValues = null;
                     }
@@ -1257,7 +1261,7 @@ class BxIndexer {
                         }
                     }
                 }
-                if($optionSelect){
+                if($optionSelect || $exportAttribute){
                     $optionHeader = array_merge(array($type['attribute_code'] . '_id'),$labelColumns);
                     $a = array_merge(array($optionHeader), $optionValues);
                     $files->savepartToCsv( $type['attribute_code'].'.csv', $a);
