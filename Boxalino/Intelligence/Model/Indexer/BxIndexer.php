@@ -1168,8 +1168,6 @@ class BxIndexer {
                                         'value_' . $lang => $v['value']);
                                 }
                             }
-                        }else{
-                            $optionSelect = false;
                         }
                         $fetchedOptionValues = null;
                     }
