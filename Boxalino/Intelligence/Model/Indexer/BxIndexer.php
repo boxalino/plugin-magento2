@@ -1270,6 +1270,14 @@ class BxIndexer {
                     $optionSourceKey = $this->bxData->addResourceFile(
                         $files->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
                         $labelColumns);
+                    if(sizeof($data) == 0){
+                        $d = array(array('entity_id',$type['attribute_code'] . '_id'));
+                        $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv',$d);
+                        $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
+                        $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
+                        $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'],
+                            $type['attribute_code'] . '_id', $optionSourceKey);
+                    }
                 }
                 if (sizeof($data)) {
                     if(!$global){
@@ -1295,7 +1303,7 @@ class BxIndexer {
                     }else {
                         $d = array_merge(array(array_keys(end($data))), $data);
                     }
-                    
+
                     $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
                     $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                     $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
