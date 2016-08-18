@@ -195,7 +195,7 @@ class Adapter
 	 * @return array
 	 */
 	public function autocomplete($queryText, \Boxalino\Intelligence\Helper\Autocomplete $autocomplete) {
-		
+
 		$order = array();
 		$data = array();
 		$hash = null;
@@ -220,16 +220,21 @@ class Adapter
 
 			$first = true;
 			$global = [];
-			foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice) as $id) {
+
+			$searchChoiceIds =$bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
+			$searchChoiceProducts = $autocomplete->getListValues($searchChoiceIds);
+
+			foreach($searchChoiceProducts as $product) {
 				$row = array();
 				$row['type'] = 'global_products';
 				$row['row_class'] = 'suggestion-item global_product_suggestions';
-				$row['product'] = $autocomplete->getListValues($id);
+				$row['product'] = $product;
 				$row['first'] = $first;
 				$first = false;
 				$global[] = $row;
+				
 			}
-
+			
 			$suggestions = [];
 			$suggestionProducts = [];
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
@@ -242,9 +247,11 @@ class Adapter
 
 				$_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
 					'id' => $i, 'row_class' => 'acsuggestions');
-				
-				foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as  $id) {
-					$suggestionProducts[]= array("type"=>"sub_products","product"=> $autocomplete->getListValues($id),
+
+				$suggestionProductIds = $bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice);
+				$suggestionProductValues = $autocomplete->getListValues($suggestionProductIds);
+				foreach($suggestionProductValues as $product) {
+					$suggestionProducts[]= array("type"=>"sub_products","product"=> $product,
 						'row_class'=>'suggestion-item sub_product_suggestions sub_id_' . $i);
 				}
 

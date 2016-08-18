@@ -43,16 +43,19 @@ class Autocomplete{
 	 * @param $products
 	 * @return array
 	 */
-	public function getListValues($id) {
-		
-		$product = $this->productModel->load($id);
-		$value = array();
-		$value['escape_name'] = $this->escapeHtml($product->getName());
-		$value['name'] = $product->getName();
-		$value['url'] = $product->getProductUrl();
-		$value['price'] = strip_tags($product->getFormatedPrice());
-		$value['image'] = $this->abstractProduct->getImage($product,'category_page_grid')->getImageUrl();
-		return $value;
+	public function getListValues($ids) {
+		$products = $this->productModel->getCollection()->addAttributeToFilter('entity_id', $ids)->getItems();
+		$values = [];
+		foreach($products as $product){
+			$value = array();
+			$value['escape_name'] = $this->escapeHtml($product->getName());
+			$value['name'] = $product->getName();
+			$value['url'] = $product->getProductUrl();
+			$value['price'] = strip_tags($product->getFormatedPrice());
+			$value['image'] = $this->abstractProduct->getImage($product,'category_page_grid')->getImageUrl();
+			$values[] = $value;
+		}
+		return $values;
 	}
 
 	/**
