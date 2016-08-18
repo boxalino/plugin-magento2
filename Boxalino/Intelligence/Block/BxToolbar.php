@@ -24,7 +24,7 @@ class BxToolbar extends Toolbar{
      * @var
      */
     protected $subPhrases;
-    
+
     /**
      * BxToolbar constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context

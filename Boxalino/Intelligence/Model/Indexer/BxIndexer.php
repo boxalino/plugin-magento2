@@ -426,7 +426,7 @@ class BxIndexer {
      * @throws \Zend_Db_Select_Exception
      */
     protected function exportCustomers($account, $files){
-        
+
         if(!$this->config->isCustomersExportEnabled($account)) {
             return;
         }
@@ -498,7 +498,7 @@ class BxIndexer {
             );
 
             $select = $db->select()
-                ->where('ce.entity_type_id = ?', 1)
+                ->where('ea.entity_type_id = ?', 1)
                 ->where('ce.entity_id IN (?)', $ids);
 
             $select1 = null;
@@ -1140,45 +1140,46 @@ class BxIndexer {
                             continue;
                         }
                     }
+                   
+                    if($optionSelect){
+                        $optionValueSelect = $db->select()
+                            ->from(
+                                array('a_o' => $this->rs->getTableName('eav_attribute_option')),
+                                array(
+                                    'option_id',
+                                    new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
+                                )
+                            )->joinLeft(array('b_o' => $this->rs->getTableName('eav_attribute_option_value')),
+                                'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
+                                array()
+                            )->joinLeft(array('c_o' => $this->rs->getTableName('eav_attribute_option_value')),
+                                'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
+                                array()
+                            )->where('a_o.attribute_id = ?', $typeKey);
+
+                        $fetchedOptionValues = $db->fetchAll($optionValueSelect);
+
+                        if($fetchedOptionValues){
+                            foreach($fetchedOptionValues as $v){
+                                if(isset($optionValues[$v['option_id']])){
+                                    $optionValues[$v['option_id']]['value_' . $lang] = $v['value'];
+                                }else{
+                                    $optionValues[$v['option_id']] = array($type['attribute_code'] . '_id' => $v['option_id'],
+                                        'value_' . $lang => $v['value']);
+                                }
+                            }
+                        }else{
+                            $optionSelect = false;
+                        }
+                        $fetchedOptionValues = null;
+                    }
+                    
                     $attributeSelect = clone $select;
                     $attributeSelect->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
                     $fetchedResult = $db->fetchAll($attributeSelect);
 
                     if (sizeof($fetchedResult)) {
-                        if($optionSelect){
-
-                            $optionValueSelect = $db->select()
-                                ->from(
-                                    array('a_o' => $this->rs->getTableName('eav_attribute_option')),
-                                    array(
-                                        'option_id',
-                                        new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
-                                        )
-                                )->joinLeft(array('b_o' => $this->rs->getTableName('eav_attribute_option_value')),
-                                    'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
-                                    array()
-                                )->joinLeft(array('c_o' => $this->rs->getTableName('eav_attribute_option_value')),
-                                    'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
-                                    array()
-                                )->where('a_o.attribute_id = ?', $typeKey);
-
-                            $fetchedOptionValues = $db->fetchAll($optionValueSelect);
-
-                            if($fetchedOptionValues){
-                                foreach($fetchedOptionValues as $v){
-                                    if(isset($optionValues[$v['option_id']])){
-                                        $optionValues[$v['option_id']]['value_' . $lang] = $v['value'];
-                                    }else{
-                                        $optionValues[$v['option_id']] = array($type['attribute_code'] . '_id' => $v['option_id'],
-                                            'value_' . $lang => $v['value']);
-                                    }
-                                }
-                            }else{
-                                $optionSelect = false;
-                            }
-                            $fetchedOptionValues = null;
-                        }
-
+                       
                         foreach ($fetchedResult as $i => $row) {
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
                                 if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
@@ -1258,16 +1259,17 @@ class BxIndexer {
                         }
                     }
                 }
-
+                if($optionSelect){
+                    $optionHeader = array_merge(array($type['attribute_code'] . '_id'),$labelColumns);
+                    $a = array_merge(array($optionHeader), $optionValues);
+                    $files->savepartToCsv( $type['attribute_code'].'.csv', $a);
+                    $optionValues = null;
+                    $a = null;
+                    $optionSourceKey = $this->bxData->addResourceFile(
+                        $files->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
+                        $labelColumns);
+                }
                 if (sizeof($data)) {
-                    if($optionSelect){
-                        $optionHeader = array_merge(array($type['attribute_code'] . '_id'),$labelColumns);
-                        $a = array_merge(array($optionHeader), $optionValues);
-                        $files->savepartToCsv( $type['attribute_code'].'.csv', $a);
-                        $optionValues = null;
-                        $a = null;
-                    }
-
                     if(!$global){
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
@@ -1291,17 +1293,13 @@ class BxIndexer {
                     }else {
                         $d = array_merge(array(array_keys(end($data))), $data);
                     }
-
-
+                    
                     $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
                     $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                     $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
 
                     switch($type['attribute_code']){
                         case $optionSelect == true:
-                            $optionSourceKey = $this->bxData->addResourceFile(
-                                $files->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
-                                $labelColumns);
                             $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'],
                                 $type['attribute_code'] . '_id', $optionSourceKey);
                             break;

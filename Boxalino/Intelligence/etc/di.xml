@@ -10,4 +10,5 @@
 
     <preference for="Magento\Catalog\Model\Layer\Filter\Item\DataBuilder" type="Boxalino\Intelligence\Model\BxDataBuilder" />
     <preference for="Magento\Indexer\Model\Indexer\State" type="Boxalino\Intelligence\Model\Indexer\State" />
+    <preference for="Magento\Catalog\Model\Layer\State" type="Boxalino\Intelligence\Block\State" />
 </config>
