@@ -13,7 +13,7 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
         </subscriptions>
     </view>
-    <view id="boxalino_indexer" class="Boxalino\Intelligence\Model\BxExporter" group="indexer">
+    <view id="boxalino_index_products" class="Boxalino\Intelligence\Model\BxProductExport" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
             <table name="catalog_product_entity_datetime" entity_column="entity_id" />
@@ -27,7 +27,7 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
         </subscriptions>
     </view>
-    <view id="boxalino_indexer" class="Boxalino\Intelligence\Model\BxExporter" group="indexer">
+    <view id="boxalino_index_customers" class="Boxalino\Intelligence\Model\BxCustomerExport" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
             <table name="catalog_product_entity_datetime" entity_column="entity_id" />
@@ -41,7 +41,7 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
         </subscriptions>
     </view>
-    <view id="boxalino_indexer" class="Boxalino\Intelligence\Model\BxExporter" group="indexer">
+    <view id="boxalino_index_transactions" class="Boxalino\Intelligence\Model\BxTransactionExport" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
             <table name="catalog_product_entity_datetime" entity_column="entity_id" />
