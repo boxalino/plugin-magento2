@@ -163,7 +163,7 @@ class BxIndexer {
      * Starting point for export
      * @throws \Exception
      */
-    public function exportStores() {
+    public function exportStores($exportProducts=true,$exportCustomers=true,$exportTransactions=true) {
         
         if($this->getIndexerType() == 'delta'){
             $this->setDeltaIds($this->checkForDeltaIds());
@@ -202,13 +202,20 @@ class BxIndexer {
             }
             
             $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-            $exportProducts = $this->exportProducts($account, $files);
+            if($exportProducts) {
+                $exportProducts = $this->exportProducts($account, $files);
+            }
+            
             if($this->getIndexerType() == 'full'){
-                $this->exportCustomers($account, $files);
-                $this->exportTransactions($account, $files);
+                if($exportCustomers) {
+                    $this->exportCustomers($account, $files);
+                }
+                if($exportTransactions) {
+                    $this->exportTransactions($account, $files);
+                }
                 $this->prepareData($account, $files, $categories);
             }
-
+            
             if(!$exportProducts){
                 $this->logger->info('bxLog: No Products found for account: ' . $account);
                 $this->logger->info('bxLog: Finished account: ' . $account);

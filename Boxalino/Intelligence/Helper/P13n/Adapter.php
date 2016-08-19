@@ -46,11 +46,6 @@ class Adapter
     protected $queryFactory;
 
 	/**
-	 * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
-	 */
-    protected $collectionFactory;
-
-	/**
 	 * @var \Magento\Store\Model\StoreManagerInterface
 	 */
     protected $storeManager;
@@ -83,8 +78,7 @@ class Adapter
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Registry $registry,
         \Magento\Search\Model\QueryFactory $queryFactory,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
+		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Catalog\Model\Layer\Resolver $layerResolver,
         \Boxalino\Intelligence\Helper\Data $bxHelperData
     )
@@ -95,7 +89,6 @@ class Adapter
 		$this->request = $request;
 		$this->registry = $registry;
 		$this->queryFactory = $queryFactory;
-		$this->collectionFactory = $collectionFactory;
 		$this->storeManager = $storeManager;
 		
 	   $libPath = __DIR__ . '/../../Lib';

@@ -15,19 +15,47 @@ class Autocomplete{
 	/**
 	 * @var \Magento\Catalog\Model\Product
 	 */
-	protected $productModel;
-	
+	protected $_criteriaBuilder;
+
+	/**
+	 * @var \Magento\Store\Model\StoreManagerInterface
+	 */
+	protected $storeManager;
+
+	/**
+	 * @var \Magento\Catalog\Api\ProductRepositoryInterface
+	 */
+	protected $productRepository;
+
+	/**
+	 * @var \Magento\Catalog\Helper\Image
+	 */
+	protected $_imageHelper;
+
+	/**
+	 * @var \Magento\Framework\Pricing\PriceCurrencyInterface
+	 */
+	protected $_priceCurrency;
+
 	/**
 	 * Autocomplete constructor.
 	 * @param \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
 	 */
 	public function __construct(
 		\Magento\Catalog\Block\Product\AbstractProduct $abstractProduct,
-		\Magento\Catalog\Model\Product $productModel
+		\Magento\Framework\Api\SearchCriteriaBuilder $criteriaBuilder,
+		\Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+		\Magento\Store\Model\StoreManagerInterface $storeManager,
+		\Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency,
+		\Magento\Catalog\Helper\Image $imageHelper
 	)
 	{
-		$this->productModel = $productModel;
+		$this->storeManager = $storeManager;
+		$this->_criteriaBuilder = $criteriaBuilder;
 		$this->abstractProduct = $abstractProduct;
+		$this->_productRepository = $productRepository;
+		$this->_imageHelper = $imageHelper;
+		$this->_priceCurrency = $priceCurrency;
 	}
 
 	/**
@@ -45,14 +73,17 @@ class Autocomplete{
 	 */
 	public function getListValues($ids) {
 		$values = [];
-		foreach($ids as $id){
-			$product = $this->productModel->load($id);
+
+		$searchCriteria = $this->_criteriaBuilder->addFilter('entity_id', $ids, 'in')->create();
+		$products       = $this->_productRepository->getList($searchCriteria);
+		foreach($products->getItems() as $product){
+			$image = $this->_imageHelper->init($product, 'product_page_image_small')->getUrl();
 			$value = array();
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();
 			$value['url'] = $product->getProductUrl();
-			$value['price'] = strip_tags($product->getFormatedPrice());
-			$value['image'] = $this->abstractProduct->getImage($product,'category_page_grid')->getImageUrl();
+			$value['price'] = $this->_priceCurrency->format($product->getFinalPrice(), false);
+			$value['image'] = $image;
 			$values[] = $value;
 		}
 		return $values;

@@ -53,6 +53,7 @@ class Result extends Mage_Result{
      * @param QueryFactory $queryFactory
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param BxHelperData $bxHelperData
+     * @param \Magento\Framework\App\Action\Context $actionContext
      * @param array $data
      */
     public function __construct(
@@ -62,6 +63,7 @@ class Result extends Mage_Result{
         QueryFactory $queryFactory,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
+        \Magento\Framework\App\Action\Context $actionContext,
         array $data = []
     )
     {
@@ -69,6 +71,12 @@ class Result extends Mage_Result{
         $this->bxHelperData = $bxHelperData;
         if($this->bxHelperData->isSearchEnabled() && $this->hasSubPhrases()){
             $this->queries = $p13nHelper->getSubPhrasesQueries();
+            if(count($this->queries) < 2){
+                $url = $actionContext->getUrl()->getCurrentUrl();
+                $replace = '?q=' . $this->queries[0];
+                $url = substr_replace ($url, $replace, strpos($url, '?'));
+                $actionContext->getResponse()->setRedirect($url);
+            }
         }
         
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
@@ -83,6 +91,9 @@ class Result extends Mage_Result{
         return __("Search result for: '%1'", $this->queries[$index] );
     }
 
+    /**
+     * @return int
+     */
     public function getSubPhrasesResultCount() {
         return sizeof($this->queries);
     }

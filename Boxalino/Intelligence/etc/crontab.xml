@@ -5,6 +5,21 @@
             <schedule>0 0 * * * </schedule>
         </job>
     </group>
+    <group id="boxalino_index_products">
+        <job name="boxalino_full_index_products" instance="Boxalino\Intelligence\Model\Indexer\BxProductExport" method="executeFull">
+            <schedule>0 0 * * * </schedule>
+        </job>
+    </group>
+    <group id="boxalino_index_customers">
+        <job name="boxalino_full_index_customers" instance="Boxalino\Intelligence\Model\Indexer\BxCustomerExport" method="executeFull">
+            <schedule>0 0 * * * </schedule>
+        </job>
+    </group>
+    <group id="boxalino_index_transactions">
+        <job name="boxalino_full_index_transactions" instance="Boxalino\Intelligence\Model\Indexer\BxTransactionExport" method="executeFull">
+            <schedule>0 0 * * * </schedule>
+        </job>
+    </group>
     <group id="boxalino_index_delta">
         <job name="boxalino_delta_index" instance="Boxalino\Intelligence\Model\Indexer\BxDeltaExporter" method="executeFull">
             <schedule>* * * * * </schedule>

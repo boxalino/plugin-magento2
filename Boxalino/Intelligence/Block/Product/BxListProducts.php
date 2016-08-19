@@ -41,9 +41,9 @@ class BxListProducts extends ListProduct{
     protected $_objectManager;
 
     /**
-     * @var \Magento\Framework\UrlFactory
+     * @var \Magento\Framework\UrlInterface
      */
-    protected $urlFactory;
+    protected $_url;
 
     /**
      * @var Data
@@ -76,6 +76,11 @@ class BxListProducts extends ListProduct{
     protected $bxListCollection;
 
     /**
+     * @var \Magento\Framework\App\Action\Action
+     */
+    protected $_response;
+
+    /**
      * BxListProducts constructor.
      * @param Context $context
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
@@ -84,8 +89,7 @@ class BxListProducts extends ListProduct{
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
      * @param Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param \Magento\Framework\App\Request\Http $request
+     * @param \Magento\Framework\App\Action\Context $actionContext
      * @param \Magento\Framework\UrlFactory $urlFactory
      * @param \Magento\Catalog\Helper\Category $categoryHelper
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
@@ -96,12 +100,11 @@ class BxListProducts extends ListProduct{
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
-        CategoryRepositoryInterface $categoryRepository,
+        CategoryRepositoryInterface $categoryRepository, 
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Magento\Framework\App\Request\Http $request,
+        \Magento\Framework\App\Action\Context $actionContext,
         \Magento\Framework\UrlFactory $urlFactory,
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
@@ -109,14 +112,14 @@ class BxListProducts extends ListProduct{
         array $data = []
     )
     {
+        $this->_response = $actionContext->getResponse();
         $this->categoryViewBlock = $categoryViewBlock;
         $this->categoryFactory = $categoryFactory;
         $this->categoryHelper = $categoryHelper;
-        $this->request = $request;
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
-        $this->urlFactory = $urlFactory;
-        $this->_objectManager = $objectManager;
+        $this->_url = $actionContext->getUrl();
+        $this->_objectManager = $actionContext->getObjectManager();
         parent::__construct($context, $postDataHelper, $layerResolver, $categoryRepository, $urlHelper, $data);
     }
 
@@ -143,14 +146,14 @@ class BxListProducts extends ListProduct{
             if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
                 return parent::_getProductCollection();
             }
-            $abstractAction = $this->_objectManager->create('\Magento\Framework\App\Action\AbstractAction');
-            if($this->request->getParam('bx_category_id') && $categoryLayer) {
-                $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
+            
+            if($this->getRequest()->getParam('bx_category_id') && $categoryLayer) {
+                $selectedCategory = $this->categoryFactory->create()->load($this->getRequest()->getParam('bx_category_id'));
                 
                 if($selectedCategory->getLevel() != 1){
                     $url = $selectedCategory->getUrl();
-                    $bxParams = $this->checkForBxParams($this->request->getParams());
-                    $abstractAction->getResponse()->setRedirect($url . $bxParams);
+                    $bxParams = $this->checkForBxParams($this->getRequest()->getParams());
+                    $this->_response->setRedirect($url . $bxParams);
                 }
             }
             
@@ -183,9 +186,10 @@ class BxListProducts extends ListProduct{
             $totalHitCount = $this->p13nHelper->getTotalHitCount();
 
             if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
-                $url = $this->urlFactory->create()->getCurrentUrl();
+                
+                $url = $this->_url->getCurrentUrl();
                 $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
-                $abstractAction->getResponse()->setRedirect($url);
+                $this->_response->setRedirect($url);
             }
             
             $lastPage = ceil($totalHitCount /$limit);
