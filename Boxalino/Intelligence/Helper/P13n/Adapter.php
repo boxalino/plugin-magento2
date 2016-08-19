@@ -365,19 +365,6 @@ class Adapter
 		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
 		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
-	
-	/**
-	 * @return array
-	 * @throws \Exception
-	 */
-	public function getAllFacetFieldNames() {
-		
-		$allFacets = array_keys($this->bxHelperData->getLeftFacets());
-		if($this->getTopFacetFieldName() != null) {
-			$allFacets[] = $this->getTopFacetFieldName();
-		}
-		return $allFacets;
-	}
 
 	/**
 	 * @return string
@@ -411,11 +398,10 @@ class Adapter
 		foreach($attributeCollection as $code => $attribute){
 			$bound = $code == 'discountedPrice' ? true : false;
 			list($label, $type, $order, $position) = array_values($attribute);
+			$selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
 
-			$selectedValue = isset($selectedValues[$code][0]) ? $selectedValues[$code][0] : null;
 			$bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
 		}
-
 		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
 
 		if($topField) {
@@ -425,15 +411,6 @@ class Adapter
 
 		return $bxFacets;
     }
-
-	/**
-	 * @return mixed
-	 */
-	public function getTopFacetFieldName() {
-		
-		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
-		return $topField;
-	}
 
 	/**
 	 * @return mixed

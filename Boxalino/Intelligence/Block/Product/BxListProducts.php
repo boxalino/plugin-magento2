@@ -130,8 +130,8 @@ class BxListProducts extends ListProduct{
         }
         
         $layer = $this->getLayer();
-        $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor;
-        $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search\Interceptor;
+        $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category;
+        $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search;
         $contentMode = $categoryLayer ? $this->categoryViewBlock->isContentMode() : false;
         
         if(!$this->bxHelperData->isSearchEnabled() || $contentMode){
@@ -143,14 +143,14 @@ class BxListProducts extends ListProduct{
             if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
                 return parent::_getProductCollection();
             }
-
+            $abstractAction = $this->_objectManager->create('\Magento\Framework\App\Action\AbstractAction');
             if($this->request->getParam('bx_category_id') && $categoryLayer) {
                 $selectedCategory = $this->categoryFactory->create()->load($this->request->getParam('bx_category_id'));
                 
                 if($selectedCategory->getLevel() != 1){
                     $url = $selectedCategory->getUrl();
                     $bxParams = $this->checkForBxParams($this->request->getParams());
-                    $this->abstractAction->getResponse()->setRedirect($url . $bxParams);
+                    $abstractAction->getResponse()->setRedirect($url . $bxParams);
                 }
             }
             
@@ -166,7 +166,7 @@ class BxListProducts extends ListProduct{
             if(empty($entity_ids)){
                 $entity_ids = $this->p13nHelper->getEntitiesIds();
             }
-
+            var_dump($entity_ids);
             // Added check if there are any entity ids, otherwise force empty result
             if ((count($entity_ids) == 0)) {
                 $entity_ids = array(0);
@@ -185,7 +185,6 @@ class BxListProducts extends ListProduct{
             if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
                 $url = $this->urlFactory->create()->getCurrentUrl();
                 $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
-                $abstractAction = $this->_objectManager->create('\Magento\Framework\App\Action\AbstractAction');
                 $abstractAction->getResponse()->setRedirect($url);
             }
             

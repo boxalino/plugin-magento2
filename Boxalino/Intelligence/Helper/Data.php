@@ -466,7 +466,7 @@ class Data{
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isFilterLayoutEnabled() && $this->bxConfig['bxSearch']['left_facets']['enabled']);
+        return (bool)$this->bxConfig['bxSearch']['left_facets']['enabled'];
     }
 
     /**
@@ -477,18 +477,23 @@ class Data{
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isFilterLayoutEnabled() && $this->bxConfig['bxSearch']['top_facet']['enabled']);
+        return (bool)$this->bxConfig['bxSearch']['top_facet']['enabled'];
     }
 
     /**
      * @return bool
      */
-    public function isFilterLayoutEnabled(){
+    public function isFilterLayoutEnabled($category=true){
 
+        if($category){
+            $type = 'navigation';
+        }else{
+            $type = 'search';
+        }
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['filter']['enabled']);
+        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch'][$type]['filter']);
     }
 
     /**
@@ -579,7 +584,7 @@ class Data{
             if($a['position'] == $b['position']){
                 return strcmp($a['label'],$b['label']);
             }
-           return $a['position'] - $b['position'];
+            return $a['position'] - $b['position'];
         });
         
         return $attributes;
@@ -631,7 +636,20 @@ class Data{
 
         return $facets;
     }
+    
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getAllFacetFieldNames() {
 
+        $allFacets = array_keys($this->getFilterProductAttributes());
+        if($this->getTopFacetFieldName() != null) {
+            $allFacets[] = $this->getTopFacetFieldName();
+        }
+        return $allFacets;
+    }
+    
     /**
      * @return array|null
      */
@@ -647,6 +665,15 @@ class Data{
             return array($field, $order);
         }
         return null;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTopFacetFieldName()
+    {
+        list($topField, $topOrder) = $this->getTopFacetValues();
+        return $topField;
     }
     
     /**

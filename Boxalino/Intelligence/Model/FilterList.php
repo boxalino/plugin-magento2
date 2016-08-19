@@ -53,7 +53,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
             return parent::getFilters($layer);
         }
         $filters = array();
-        if($this->bxHelperData->isLeftFilterEnabled() && $this->bxHelperData->isFilterLayoutEnabled()) {
+        if($this->bxHelperData->isFilterLayoutEnabled($layer instanceof \Magento\Catalog\Model\Layer\Category) && $this->bxHelperData->isLeftFilterEnabled()) {
             $facets = $this->getBxFacets();
             if($facets){
                 foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {

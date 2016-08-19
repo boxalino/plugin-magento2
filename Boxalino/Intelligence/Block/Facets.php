@@ -65,7 +65,7 @@ class Facets extends \Magento\Framework\View\Element\Template{
 		if($this->isTopFilterEnabled()) {
 			$facets = $this->p13nHelper->getFacets();
 			if($facets){
-				$fieldName = $this->p13nHelper->getTopFacetFieldName();
+				$fieldName = $this->bxHelperData->getTopFacetFieldName();
 				$attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
 				$filter = $this->objectManager->create(
 					"Boxalino\Intelligence\Model\Attribute",

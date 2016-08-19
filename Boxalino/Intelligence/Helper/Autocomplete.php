@@ -44,9 +44,9 @@ class Autocomplete{
 	 * @return array
 	 */
 	public function getListValues($ids) {
-		$products = $this->productModel->getCollection()->addAttributeToFilter('entity_id', $ids)->getItems();
 		$values = [];
-		foreach($products as $product){
+		foreach($ids as $id){
+			$product = $this->productModel->load($id);
 			$value = array();
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();

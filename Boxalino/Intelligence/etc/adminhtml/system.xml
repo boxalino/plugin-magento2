@@ -172,19 +172,24 @@
 
 		<section id="bxSearch" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
-            <label>Search</label>
+            <label>Search - Navigation</label>
             <!-- Assign section to tab -->
             <tab>boxalino</tab>
             <resource>Boxalino_Intelligence::configuration</resource>
 			
             <!-- create group for fields in section -->
             <group id="search" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>General</label>
+                <label>Search</label>
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable search</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search active?</comment>
+                </field>
+                <field id="filter" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable boxalino filter layout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino filter layout active?</comment>
                 </field>
             </group>
 
@@ -195,16 +200,13 @@
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino navigation active?</comment>
                 </field>
-            </group>
-
-            <group id="filter" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Filter</label>
-                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="filter" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable boxalino filter layout</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino filter layout active?</comment>
                 </field>
             </group>
+
 
             <group id="left_facets" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Left facets</label>
@@ -288,9 +290,8 @@
                     <comment>Optional: default value is 3 and should normally not be changed.</comment>
                 </field>
             </group>
-
-
         </section>
+
         <section id="bxRecommendations" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Recommendation</label>

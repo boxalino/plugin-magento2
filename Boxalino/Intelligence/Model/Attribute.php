@@ -34,6 +34,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $categoryHelper;
 
     /**
+     * @var \Magento\Catalog\Model\Layer
+     */
+    private $_layer;
+    
+    /**
      * Attribute constructor.
      * @param \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -60,6 +65,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         array $data=[]
     )
     {
+        $this->_layer = $layer;
         $this->categoryHelper = $categoryHelper;
         $this->categoryFactory = $categoryFactory;
         $this->bxDataHelper = $bxDataHelper;
@@ -103,7 +109,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function _initItems(){
         
-        if($this->bxDataHelper->isFilterLayoutEnabled()){
+        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)){
             $data = $this->_getItemsData();
             $items = [];
             foreach ($data as $itemData) {
@@ -127,7 +133,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
         
-        if($this->bxDataHelper->isFilterLayoutEnabled()) {
+        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)) {
             return $this->_filterItemFactory->create()
                 ->setFilter($this)
                 ->setLabel($label)

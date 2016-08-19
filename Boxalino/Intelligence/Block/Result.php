@@ -79,8 +79,12 @@ class Result extends Mage_Result{
      * @return \Magento\Framework\Phrase
      */
     public function getSubPhrasesResultText($index){
-        
+
         return __("Search result for: '%1'", $this->queries[$index] );
+    }
+
+    public function getSubPhrasesResultCount() {
+        return sizeof($this->queries);
     }
 
     /**
