@@ -1008,8 +1008,8 @@ class BxIndexer {
                 )
                 ->limit($limit, ($page - 1) * $limit)
                 ->joinLeft(
-                    array('p_t' => $this->rs->getTableName('catalog_product_super_link')),
-                    'e.entity_id = p_t.product_id', array('group_id' => 'parent_id')
+                    array('p_t' => $this->rs->getTableName('catalog_product_relation')),
+                    'e.entity_id = p_t.child_id', array('group_id' => 'parent_id')
                 );
             if($this->getIndexerType() == 'delta') $select->where('e.entity_id IN(?)', $this->getDeltaIds());
 
@@ -1121,6 +1121,29 @@ class BxIndexer {
                         $columns
                     );
                     if($this->getIndexerType() == 'delta') $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
+					
+					if ($type['attribute_code'] == 'visibility') {
+										 
+						$select = $db->select()
+							->from(
+								array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+								array('entity_id')
+							)
+							->joinLeft(
+								array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
+								'c_p_e.entity_id = c_p_r.child_id',
+								array('parent_id'))
+							->join(
+								array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
+								'(t_d.entity_id = c_p_r.parent_id) OR (t_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
+								array(
+									'attribute_id',
+									'value',
+									'store_id'
+								)
+							);
+						if($this->getIndexerType() == 'delta') $select->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+					}
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
