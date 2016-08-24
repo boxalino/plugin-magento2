@@ -277,6 +277,7 @@ class Adapter
 
 		//create search request
 		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+		$bxRequest->setGroupBy('products_group_id');
 		$bxRequest->setReturnFields($returnFields);
 		$bxRequest->setOffset($pageOffset);
 		$bxRequest->setSortFields($bxSortFields);
@@ -508,6 +509,7 @@ class Adapter
 		if(!$execute) {
 			if ($widgetType == '') {
 				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount);
+				$bxRequest->setGroupBy('products_group_id');
 				$bxRequest->setMin($minAmount);
 				$bxRequest->setFilters($this->getSystemFilters());
 				if (isset($context[0])) {
@@ -518,6 +520,7 @@ class Adapter
 			} else {
 				if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
 					$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+					$bxRequest->setGroupBy('products_group_id');
 					$bxRequest->setFilters($this->getSystemFilters());
 					$bxRequest->setReturnFields(array($this->getEntityIdFieldName()));
 					if ($widgetType === 'basket' && is_array($context)) {
