@@ -1256,7 +1256,7 @@ class BxIndexer {
                                             'value_' . $lang => $url);
                                     }
                                 }
-                                if ($type['is_global'] != 1) {
+                                if ($type['is_global'] != 1 || $type['attribute_code'] == 'visibility' || $type['attribute_code'] == 'status' || $type['attribute_code'] == 'special_from_date' || $type['attribute_code'] == 'special_to_date') {
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
