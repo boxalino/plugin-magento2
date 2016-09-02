@@ -1353,7 +1353,11 @@ class BxIndexer {
 						case 'status':
 						case 'special_from_date':
 						case 'special_to_date':
-							$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
+							$lc = array();
+							foreach ($languages as $lcl) {
+								$lc[$lcl] = 'value_' . $lcl;
+							}
+							$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $lc);
 							break;
                         case 'price':
                             if(!$global){
