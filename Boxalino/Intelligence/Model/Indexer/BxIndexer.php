@@ -1287,7 +1287,9 @@ class BxIndexer {
                         }
                         if($type['is_global'] == 1){
                             $global = true;
-                            break;
+							if($type['attribute_code'] != 'visibility' && $type['attribute_code'] != 'status' && $type['attribute_code'] != 'special_from_date' && $type['attribute_code'] != 'special_to_date') {
+								break;
+							}
                         }
                     }
                 }
