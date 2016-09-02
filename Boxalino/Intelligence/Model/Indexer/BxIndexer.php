@@ -1349,6 +1349,12 @@ class BxIndexer {
                         case 'description':
                             $this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
                             break;
+						case 'visibility':
+						case 'status':
+						case 'special_from_date':
+						case 'special_to_date':
+							$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
+							break;
                         case 'price':
                             if(!$global){
                                 $col = null;
