@@ -69,7 +69,7 @@ $account = $this->getAccount();
                             $("#search").data().mageQuickSearch.options.template +
                             '<% }else{ %>' +
                             '<% if(data.first){ %>'+
-                            '<h4 class="product-title">Products</h4>'+
+                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
                             '<% }; %>'+
                             '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
                             '<% }; %>';

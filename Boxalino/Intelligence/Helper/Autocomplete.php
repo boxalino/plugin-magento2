@@ -73,16 +73,26 @@ class Autocomplete{
 	 */
 	public function getListValues($ids) {
 		$values = [];
-
 		$searchCriteria = $this->_criteriaBuilder->addFilter('entity_id', $ids, 'in')->create();
 		$products       = $this->_productRepository->getList($searchCriteria);
 		foreach($products->getItems() as $product){
+
 			$image = $this->_imageHelper->init($product, 'product_page_image_small')->getUrl();
+			$price = $product->getFinalPrice();
+			if($price == 0) {
+				$children = $product->getTypeInstance()->getAssociatedProducts($product);
+				foreach ($children as $child) {
+					if($child->getPrice() < $price || $price == 0) {
+						$price = $child->getPrice();
+					}
+				}
+			}
+
 			$value = array();
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();
 			$value['url'] = $product->getProductUrl();
-			$value['price'] = $this->_priceCurrency->format($product->getFinalPrice(), false);
+			$value['price'] = $this->_priceCurrency->format($price, false);
 			$value['image'] = $image;
 			$values[] = $value;
 		}
