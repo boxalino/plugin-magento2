@@ -80,7 +80,7 @@ class Autocomplete{
 			$image = $this->_imageHelper->init($product, 'product_page_image_small')->getUrl();
 			$price = $product->getFinalPrice();
 
-			if(($price == 0) && ($product->getTypeId == 'grouped')) {
+			if(($price == 0) && ($product->getTypeId() == 'grouped')) {
 				$children = $product->getTypeInstance()->getAssociatedProducts($product);
 				foreach ($children as $child) {
 					if($child->getPrice() < $price || $price == 0) {
