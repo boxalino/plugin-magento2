@@ -169,15 +169,8 @@ class BxIndexer {
     }
 
     /**
-     *
+     * @return string
      */
-    protected function setupDeltaIndexer(){
-        $indexer = $this->indexerModel->load('boxalino_indexer_delta');
-        if(!$indexer->isScheduled()){
-            $indexer->setScheduled(true);
-        }
-    }
-
     protected function getLastIndex(){
 
         return $this->indexerModel->load('boxalino_indexer')->getLatestUpdated();
@@ -189,7 +182,6 @@ class BxIndexer {
      */
     public function exportStores($exportProducts=true,$exportCustomers=true,$exportTransactions=true) {
 
-        $this->setupDeltaIndexer();
         if($this->getIndexerType() == 'delta'){
             if($this->getDeltaIds() == null){
                 return;
