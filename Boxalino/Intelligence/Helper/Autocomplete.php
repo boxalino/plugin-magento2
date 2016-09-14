@@ -40,6 +40,11 @@ class Autocomplete{
 	/**
 	 * Autocomplete constructor.
 	 * @param \Magento\Catalog\Block\Product\AbstractProduct $abstractProduct
+	 * @param \Magento\Framework\Api\SearchCriteriaBuilder $criteriaBuilder
+	 * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+	 * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+	 * @param \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency
+	 * @param \Magento\Catalog\Helper\Image $imageHelper
 	 */
 	public function __construct(
 		\Magento\Catalog\Block\Product\AbstractProduct $abstractProduct,

@@ -83,6 +83,10 @@
                     <comment><![CDATA[ Optional: Write here comma-separated names of fields in Boxalino response<br />
                         Colon separate option: global (without language version), local (with language version)]]></comment>
                 </field>
+                <field id="thrift_timeout" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Timeout limit to our server</label>
+                    <comment>Optional: default value is 2 seconds and should normally not be changed.</comment>
+                </field>
             </group>
         </section>
 

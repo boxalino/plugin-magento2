@@ -30,17 +30,25 @@ class Observer implements ObserverInterface{
     protected $order;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+    
+    /**
      * Observer constructor.
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Sales\Model\Order $order
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Sales\Model\Order $order
+        \Magento\Sales\Model\Order $order,
+        \Psr\Log\LoggerInterface $logger
     )
     {
+        $this->_logger = $logger;
         $this->order = $order;
         $this->storeManager = $storeManager;
         $this->bxHelperData = $bxHelperData;
@@ -108,7 +116,7 @@ class Observer implements ObserverInterface{
 
             $this->addScript($script);
         } catch (\Exception $e) {
-            throw $e;
+            $this->_logger->critical($e);
         }
     }
 
@@ -123,7 +131,7 @@ class Observer implements ObserverInterface{
             $this->addScript($script);
 
         } catch (\Exception $e) {
-            throw $e;
+            $this->_logger->critical($e);
         }
     }
 
@@ -137,7 +145,7 @@ class Observer implements ObserverInterface{
             $script = $this->bxHelperData->reportCategoryView($event->getCategory()->getId());
             $this->addScript($script);
         } catch (\Exception $e) {
-            throw $e;
+            $this->_logger->critical($e);
         }
     }
 }

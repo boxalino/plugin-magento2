@@ -33,6 +33,7 @@
                 </autocomplete>
                 <advanced>
                     <search_sub_phrases_limit>3</search_sub_phrases_limit>
+                    <thrift_timeout>2</thrift_timeout>
                 </advanced>
             </bxSearch>
             <bxRecommendations>

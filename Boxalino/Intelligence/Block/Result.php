@@ -21,19 +21,9 @@ class Result extends Mage_Result{
     protected $p13nHelper;
 
     /**
-     * @var
-     */
-    protected $bxListProducts;
-
-    /**
      * @var mixed
      */
-    protected $queries;
-
-    /**
-     * @var
-     */
-    protected $phrase;
+    protected $queries = array();
 
     /**
      * @var BxHelperData
@@ -45,6 +35,11 @@ class Result extends Mage_Result{
      */
     protected $subPhrases = null;
 
+    /**
+     * @var bool
+     */
+    protected $fallback = false;
+    
     /**
      * Result constructor.
      * @param Context $context
@@ -78,7 +73,7 @@ class Result extends Mage_Result{
                 $actionContext->getResponse()->setRedirect($url);
             }
         }
-        
+
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
@@ -95,6 +90,7 @@ class Result extends Mage_Result{
      * @return int
      */
     public function getSubPhrasesResultCount() {
+
         return sizeof($this->queries);
     }
 
@@ -103,14 +99,18 @@ class Result extends Mage_Result{
      */
     public function getSearchQueryText(){
 
+        if($this->fallback){
+            return parent::getSearchQueryText();
+        }
         if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
-            
+
             $correctedQuery = $this->p13nHelper->getCorrectedQuery();
             return __("Corrected search results for: '%1'", $correctedQuery);
         } else if($this->hasSubPhrases()){
             return "";
+        } else{
+            return parent::getSearchQueryText();
         }
-        return parent::getSearchQueryText();
     }
 
     /**
@@ -129,7 +129,7 @@ class Result extends Mage_Result{
     protected function _prepareLayout(){
 
         if($this->hasSubPhrases()){
-            $title = "Search result for: " . implode(", ",  $this->queries);
+            $title = __("Search result for: '%1'", implode(" ",  $this->queries));
             $this->pageConfig->getTitle()->set($title);
             // add Home breadcrumb
             $breadcrumbs = $this->getLayout()->getBlock('breadcrumbs');
@@ -155,12 +155,20 @@ class Result extends Mage_Result{
      * @return int|mixed
      */
     public function hasSubPhrases(){
-        
-        if($this->bxHelperData->isSearchEnabled()){
-            if($this->subPhrases == null){
-                $this->subPhrases = $this->p13nHelper->areThereSubPhrases();
+
+        if($this->fallback){
+            return 0;
+        }
+
+        try{
+            if($this->bxHelperData->isSearchEnabled()){
+                if($this->subPhrases == null){
+                    $this->subPhrases = $this->p13nHelper->areThereSubPhrases();
+                }
+                return $this->subPhrases;
             }
-            return $this->subPhrases;
+        }catch(\Exception $e){
+            $this->fallback = true;
         }
         return 0;
     }
@@ -171,5 +179,31 @@ class Result extends Mage_Result{
     public function getProductListHtml(){
         
         return $this->getChildHtml('search_result_list', false);
+    }
+
+    /**
+     * Retrieve search result count
+     *
+     * @return string
+     */
+    public function getResultCount()
+    {
+        if($this->fallback){
+            return parent::getResultCount();
+        }
+        if (!$this->getData('result_count')) { 
+            $query = $this->_getQuery();
+            $size = $this->hasSubPhrases() ?
+                $this->p13nHelper->getSubPhraseTotalHitCount(
+                $this->queries[\Boxalino\Intelligence\Block\Product\BxListProducts::$number]) :
+                $this->p13nHelper->getTotalHitCount();
+            $this->setResultCount($size);
+            $query->saveNumResults($size);
+        }
+        return $this->getData('result_count');
+    }
+    
+    public function getFallback(){
+        return $this->fallback;
     }
 }

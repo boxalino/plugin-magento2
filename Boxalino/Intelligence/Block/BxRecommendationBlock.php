@@ -73,6 +73,11 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     protected $isCmsPage;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * BxRecommendationBlock constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
@@ -81,6 +86,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
      * @param \Magento\Framework\App\Request\Http $request
+     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -91,9 +97,12 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
+        \Psr\Log\LoggerInterface $logger,
+
         array $data
     )
     {
+        $this->_logger = $logger;
         $this->bxHelperData = $bxHelperData;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->factory = $factory;
@@ -157,26 +166,31 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
 
-                $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
-                $scenario = isset($widget['scenario']) ? $widget['scenario'] :
-                    $widgetConfig['scenario'];
-                $min = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
-                $max = isset($widget['max']) ? $widget['max'] : $widgetConfig['max'];
+                try{
+                    $recommendation = array();
+                    $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
+                    $recommendation['scenario'] = isset($widget['scenario']) ? $widget['scenario'] :
+                        $widgetConfig['scenario'];
+                    $recommendation['min'] = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
+                    $recommendation['max'] = isset($widget['max']) ? $widget['max'] : $widgetConfig['max'];
 
-                if (isset($widget['context'])) {
-                    $context = explode(',', str_replace(' ', '', $widget['context']));
-                } else {
-                    $context = $this->getWidgetContext($widgetConfig['scenario']);
+                    if (isset($widget['context'])) {
+                        $recommendation['context'] = explode(',', str_replace(' ', '', $widget['context']));
+                    } else {
+                        $recommendation['context']  = $this->getWidgetContext($widgetConfig['scenario']);
+                    }
+
+                    $this->p13nHelper->getRecommendation(
+                        $widget['widget'],
+                        $recommendation['context'],
+                        $recommendation['scenario'],
+                        $recommendation['min'],
+                        $recommendation['max'],
+                        false
+                    );
+                }catch(\Exception $e){
+                    $this->_logger->critical($e);
                 }
-                
-                $this->p13nHelper->getRecommendation(
-                    $widget['widget'],
-                    $scenario,
-                    $min,
-                    $max,
-                    $context,
-                    false
-                );
             }
         }
         return null;
@@ -186,15 +200,21 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _prepareData(){
-        
-        $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget']);
+
+        $context = isset($this->_data['context']) ? $this->_data['context'] : array();
+        $entity_ids = array();
+        try{
+            $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
+        }catch (\Exception $e){
+            $this->_logger->critical($e);
+        }
+    
         if ((count($entity_ids) == 0)) {
             $entity_ids = array(0);
         }
 
         $this->_itemCollection = $this->factory->create()
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-        $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
         $this->_itemCollection->load();
 
         foreach ($this->_itemCollection as $product) {

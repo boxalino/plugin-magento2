@@ -375,6 +375,17 @@ class BxData
 						$logic->addAttribute('source', $sourceId);
 						$referenceSourceKey = isset($fieldValues['referenceSourceKey']) ? $fieldValues['referenceSourceKey'] : null;
 						$logicType = $referenceSourceKey == null ? 'direct' : 'reference';
+						if($logicType == 'direct') {
+							if(isset($fieldValues['fieldParameters'])) {
+								foreach ($fieldValues['fieldParameters'] as $parameterName => $parameterValue) {
+									switch ($parameterName) {
+										case 'pc_fields':
+										case 'pc_tables':
+											$logicType = 'advanced';
+									}
+								}
+							}
+						}
 						$logic->addAttribute('type', $logicType);			
 						if(is_array($fieldValues['map'])) {
 							foreach($this->getLanguages() as $lang) {
@@ -508,7 +519,7 @@ class BxData
             'account' => $this->bxClient->getAccount(false),
             'owner' => $this->owner
         );
-		
+
         $url = $this->host . self::URL_VERIFY_CREDENTIALS;
 		return $this->callAPI($fields, $url);
 	}

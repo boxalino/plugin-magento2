@@ -128,80 +128,94 @@ class BxListProducts extends ListProduct{
      */
     public function _getProductCollection()
     {
-        if(count($this->bxListCollection)){
-            return $this->bxListCollection;
-        }
         
-        $layer = $this->getLayer();
-        $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category;
-        $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search;
-        $contentMode = $categoryLayer ? $this->categoryViewBlock->isContentMode() : false;
-        
-        if(!$this->bxHelperData->isSearchEnabled() || $contentMode){
-            return parent::_getProductCollection();
-        }
-        
-        if($categoryLayer || $searchLayer){
+        try{
+            if(count($this->bxListCollection) && !$this->p13nHelper->areThereSubPhrases()){
+                return $this->bxListCollection;
+            }
 
-            if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
+            $layer = $this->getLayer();
+            $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category;
+            $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search;
+            $contentMode = $categoryLayer ? $this->categoryViewBlock->isContentMode() : false;
+
+            if(!$this->bxHelperData->isSearchEnabled() || $contentMode){
                 return parent::_getProductCollection();
             }
-            
-            if($this->getRequest()->getParam('bx_category_id') && $categoryLayer) {
-                $selectedCategory = $this->categoryFactory->create()->load($this->getRequest()->getParam('bx_category_id'));
-                
-                if($selectedCategory->getLevel() != 1){
-                    $url = $selectedCategory->getUrl();
-                    $bxParams = $this->checkForBxParams($this->getRequest()->getParams());
-                    $this->_response->setRedirect($url . $bxParams);
-                }
-            }
-            
-            $entity_ids = array();
-            if($searchLayer) {
-                if ($this->p13nHelper->areThereSubPhrases()) {
-                    $this->queries = $this->p13nHelper->getSubPhrasesQueries();
-                    $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
-                    $entity_ids = array_slice($entity_ids,0,$this->bxHelperData->getSubPhrasesLimit());
-                }
-            }
-            
-            if(empty($entity_ids)){
-                $entity_ids = $this->p13nHelper->getEntitiesIds();
-            }
-            
-            // Added check if there are any entity ids, otherwise force empty result
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
-            }
 
-            $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
-            $list->setStoreId($this->_storeManager->getStore()->getId())
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-            $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-            $list->load();
-            
-            $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
-            $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
-            $totalHitCount = $this->p13nHelper->getTotalHitCount();
+            if($categoryLayer || $searchLayer){
 
-            if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
+                if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
+                    return parent::_getProductCollection();
+                }
+
+                if($this->getRequest()->getParam('bx_category_id') && $categoryLayer) {
+                    $selectedCategory = $this->categoryFactory->create()->load($this->getRequest()->getParam('bx_category_id'));
+
+                    if($selectedCategory->getLevel() != 1){
+                        $url = $selectedCategory->getUrl();
+                        $bxParams = $this->checkForBxParams($this->getRequest()->getParams());
+                        $this->_response->setRedirect($url . $bxParams);
+                    }
+                }
+
+                $entity_ids = array();
+                if($searchLayer) {
+                    if ($this->p13nHelper->areThereSubPhrases()) {
+                        $this->queries = $this->p13nHelper->getSubPhrasesQueries();
+                        $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
+                        $entity_ids = array_slice($entity_ids,0,$this->bxHelperData->getSubPhrasesLimit());
+                    }
+                }
+
+                if(empty($entity_ids)){
+                    $entity_ids = $this->p13nHelper->getEntitiesIds();
+                }
+
+                // Added check if there are any entity ids, otherwise force empty result
+                if ((count($entity_ids) == 0)) {
+                    $entity_ids = array(0);
+                }
                 
-                $url = $this->_url->getCurrentUrl();
-                $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
-                $this->_response->setRedirect($url);
+                return $this->_setupCollection($entity_ids);
+            }else{
+                return parent::_getProductCollection();
             }
-            
-            $lastPage = ceil($totalHitCount /$limit);
-            $list->setLastBxPage($lastPage);
-            $list->setBxTotal($totalHitCount);
-            $this->bxListCollection = $list;
-            return $list;
-        }else{
+        }catch(\Exception $e){
             return parent::_getProductCollection();
         }
     }
 
+    /**
+     * @param $entity_ids
+     * @return \Boxalino\Intelligence\Model\Collection
+     */
+    protected function _setupCollection($entity_ids){
+        
+        $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
+        $list->setStoreId($this->_storeManager->getStore()->getId())
+            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+        $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
+        $list->load();
+
+        $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
+        $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
+        $totalHitCount = $this->p13nHelper->getTotalHitCount();
+
+        if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
+
+            $url = $this->_url->getCurrentUrl();
+            $url = preg_replace('/(\&|\?)p=+(\d|\z)/','$1p=1',$url);
+            $this->_response->setRedirect($url);
+        }
+
+        $lastPage = ceil($totalHitCount /$limit);
+        $list->setLastBxPage($lastPage);
+        $list->setBxTotal($totalHitCount);
+        $this->bxListCollection = $list;
+        return $list;
+    }
+    
     /**
      * @param $params
      * @return string
@@ -235,6 +249,7 @@ class BxListProducts extends ListProduct{
         $toolbar = $this->getToolbarBlock();
 
         // called prepare sortable parameters
+
         $collection = $this->_getProductCollection();
 
         // use sortable parameters

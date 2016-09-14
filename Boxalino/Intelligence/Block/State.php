@@ -60,29 +60,33 @@ class State extends \Magento\Catalog\Model\Layer\State{
      *
      * @return Item[]
      */
-    public function getFilters(){
-        
-        if($this->bxHelperData->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)) {
+    public function getFilters()
+    {
+        try {
+            if ($this->bxHelperData->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)) {
 
-            $filters = array();
-            $facets = $this->p13nHelper->getFacets();
-            if ($facets) {
-                foreach ($this->bxHelperData->getAllFacetFieldNames() as $fieldName) {
+                $filters = array();
+                $facets = $this->p13nHelper->getFacets();
+                if ($facets) {
+                    foreach ($this->bxHelperData->getAllFacetFieldNames() as $fieldName) {
 
-                    if ($facets->isSelected($fieldName)) {
-                        $filter = $this->objectManager->create(
-                            "Boxalino\Intelligence\Model\LayerFilterItem"
-                        );
+                        if ($facets->isSelected($fieldName)) {
+                            $filter = $this->objectManager->create(
+                                "Boxalino\Intelligence\Model\LayerFilterItem"
+                            );
 
-                        $filter->setFacets($facets);
-                        $filter->setFieldName($fieldName);
-                        $filter->setClearLinkUrl("abc");
-                        $filters[] = $filter;
+                            $filter->setFacets($facets);
+                            $filter->setFieldName($fieldName);
+                            $filter->setClearLinkUrl("abc");
+                            $filters[] = $filter;
+                        }
                     }
                 }
+                return $filters;
             }
-            return $filters;
+            return parent::getFilters();
+        }catch(\Exception $e){
+            return parent::getFilters();
         }
-        return parent::getFilters();
     }
 }

@@ -1,14 +1,39 @@
-<?php
-if($this->hasSubPhrases()):?>
-    <?php for($i=0; $i<$block->getSubPhrasesResultCount(); $i++) { ?>
-        <h1>
-            <a href="<?php echo $block->getSearchQueryLink($i); ?>"><?php echo $block->getSubPhrasesResultText($i); ?></a>
-        </h1>
-        <?php
-        echo $block->getProductListHtml();
-        Boxalino\Intelligence\Block\Product\BxListProducts::$number++;
-    }
-    ?>
+<?php if($block->getResultCount()): ?>
+    <?php echo $block->getChildHtml('tagged_product_list_rss_link'); ?>
+    <div class="search results">
+    <?php if ($messages = $block->getNoteMessages()):?>
+        <div class="message notice">
+            <div>
+                <?php foreach ($messages as $message):?>
+                    <?php /* @escapeNotVerified */ echo $message?><br />
+                <?php endforeach;?>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php if($this->hasSubPhrases()):?>
+        <?php for($i=0; $i<$block->getSubPhrasesResultCount(); $i++) { ?>
+            <h1>
+                <a href="<?php echo $block->getSearchQueryLink($i); ?>"><?php echo $block->getSubPhrasesResultText($i); ?></a>
+            </h1>
+            <?php
+            echo $block->getProductListHtml();
+            Boxalino\Intelligence\Block\Product\BxListProducts::$number++;
+        }
+        ?>
+    <?php else: ?>
+        <?php echo $block->getProductListHtml(); ?>
+    <?php endif; ?>
+    </div>
 <?php else: ?>
-    <?php echo $block->getProductListHtml(); ?>
+<div class="message notice">
+    <div>
+        <?php /* @escapeNotVerified */ echo($block->getNoResultText()) ? $block->getNoResultText() : __('Your search returned no results.') ?>
+        <?php echo $block->getAdditionalHtml() ?>
+        <?php if ($messages = $block->getNoteMessages()):?>
+            <?php foreach ($messages as $message):?>
+                <br /><?php /* @escapeNotVerified */ echo $message?>
+            <?php endforeach;?>
+        <?php endif; ?>
+    </div>
+</div>
 <?php endif; ?>

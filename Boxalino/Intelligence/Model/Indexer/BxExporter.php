@@ -1,8 +1,6 @@
 <?php
 namespace Boxalino\Intelligence\Model\Indexer;
 
-use Boxalino\Intelligence\Model\Indexer\BxIndexer;
-
 /**
  * Class BxExporter
  * @package Boxalino\Intelligence\Model\Indexer
@@ -13,13 +11,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @var \Boxalino\Intelligence\Model\Indexer\BxIndexer
      */
 	protected $bxIndexer;
-
+    
     /**
      * BxExporter constructor.
      * @param \Boxalino\Intelligence\Model\Indexer\BxIndexer $bxIndexer
      */
     public function __construct(BxIndexer $bxIndexer){
-        
 		$this->bxIndexer = $bxIndexer;
     }
 
@@ -45,7 +42,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @throws \Exception
      */
     public function executeFull(){
-        
 		$this->bxIndexer->setIndexerType('full')->exportStores();
 	}
+
 }

@@ -15,10 +15,14 @@ class BxChooseResponse
 		return $this->response;
 	}
 	
-	public function getChoiceResponseVariant($choice=null) {
+	public function getChoiceResponseVariant($choice=null, $count=0) {
 
 		foreach($this->bxRequests as $k => $bxRequest) {
 			if($choice != null && $choice == $bxRequest->getChoiceId()) {
+				if($count > 0){
+					$count--;
+					continue;
+				}
 				return $this->getChoiceIdResponseVariant($k);
 			}
 		}
@@ -38,23 +42,29 @@ class BxChooseResponse
 		throw new \Exception("no variant provided in choice response for variant id $id");
 	}
 	
-	protected function getFirstPositiveSuggestionSearchResult($variant) {
+	protected function getFirstPositiveSuggestionSearchResult($variant, $maxDistance=10) {
         if(!isset($variant->searchRelaxation->suggestionsResults)) {
             return null;
         }
 		foreach($variant->searchRelaxation->suggestionsResults as $searchResult) {
 			if($searchResult->totalHitCount > 0) {
-				return $searchResult;
+				if($searchResult->queryText == "" || $variant->searchResult->queryText == "") {
+					continue;
+				}
+				$distance = levenshtein($searchResult->queryText, $variant->searchResult->queryText);
+				if($distance <= $maxDistance && $distance != -1) {
+					return $searchResult;
+				}
 			}
 		}
 		return null;
 	}
 	
-	public function getVariantSearchResult($variant, $considerRelaxation=true) {
+	public function getVariantSearchResult($variant, $considerRelaxation=true, $maxDistance=10) {
 
 		$searchResult = $variant->searchResult;
 		if($considerRelaxation && $variant->searchResult->totalHitCount == 0) {
-			return $this->getFirstPositiveSuggestionSearchResult($variant);
+			return $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);
 		}
 		return $searchResult;
 	}
@@ -75,10 +85,10 @@ class BxChooseResponse
         return $ids;
 	}
 
-    public function getHitIds($choice=null, $considerRelaxation=true) {
+    public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10) {
 
-		$variant = $this->getChoiceResponseVariant($choice);
-		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation));
+		$variant = $this->getChoiceResponseVariant($choice, $count);
+		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance));
     }
 	
 	public function getSearchHitFieldValues($searchResult, $fields=null) {
@@ -119,10 +129,10 @@ class BxChooseResponse
 		return null;
 	}
 
-    public function getFacets($choice=null, $considerRelaxation=true) {
+    public function getFacets($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10) {
 		
-		$variant = $this->getChoiceResponseVariant($choice);
-		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation);
+		$variant = $this->getChoiceResponseVariant($choice, $count);
+		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance);
 		$facets = $this->getRequestFacets($choice);
 
 		if(empty($facets) || $searchResult == null){
@@ -132,18 +142,18 @@ class BxChooseResponse
 		return $facets;
     }
 
-    public function getHitFieldValues($fields, $choice=null, $considerRelaxation=true) {
-		$variant = $this->getChoiceResponseVariant($choice);
-		return $this->getSearchHitFieldValues($this->getVariantSearchResult($variant, $considerRelaxation), $fields);
+    public function getHitFieldValues($fields, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10) {
+		$variant = $this->getChoiceResponseVariant($choice, $count);
+		return $this->getSearchHitFieldValues($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance), $fields);
     }
 	
-	public function getFirstHitFieldValue($field=null, $returnOneValue=true, $hitIndex=0) {
+	public function getFirstHitFieldValue($field=null, $returnOneValue=true, $hitIndex=0, $choice=null, $count=0, $maxDistance=10) {
 		$fieldNames = null;
 		if($field != null) {
 			$fieldNames = array($field);
 		}
 		$count = 0;
-		foreach($this->getHitFieldValues($fieldNames) as $id => $fieldValueMap) {
+		foreach($this->getHitFieldValues($fieldNames, $choice, true, $count, $maxDistance) as $id => $fieldValueMap) {
 			if($count++ < $hitIndex) {
 				continue;
 			}
@@ -160,21 +170,21 @@ class BxChooseResponse
 		return null;
 	}
 
-    public function getTotalHitCount($choice=null, $considerRelaxation=true) {
-		$variant = $this->getChoiceResponseVariant($choice);
-		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation);
+    public function getTotalHitCount($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10) {
+		$variant = $this->getChoiceResponseVariant($choice, $count);
+		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance);
 		if($searchResult == null) {
 			return 0;
 		}
 		return $searchResult->totalHitCount;
     }
 	
-	public function areResultsCorrected($choice=null) {
-        return $this->getTotalHitCount($choice, false) == 0 && $this->getTotalHitCount($choice) > 0 && $this->areThereSubPhrases() == false;
+	public function areResultsCorrected($choice=null, $count=0, $maxDistance=10) {
+        return $this->getTotalHitCount($choice, false, $count) == 0 && $this->getTotalHitCount($choice, true, $count, $maxDistance) > 0 && $this->areThereSubPhrases() == false;
 	}
 	
-	public function getCorrectedQuery($choice=null) {
-		$variant = $this->getChoiceResponseVariant($choice);
+	public function getCorrectedQuery($choice=null, $count=0) {
+		$variant = $this->getChoiceResponseVariant($choice, $count);
 		$searchResult = $this->getVariantSearchResult($variant);
 		if($searchResult) {
 			return $searchResult->queryText;
@@ -182,28 +192,28 @@ class BxChooseResponse
 		return null;
 	}
 	
-	public function areThereSubPhrases($choice=null) {
-		$variant = $this->getChoiceResponseVariant($choice);
+	public function areThereSubPhrases($choice=null, $count=0) {
+		$variant = $this->getChoiceResponseVariant($choice, $count);
 		return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0;
 	}
 	
-	public function getSubPhrasesQueries($choice=null) {
-		if(!$this->areThereSubPhrases($choice)) {
+	public function getSubPhrasesQueries($choice=null, $count=0) {
+		if(!$this->areThereSubPhrases($choice, $count)) {
 			return array();
 		}
 		$queries = array();
-		$variant = $this->getChoiceResponseVariant($choice);
+		$variant = $this->getChoiceResponseVariant($choice, $count);
 		foreach($variant->searchRelaxation->subphrasesResults as $searchResult) {
 			$queries[] = $searchResult->queryText;
 		}
 		return $queries;
 	}
 	
-	protected function getSubPhraseSearchResult($queryText, $choice=null) {
-		if(!$this->areThereSubPhrases($choice)) {
+	protected function getSubPhraseSearchResult($queryText, $choice=null, $count=0) {
+		if(!$this->areThereSubPhrases($choice, $count)) {
 			return null;
 		}
-		$variant = $this->getChoiceResponseVariant($choice);
+		$variant = $this->getChoiceResponseVariant($choice, $count);
 		foreach($variant->searchRelaxation->subphrasesResults as $searchResult) {
 			if($searchResult->queryText == $queryText) {
 				return $searchResult;
@@ -212,24 +222,24 @@ class BxChooseResponse
 		return null;
 	}
 	
-	public function getSubPhraseTotalHitCount($queryText, $choice=null) {
-		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice);
+	public function getSubPhraseTotalHitCount($queryText, $choice=null, $count=0) {
+		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice, $count);
 		if($searchResult) {
 			return $searchResult->totalHitCount;
 		}
 		return 0;
 	}
 
-    public function getSubPhraseHitIds($queryText, $choice=null) {
-		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice);
+    public function getSubPhraseHitIds($queryText, $choice=null, $count=0) {
+		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice, $count);
 		if($searchResult) {
 			return $this->getSearchResultHitIds($searchResult);
 		}
 		return array();
     }
 
-    public function getSubPhraseHitFieldValues($queryText, $fields, $choice=null, $considerRelaxation=true) {
-		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice);
+    public function getSubPhraseHitFieldValues($queryText, $fields, $choice=null, $considerRelaxation=true, $count=0) {
+		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice, $count);
 		if($searchResult) {
 			return $this->getSearchHitFieldValues($searchResult, $fields);
 		}

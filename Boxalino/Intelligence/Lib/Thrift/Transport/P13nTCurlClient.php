@@ -43,7 +43,7 @@ class P13nTCurlClient extends TCurlClient {
         curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, $headers);
 
         if ($this->timeout_ > 0) {
-        curl_setopt(self::$curlHandle, CURLOPT_TIMEOUT, $this->timeout_);
+            curl_setopt(self::$curlHandle, CURLOPT_TIMEOUT, $this->timeout_);
         }
         curl_setopt(self::$curlHandle, CURLOPT_POSTFIELDS, $this->request_);
         $this->request_ = '';

@@ -97,7 +97,7 @@ class BxRequest
 	}
 	
 	public function addFilter($bxFilter) {
-		$this->bxFilters[] = $bxFilter;
+		$this->bxFilters[$bxFilter->getFieldName()] = $bxFilter;
 	}
 	
 	public function getOrFilters() {

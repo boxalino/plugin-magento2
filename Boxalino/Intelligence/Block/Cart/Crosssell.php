@@ -80,14 +80,20 @@ class Crosssell extends Mage_Crosssell{
             }
 
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
-            $entity_ids = $this->p13nHelper->getRecommendation(
-                $choiceId,
-                'basket',
-                $config['min'],
-                $config['max'],
-                $products,
-                $execute
-            );
+
+            try{
+                $entity_ids = $this->p13nHelper->getRecommendation(
+                    $choiceId,
+                    $products,
+                    'basket',
+                    $config['min'],
+                    $config['max'],
+                    $execute
+                );
+            }catch(\Exception $e){
+                $this->_logger->critical($e);
+                return parent::getItems();
+            }
 
             if(!$execute){
                 return null;

@@ -1,5 +1,5 @@
 div ul a li.sub_product_suggestions{
-    display: none;
+    display: none !important;
 }
 .suggestion-item{
     padding-right: 10px !important;

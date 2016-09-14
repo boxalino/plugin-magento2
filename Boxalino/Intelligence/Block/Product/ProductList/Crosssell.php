@@ -9,6 +9,11 @@ use Magento\Catalog\Block\Product\ProductList\Crosssell as MageCrosssell;
 class Crosssell extends MageCrosssell{
 
     /**
+     * @var string
+     */
+    protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    
+    /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
     protected $p13nHelper;
@@ -54,14 +59,19 @@ class Crosssell extends MageCrosssell{
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
 
-            $entity_ids = $this->p13nHelper->getRecommendation(
-                $choiceId,
-                'basket',
-                $config['min'],
-                $config['max'],
-                $products,
-                $execute
-            );
+            try{
+                $entity_ids = $this->p13nHelper->getRecommendation(
+                    $choiceId,
+                    $products,
+                    'basket',
+                    $config['min'],
+                    $config['max'],
+                    $execute
+                );  
+            }catch(\Exception $e){
+                $this->_logger->critical($e);
+                return parent::_prepareData();
+            }
             
             if(!$execute){
                 return null;

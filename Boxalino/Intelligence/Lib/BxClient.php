@@ -14,7 +14,7 @@ class BxClient
 	private $p13n_username;
 	private $p13n_password;
 	private $domain;
-	
+
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
 	
@@ -22,7 +22,8 @@ class BxClient
 	private $chooseResponses = null;
 	
 	const VISITOR_COOKIE_TIME = 31536000;
-	
+
+	private $_timeout;
 	private $requestContextParameters = array();
 	
 	private $sessionId = null;
@@ -147,18 +148,16 @@ class BxClient
 		return $userRecord;
 	}
 	
-	private function getP13n($sendTimeout=120000, $recvTimeout=120000, $useCurlIfAvailable=true)
-	{
-		$transport = new \Thrift\Transport\TSocket($this->host, $this->port);
-		$transport->setSendTimeout($sendTimeout);
-		$transport->setRecvTimeout($recvTimeout);
-		
+	private function getP13n($timeout=2, $useCurlIfAvailable=true){
+
 		if($useCurlIfAvailable && function_exists('curl_version')) {
 			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
 		} else {
 			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
 		}
+
 		$transport->setAuthorization($this->p13n_username, $this->p13n_password);
+		$transport->setTimeoutSecs($timeout);
 		$client = new \com\boxalino\p13n\api\thrift\P13nServiceClient(new \Thrift\Protocol\TCompactProtocol($transport));
 		$transport->open();
 		return $client;
@@ -273,7 +272,7 @@ class BxClient
 
 	private function p13nchoose($choiceRequest) {
 		try {
-			$choiceResponse = $this->getP13n()->choose($choiceRequest);
+			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
 			if(isset($_REQUEST['dev_bx_disp']) && $_REQUEST['dev_bx_disp'] == 'true') {
 				echo "<pre><h1>Choice Request</h1>";
 				var_dump($choiceRequest);
@@ -370,7 +369,7 @@ class BxClient
 	
 	private function p13nautocomplete($autocompleteRequest) {
 		try {
-			return $this->getP13n()->autocomplete($autocompleteRequest);
+			return $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
 		}
@@ -403,7 +402,7 @@ class BxClient
 		$requestBundle = new \com\boxalino\p13n\api\thrift\AutocompleteRequestBundle();
 		$requestBundle->requests = $requests;
 		try {
-			return $this->getP13n()->autocompleteAll($requestBundle)->responses;
+			return $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
 		}
@@ -414,6 +413,10 @@ class BxClient
 			$this->autocomplete();
 		}
 		return $this->autocompleteResponses;
+	}
+
+	public function setTimeout($timeout) {
+		$this->_timeout = $timeout;
 	}
 	
 }

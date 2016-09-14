@@ -75,7 +75,7 @@ class Data{
      * @var array
      */
     protected $cmsBlock = array();
-
+    
     /**
      * Data constructor.
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
@@ -283,7 +283,7 @@ class Data{
                             $attribute = $attribute = $getAttribute->getSource()->getOptionText($id);
                             $attrValues[] = $attribute;
                         }
-                        $filters->$paramName = $attrValues;
+                        $filters->paramName = $attrValues;
                     }
                 }
             }

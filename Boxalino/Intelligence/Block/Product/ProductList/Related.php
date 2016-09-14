@@ -70,14 +70,19 @@ class Related extends MageRelated{
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
 
-            $entity_ids = $this->p13nHelper->getRecommendation(
-                $choiceId,
-                'product',
-                $config['min'],
-                $config['max'],
-                $products,
-                $execute
-            );
+            try{
+                $entity_ids = $this->p13nHelper->getRecommendation(
+                    $choiceId,
+                    $products,
+                    'product',
+                    $config['min'],
+                    $config['max'],
+                    $execute
+                );
+            }catch(\Exception $e){
+                $this->_logger->critical($e);
+                return parent::_prepareData();
+            }
 
             if(!$execute){
                 return null;

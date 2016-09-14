@@ -49,27 +49,31 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      */
     public function getFilters(\Magento\Catalog\Model\Layer $layer){
 
-        if($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()){
-            return parent::getFilters($layer);
-        }
-        $filters = array();
-        if($this->bxHelperData->isFilterLayoutEnabled($layer instanceof \Magento\Catalog\Model\Layer\Category) && $this->bxHelperData->isLeftFilterEnabled()) {
-            $facets = $this->getBxFacets();
-            if($facets){
-                foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {
-                    $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
-                    $filter = $this->objectManager->create(
-                        "Boxalino\Intelligence\Model\Attribute",
-                        ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
-                    );
+        try {
+            if ($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()) {
+                return parent::getFilters($layer);
+            }
+            $filters = array();
+            if ($this->bxHelperData->isFilterLayoutEnabled($layer instanceof \Magento\Catalog\Model\Layer\Category) && $this->bxHelperData->isLeftFilterEnabled()) {
+                $facets = $this->getBxFacets();
+                if ($facets) {
+                    foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {
+                        $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
+                        $filter = $this->objectManager->create(
+                            "Boxalino\Intelligence\Model\Attribute",
+                            ['data' => ['attribute_model' => $attribute], 'layer' => $layer]
+                        );
 
-                    $filter->setFacets($facets);
-                    $filter->setFieldName($fieldName);
-                    $filters[] = $filter;
+                        $filter->setFacets($facets);
+                        $filter->setFieldName($fieldName);
+                        $filters[] = $filter;
+                    }
                 }
             }
+            return $filters;
+        }catch(\Exception $e){
+            return parent::getFilters($layer);
         }
-        return $filters;
     }
     
     private function getBxFacets(){

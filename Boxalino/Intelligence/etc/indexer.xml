@@ -7,4 +7,8 @@
         <title translate="true">Boxalino Delta Exporter</title>
         <description translate="true">Delta Export for Products to Boxalino Data Intelligence</description>
     </indexer>
+    <indexer id="boxalino_indexer_transactions" view_id="boxalino_indexer_transactions" class="Boxalino\Intelligence\Model\Indexer\BxTransactionExporter">
+        <title translate="true">Boxalino Exporter for Transactions</title>
+        <description translate="true">Export Transactions to Boxalino Data Intelligence</description>
+    </indexer>
 </config>

@@ -13,7 +13,12 @@ class Adapter
 	/**
 	 * @var null
 	 */
-    private static $bxClient = null;
+	private static $bxClient = null;
+
+	/**
+	 * @var array
+	 */
+	private static $choiceContexts = array();
 
 	/**
 	 * @var string
@@ -67,7 +72,6 @@ class Adapter
 	 * @param \Magento\Framework\App\Request\Http $request
 	 * @param \Magento\Framework\Registry $registry
 	 * @param \Magento\Search\Model\QueryFactory $queryFactory
-	 * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory
 	 * @param \Magento\Store\Model\StoreManagerInterface $storeManager
 	 * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
 	 * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
@@ -96,7 +100,6 @@ class Adapter
 		\com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
 		if($this->bxHelperData->isPluginEnabled()){
 			$this->initializeBXClient();
-
 		}
     }
 
@@ -115,6 +118,7 @@ class Adapter
 			$p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password',$this->scopeStore);
 			$domain = $this->scopeConfig->getValue('bxGeneral/general/domain',$this->scopeStore);
 			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
+			self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout',$this->scopeStore));
 		}
 	}
 
@@ -126,9 +130,9 @@ class Adapter
 		
 		$filters = array();
 		if($queryText == "") {
-			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter( 'products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
 		} else {
-			$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+			$filters[] = new \com\boxalino\bxclient\v1\BxFilter( 'products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
 		}
 		$filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
 
@@ -230,6 +234,7 @@ class Adapter
 			
 			$suggestions = [];
 			$suggestionProducts = [];
+
 			foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
 
 				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
@@ -254,6 +259,7 @@ class Adapter
 					$suggestions[] = $_data;
 				}
             }
+
 			$data = array_merge($suggestions, $global);
 			$data = array_merge($data, $suggestionProducts);
 		}
@@ -497,16 +503,23 @@ class Adapter
 
 	/**
 	 * @param $widgetName
+	 * @param array $context
 	 * @param string $widgetType
 	 * @param int $minAmount
 	 * @param int $amount
-	 * @param array $context
 	 * @param bool $execute
-	 * @return array
+	 * @return array|void
 	 */
-    public function getRecommendation($widgetName, $widgetType = '', $minAmount = 3, $amount = 3, $context = array(), $execute=true){
-		
+    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
+	
 		if(!$execute) {
+			if(!isset(self::$choiceContexts[$widgetName])) {
+				self::$choiceContexts[$widgetName] = array();
+			}
+			if(in_array(json_encode($context), self::$choiceContexts[$widgetName])) {
+				return;
+			}
+			self::$choiceContexts[$widgetName][] = json_encode($context);
 			if ($widgetType == '') {
 				$bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount);
 				$bxRequest->setGroupBy('products_group_id');
@@ -543,6 +556,7 @@ class Adapter
 			}
 			return array();
 		}
-		return self::$bxClient->getResponse()->getHitIds($widgetName);
+		$count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
+		return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
     }
 }
