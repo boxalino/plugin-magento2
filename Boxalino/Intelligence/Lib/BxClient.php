@@ -23,7 +23,7 @@ class BxClient
 	
 	const VISITOR_COOKIE_TIME = 31536000;
 
-	private $_timeout;
+	private $_timeout = 2;
 	private $requestContextParameters = array();
 	
 	private $sessionId = null;
