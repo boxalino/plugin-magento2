@@ -180,7 +180,7 @@ class Adapter
 	public function getEntityIdFieldName() {
 		
 		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
-		if (!isset($entity_id) || $entity_id === '') {
+		if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
 			$entityIdFieldName = 'products_group_id';
 		}
 		return $entityIdFieldName;

@@ -13,7 +13,6 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
         </subscriptions>
     </view>
-    cust
     <view id="boxalino_indexer_delta" class="Boxalino\Intelligence\Model\Indexer\BxDeltaExporter" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
