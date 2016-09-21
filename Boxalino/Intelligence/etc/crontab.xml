@@ -1,3 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="boxalino_full_index" instance="Boxalino\Intelligence\Model\Indexer\BxExporter" method="executeFull">
+            <schedule>0 0 * * *</schedule>
+        </job>
+    </group>
 </config>
