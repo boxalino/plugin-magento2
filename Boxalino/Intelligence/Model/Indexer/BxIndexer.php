@@ -1402,7 +1402,8 @@ class BxIndexer {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", 'value');
                             }
 
-                            $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_fields', 'CASE WHEN (price.'.reset($labelColumns).' IS NULL OR price.'.reset($labelColumns).' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.reset($labelColumns).' END as price_value');
+                            $priceLabel = $global ? 'value' : reset($labelColumns);
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_fields', 'CASE WHEN (price.'.$priceLabel.' IS NULL OR price.'.$priceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$priceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.entity_id = ref.parent_id');
                             $this->bxData->addResourceFile(
                                 $files->getPath($type['attribute_code'] . '.csv'), 'parent_id','value'
@@ -1425,7 +1426,8 @@ class BxIndexer {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", 'value');
                             }
 
-                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.reset($labelColumns).' IS NULL OR price.'.reset($labelColumns).' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.reset($labelColumns).' END as price_value');
+                            $priceLabel = $global ? 'value' : reset($labelColumns);
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$priceLabel.' IS NULL OR price.'.$priceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$priceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id');
 
                             $this->bxData->addResourceFile(

@@ -1,18 +1,4 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
-    <view id="boxalino_indexer" class="Boxalino\Intelligence\Model\Indexer\BxExporter" group="indexer">
-        <subscriptions>
-            <table name="catalog_product_entity" entity_column="entity_id" />
-            <table name="catalog_product_entity_datetime" entity_column="entity_id" />
-            <table name="catalog_product_entity_decimal" entity_column="entity_id" />
-            <table name="catalog_product_entity_gallery" entity_column="entity_id" />
-            <table name="catalog_product_entity_int" entity_column="entity_id" />
-            <table name="catalog_product_entity_media_gallery" entity_column="value_id" />
-            <table name="catalog_product_entity_media_gallery_value" entity_column="entity_id" />
-            <table name="catalog_product_entity_text" entity_column="entity_id" />
-            <table name="catalog_product_entity_tier_price" entity_column="entity_id" />
-            <table name="catalog_product_entity_varchar" entity_column="entity_id" />
-        </subscriptions>
-    </view>
     <view id="boxalino_indexer_delta" class="Boxalino\Intelligence\Model\Indexer\BxDeltaExporter" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
@@ -25,11 +11,6 @@
             <table name="catalog_product_entity_text" entity_column="entity_id" />
             <table name="catalog_product_entity_tier_price" entity_column="entity_id" />
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
-        </subscriptions>
-    </view>
-    <view id="boxalino_indexer_transactions" class="Boxalino\Intelligence\Model\Indexer\BxTransactionExporter" group="indexer">
-        <subscriptions>
-            <table name="sales_order" entity_column="entity_id" />
         </subscriptions>
     </view>
 </config>
