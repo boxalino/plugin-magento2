@@ -182,6 +182,13 @@ class BxIndexer {
      */
     public function exportStores($exportProducts=true,$exportCustomers=true,$exportTransactions=true) {
 
+        if(($this->getIndexerType() == 'delta') &&  $this->indexerModel->load('boxalino_indexer')->isWorking()){
+           return; 
+        }
+        if(($this->getIndexerType() == 'full') &&  $this->indexerModel->load('boxalino_indexer_delta')->isWorking()){
+           return; 
+        }
+        
         if($this->getIndexerType() == 'delta'){
             if($this->getDeltaIds() == null){
                 return;
@@ -191,91 +198,95 @@ class BxIndexer {
         $this->config = new BxIndexConfig($this->storeManager->getWebsites());
         $this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
 
-        foreach ($this->config->getAccounts() as $account) {
+        try {
+            foreach ($this->config->getAccounts() as $account) {
 
-            $this->logger->info("bxLog: initialize files on account: " . $account);
-            $files = new BxFiles($this->filesystem, $account, $this->config);
+                $this->logger->info("bxLog: initialize files on account: " . $account);
+                $files = new BxFiles($this->filesystem, $account, $this->config);
 
-            $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
-            $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
+                $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
+                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
 
-            $this->logger->info("bxLog: verify credentials for account: " . $account);
-            try{
-                $this->bxData->verifyCredentials();
-            }catch(\Exception $e){
-                $this->logger->info($e);
-                throw $e;
-            }
-
-            $this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
-            $categories = array();
-
-            foreach ($this->config->getAccountLanguages($account) as $language) {
-                $store = $this->config->getStore($account, $language);
-                $this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
-
-                $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
-                $categories = $this->exportCategories($store, $language, $categories);
-            }
-            
-            $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-
-            if($exportProducts) {
-                $exportProducts = $this->exportProducts($account, $files);
-            }
-
-            if($this->getIndexerType() == 'full'){
-                if($exportCustomers) {
-                    $this->exportCustomers($account, $files);
-                }
-                if($exportTransactions) {
-                    $full = $exportProducts == false ? true : false;
-                    $this->exportTransactions($account, $files, $full);
-                }
-            }
-            $this->prepareData($account, $files, $categories);
-            $this->logger->info('prepareData finished');
-
-            if(!$exportProducts){
-                $this->logger->info('bxLog: No Products found for account: ' . $account);
-                $this->logger->info('bxLog: Finished account: ' . $account);
-            }else{
-                if($this->getIndexerType() == 'full'){
-                    
-                    $this->logger->info('bxLog: Prepare the final files: ' . $account);
-                    $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
-                    
-                    try {
-                        $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
-                        $this->bxData->pushDataSpecifications();
-                    } catch(\Exception $e) {
-                        $value = @json_decode($e->getMessage(), true);
-                        if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
-                            $this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
-                            $this->bxData->pushDataSpecifications();
-                        } else {
-                            throw $e;
-                        }
-                    }
-                    
-                    $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
-                    $publish = $this->config->publishConfigurationChanges($account);
-                    $changes = $this->bxData->publishChanges($publish);
-                    if(sizeof($changes['changes']) > 0 && !$publish) {
-                        $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
-                    }
-                    $this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
-
-                }
-                $this->logger->info('pushing to DI');
+                $this->logger->info("bxLog: verify credentials for account: " . $account);
                 try{
-                    $this->bxData->pushData();
+                    $this->bxData->verifyCredentials();
                 }catch(\Exception $e){
                     $this->logger->info($e);
                     throw $e;
                 }
-                $this->logger->info('bxLog: Finished account: ' . $account);
+
+                $this->logger->info('bxLog: Preparing the attributes and category data for each language of the account: ' . $account);
+                $categories = array();
+
+                foreach ($this->config->getAccountLanguages($account) as $language) {
+                    $store = $this->config->getStore($account, $language);
+                    $this->logger->info('bxLog: Start getStoreProductAttributes for language . ' . $language . ' on store:' . $store->getId());
+
+                    $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
+                    $categories = $this->exportCategories($store, $language, $categories);
+                }
+
+                $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
+
+                if($exportProducts) {
+                    $exportProducts = $this->exportProducts($account, $files);
+                }
+
+                if($this->getIndexerType() == 'full'){
+                    if($exportCustomers) {
+                        $this->exportCustomers($account, $files);
+                    }
+                    if($exportTransactions) {
+                        $full = $exportProducts == false ? true : false;
+                        $this->exportTransactions($account, $files, $full);
+                    }
+                }
+                $this->prepareData($account, $files, $categories);
+                $this->logger->info('prepareData finished');
+
+                if(!$exportProducts){
+                    $this->logger->info('bxLog: No Products found for account: ' . $account);
+                    $this->logger->info('bxLog: Finished account: ' . $account);
+                }else{
+                    if($this->getIndexerType() == 'full'){
+
+                        $this->logger->info('bxLog: Prepare the final files: ' . $account);
+                        $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
+
+                        try {
+                            $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
+                            $this->bxData->pushDataSpecifications();
+                        } catch(\Exception $e) {
+                            $value = @json_decode($e->getMessage(), true);
+                            if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
+                                $this->logger->info('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
+                                $this->bxData->pushDataSpecifications();
+                            } else {
+                                throw $e;
+                            }
+                        }
+
+                        $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
+                        $publish = $this->config->publishConfigurationChanges($account);
+                        $changes = $this->bxData->publishChanges($publish);
+                        if(sizeof($changes['changes']) > 0 && !$publish) {
+                            $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
+                        }
+                        $this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
+
+                    }
+                    $this->logger->info('pushing to DI');
+                    try{
+                        $this->bxData->pushData();
+                    }catch(\Exception $e){
+                        $this->logger->info($e);
+                        throw $e;
+                    }
+                    $this->logger->info('bxLog: Finished account: ' . $account);
+                }
             }
+        } catch(\Exception $e) {
+            $this->logger->info("bxLog: failed with exception: " . $e->getMessage());
         }
         $this->logger->info("bxLog: finished exportStores");
     }
