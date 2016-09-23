@@ -128,7 +128,7 @@ class BxData
 	
 	public function getSourceCSVRow($container, $sourceId, $row=0, $maxRow = 2) {
 		if(!isset($this->sources[$container][$sourceId]['rows'])) {
-			if (($handle = fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
+			if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
 				$count = 1;
 				$this->sources[$container][$sourceId]['rows'] = array();
 				while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -157,6 +157,9 @@ class BxData
 	
 	public function validateColumnExistance($container, $sourceId, $col) {
 		$row = $this->getSourceCSVRow($container, $sourceId, 0);
+		if($row == null) {
+			throw new \Exception("the source '$sourceId' in the container '$container': failed to retrieve header row of CSV file: " . $this->sources[$container][$sourceId]['filePath']);
+		}
 		if(!in_array($col, $row)) {
 			throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
 		}
