@@ -29,7 +29,7 @@ In addition, it is very easy to extend this pre-installed set-up to benefit from
 
 If you need more information on any of these topics, please don't hesitate to contact Boxalino at sales@boxalino.com. We will be glad to assist you!
 
-N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, please go to https://github.com/boxalino/plugin-magento-1-v2)
+N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, please go to https://github.com/boxalino/plugin-magento1-v2)
 
 ## Installation
 
