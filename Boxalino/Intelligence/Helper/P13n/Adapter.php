@@ -334,7 +334,7 @@ class Adapter
 			if($order == 'name'){
 				$field = 'title';
 			} elseif($order == 'price'){
-				$field = 'discountedPrice';
+				$field = 'products_bx_grouped_price';
 			}
 		}
 		
