@@ -1309,13 +1309,22 @@ class BxIndexer {
                                                 $type['attribute_code'] . '_id' => $v);
                                         }
                                     }else{
-                                        $valueLabel = $type['attribute_code'] == 'visibility' ||
+                                        if($type['attribute_code'] == 'visibility' ||
                                             $type['attribute_code'] == 'status' ||
                                             $type['attribute_code'] == 'special_from_date' ||
-                                            $type['attribute_code'] == 'special_to_date' ? 'value_' . $lang : 'value';
-                                        $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            $type['attribute_code'] == 'special_to_date') {
+                                          if(!isset($data[$row['entity_id']])) {
+                                            $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                                'store_id' => $row['store_id'],
+                                                'value_' . $lang => $row['value']);
+                                          } else {
+                                            $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                          }
+                                        } else {
+                                          $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
-                                            $valueLabel => $row['value']);
+                                            'value' => $row['value']);
+                                        }
                                     }
                                 }
                             }
