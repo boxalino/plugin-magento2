@@ -1085,8 +1085,8 @@ class BxIndexer {
      */
     protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
 
-        $paramPriceLabel = array();
-        $paramSpecialPriceLabel = array();
+        $paramPriceLabel = '';
+        $paramSpecialPriceLabel = '';
 
         $db = $this->rs->getConnection();
         $columns = array(
