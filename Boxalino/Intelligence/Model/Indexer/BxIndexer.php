@@ -1350,6 +1350,7 @@ class BxIndexer {
                 
                 if (sizeof($data)) {
                     if(!$global){
+                    $type['attribute_code'] == 'special_from_date' ||
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
