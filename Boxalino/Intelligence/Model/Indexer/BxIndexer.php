@@ -135,7 +135,7 @@ class BxIndexer {
      * @return $this
      */
     public function setIndexerType($type=null){
-        
+
         $this->indexerType = $type;
         if($type == null){
             $this->indexerType = 'full';
@@ -147,7 +147,7 @@ class BxIndexer {
      * @return mixed
      */
     public function getIndexerType(){
-        
+
         return $this->indexerType;
     }
 
@@ -155,7 +155,7 @@ class BxIndexer {
      * @return mixed
      */
     protected function getDeltaIds(){
-        
+
         return $this->deltaIds;
     }
 
@@ -163,14 +163,11 @@ class BxIndexer {
      * @param $ids
      */
     public function setDeltaIds($ids){
-        
+
         $this->deltaIds = $ids;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     protected function getLastIndex(){
 
         return $this->indexerModel->load('boxalino_indexer')->getLatestUpdated();
@@ -183,12 +180,12 @@ class BxIndexer {
     public function exportStores($exportProducts=true,$exportCustomers=true,$exportTransactions=true) {
 
         if(($this->getIndexerType() == 'delta') &&  $this->indexerModel->load('boxalino_indexer')->isWorking()){
-           return; 
+           return;
         }
         if(($this->getIndexerType() == 'full') &&  $this->indexerModel->load('boxalino_indexer_delta')->isWorking()){
-           return; 
+           return;
         }
-        
+
         if($this->getIndexerType() == 'delta'){
             if($this->getDeltaIds() == null){
                 return;
@@ -299,7 +296,7 @@ class BxIndexer {
      * @param null $productTags
      */
     protected function prepareData($account, $files, $categories, $tags = null, $productTags = null){
-        
+
         $withTag = ($tags != null && $productTags != null) ? true : false;
         $languages = $this->config->getAccountLanguages($account);
         $categories = array_merge(array(array_keys(end($categories))), $categories);
@@ -319,7 +316,7 @@ class BxIndexer {
      * @throws \Exception
      */
     protected function getAttributeId($attr_code){
-        
+
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -342,7 +339,7 @@ class BxIndexer {
      * @throws \Exception
      */
     protected function exportCategories($store, $language, $transformedCategories){
-        
+
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -376,7 +373,7 @@ class BxIndexer {
      * @return array
      */
     protected function getStoreProductAttributes($account){
-        
+
         $db = $this->rs->getConnection();
         $select = $db->select()
             ->from(
@@ -675,7 +672,7 @@ class BxIndexer {
      * @return mixed|null
      */
     protected function getEntityIdFor($entityType){
-        
+
         if ($this->_entityIds == null) {
             $db = $this->rs->getConnection();
             $select = $db->select()
@@ -696,7 +693,7 @@ class BxIndexer {
      * @return array
      */
     protected function getTransactionAttributes($account) {
-        
+
         $this->logger->info('bxLog: get all transaction attributes for account: ' . $account);
         $dbConfig = $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_DB);
         if(!isset($dbConfig['connection']['default']['dbname'])) {
@@ -737,7 +734,7 @@ class BxIndexer {
      * @return array
      */
     protected function getCustomerAttributes($account){
-        
+
         $attributes = array();
 
         $this->logger->info('bxLog: get all customer attributes for account: ' . $account);
@@ -775,7 +772,7 @@ class BxIndexer {
      * @param $files
      */
     protected function exportTransactions($account, $files, $exportFull){
-        
+
         // don't export transactions in delta sync or when disabled
         if(!$this->config->isTransactionsExportEnabled($account)) {
             return;
@@ -842,7 +839,7 @@ class BxIndexer {
             if(!$exportFull){
                 $select->where('order.created_at >= ? OR order.updated_at >= ?', $this->getLastIndex());
             }
-            
+
             $transaction_attributes = $this->getTransactionAttributes($account);
 
             if (count($transaction_attributes)) {
@@ -864,13 +861,13 @@ class BxIndexer {
             }
 
             $transactions = $db->fetchAll($select);
-            
+
             if(sizeof($transactions) < 1){
                 return;
             }
 
             $this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
-            
+
             foreach ($transactions as $transaction) {
                 //is configurable
                 if ($transaction['product_type'] == 'configurable') {
@@ -980,7 +977,7 @@ class BxIndexer {
      * @return bool
      */
     protected function exportProducts($account, $files){
-        
+
         $languages = $this->config->getAccountLanguages($account);
 
         $this->logger->info('bxLog: Products - start of export for account ' . $account);
@@ -1088,8 +1085,8 @@ class BxIndexer {
      */
     protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
 
-        $paramPriceLabel = '';
-        $paramSpecialPriceLabel = '';
+        $paramPriceLabel = array();
+        $paramSpecialPriceLabel = array();
 
         $db = $this->rs->getConnection();
         $columns = array(
@@ -1101,7 +1098,7 @@ class BxIndexer {
         $attrs['misc'][] = array('attribute_code' => 'categories');
         $files->prepareProductFiles($attrs);
         unset($attrs['misc']);
-        
+
         foreach($attrs as $attrKey => $types){
 
             foreach ($types as $typeKey => $type) {
@@ -1236,14 +1233,15 @@ class BxIndexer {
                         }
                         $fetchedOptionValues = null;
                     }
-                    
+
                     $attributeSelect = clone $select;
                     $attributeSelect->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
                     $fetchedResult = $db->fetchAll($attributeSelect);
 
                     if (sizeof($fetchedResult)) {
-                       
+
                         foreach ($fetchedResult as $i => $row) {
+
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
                                 if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
                                     $data[$row['entity_id']]['value_' . $lang] = $row['value'];
@@ -1259,6 +1257,7 @@ class BxIndexer {
                                     }
                                     continue;
                                 }
+
                                 $data[$row['entity_id']]['value_' . $lang] = $row['value'];
 
                                 if (isset($additionalData[$row['entity_id']])) {
@@ -1328,7 +1327,7 @@ class BxIndexer {
                         }
                     }
                 }
-                
+
                 if($optionSelect || $exportAttribute){
                     $optionHeader = array_merge(array($type['attribute_code'] . '_id'),$labelColumns);
                     $a = array_merge(array($optionHeader), $optionValues);
@@ -1471,7 +1470,7 @@ class BxIndexer {
             }
         }
         $this->bxData->addSourceNumberField($mainSourceKey, 'bx_grouped_price', 'entity_id');
-        $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_fields', 'CASE WHEN sref.value IS NOT NULL AND sref.value > 0 THEN sref.value WHEN ref.value IS NOT NULL then ref.value WHEN sprice.'.$paramSpecialPriceLabel.' IS NOT NULL AND sprice.'.$paramSpecialPriceLabel.' > 0 THEN sprice.'.$paramSpecialPriceLabel.' ELSE price.'.$paramPriceLabel.' END as price_value');
+        $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_fields', 'CASE WHEN sref.value IS NOT NULL AND sref.value > 0 THEN sref.value WHEN ref.value IS NOT NULL then ref.value WHEN sprice.'.$paramSpecialPriceLabel.' IS NOT NULL AND sprice.'.$paramSpecialPriceLabel.' > 0 AND price.'.$paramPriceLabel.' > sprice.'.$paramSpecialPriceLabel.'THEN sprice.'.$paramSpecialPriceLabel.' ELSE price.'.$paramPriceLabel.' END as price_value');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.group_id = ref.parent_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as sprice ON t.entity_id = sprice.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as sref ON t.group_id = sref.parent_id');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'multiValued', 'false');
     }
