@@ -1347,10 +1347,12 @@ class BxIndexer {
                             $type['attribute_code'] . '_id', $optionSourceKey);
                     }
                 }
-                
+
                 if (sizeof($data)) {
-                    if(!$global){
+                    if(!$global || $type['attribute_code'] == 'visibility' ||
+                    $type['attribute_code'] == 'status' ||
                     $type['attribute_code'] == 'special_from_date' ||
+                    $type['attribute_code'] == 'special_to_date'){
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
