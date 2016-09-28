@@ -218,7 +218,7 @@ class Adapter
 			$first = true;
 			$global = [];
 
-			$searchChoiceIds =$bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
+			$searchChoiceIds =$bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
 			$searchChoiceProducts = $autocomplete->getListValues($searchChoiceIds);
 
 			foreach($searchChoiceProducts as $product) {
@@ -246,7 +246,7 @@ class Adapter
 				$_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
 					'id' => $i, 'row_class' => 'acsuggestions');
 
-				$suggestionProductIds = $bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice);
+				$suggestionProductIds = $bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
 				$suggestionProductValues = $autocomplete->getListValues($suggestionProductIds);
 				foreach($suggestionProductValues as $product) {
 					$suggestionProducts[]= array("type"=>"sub_products","product"=> $product,
@@ -427,7 +427,7 @@ class Adapter
     public function getEntitiesIds(){
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice);
+		return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
     }
 
 	/**
@@ -498,7 +498,7 @@ class Adapter
 	public function getSubPhraseEntitiesIds($queryText) {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice);
+		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
 	}
 
 	/**
@@ -557,6 +557,6 @@ class Adapter
 			return array();
 		}
 		$count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
-		return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
+		return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
     }
 }

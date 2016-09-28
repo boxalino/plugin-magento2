@@ -69,12 +69,12 @@ class BxChooseResponse
 		return $searchResult;
 	}
 	
-	public function getSearchResultHitIds($searchResult) {
+	public function getSearchResultHitIds($searchResult, $fieldId ='id') {
 		$ids = array();
 		if($searchResult) {
 			if($searchResult->hits){
 				foreach ($searchResult->hits as $item) {
-					$ids[] = $item->values['products_group_id'][0];
+					$ids[] = $item->values[$fieldId][0];
 				}
 			}elseif(isset($searchResult->hitsGroups)){
 				foreach ($searchResult->hitsGroups as $hitGroup){
@@ -85,10 +85,10 @@ class BxChooseResponse
         return $ids;
 	}
 
-    public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10) {
+    public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id') {
 
 		$variant = $this->getChoiceResponseVariant($choice, $count);
-		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance));
+		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance),$fieldId);
     }
 	
 	public function getSearchHitFieldValues($searchResult, $fields=null) {
@@ -230,10 +230,10 @@ class BxChooseResponse
 		return 0;
 	}
 
-    public function getSubPhraseHitIds($queryText, $choice=null, $count=0) {
+    public function getSubPhraseHitIds($queryText, $choice=null, $count=0, $fieldId='id') {
 		$searchResult = $this->getSubPhraseSearchResult($queryText, $choice, $count);
 		if($searchResult) {
-			return $this->getSearchResultHitIds($searchResult);
+			return $this->getSearchResultHitIds($searchResult,$fieldId);
 		}
 		return array();
     }
