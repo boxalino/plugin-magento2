@@ -1,6 +1,7 @@
 {
   "name": "boxalino/module-intelligence",
   "description": "Boxalino Magento 2 plug-in",
+  "version": "1.0.0",
   "type": "magento2-module",
   "homepage": "http://www.boxalino.com",
   "support": {
@@ -15,10 +16,9 @@
     "magento/module-catalog": "100.0.*",
     "magento/module-layered-navigation": "100.0.*",
     "magento/module-search": "100.0.*",
+    "magento/module-indexer": "100.0.*",
     "magento/framework": "100.0.*"
   },
-  "version": "100.0.0",
-
   "autoload": {
     "files": ["registration.php"],
     "psr-4": {
