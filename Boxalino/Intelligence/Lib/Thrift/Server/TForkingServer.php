@@ -89,7 +89,7 @@ class TForkingServer extends TServer {
 	}
 	catch (TTransportException $e) { }
 
-	exit(0);
+	  return null;
   }
 
   /**

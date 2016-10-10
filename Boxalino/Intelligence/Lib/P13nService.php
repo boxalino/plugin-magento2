@@ -156,8 +156,8 @@ class P13nServiceClient implements \com\boxalino\p13n\api\thrift\P13nServiceIf {
       return $result->success;
     }
     if ($result->p13nServiceException !== null) {
-      throw $result->p13nServiceException;
-    }
+      throw new \Exception($result->p13nServiceException->getMessage());
+  }
     throw new \Exception("choose failed: unknown result");
   }
 
@@ -210,7 +210,7 @@ class P13nServiceClient implements \com\boxalino\p13n\api\thrift\P13nServiceIf {
       return $result->success;
     }
     if ($result->p13nServiceException !== null) {
-      throw $result->p13nServiceException;
+      throw new \Exception($result->p13nServiceException->getMessage());
     }
     throw new \Exception("batchChoose failed: unknown result");
   }
@@ -264,7 +264,7 @@ class P13nServiceClient implements \com\boxalino\p13n\api\thrift\P13nServiceIf {
       return $result->success;
     }
     if ($result->p13nServiceException !== null) {
-      throw $result->p13nServiceException;
+      throw new \Exception($result->p13nServiceException->getMessage());
     }
     throw new \Exception("autocomplete failed: unknown result");
   }
@@ -318,7 +318,7 @@ class P13nServiceClient implements \com\boxalino\p13n\api\thrift\P13nServiceIf {
       return $result->success;
     }
     if ($result->p13nServiceException !== null) {
-      throw $result->p13nServiceException;
+      throw new \Exception($result->p13nServiceException->getMessage());
     }
     throw new \Exception("autocompleteAll failed: unknown result");
   }
@@ -372,7 +372,7 @@ class P13nServiceClient implements \com\boxalino\p13n\api\thrift\P13nServiceIf {
       return $result->success;
     }
     if ($result->p13nServiceException !== null) {
-      throw $result->p13nServiceException;
+      throw new \Exception($result->p13nServiceException->getMessage());
     }
     throw new \Exception("updateChoice failed: unknown result");
   }

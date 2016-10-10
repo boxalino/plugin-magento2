@@ -15,6 +15,8 @@ class BxClient
 	private $p13n_password;
 	private $domain;
 
+	private $debugOutput = '';
+	private $requestParams = array();
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
 	
@@ -30,11 +32,7 @@ class BxClient
 	private $profileId = null;
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
-		if (isset($_REQUEST['_d_bx_account']) && isset($_REQUEST['_d_bx_password'])) {
-			// for debug purposes only, never include credentials in request
-			$account = $_REQUEST['_d_bx_account'];
-			$password = $_REQUEST['_d_bx_password'];
-		}
+	
 		$this->account = $account;
 		$this->password = $password;
 		$this->isDev = $isDev;
@@ -232,9 +230,9 @@ class BxClient
 			$requestContext->parameters[$k] = $v;
 		}
 
-		if (isset($_REQUEST['p13nRequestContext']) && is_array($_REQUEST['p13nRequestContext'])) {
+		if (isset($this->requestParams['p13nRequestContext']) && is_array($this->requestParams['p13nRequestContext'])) {
 			$requestContext->parameters = array_merge(
-				$_REQUEST['p13nRequestContext'],
+				$this->requestParams['p13nRequestContext'],
 				$requestContext->parameters
 			);
 		}
@@ -273,13 +271,8 @@ class BxClient
 	private function p13nchoose($choiceRequest) {
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
-			if(isset($_REQUEST['dev_bx_disp']) && $_REQUEST['dev_bx_disp'] == 'true') {
-				echo "<pre><h1>Choice Request</h1>";
-				var_dump($choiceRequest);
-				echo "<br><h1>Choice Response</h1>";
-				var_dump($choiceResponse);
-				echo "</pre>";
-				exit;
+			if(isset($this->requestParams['dev_bx_disp']) && $this->requestParams['dev_bx_disp'] == 'true') {
+					$this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest,true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse,true) . "</pre>";
 			}
 			return $choiceResponse;
 		} catch(\Exception $e) {
@@ -417,6 +410,16 @@ class BxClient
 
 	public function setTimeout($timeout) {
 		$this->_timeout = $timeout;
+		return $this;
+	}
+	
+	public function setRequestParams($params){
+		$this->requestParams = $params;
+		return $this;
+	}
+	
+	public function getDebugOutput(){
+		return $this->debugOutput;
 	}
 	
 }

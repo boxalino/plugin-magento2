@@ -114,13 +114,24 @@ class BxFiles{
     private $filesMtM = array();
 
     /**
+     * @var \Magento\Framework\App\Response\Http
+     */
+    private $_response;
+
+    /**
      * BxFiles constructor.
      * @param $filesystem
      * @param $account
      * @param $config
      */
-	public function __construct($filesystem, $account, $config) {
-        
+	public function __construct(
+        $filesystem,
+        $account,
+        $config,
+		\Magento\Framework\App\Response\Http $response
+    ) {
+
+        $this->_response = $response;
 		$this->filesystem = $filesystem;
 		$this->account = $account;
 		$this->config = $config;
@@ -213,7 +224,7 @@ class BxFiles{
 	public function printFile($file) {
         
 		$path = $this->getPath($file);
-		echo file_get_contents($path);
+        $this->_response->appendBody(file_get_contents($path));
 	}
 
     /**

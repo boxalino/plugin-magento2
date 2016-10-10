@@ -37,7 +37,7 @@ class FilterPlugin{
      */
     public function beforeFilter($subject, $value) {
 
-        if(strpos($value,'BxRecommendationBlock')){
+        if(strpos($value,'BxRecommendationBlock') !== false){
             $this->_bxHelperData->setCmsBlock($value);
         }
     }

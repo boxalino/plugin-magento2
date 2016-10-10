@@ -85,8 +85,9 @@ $account = $this->getAccount();
     
     _bxq.push(['trackPageView']);
 
-    <?php if ($this->isSearch()) echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
-
+    <?php if ($this->isSearch()): ?>
+        <?php echo $_helper->reportSearch($this->getRequest()->getParam('q'), $_helper->getFiltersValues($this->getRequest()->getParams())); ?>
+    <?php endif; ?>
     (function () {
         var s = document.createElement('script');
         s.async = 1;

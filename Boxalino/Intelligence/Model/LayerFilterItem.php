@@ -33,6 +33,11 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     private $fieldName = array();
 
     /**
+     * @var \Magento\Framework\App\Request\Http
+     */
+    private $_request;
+    
+    /**
      * LayerFilterItem constructor.
      * @param \Magento\Framework\UrlInterface $url
      * @param \Magento\Theme\Block\Html\Pager $htmlPagerBlock
@@ -45,9 +50,11 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\App\Request\Http $request,
         array $data = []
     )
     {
+        $this->_request = $request;
 		$this->objectManager = $objectManager;
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
@@ -92,8 +99,9 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 
 			$this->filter->setRequestVar($this->bxFacets->getFacetParameterName($this->fieldName));
 			$this->filter->setCleanValue(null);
-            if($this->bxDataHelper->isHierarchical($this->fieldName) && isset($_REQUEST['bx_category_id'])){
-                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$_REQUEST[($this->bxFacets->getFacetParameterName($this->fieldName))]));
+            $requestParams = $this->_request->getParams();
+            if($this->bxDataHelper->isHierarchical($this->fieldName) && isset($requestParams['bx_category_id'])){
+                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$requestParams[($this->bxFacets->getFacetParameterName($this->fieldName))]));
             }
 		}
 		return $this->filter;

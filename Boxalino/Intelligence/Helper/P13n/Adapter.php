@@ -41,6 +41,11 @@ class Adapter
     protected $request;
 
 	/**
+	 * @var \Magento\Framework\App\Response\Http
+	 */
+	protected $response;
+
+	/**
 	 * @var \Magento\Framework\Registry
 	 */
     protected $registry;
@@ -66,6 +71,11 @@ class Adapter
 	protected $currentSearchChoice;
 
 	/**
+	 * @var bool
+	 */
+	protected $bxDebug = false;
+
+	/**
 	 * Adapter constructor.
 	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
 	 * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -84,9 +94,12 @@ class Adapter
         \Magento\Search\Model\QueryFactory $queryFactory,
 		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Catalog\Model\Layer\Resolver $layerResolver,
+		\Magento\Framework\App\Response\Http $response,
         \Boxalino\Intelligence\Helper\Data $bxHelperData
+
     )
     {
+		$this->response = $response;
 		$this->bxHelperData = $bxHelperData;
         $this->scopeConfig = $scopeConfig;
         $this->catalogCategory = $catalogCategory;
@@ -118,7 +131,7 @@ class Adapter
 			$p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password',$this->scopeStore);
 			$domain = $this->scopeConfig->getValue('bxGeneral/general/domain',$this->scopeStore);
 			self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
-			self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout',$this->scopeStore));
+			self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout',$this->scopeStore))->setRequestParams($this->request->getParams());
 		}
 	}
 
@@ -279,7 +292,8 @@ class Adapter
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
 
-		$hitCount = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+		$requestParams = $this->request->getParams();
+		$hitCount = isset($requestParams['product_list_limit'])? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 
 		//create search request
 		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
@@ -322,15 +336,16 @@ class Adapter
 		$query = $this->queryFactory->get();
 		$queryText = $query->getQueryText();
 
+		$requestParams = $this->request->getParams();
 		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
 			return;
 		}
 
 		$field = '';
 		$dir = '';
-		$order = $this->request->getParam('product_list_order');
+		$order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : '';
 
-		if(isset($order)){
+		if($order){
 			if($order == 'name'){
 				$field = 'title';
 			} elseif($order == 'price'){
@@ -338,7 +353,7 @@ class Adapter
 			}
 		}
 		
-		$dirOrder = $this->request->getParam('product_list_dir');
+		$dirOrder = isset($requestParams['product_list_dir']) ? $requestParams['product_list_dir'] : '';
 		if($dirOrder){
 			$dir = $dirOrder == 'asc' ? false : true;
 		} else{
@@ -350,19 +365,19 @@ class Adapter
 			/* @var $category Mage_Catalog_Model_Category */
 			$category = $this->registry->registry('current_category');
 			if (!empty($category)) {
-				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
+				$requestParams[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
 //				$categoryId = $category->getId();
 			}
 			// GET param 'cat' may override the current_category,
 			// i.e. when clicking on subcategories in a category page
 			$cat = $this->request->getParam('cat');
-			if (!empty($cat)) {
-				$_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
+			if (!empty($requestParams)) {
+				$requestParams[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
 			}
 		}
 		
-		$overWriteLimit = isset($_REQUEST['product_list_limit'])? $_REQUEST['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-		$pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
+		$overWriteLimit = isset($requestParams['product_list_limit'])? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+		$pageOffset = isset($requestParams['p'])? ($requestParams['p']-1)*($overWriteLimit) : 0;
 		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
 	}
 
@@ -383,7 +398,8 @@ class Adapter
 		$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
 
 		$selectedValues = array();
-		foreach ($_REQUEST as $key => $values) {
+		$requestParams = $this->request->getParams();
+		foreach ($requestParams as $key => $values) {
 			if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
 				$fieldName = substr($key, 3);
 				$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
@@ -413,12 +429,31 @@ class Adapter
     }
 
 	/**
+	 *
+	 */
+	protected function getClientResponse(){
+		try{
+			$response = self::$bxClient->getResponse();
+			$output = self::$bxClient->getDebugOutput();
+			if($output != '' && !$this->bxDebug){
+				$this->response->appendBody($output);
+				$this->bxDebug = true;
+			}
+			return $response;
+		}catch(\Exception $e){
+			throw $e;
+		}
+
+
+	}
+
+	/**
 	 * @return mixed
 	 */
     public function getTotalHitCount(){
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
+		return $this->getClientResponse()->getTotalHitCount($this->currentSearchChoice);
     }
 
 	/**
@@ -427,7 +462,7 @@ class Adapter
     public function getEntitiesIds(){
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+		return $this->getClientResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
     }
 
 	/**
@@ -436,7 +471,7 @@ class Adapter
 	public function getFacets() {
 		
 		$this->simpleSearch();
-		$facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
+		$facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
 		if(empty($facets)){
 			return null;
 		}
@@ -451,7 +486,7 @@ class Adapter
 	public function getCorrectedQuery() {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
+		return $this->getClientResponse()->getCorrectedQuery($this->currentSearchChoice);
 	}
 
 	/**
@@ -460,7 +495,7 @@ class Adapter
 	public function areResultsCorrected() {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
+		return $this->getClientResponse()->areResultsCorrected($this->currentSearchChoice);
 	}
 
 	/**
@@ -469,7 +504,7 @@ class Adapter
 	public function areThereSubPhrases() {
 
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
+		return $this->getClientResponse()->areThereSubPhrases($this->currentSearchChoice);
 	}
 
 	/**
@@ -478,7 +513,7 @@ class Adapter
 	public function getSubPhrasesQueries() {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
+		return $this->getClientResponse()->getSubPhrasesQueries($this->currentSearchChoice);
 	}
 
 	/**
@@ -488,7 +523,7 @@ class Adapter
 	public function getSubPhraseTotalHitCount($queryText) {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
+		return $this->getClientResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
 	}
 
 	/**
@@ -498,7 +533,7 @@ class Adapter
 	public function getSubPhraseEntitiesIds($queryText) {
 		
 		$this->simpleSearch();
-		return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
+		return $this->getClientResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
 	}
 
 	/**
@@ -557,6 +592,6 @@ class Adapter
 			return array();
 		}
 		$count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
-		return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
+		return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
     }
 }
