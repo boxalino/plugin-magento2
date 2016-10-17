@@ -371,7 +371,7 @@ class Adapter
 			// GET param 'cat' may override the current_category,
 			// i.e. when clicking on subcategories in a category page
 			$cat = $this->request->getParam('cat');
-			if (!empty($requestParams)) {
+			if (!empty($requestParams) && !empty($cat)) {
 				$requestParams[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
 			}
 		}
