@@ -36,7 +36,12 @@ class State extends \Magento\Catalog\Model\Layer\State{
      * @var \Psr\Log\LoggerInterface
      */
     private $_logger;
-    
+
+    /**
+     * @var \Magento\Catalog\Block\Category\View
+     */
+    private $_categoryViewBlock;
+
     /**
      * State constructor.
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
@@ -59,7 +64,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     )
     {
         $this->_logger = $logger;
-        $this->categoryViewBlock = $categoryViewBlock;
+        $this->_categoryViewBlock = $categoryViewBlock;
         $this->_layer = $layerResolver->get();
         $this->bxHelperData = $bxHelperData;
         $this->_data = $data;
@@ -77,6 +82,10 @@ class State extends \Magento\Catalog\Model\Layer\State{
     {
         try {
             if ($this->bxHelperData->isFilterLayoutEnabled($this->_layer)) {
+                $category = $this->_categoryViewBlock->getCurrentCategory();
+                if($category != null && $category->getDisplayMode() == \Magento\Catalog\Model\Category::DM_PAGE){
+                    return parent::getFilters();
+                }
                 $filters = array();
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
