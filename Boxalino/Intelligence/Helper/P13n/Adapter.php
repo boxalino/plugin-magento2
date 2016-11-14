@@ -81,6 +81,11 @@ class Adapter
 	protected $navigation = false;
 
 	/**
+	 * @var \Magento\Eav\Model\Config
+	 */
+	protected $_modelConfig;
+
+	/**
 	 * Adapter constructor.
 	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
 	 * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -100,10 +105,12 @@ class Adapter
 		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Catalog\Model\Layer\Resolver $layerResolver,
 		\Magento\Framework\App\Response\Http $response,
-        \Boxalino\Intelligence\Helper\Data $bxHelperData
+        \Boxalino\Intelligence\Helper\Data $bxHelperData,
+		\Magento\Eav\Model\Config $config
 
     )
     {
+		$this->_modelConfig = $config;
 		$this->response = $response;
 		$this->bxHelperData = $bxHelperData;
         $this->scopeConfig = $scopeConfig;
@@ -321,7 +328,7 @@ class Adapter
 	 * 
 	 */
 	public function simpleSearch() {
-
+		
 		$query = $this->queryFactory->get();
 		$queryText = $query->getQueryText();
 
@@ -395,10 +402,18 @@ class Adapter
 
 		$selectedValues = array();
 		$requestParams = $this->request->getParams();
+		$attributeCollection = $this->bxHelperData->getFilterProductAttributes();
 		foreach ($requestParams as $key => $values) {
 			if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
 				$fieldName = substr($key, 3);
 				$selectedValues[$fieldName] = !is_array($values) ? array($values) : $values;
+			}
+			if(isset($attributeCollection['products_' . $key])){
+				$paramValues = !is_array($values) ? array($values) : $values;
+				$attributeModel = $this->_modelConfig->getAttribute('catalog_product', $key)->getSource();
+				foreach ($paramValues as $paramValue){
+					$selectedValues['products_' . $key][] = $attributeModel->getOptionText($paramValue);
+				}
 			}
 		}
 
@@ -406,8 +421,6 @@ class Adapter
 			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
 			$bxFacets->addCategoryFacet($catId);
 		}
-
-		$attributeCollection = $this->bxHelperData->getFilterProductAttributes();
 
 		foreach($attributeCollection as $code => $attribute){
 			if($this->navigation && $code == 'categories'){
@@ -446,8 +459,6 @@ class Adapter
 		}catch(\Exception $e){
 			throw $e;
 		}
-
-
 	}
 
 	/**

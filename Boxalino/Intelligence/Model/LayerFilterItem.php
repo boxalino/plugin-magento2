@@ -96,8 +96,15 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 			$this->filter = $this->objectManager->create(
                 "Boxalino\Intelligence\Model\LayerFilterFilter"
             );
-
-			$this->filter->setRequestVar($this->bxFacets->getFacetParameterName($this->fieldName));
+            $requestParams = $this->_request->getParams();
+            $parameterVar = $this->bxFacets->getFacetParameterName($this->fieldName);
+            foreach ($requestParams as $key => $values) {
+                if($this->fieldName == 'products_' . $key){
+                    $parameterVar = $key;
+                    break;
+                }
+            }
+			$this->filter->setRequestVar($parameterVar);
 			$this->filter->setCleanValue(null);
             $requestParams = $this->_request->getParams();
             if($this->bxDataHelper->isHierarchical($this->fieldName) && isset($requestParams['bx_category_id'])){
