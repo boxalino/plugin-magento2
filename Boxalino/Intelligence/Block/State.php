@@ -33,10 +33,18 @@ class State extends \Magento\Catalog\Model\Layer\State{
     private $_layer;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $_logger;
+    
+    /**
      * State constructor.
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
      * @param array $data
      */
 	public function __construct(
@@ -44,9 +52,14 @@ class State extends \Magento\Catalog\Model\Layer\State{
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
+        \Magento\Framework\Registry $registry,
+        \Magento\Catalog\Block\Category\View $categoryViewBlock,
+        \Psr\Log\LoggerInterface $logger,
 		array $data = []
     )
     {
+        $this->_logger = $logger;
+        $this->categoryViewBlock = $categoryViewBlock;
         $this->_layer = $layerResolver->get();
         $this->bxHelperData = $bxHelperData;
         $this->_data = $data;
@@ -63,8 +76,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     public function getFilters()
     {
         try {
-            if ($this->bxHelperData->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)) {
-
+            if ($this->bxHelperData->isFilterLayoutEnabled($this->_layer)) {
                 $filters = array();
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
@@ -86,6 +98,8 @@ class State extends \Magento\Catalog\Model\Layer\State{
             }
             return parent::getFilters();
         }catch(\Exception $e){
+            $this->bxHelperData->setFallback(true);
+            $this->_logger->critical($e);
             return parent::getFilters();
         }
     }

@@ -77,19 +77,26 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
     public function execute()
     {
         if($this->bxHelperData->isSearchEnabled()){
+
             $this->layerResolver->create(Resolver::CATALOG_LAYER_SEARCH);
             /* @var $query \Magento\Search\Model\Query */
             $query = $this->_queryFactory->get();
 
             try{
+                if($this->p13Helper->areThereSubPhrases()){
+                    $queries = $this->p13Helper->getSubPhrasesQueries();
+                    if(count($queries) == 1){
+                        $this->_redirect('*/*/*', array('_current'=> true, '_query' => array('q' => $queries[0])));
+                    }
+                }
                 if($this->p13Helper->areResultsCorrected()){
                     $correctedQuery = $this->p13Helper->getCorrectedQuery();
                     $query->setQueryText($correctedQuery);
                 }
             }catch(\Exception $e){
+                $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
             }
-
             $query->setStoreId($this->_storeManager->getStore()->getId());
 
             if ($query->getQueryText() != '') {
@@ -105,7 +112,6 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
                 }
 
                 $this->_objectManager->get('Magento\CatalogSearch\Helper\Data')->checkNotes();
-
                 $this->_view->loadLayout();
                 $this->_view->renderLayout();
             } else {

@@ -39,6 +39,11 @@ class Result extends Mage_Result{
      * @var bool
      */
     protected $fallback = false;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
     
     /**
      * Result constructor.
@@ -48,7 +53,6 @@ class Result extends Mage_Result{
      * @param QueryFactory $queryFactory
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param BxHelperData $bxHelperData
-     * @param \Magento\Framework\App\Action\Context $actionContext
      * @param array $data
      */
     public function __construct(
@@ -58,22 +62,26 @@ class Result extends Mage_Result{
         QueryFactory $queryFactory,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Magento\Framework\App\Action\Context $actionContext,
+        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
+        $this->_logger = $logger;
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
-        if($this->bxHelperData->isSearchEnabled() && $this->hasSubPhrases()){
-            $this->queries = $p13nHelper->getSubPhrasesQueries();
-            if(count($this->queries) < 2){
-                $url = $actionContext->getUrl()->getCurrentUrl();
-                $replace = '?q=' . $this->queries[0];
-                $url = substr_replace ($url, $replace, strpos($url, '?'));
-                $actionContext->getResponse()->setRedirect($url);
-            }
-        }
 
+        try{
+            if( $this->bxHelperData->isSearchEnabled()){
+                if($this->hasSubPhrases()){
+                    $this->queries =  $this->p13nHelper->getSubPhrasesQueries();
+                }
+            }else{
+                $this->fallback = true;
+            }
+        }catch(\Exception $e){
+            $this->fallback = true;
+            $this->_logger->critical($e);
+        }
         parent::__construct($context, $layerResolver, $catalogSearchData, $queryFactory, $data);
     }
 
@@ -119,7 +127,7 @@ class Result extends Mage_Result{
      */
     public function getSearchQueryLink($index){
 
-        return $this->_storeManager->getStore()->getBaseUrl() . "catalogsearch/result/?q=" . $this->queries[$index];
+        return $this->getUrl('*/*', array('_current' => 'true', '_query' => array('q' => $this->queries[$index])));
     }
 
     /**
@@ -169,6 +177,7 @@ class Result extends Mage_Result{
             }
         }catch(\Exception $e){
             $this->fallback = true;
+            $this->_logger->critical($e);
         }
         return 0;
     }
@@ -202,8 +211,12 @@ class Result extends Mage_Result{
         }
         return $this->getData('result_count');
     }
-    
+
+    /**
+     * @return bool
+     */
     public function getFallback(){
+
         return $this->fallback;
     }
 }

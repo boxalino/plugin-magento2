@@ -76,6 +76,11 @@ class Adapter
 	protected $bxDebug = false;
 
 	/**
+	 * @var bool
+	 */
+	protected $navigation = false;
+
+	/**
 	 * Adapter constructor.
 	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
 	 * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -122,7 +127,7 @@ class Adapter
 	protected function initializeBXClient() {
 
 		if(self::$bxClient == null) {
-			
+
 			$account = $this->scopeConfig->getValue('bxGeneral/general/account_name',$this->scopeStore);
 			$password = $this->scopeConfig->getValue('bxGeneral/general/password',$this->scopeStore);
 			$isDev = $this->scopeConfig->getValue('bxGeneral/general/dev',$this->scopeStore);
@@ -176,6 +181,7 @@ class Adapter
 				$choice = "navigation";
 			}
 			$this->currentSearchChoice = $choice;
+			$this->navigation = true;
 			return $choice;
 		}
 		
@@ -279,21 +285,18 @@ class Adapter
 		return $data;
 	}
 
-	/**
+	/***
 	 * @param $queryText
 	 * @param int $pageOffset
-	 * @param null $overwriteHitcount
+	 * @param $hitCount
 	 * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
 	 * @param null $categoryId
 	 */
-    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
+    public function search($queryText, $pageOffset = 0, $hitCount, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
 
-		$returnFields = array('products_group_id'/*$this->getEntityIdFieldName()*/, 'categories', 'discountedPrice', 'title', 'score');
-		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields',$this->scopeStore));
+		$returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
 		$returnFields = array_merge($returnFields, $additionalFields);
-
-		$requestParams = $this->request->getParams();
-		$hitCount = isset($requestParams['product_list_limit'])? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
 
 		//create search request
 		$bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
@@ -310,15 +313,45 @@ class Adapter
 			$filterNegative = false;
 			$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
 		}
+
 		self::$bxClient->addRequest($bxRequest);
     }
 
 	/**
+	 * 
+	 */
+	public function simpleSearch() {
+
+		$query = $this->queryFactory->get();
+		$queryText = $query->getQueryText();
+
+		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!= null) {
+			return;
+		}
+
+		$requestParams = $this->request->getParams();
+		$field = '';
+		$order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
+
+		if(($order == 'title') || ($order == 'name')){
+			$field = 'title';
+		} elseif($order == 'price'){
+			$field = 'products_bx_grouped_price';
+		}
+
+		$dir = isset($requestParams['product_list_dir']) ? true : false;
+		$categoryId = $this->registry->registry('current_category') != null ? $this->registry->registry('current_category')->getId() : null;
+		$hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+		$pageOffset = isset($requestParams['p']) ? ($requestParams['p']-1)*($hitCount) : 0;
+		$this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
+	}
+
+	/**
 	 * @return mixed
 	 */
-	public function getMagentoStoreConfigPageSize() {
-		
-		$storeConfig = $this->scopeConfig->getValue('catalog/frontend');
+	protected function getMagentoStoreConfigPageSize() {
+
+		$storeConfig = $this->getMagentoStoreConfig();
 		$storeDisplayMode = $storeConfig['list_mode'];
 
 		//we may get grid-list, list-grid, grid or list
@@ -329,56 +362,20 @@ class Adapter
 	}
 
 	/**
-	 * 
+	 * @return mixed
 	 */
-	public function simpleSearch() {
+	protected function getMagentoStoreConfigListOrder(){
 
-		$query = $this->queryFactory->get();
-		$queryText = $query->getQueryText();
+		$storeConfig = $this->getMagentoStoreConfig();
+		return $storeConfig['default_sort_by'];
+	}
 
-		$requestParams = $this->request->getParams();
-		if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
-			return;
-		}
+	/**
+	 * @return mixed
+	 */
+	private function getMagentoStoreConfig(){
 
-		$field = '';
-		$dir = '';
-		$order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : '';
-
-		if($order){
-			if($order == 'name'){
-				$field = 'title';
-			} elseif($order == 'price'){
-				$field = 'products_bx_grouped_price';
-			}
-		}
-		
-		$dirOrder = isset($requestParams['product_list_dir']) ? $requestParams['product_list_dir'] : '';
-		if($dirOrder){
-			$dir = $dirOrder == 'asc' ? false : true;
-		} else{
-			$dir = true;
-		}
-
-		$categoryId = $this->request->getParam($this->getUrlParameterPrefix() . 'category_id');
-		if (empty($categoryId)) {
-			/* @var $category Mage_Catalog_Model_Category */
-			$category = $this->registry->registry('current_category');
-			if (!empty($category)) {
-				$requestParams[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
-//				$categoryId = $category->getId();
-			}
-			// GET param 'cat' may override the current_category,
-			// i.e. when clicking on subcategories in a category page
-			$cat = $this->request->getParam('cat');
-			if (!empty($requestParams) && !empty($cat)) {
-				$requestParams[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
-			}
-		}
-		
-		$overWriteLimit = isset($requestParams['product_list_limit'])? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-		$pageOffset = isset($requestParams['p'])? ($requestParams['p']-1)*($overWriteLimit) : 0;
-		$this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
+		return $this->scopeConfig->getValue('catalog/frontend');
 	}
 
 	/**
@@ -390,8 +387,7 @@ class Adapter
 	}
 
 	/**
-	 * @return \com\boxalino\bxclient\v1\BxFacets|null
-	 * @throws \Exception
+	 * @return \com\boxalino\bxclient\v1\BxFacets
 	 */
     private function prepareFacets(){
 
@@ -402,22 +398,29 @@ class Adapter
 		foreach ($requestParams as $key => $values) {
 			if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
 				$fieldName = substr($key, 3);
-				$selectedValues[$fieldName] = !is_array($values)?array($values):$values;
+				$selectedValues[$fieldName] = !is_array($values) ? array($values) : $values;
 			}
 		}
 
-		$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
-		$bxFacets->addCategoryFacet($catId);
-		$attributes = [];
+		if(!$this->navigation){
+			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+			$bxFacets->addCategoryFacet($catId);
+		}
+
 		$attributeCollection = $this->bxHelperData->getFilterProductAttributes();
 
 		foreach($attributeCollection as $code => $attribute){
+			if($this->navigation && $code == 'categories'){
+				$this->bxHelperData->setRemovedAttributes($code);
+				continue;
+			}
 			$bound = $code == 'discountedPrice' ? true : false;
 			list($label, $type, $order, $position) = array_values($attribute);
 			$selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
 
 			$bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
 		}
+
 		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
 
 		if($topField) {

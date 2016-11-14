@@ -81,6 +81,7 @@ class Upsell extends MageUpsell{
                     $execute
                 );
             }catch(\Exception $e){
+                $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return parent::_prepareData();
             }

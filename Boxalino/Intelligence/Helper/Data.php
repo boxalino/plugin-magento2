@@ -75,6 +75,16 @@ class Data{
      * @var array
      */
     protected $cmsBlock = array();
+
+    /**
+     * @var array
+     */
+    protected $removedAttributes = array();
+
+    /**
+     * @var
+     */
+    protected $fallback = false;
     
     /**
      * Data constructor.
@@ -360,7 +370,6 @@ class Data{
         $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
         $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
         $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
-
         $index =  array_search($widgetName, $widgetNames);
         $widgetConfig = array();
         if($index !== false){
@@ -369,7 +378,7 @@ class Data{
         }
         return $widgetConfig;
     }
-
+    
     /**
      * @return bool
      */
@@ -378,7 +387,7 @@ class Data{
         if(!isset($this->bxConfig['bxGeneral'])) {
             $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
         }
-        return (bool) $this->bxConfig['bxGeneral']['general']['enabled'];
+        return (bool) ($this->bxConfig['bxGeneral']['general']['enabled'] && !$this->fallback);
     }
 
     /**
@@ -483,19 +492,41 @@ class Data{
     /**
      * @return bool
      */
-    public function isFilterLayoutEnabled($category=true){
+    public function isFilterLayoutEnabled($layer){
 
-        if($category){
-            $type = 'navigation';
-        }else{
-            $type = 'search';
+        $type = '';
+        switch(get_class($layer)){
+            case 'Magento\Catalog\Model\Layer\Category\Interceptor':
+                $type = 'navigation';
+                break;
+            case 'Magento\Catalog\Model\Layer\Search\Interceptor':
+                $type = 'search';
+                break;
+            default:
+                return false;
         }
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch'][$type]['filter']);
+        return (bool)($this->isEnabledOnLayer($layer) && $this->bxConfig['bxSearch'][$type]['filter']);
     }
 
+    /**
+     * @param $layer
+     * @return bool
+     */
+    public function isEnabledOnLayer($layer){
+
+        switch(get_class($layer)){
+            case 'Magento\Catalog\Model\Layer\Category\Interceptor':
+                return $this->isNavigationEnabled();
+            case 'Magento\Catalog\Model\Layer\Search\Interceptor':
+                return $this->isSearchEnabled();
+            default:
+                return false;
+        }
+    }
+    
     /**
      * @return bool
      */
@@ -512,6 +543,7 @@ class Data{
      * @return mixed
      */
     public function getSubPhrasesLimit(){
+
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -521,7 +553,7 @@ class Data{
     /**
      * @return int
      */
-    public function getCategoriesSortOrder(){
+    public function getFieldSortOrder($fieldName){
 
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
@@ -529,9 +561,8 @@ class Data{
 
         $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
         $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
-
         foreach($fields as $index => $field){
-            if($field == 'categories'){
+            if($field == $fieldName){
                 return (int)$orders[$index];
             }
         }
@@ -549,37 +580,44 @@ class Data{
      * @return array
      */
     public function getFilterProductAttributes(){
+
         $attributes = [];
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeId = $objectManager->create('\Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
-
         $attributeCollection = $objectManager->create('\Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection')
-            ->addIsFilterableFilter()->addVisibleFilter()->setOrder('position','ASC')->load();
+            ->addIsFilterableFilter()
+            ->addVisibleFilter()
+            ->setOrder('position','ASC')->load();
         $leftFacets = $this->getLeftFacets();
 
         $allowedTypes = array('multiselect', 'price', 'select');
-        foreach($attributeCollection as $attribute){
+        foreach($attributeCollection as $attribute) {
             $data = $attribute->getData();
-            if(!in_array($data['frontend_input'], $allowedTypes)){
+            if (!in_array($data['frontend_input'], $allowedTypes)) {
                 continue;
             }
             $position = $data['position'];
             $code = $data['attribute_code'];
             $type = 'list';
-            
-            if($code == 'price'){
+
+            if ($code == 'price') {
                 $type = 'ranged';
             }
             $code = $code == 'price' ? 'discountedPrice' : $this->getProductAttributePrefix() . $code;
             $attributes[$code] = array(
                 'label' => $attribute->getStoreLabel($storeId),
-                'type' => $type, 
+                'type' => $type,
                 'order' => 0,
                 'position' => $position
             );
         }
-        
         $attributes = array_merge($attributes, $leftFacets);
+
+        if(count($this->removedAttributes)){
+            foreach($this->removedAttributes as $attribute){
+                unset($attributes[$attribute]);
+            }
+        }
         uasort($attributes, function($a, $b){
             if($a['position'] == $b['position']){
                 return strcmp($a['label'],$b['label']);
@@ -589,11 +627,11 @@ class Data{
             }
             return $a['position'] - $b['position'];
         });
-        
         return $attributes;
     }
 
     public function getLeftFacetFieldNames(){
+
         return array_keys($this->getFilterProductAttributes());
     }
     /**
@@ -614,7 +652,6 @@ class Data{
         if($fields[0] == "" || !$this->isLeftFilterEnabled()) {
             return array();
         }
-
         if(sizeof($fields) != sizeof($labels)) {
             throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
         }
@@ -636,7 +673,6 @@ class Data{
                 'order' => $orders[$k],
                 'position' => $position[$k]);
         }
-
         return $facets;
     }
     
@@ -688,6 +724,20 @@ class Data{
     }
 
     /**
+     * @param $fallback
+     */
+    public function setFallback($fallback){
+        $this->fallback = $fallback;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getFallback(){
+        return $this->fallback;
+    }
+    
+    /**
      * @param boolean $setup
      */
     public function setSetup($setup){
@@ -709,5 +759,22 @@ class Data{
     public function getCmsBlock(){
 
         return $this->cmsBlock;
+    }
+
+    /**
+     * @param $attribute
+     */
+    public function setRemovedAttributes($attribute){
+
+        $this->removedAttributes[] = $attribute;
+    }
+
+    /**
+     * @param $array
+     * @return array
+     */
+    public function useValuesAsKeys($array){
+
+        return array_combine(array_keys(array_flip($array)),$array);
     }
 }

@@ -37,7 +37,7 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
      */
     public function addItemData($label, $value, $count, $selected = null, $type = null){
         
-        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)){
+        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)){
             $this->_itemsData[] = [
                 'label' => $label,
                 'value' => $value,
@@ -46,11 +46,7 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
                 'type' => $type
             ];
         }else{
-            $this->_itemsData[] = [
-                'label' => $label,
-                'value' => $value,
-                'count' => $count
-            ];
+            parent::addItemData($label, $value, $count);
         }
     }
 }

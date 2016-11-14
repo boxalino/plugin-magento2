@@ -23,11 +23,17 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     private $bxFacets;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * FilterList constructor.
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param \BOxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Psr\Log\LoggerInterface $logger
      * @param array $filters
      */
     public function __construct(
@@ -35,10 +41,12 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \BOxalino\Intelligence\Helper\Data $bxHelperData,
+        \Psr\Log\LoggerInterface $logger,
         array $filters = []
     )
     {
         parent::__construct($objectManager, $filterableAttributes, $filters);
+        $this->_logger = $logger;
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
     }
@@ -50,11 +58,9 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     public function getFilters(\Magento\Catalog\Model\Layer $layer){
 
         try {
-            if ($layer instanceof \Magento\Catalog\Model\Layer\Category\Interceptor && !$this->bxHelperData->isNavigationEnabled()) {
-                return parent::getFilters($layer);
-            }
-            $filters = array();
-            if ($this->bxHelperData->isFilterLayoutEnabled($layer instanceof \Magento\Catalog\Model\Layer\Category) && $this->bxHelperData->isLeftFilterEnabled()) {
+            if ($this->bxHelperData->isFilterLayoutEnabled($layer) && $this->bxHelperData->isLeftFilterEnabled()) {
+
+                $filters = array();
                 $facets = $this->getBxFacets();
                 if ($facets) {
                     foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {
@@ -69,9 +75,13 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                         $filters[] = $filter;
                     }
                 }
+                return $filters;
+            }else{
+                return parent::getFilters($layer);
             }
-            return $filters;
         }catch(\Exception $e){
+            $this->bxHelperData->setFallback(true);
+            $this->_logger->critical($e);
             return parent::getFilters($layer);
         }
     }

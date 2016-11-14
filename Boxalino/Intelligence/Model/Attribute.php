@@ -37,7 +37,17 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @var \Magento\Catalog\Model\Layer
      */
     private $_layer;
-    
+
+    /**
+     * @var \Magento\Eav\Model\Config
+     */
+    private $_config;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $_logger;
+
     /**
      * Attribute constructor.
      * @param \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory
@@ -49,6 +59,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param \Magento\Framework\Filter\StripTags $tagFilter
      * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Magento\Catalog\Helper\Category $categoryHelper
+     * @param \Magento\Eav\Model\Config $config
+     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -62,9 +75,13 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Magento\Catalog\Helper\Category $categoryHelper,
+        \Magento\Eav\Model\Config $config,
+        \Psr\Log\LoggerInterface $logger,
         array $data=[]
     )
     {
+        $this->_logger = $logger;
+        $this->_config = $config;
         $this->_layer = $layer;
         $this->categoryHelper = $categoryHelper;
         $this->categoryFactory = $categoryFactory;
@@ -109,18 +126,24 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function _initItems(){
         
-        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)){
-            $data = $this->_getItemsData();
-            $items = [];
-            foreach ($data as $itemData) {
-                $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
-                $type = isset($itemData['type']) ? $itemData['type'] : null;
-                $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
+        try{
+            if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)){
+                $data = $this->_getItemsData();
+                $items = [];
+                foreach ($data as $itemData) {
+                    $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
+                    $type = isset($itemData['type']) ? $itemData['type'] : null;
+                    $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
+                }
+                $this->_items = $items;
+                return $this;
             }
-            $this->_items = $items;
-            return $this;
+            return parent::_initItems();  
+        }catch (\Exception $e){
+            $this->bxDataHelper->setFallback(true);
+            $this->_logger->critical($e);
+            return parent::_initItems();
         }
-        return parent::_initItems();
     }
 
     /**
@@ -133,7 +156,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
         
-        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer instanceof \Magento\Catalog\Model\Layer\Category)) {
+        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)) {
             return $this->_filterItemFactory->create()
                 ->setFilter($this)
                 ->setLabel($label)
@@ -152,23 +175,39 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         
         $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
         if (!$this->bxDataHelper->isHierarchical($this->fieldName)) {
-            foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
-                if ($this->bxFacets->getSelectedValues($this->fieldName) && $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue) {
-                    $value = $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue ? true : false;
+            $order = $this->bxDataHelper->getFieldSortOrder($this->fieldName);
+            if($order == 2){
+                $values = $this->_config->getAttribute('catalog_product', substr($this->fieldName,9))->getSource()->getAllOptions();
+                $responseValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getFacetValues($this->fieldName));
+                $selectedValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
+
+                foreach($values as $value){
+
+                    $label = is_array($value) ? $value['label'] : $value;
+                    if(isset($responseValues[$label])){
+                        $facetValue = $responseValues[$label];
+                        $selected = isset($selectedValues[$facetValue]) ? true : false;
+                        $this->itemDataBuilder->addItemData(
+                            $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                            $selected ? 0 : $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+                            $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                            $selected,
+                            'flat'
+                        );
+                    }
+                }
+            }else{
+                $selectedValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
+                $responseValues = $this->bxFacets->getFacetValues($this->fieldName);
+
+                foreach ($responseValues as $facetValue){
+
+                    $selected = isset($selectedValues[$facetValue]) ? true : false;
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        0,
+                        $selected ? 0 : $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
                         $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        $value,
-                        'flat'
-                    );
-                } else {
-                    $value = false;
-                    $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        $value,
+                        $selected,
                         'flat'
                     );
                 }
@@ -203,7 +242,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     'parent'
                 );
             }
-            $sortOrder = $this->bxDataHelper->getCategoriesSortOrder();
+            $sortOrder = $this->bxDataHelper->getFieldSortOrder($this->fieldName);
             if($sortOrder == 2){
                 $facetLabels = $this->bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];

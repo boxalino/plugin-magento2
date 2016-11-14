@@ -81,6 +81,11 @@ class BxListProducts extends ListProduct{
     protected $_response;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * BxListProducts constructor.
      * @param Context $context
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
@@ -94,6 +99,7 @@ class BxListProducts extends ListProduct{
      * @param \Magento\Catalog\Helper\Category $categoryHelper
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
+     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -109,9 +115,11 @@ class BxListProducts extends ListProduct{
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
+        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
+        $this->_logger = $logger;
         $this->_response = $actionContext->getResponse();
         $this->categoryViewBlock = $categoryViewBlock;
         $this->categoryFactory = $categoryFactory;
@@ -126,69 +134,46 @@ class BxListProducts extends ListProduct{
     /**
      * @return AbstractCollection|mixed
      */
-    public function _getProductCollection()
-    {
-        
+    public function _getProductCollection(){
+
         try{
-            if(count($this->bxListCollection) && !$this->p13nHelper->areThereSubPhrases()){
-                return $this->bxListCollection;
-            }
-
             $layer = $this->getLayer();
-            $categoryLayer = $layer instanceof \Magento\Catalog\Model\Layer\Category;
-            $searchLayer = $layer instanceof \Magento\Catalog\Model\Layer\Search;
-            $contentMode = $categoryLayer ? $this->categoryViewBlock->isContentMode() : false;
-
-            if(!$this->bxHelperData->isSearchEnabled() || $contentMode){
-                return parent::_getProductCollection();
-            }
-
-            if($categoryLayer || $searchLayer){
-
-                if(!$this->bxHelperData->isNavigationEnabled() && $categoryLayer){
-                    return parent::_getProductCollection();
+            if($this->bxHelperData->isFilterLayoutEnabled($layer)){
+                if(count($this->_productCollection) && !$this->p13nHelper->areThereSubPhrases()){
+                    return $this->_productCollection;
                 }
 
-                if($this->getRequest()->getParam('bx_category_id') && $categoryLayer) {
-                    $selectedCategory = $this->categoryFactory->create()->load($this->getRequest()->getParam('bx_category_id'));
-
-                    if($selectedCategory->getLevel() != 1){
-                        $url = $selectedCategory->getUrl();
-                        $bxParams = $this->checkForBxParams($this->getRequest()->getParams());
-                        $this->_response->setRedirect($url . $bxParams);
+                if($layer instanceof \Magento\Catalog\Model\Layer\Category){
+                    if($this->categoryViewBlock->isContentMode()){
+                        return parent::_getProductCollection();
                     }
                 }
 
-                $entity_ids = array();
-                if($searchLayer) {
-                    if ($this->p13nHelper->areThereSubPhrases()) {
-                        $this->queries = $this->p13nHelper->getSubPhrasesQueries();
-                        $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
-                        $entity_ids = array_slice($entity_ids,0,$this->bxHelperData->getSubPhrasesLimit());
-                    }
-                }
-
-                if(empty($entity_ids)){
+                if($this->p13nHelper->areThereSubPhrases()){
+                    $this->queries = $this->p13nHelper->getSubPhrasesQueries();
+                    $entity_ids = $this->p13nHelper->getSubPhraseEntitiesIds($this->queries[self::$number]);
+                    $entity_ids = array_slice($entity_ids, 0, $this->bxHelperData->getSubPhrasesLimit());
+                }else{
                     $entity_ids = $this->p13nHelper->getEntitiesIds();
                 }
 
-                // Added check if there are any entity ids, otherwise force empty result
-                if ((count($entity_ids) == 0)) {
+                if(count($entity_ids) == 0){
                     $entity_ids = array(0);
                 }
-                
-                return $this->_setupCollection($entity_ids);
+                $this->_setupCollection($entity_ids);
+                return $this->_productCollection;
             }else{
                 return parent::_getProductCollection();
             }
         }catch(\Exception $e){
+            $this->bxHelperData->setFallback(true);
+            $this->_logger->critical($e);
             return parent::_getProductCollection();
         }
     }
 
     /**
      * @param $entity_ids
-     * @return \Boxalino\Intelligence\Model\Collection
      */
     protected function _setupCollection($entity_ids){
         
@@ -212,33 +197,7 @@ class BxListProducts extends ListProduct{
         $lastPage = ceil($totalHitCount /$limit);
         $list->setLastBxPage($lastPage);
         $list->setBxTotal($totalHitCount);
-        $this->bxListCollection = $list;
-        return $list;
-    }
-    
-    /**
-     * @param $params
-     * @return string
-     */
-    private function checkForBxParams($params){
-        
-        $paramString = '';
-        $first = true;
-        foreach($params as $key => $param){
-            if(preg_match("/^bx_/",$key)){
-                if(preg_match("/^bx_category_id/",$key)){
-                    continue;
-                }
-                if($first) {
-                    $paramString = '?';
-                    $first = false;
-                }else{
-                    $paramString = $paramString . "&";
-                }
-                $paramString = $paramString . $key . '=' . $param;
-            }
-        }
-        return $paramString;
+        $this->_productCollection = $list;
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
     $om = \Magento\Framework\App\ObjectManager::getInstance();
     $data = $om->get("\Boxalino\Intelligence\Helper\Data");
-    if(!$data->isFilterLayoutEnabled($block->getLayer() instanceof \Magento\Catalog\Model\Layer\Category)):
+    if(!$data->isFilterLayoutEnabled($block->getLayer())):
 ?>
 <?php include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml')); ?>
 <?php else: ?>

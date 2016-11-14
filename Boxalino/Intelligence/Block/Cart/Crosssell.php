@@ -91,6 +91,7 @@ class Crosssell extends Mage_Crosssell{
                     $execute
                 );
             }catch(\Exception $e){
+                $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return parent::getItems();
             }

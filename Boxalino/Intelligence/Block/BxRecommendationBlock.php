@@ -120,15 +120,20 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      */
     public function _construct(){
 
-        if($this->bxHelperData->isSetup()){
-            $cmsBlock = $this->bxHelperData->getCmsBlock();
-            if($cmsBlock){
-                $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
-                $this->prepareRecommendations($recommendationBlocks);
-                $this->bxHelperData->setSetup(false);
-            }else{
-                $this->prepareRecommendations(array($this->_data));
+        try{
+            if($this->bxHelperData->isSetup()){
+                $cmsBlock = $this->bxHelperData->getCmsBlock();
+                if($cmsBlock){
+                    $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
+                    $this->prepareRecommendations($recommendationBlocks);
+                    $this->bxHelperData->setSetup(false);
+                }else{
+                    $this->prepareRecommendations(array($this->_data));
+                }
             }
+        }catch(\Exception $e){
+            $this->bxHelperData->setFallback(true);
+            $this->_logger->critical($e);
         }
     }
 
@@ -206,7 +211,9 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         try{
             $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
         }catch (\Exception $e){
+            $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
+            return $this;
         }
     
         if ((count($entity_ids) == 0)) {
