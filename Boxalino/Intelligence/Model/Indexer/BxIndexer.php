@@ -89,7 +89,12 @@ class BxIndexer {
      * @var \Magento\Indexer\Model\Indexer
      */
     protected $indexerModel;
-
+    
+    /**
+     * @var \Magento\Framework\App\Response\Http
+     */
+    protected $_response;
+    
     /**
      * BxIndexer constructor.
      * @param StoreManagerInterface $storeManager
@@ -110,10 +115,12 @@ class BxIndexer {
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         ProductFactory $productFactory,
         \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Indexer\Model\Indexer $indexer
+        \Magento\Indexer\Model\Indexer $indexer,
+        \Magento\Framework\App\Response\Http $response
 
     )
     {
+        $this->_response = $response;
         $this->indexerModel = $indexer;
         $this->storeManager = $storeManager;
         $this->logger = $logger;
@@ -199,7 +206,7 @@ class BxIndexer {
             foreach ($this->config->getAccounts() as $account) {
 
                 $this->logger->info("bxLog: initialize files on account: " . $account);
-                $files = new BxFiles($this->filesystem, $account, $this->config);
+                $files = new BxFiles($this->filesystem, $account, $this->config, $this->_response);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
                 $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
@@ -1160,9 +1167,14 @@ class BxIndexer {
                                     array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
                                     't_d.entity_id = c_p_r.child_id',
                                     array(
-                                        'value' => 'MIN(value)'
+                                        'value' => 'MIN(t_d.value)'
                                     )
-                                )->group(array('parent_id'))->where('t_d.attribute_id = ?', $typeKey);
+                                )->join(
+                                    array('t_s' => $this->rs->getTableName('catalog_product_entity_int')),
+                                    't_s.entity_id = c_p_r.child_id AND t_s.value = 1',
+                                    array()
+                                )->group(array('parent_id'))->where('t_d.attribute_id = ?', $typeKey)
+                                ->where('t_s.attribute_id = ?', $this->getAttributeId('status'));
                             if ($this->getIndexerType() == 'delta') $priceSelect->where('c_p_r.parent_id IN(?)', $this->getDeltaIds());
                             $priceData = array();
 
