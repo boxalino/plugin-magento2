@@ -33,11 +33,17 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     private $fieldName = array();
 
     /**
+     * @var \Magento\Framework\App\Request\Http
+     */
+    private $_request;
+
+    /**
      * LayerFilterItem constructor.
      * @param \Magento\Framework\UrlInterface $url
      * @param \Magento\Theme\Block\Html\Pager $htmlPagerBlock
      * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Framework\App\Request\Http $request
      * @param array $data
      */
 	public function __construct(
@@ -45,9 +51,11 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\App\Request\Http $request,
         array $data = []
     )
     {
+        $this->_request = $request;
 		$this->objectManager = $objectManager;
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
@@ -100,7 +108,10 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @return mixed
      */
 	public function getLabel() {
-        
+
+        if($this->fieldName == 'discountedPrice'){
+            return str_replace("-", " - ", $this->_request->getParam('bx_discountedPrice'));
+        }
 		return $this->bxFacets->getSelectedValueLabel($this->fieldName);
 	}
 }
