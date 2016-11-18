@@ -49,6 +49,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $_logger;
 
     /**
+     * @var
+     */
+    private $is_bx_attribute;
+    
+    /**
      * Attribute constructor.
      * @param \Magento\Catalog\Model\Layer\Filter\ItemFactory $filterItemFactory
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -128,6 +133,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         
         try{
             if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)){
+                $this->is_bx_attribute = $this->bxDataHelper->isBxAttribute($this->fieldName);
                 $data = $this->_getItemsData();
                 $items = [];
                 foreach ($data as $itemData) {
@@ -155,7 +161,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return \Magento\Catalog\Model\Layer\Filter\Item
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
-        
+
         if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)) {
             return $this->_filterItemFactory->create()
                 ->setFilter($this)
@@ -172,12 +178,13 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return array
      */
     protected function _getItemsData(){
-        
-        $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
+
+        $this->_requestVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
         if (!$this->bxDataHelper->isHierarchical($this->fieldName)) {
+            $attributeModel = $this->_config->getAttribute('catalog_product', substr($this->fieldName,9))->getSource();
             $order = $this->bxDataHelper->getFieldSortOrder($this->fieldName);
             if($order == 2){
-                $values = $this->_config->getAttribute('catalog_product', substr($this->fieldName,9))->getSource()->getAllOptions();
+                $values = $attributeModel->getAllOptions();
                 $responseValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getFacetValues($this->fieldName));
                 $selectedValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
 
@@ -187,9 +194,10 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     if(isset($responseValues[$label])){
                         $facetValue = $responseValues[$label];
                         $selected = isset($selectedValues[$facetValue]) ? true : false;
+                        $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
                         $this->itemDataBuilder->addItemData(
                             $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                            $selected ? 0 : $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+                            $selected ? 0 : $paramValue,
                             $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                             $selected,
                             'flat'
@@ -199,13 +207,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }else{
                 $selectedValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
                 $responseValues = $this->bxFacets->getFacetValues($this->fieldName);
-
+                
                 foreach ($responseValues as $facetValue){
 
                     $selected = isset($selectedValues[$facetValue]) ? true : false;
+                    $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
+
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        $selected ? 0 : $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
+                        $selected ? 0 : $paramValue,
                         $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                         $selected,
                         'flat'

@@ -85,7 +85,12 @@ class Data{
      * @var
      */
     protected $fallback = false;
-    
+
+    /**
+     * @var array
+     */
+    protected $bx_filter = array();
+
     /**
      * Data constructor.
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
@@ -667,6 +672,9 @@ class Data{
 
         $facets = array();
         foreach($fields as $k => $field){
+            if(strpos($field, 'products_') !== 0){
+                $this->bx_filter[$field] = [];
+            }
             $facets[$field] = array(
                 'label' => $labels[$k],
                 'type' =>$types[$k],
@@ -700,12 +708,20 @@ class Data{
                 $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
             }
             $field = $this->bxConfig['bxSearch']['top_facet']['field'];
+            if(strpos($field, 'products_') !== 0){
+                $this->bx_filter[$field] = [];
+            }
             $order = $this->bxConfig['bxSearch']['top_facet']['order'];
             return array($field, $order);
         }
         return null;
     }
 
+    public function isBxAttribute($fieldName){
+        
+        return isset($this->bx_filter[$fieldName]);
+    }
+    
     /**
      * @return mixed
      */

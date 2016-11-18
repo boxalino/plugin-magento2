@@ -98,7 +98,6 @@ class State extends \Magento\Catalog\Model\Layer\State{
 
                             $filter->setFacets($facets);
                             $filter->setFieldName($fieldName);
-                            $filter->setClearLinkUrl("abc");
                             $filters[] = $filter;
                         }
                     }

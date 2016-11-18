@@ -33,11 +33,6 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     private $fieldName = array();
 
     /**
-     * @var \Magento\Framework\App\Request\Http
-     */
-    private $_request;
-    
-    /**
      * LayerFilterItem constructor.
      * @param \Magento\Framework\UrlInterface $url
      * @param \Magento\Theme\Block\Html\Pager $htmlPagerBlock
@@ -50,11 +45,9 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Magento\Framework\App\Request\Http $request,
         array $data = []
     )
     {
-        $this->_request = $request;
 		$this->objectManager = $objectManager;
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
@@ -91,25 +84,14 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getFilter(){
-        
+
 		if($this->filter == null) {
 			$this->filter = $this->objectManager->create(
                 "Boxalino\Intelligence\Model\LayerFilterFilter"
             );
-            $requestParams = $this->_request->getParams();
-            $parameterVar = $this->bxFacets->getFacetParameterName($this->fieldName);
-            foreach ($requestParams as $key => $values) {
-                if($this->fieldName == 'products_' . $key){
-                    $parameterVar = $key;
-                    break;
-                }
-            }
+            $parameterVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
 			$this->filter->setRequestVar($parameterVar);
 			$this->filter->setCleanValue(null);
-            $requestParams = $this->_request->getParams();
-            if($this->bxDataHelper->isHierarchical($this->fieldName) && isset($requestParams['bx_category_id'])){
-                $this->filter->setResetValue($this->bxFacets->getParentId($this->fieldName,$requestParams[($this->bxFacets->getFacetParameterName($this->fieldName))]));
-            }
 		}
 		return $this->filter;
     }
