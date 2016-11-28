@@ -1,8 +1,7 @@
 var config = {
     map: {
         '*': {
-            nouislider:      'Boxalino_Intelligence/js/nouislider',
-            translation: 'Boxalino_Intelligence/js/translation'
+            nouislider:      'Boxalino_Intelligence/js/nouislider'
         }
     },
     path: {

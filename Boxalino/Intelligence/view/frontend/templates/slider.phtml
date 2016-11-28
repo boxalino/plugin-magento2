@@ -36,8 +36,8 @@
                 ];
 				
                 slider.noUiSlider.on('update', function (values, handle) {
-                    var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
-                    "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
+                    var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to slider') ?>" + " " :
+                    "<?php /* @escapeNotVerified */ echo __('from slider') ?>" + " ";
                     snapElements[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
                 });
     
