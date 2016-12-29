@@ -315,7 +315,7 @@ class Adapter
 		$bxRequest->setFilters($this->getSystemFilters($queryText));
 
 		if($categoryId != null) {
-			$filterField = "category_id";
+			$filterField = "products_bx_parent_category_id";
 			$filterValues = array($categoryId);
 			$filterNegative = false;
 			$bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));

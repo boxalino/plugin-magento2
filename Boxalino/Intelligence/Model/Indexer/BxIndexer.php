@@ -89,12 +89,7 @@ class BxIndexer {
      * @var \Magento\Indexer\Model\Indexer
      */
     protected $indexerModel;
-    
-    /**
-     * @var \Magento\Framework\App\Response\Http
-     */
-    protected $_response;
-    
+
     /**
      * BxIndexer constructor.
      * @param StoreManagerInterface $storeManager
@@ -105,6 +100,7 @@ class BxIndexer {
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
      * @param ProductFactory $productFactory
      * @param \Magento\Framework\App\ProductMetadata $productMetaData
+     * @param \Magento\Indexer\Model\Indexer $indexer
      */
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -115,12 +111,9 @@ class BxIndexer {
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         ProductFactory $productFactory,
         \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Indexer\Model\Indexer $indexer,
-        \Magento\Framework\App\Response\Http $response
-
+        \Magento\Indexer\Model\Indexer $indexer
     )
     {
-        $this->_response = $response;
         $this->indexerModel = $indexer;
         $this->storeManager = $storeManager;
         $this->logger = $logger;
@@ -187,10 +180,10 @@ class BxIndexer {
     public function exportStores($exportProducts=true,$exportCustomers=true,$exportTransactions=true) {
 
         if(($this->getIndexerType() == 'delta') &&  $this->indexerModel->load('boxalino_indexer')->isWorking()){
-           return;
+            return;
         }
         if(($this->getIndexerType() == 'full') &&  $this->indexerModel->load('boxalino_indexer_delta')->isWorking()){
-           return;
+            return;
         }
 
         if($this->getIndexerType() == 'delta'){
@@ -206,7 +199,7 @@ class BxIndexer {
             foreach ($this->config->getAccounts() as $account) {
 
                 $this->logger->info("bxLog: initialize files on account: " . $account);
-                $files = new BxFiles($this->filesystem, $account, $this->config, $this->_response);
+                $files = new BxFiles($this->filesystem, $account, $this->config);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
                 $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
@@ -272,7 +265,7 @@ class BxIndexer {
 
                         $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
                         $publish = $this->config->publishConfigurationChanges($account);
-                        $changes = $this->bxData->publishChanges($publish);
+                        $changes = $this->bxData->publishChanges();
                         if(sizeof($changes['changes']) > 0 && !$publish) {
                             $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
                         }
@@ -998,6 +991,8 @@ class BxIndexer {
         $totalCount = 0;
         $page = 1;
         $header = true;
+        $duplicateIds = $this->getDuplicateIds($account, $languages);
+
         while (true) {
             if ($countMax > 0 && $totalCount >= $countMax) {
                 break;
@@ -1019,8 +1014,13 @@ class BxIndexer {
             if(sizeof($fetchedResult)){
                 foreach ($fetchedResult as $r) {
                     if($r['group_id'] == null) $r['group_id'] = $r['entity_id'];
-                    $data[$r['entity_id']] = $r;
+                    $data[] = $r;
                     $totalCount++;
+                    if(isset($duplicateIds[$r['entity_id']])){
+                        $r['group_id'] = $r['entity_id'];
+                        $r['entity_id'] = 'duplicate' . $r['entity_id'];
+                        $data[] = $r;
+                    }
                 }
             }else{
                 if($totalCount == 0){
@@ -1079,8 +1079,8 @@ class BxIndexer {
             }
         }
 
-        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey);
-        $this->exportProductInformation($files);
+        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey, $duplicateIds);
+        $this->exportProductInformation($files, $duplicateIds);
         return true;
     }
 
@@ -1090,7 +1090,7 @@ class BxIndexer {
      * @param $account
      * @param $files
      */
-    protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
+    protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey, $duplicateIds){
 
         $paramPriceLabel = '';
         $paramSpecialPriceLabel = '';
@@ -1103,6 +1103,7 @@ class BxIndexer {
             'store_id'
         );
         $attrs['misc'][] = array('attribute_code' => 'categories');
+        $attrs['misc'][] = array('attribute_code' => 'bx_parent_categories');
         $files->prepareProductFiles($attrs);
         unset($attrs['misc']);
 
@@ -1132,7 +1133,7 @@ class BxIndexer {
 
                     $storeBaseUrl = $storeObject->getBaseUrl();
                     $imageBaseUrl = $storeObject->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . "catalog/product";
-
+                    $storeObject = null;
                     if ($type['attribute_code'] == 'visibility') {
 
                         $select = $db->select()
@@ -1255,30 +1256,50 @@ class BxIndexer {
                         foreach ($fetchedResult as $i => $row) {
 
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
+
                                 if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
                                     $data[$row['entity_id']]['value_' . $lang] = $row['value'];
                                     $data[$row['entity_id']]['store_id'] = $row['store_id'];
+                                    if(isset($duplicateIds[$row['entity_id']])){
+                                        $data['duplicate'.$row['entity_id']] = $data[$row['entity_id']];
+                                        $data['duplicate'.$row['entity_id']]['entity_id'] = 'duplicate'.$row['entity_id'];
+                                        if($type['attribute_code'] == 'visibility'){
+                                            $visibility = $this->getVisibilityFromId($row['entity_id'], $storeId);
+                                            $data['duplicate'.$row['entity_id']]['value_' . $lang] = $visibility;
+                                        }
+                                    }
                                     if(isset($additionalData[$row['entity_id']])){
                                         if ($type['attribute_code'] == 'url_key') {
                                             $url = $storeBaseUrl . $row['value'] . '.html';
-                                            $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         } else {
                                             $url = $imageBaseUrl . $row['value'];
-                                            $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                        }
+                                        $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']] = $additionalData[$row['entity_id']];
+                                            $additionalData['duplicate'.$row['entity_id']]['entity_id'] = 'duplicate'.$row['entity_id'];
                                         }
                                     }
                                     continue;
                                 }
 
                                 $data[$row['entity_id']]['value_' . $lang] = $row['value'];
-
+                                if(isset($duplicateIds[$row['entity_id']])){
+                                    if($type['attribute_code'] == 'visibility'){
+                                        $visibility = $this->getVisibilityFromId($row['entity_id'], $storeId);
+                                        $data['duplicate'.$row['entity_id']]['value_' . $lang] = $visibility;
+                                    }
+                                }
                                 if (isset($additionalData[$row['entity_id']])) {
                                     if ($type['attribute_code'] == 'url_key') {
                                         $url = $storeBaseUrl . $row['value'] . '.html';
-                                        $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+
                                     } else {
                                         $url = $imageBaseUrl . $row['value'];
-                                        $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                    }
+                                    $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                    if(isset($duplicateIds[$row['entity_id']])){
+                                        $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
                                     }
                                 }
                                 continue;
@@ -1289,6 +1310,10 @@ class BxIndexer {
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
                                             'value_' . $lang => $url);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                'value_' . $lang => $url);
+                                        }
                                     }
                                 }
                                 if ($type['attribute_code'] == 'image') {
@@ -1296,19 +1321,37 @@ class BxIndexer {
                                         $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'value_' . $lang => $url);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                'value_' . $lang => $url);
+                                        }
                                     }
                                 }
                                 if ($type['is_global'] != 1){
+
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
                                             $data[] = array('entity_id' => $row['entity_id'],
                                                 $type['attribute_code'] . '_id' => $v);
+                                            if(isset($duplicateIds[$row['entity_id']])){
+                                                $data[] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                    $type['attribute_code'] . '_id' => $v);
+                                            }
                                         }
                                     }else{
                                         if(!isset($data[$row['entity_id']]) || $data[$row['entity_id']]['store_id'] < $row['store_id']) {
                                             $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                                 'store_id' => $row['store_id'],'value_' . $lang => $row['value']);
+                                            if(isset($duplicateIds[$row['entity_id']])){
+                                                $data['duplicate'.$row['entity_id']] = array(
+                                                    'entity_id' => 'duplicate'.$row['entity_id'],
+                                                    'store_id' => $row['store_id'],
+                                                    'value_' . $lang => $type['attribute_code'] == 'visibility' ?
+                                                        $this->getVisibilityFromId($row['entity_id'], $storeId)
+                                                        : $row['value']
+                                                );
+                                            }
                                         }
                                     }
                                     continue;
@@ -1316,17 +1359,31 @@ class BxIndexer {
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
-                                            $data[] = array('entity_id' => $row['entity_id'],
-                                                $type['attribute_code'] . '_id' => $v);
+                                            if(!isset($data[$row['entity_id'].$v])){
+                                                $data[$row['entity_id'].$v] = array('entity_id' => $row['entity_id'],
+                                                    $type['attribute_code'] . '_id' => $v);
+                                                if(isset($duplicateIds[$row['entity_id']])){
+                                                    $data[] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                        $type['attribute_code'] . '_id' => $v);
+                                                }
+                                            }
                                         }
                                     }else{
                                         $valueLabel = $type['attribute_code'] == 'visibility' ||
-                                            $type['attribute_code'] == 'status' ||
-                                            $type['attribute_code'] == 'special_from_date' ||
-                                            $type['attribute_code'] == 'special_to_date' ? 'value_' . $lang : 'value';
+                                        $type['attribute_code'] == 'status' ||
+                                        $type['attribute_code'] == 'special_from_date' ||
+                                        $type['attribute_code'] == 'special_to_date' ? 'value_' . $lang : 'value';
                                         $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
                                             $valueLabel => $row['value']);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $data['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
+                                                'store_id' => $row['store_id'],
+                                                $valueLabel => $row['value']
+                                            );
+
+                                        }
                                     }
                                 }
                             }
@@ -1361,9 +1418,9 @@ class BxIndexer {
 
                 if (sizeof($data)) {
                     if(!$global || $type['attribute_code'] == 'visibility' ||
-                    $type['attribute_code'] == 'status' ||
-                    $type['attribute_code'] == 'special_from_date' ||
-                    $type['attribute_code'] == 'special_to_date'){
+                        $type['attribute_code'] == 'status' ||
+                        $type['attribute_code'] == 'special_from_date' ||
+                        $type['attribute_code'] == 'special_to_date'){
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
@@ -1402,16 +1459,16 @@ class BxIndexer {
                         case 'description':
                             $this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
                             break;
-						case 'visibility':
-						case 'status':
-						case 'special_from_date':
-						case 'special_to_date':
-							$lc = array();
-							foreach ($languages as $lcl) {
-								$lc[$lcl] = 'value_' . $lcl;
-							}
-							$this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $lc);
-							break;
+                        case 'visibility':
+                        case 'status':
+                        case 'special_from_date':
+                        case 'special_to_date':
+                            $lc = array();
+                            foreach ($languages as $lcl) {
+                                $lc[$lcl] = 'value_' . $lcl;
+                            }
+                            $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $lc);
+                            break;
                         case 'price':
                             if(!$global){
                                 $col = null;
@@ -1490,7 +1547,7 @@ class BxIndexer {
     /**
      * @param $files
      */
-    protected function exportProductInformation($files){
+    protected function exportProductInformation($files, $duplicateIds){
 
         $fetchedResult = array();
         $db = $this->rs->getConnection();
@@ -1511,6 +1568,9 @@ class BxIndexer {
         if(sizeof($fetchedResult)){
             foreach ($fetchedResult as $r) {
                 $data[] = array('entity_id'=>$r['entity_id'], 'qty'=>$r['qty']);
+                if(isset($duplicateIds[$r['entity_id']])){
+                    $data[] = array('entity_id'=>'duplicate'.$r['entity_id'], 'qty'=>$r['qty']);
+                }
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_stock.csv', $d);
@@ -1539,6 +1599,10 @@ class BxIndexer {
         if(sizeof($fetchedResult)){
             foreach ($fetchedResult as $r) {
                 $data[] = $r;
+                if(isset($duplicateIds[$r['entity_id']])){
+                    $r['entity_id'] = 'duplicate'.$r['entity_id'];
+                    $data[] = $r;
+                }
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_website.csv', $d);
@@ -1549,6 +1613,7 @@ class BxIndexer {
             $this->bxData->addSourceStringField($attributeSourceKey, 'website_id', 'website_id');
         }
         $fetchedResult = null;
+
 
         //product categories
         $select = $db->select()
@@ -1565,11 +1630,68 @@ class BxIndexer {
         if(sizeof($fetchedResult)) {
             foreach ($fetchedResult as $r) {
                 $data[] = $r;
+                if(isset($duplicateIds[$r['entity_id']])){
+                    $r['entity_id'] = 'duplicate'.$r['entity_id'];
+                    $data[] = $r;
+                }
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_categories.csv', $d);
             $data = null;
             $d = null;
+        }
+        $fetchedResult = null;
+
+        //product parent categories
+        $select = $db->select()
+            ->from(
+                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                array('entity_id')
+            )->joinLeft(
+                array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
+                'c_p_r.child_id = c_p_e.entity_id',
+                array()
+            )->join(
+                array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
+                '(c_c_p.product_id = c_p_r.parent_id) OR (c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
+                array(
+                    'product_id',
+                    'category_id'
+                )
+            );
+
+        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        $fetchedResult = $db->fetchAll($select);
+        $select = $db->select()
+            ->from(
+                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                array('entity_id')
+            )->join(
+                array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
+                'c_c_p.product_id = c_p_e.entity_id',
+                array(
+                    'product_id',
+                    'category_id'
+                )
+            );
+        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        if(sizeof($fetchedResult)) {
+            foreach ($fetchedResult as $r) {
+                $data[] = $r;
+            }
+            $fetchedResult = null;
+            $duplicateResult = $db->fetchAll($select);
+            foreach ($duplicateResult as $r){
+                $r['entity_id'] = 'duplicate'.$r['entity_id'];
+                $data[] = $r;
+            }
+            $duplicateResult = null;
+            $d = array_merge(array(array_keys(end($data))), $data);
+            $files->savePartToCsv('product_bx_parent_categories.csv', $d);
+            $data = null;
+            $d = null;
+            $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_bx_parent_categories.csv'), 'entity_id');
+            $this->bxData->addSourceStringField($attributeSourceKey, 'bx_parent_category_id', 'category_id');
         }
         $fetchedResult = null;
 
@@ -1589,6 +1711,10 @@ class BxIndexer {
         if(sizeof($fetchedResult)) {
             foreach ($fetchedResult as $r) {
                 $data[] = $r;
+                if(isset($duplicateIds[$r['entity_id']])){
+                    $r['entity_id'] = 'duplicate'.$r['entity_id'];
+                    $data[] = $r;
+                }
             }
 
             $d = array_merge(array(array_keys(end($data))), $data);
@@ -1622,6 +1748,10 @@ class BxIndexer {
         if(sizeof($fetchedResult)) {
             foreach ($fetchedResult as $r) {
                 $data[] = $r;
+                if(isset($duplicateIds[$r['entity_id']])){
+                    $r['entity_id'] = 'duplicate'.$r['entity_id'];
+                    $data[] = $r;
+                }
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_links.csv', $d);
@@ -1632,5 +1762,64 @@ class BxIndexer {
             $this->bxData->addSourceStringField($attributeSourceKey, 'linked_product_id', 'linked_product_id');
         }
         $this->logger->info("exportProductInformation finished");
+    }
+
+    protected function getDuplicateIds($account, $languages){
+        $ids = array();
+        $db = $this->rs->getConnection();
+        $attrId = $this->getAttributeId('visibility');
+        foreach ($languages as $language){
+            $storeObject = $this->config->getStore($account, $language);
+            $storeId = $storeObject->getId();
+            $storeObject = null;
+            $select = $db->select()
+                ->from(
+                    array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
+                    array(
+                        'child_id',
+                        new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value")
+                    )
+                )->joinLeft(
+                    array('c_p_e_a' => $this->rs->getTableName('catalog_product_entity_int')),
+                    'c_p_e_a.entity_id = c_p_r.child_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attrId,
+                    array('c_p_e_a.store_id')
+                )->joinLeft(
+                    array('c_p_e_b' => $this->rs->getTableName('catalog_product_entity_int')),
+                    'c_p_e_b.entity_id = c_p_r.child_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attrId,
+                    array('c_p_e_b.store_id')
+                );
+
+            $fetchedResult = $db->fetchAll($select);
+
+            foreach ($fetchedResult as $r){
+                if($r['value'] != \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
+                    $ids[$r['child_id']] = $r['child_id'];
+                }
+            }
+        }
+        return $ids;
+    }
+
+    protected function getVisibilityFromId($id, $storeId){
+        $db = $this->rs->getConnection();
+        $attrId = $this->getAttributeId('visibility');
+        $select = $db->select()
+            ->from(
+                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                array(new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value"))
+            )
+            ->joinLeft(
+                array('c_p_e_a' => $this->rs->getTableName('catalog_product_entity_int')),
+                'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attrId,
+                array()
+            )
+            ->joinLeft(
+                array('c_p_e_b' => $this->rs->getTableName('catalog_product_entity_int')),
+                'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attrId,
+                array()
+            )
+            ->where('c_p_e.entity_id = ?', $id);
+
+        return $db->fetchRow($select)['value'];
     }
 }
