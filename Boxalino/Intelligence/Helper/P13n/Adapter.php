@@ -341,7 +341,7 @@ class Adapter
 		$order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
 
 		if(($order == 'title') || ($order == 'name')){
-			$field = 'title';
+			$field = 'products_bx_parent_title';
 		} elseif($order == 'price'){
 			$field = 'products_bx_grouped_price';
 		}
