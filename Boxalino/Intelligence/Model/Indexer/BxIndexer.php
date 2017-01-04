@@ -340,7 +340,7 @@ class BxIndexer {
      * @return mixed
      * @throws \Exception
      */
-    protected function getCategoryAttributeId($attr_code){
+    protected function getProductCategoryAttributeId($attr_code){
 
         $db = $this->rs->getConnection();
         $select = $db->select()
@@ -375,7 +375,7 @@ class BxIndexer {
                 array('c_v' => $this->rs->getTableName('catalog_category_entity_varchar')),
                 'c_v.entity_id = c_t.entity_id',
                 array('c_v.value', 'c_v.store_id')
-            )->where('c_v.attribute_id = ?', $this->getCategoryAttributeId('name'))->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId());
+            )->where('c_v.attribute_id = ?', $this->getProductCategoryAttributeId('name'))->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId());
 
         $result = $db->fetchAll($select);
 
@@ -1130,10 +1130,7 @@ class BxIndexer {
             'value',
             'store_id'
         );
-        $attrs['misc'][] = array('attribute_code' => 'categories');
-        $attrs['misc'][] = array('attribute_code' => 'bx_parent_categories');
         $files->prepareProductFiles($attrs);
-        unset($attrs['misc']);
 
         foreach($attrs as $attrKey => $types){
 
@@ -1143,6 +1140,7 @@ class BxIndexer {
                 $additionalData = array();
                 $exportAttribute = false;
                 $global = false;
+                $getValueForDuplicate = false;
                 $d = array();
                 $headerLangRow = array();
                 $optionValues = array();
@@ -1162,28 +1160,6 @@ class BxIndexer {
                     $storeBaseUrl = $storeObject->getBaseUrl();
                     $imageBaseUrl = $storeObject->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . "catalog/product";
                     $storeObject = null;
-                    if ($type['attribute_code'] == 'visibility') {
-
-                        $select = $db->select()
-                            ->from(
-                                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                                array('entity_id')
-                            )
-                            ->joinLeft(
-                                array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
-                                'c_p_e.entity_id = c_p_r.child_id',
-                                array('parent_id'))
-                            ->join(
-                                array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
-                                '(t_d.entity_id = c_p_r.parent_id) OR (t_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
-                                array(
-                                    'attribute_id',
-                                    'value',
-                                    'store_id'
-                                )
-                            );
-                        if($this->getIndexerType() == 'delta') $select->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
-                    }
 
                     if ($type['attribute_code'] == 'price'|| $type['attribute_code'] == 'special_price') {
                         if($langIndex == 0) {
@@ -1275,9 +1251,48 @@ class BxIndexer {
                         $fetchedOptionValues = null;
                     }
 
-                    $attributeSelect = clone $select;
-                    $attributeSelect->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-                    $fetchedResult = $db->fetchAll($attributeSelect);
+                    $select->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+
+                    if ($type['attribute_code'] == 'visibility' || $type['attribute_code'] ==  'status') {
+                        $getValueForDuplicate = true;
+                        $select1 = $db->select()
+                            ->from(
+                                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                                array('c_p_e.entity_id',)
+                            )
+                            ->joinLeft(
+                                array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
+                                'c_p_e.entity_id = c_p_r.child_id',
+                                array('parent_id')
+                            );
+
+                        $select1->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+                        if($this->getIndexerType() == 'delta') $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+
+                        $select2 = clone $select1;
+                        $select2->join(array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
+                            't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+                            array(
+                                't_d.attribute_id',
+                                't_d.value',
+                                't_d.store_id'
+                            )
+                        );
+                        $select1->join(array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
+                            't_d.entity_id = c_p_r.parent_id',
+                            array(
+                                't_d.attribute_id',
+                                't_d.value',
+                                't_d.store_id'
+                            )
+                        );
+                        $select = $db->select()->union(
+                            array($select1, $select2),
+                            \Zend_Db_Select::SQL_UNION
+                        );
+                    }
+
+                    $fetchedResult = $db->fetchAll($select);
 
                     if (sizeof($fetchedResult)) {
 
@@ -1285,49 +1300,44 @@ class BxIndexer {
 
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
 
-                                if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
-                                    $data[$row['entity_id']]['value_' . $lang] = $row['value'];
-                                    $data[$row['entity_id']]['store_id'] = $row['store_id'];
-                                    if(isset($duplicateIds[$row['entity_id']])){
-                                        $data['duplicate'.$row['entity_id']] = $data[$row['entity_id']];
-                                        $data['duplicate'.$row['entity_id']]['entity_id'] = 'duplicate'.$row['entity_id'];
-                                        if($type['attribute_code'] == 'visibility'){
-                                            $visibility = $this->getVisibilityFromId($row['entity_id'], $storeId);
-                                            $data['duplicate'.$row['entity_id']]['value_' . $lang] = $visibility;
+                                if(isset($data[$row['entity_id']]['value_' . $lang])){
+                                    if($row['store_id'] > 0){
+                                        $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $data['duplicate'.$row['entity_id']]['value_' . $lang] = $getValueForDuplicate ?
+                                                $this->getProductAttributeFromId($row['entity_id'], $typeKey, $storeId) :
+                                                $row['value'];
+                                        }
+                                        if(isset($additionalData[$row['entity_id']])){
+                                            if ($type['attribute_code'] == 'url_key') {
+                                                $url = $storeBaseUrl . $row['value'] . '.html';
+                                            } else {
+                                                $url = $imageBaseUrl . $row['value'];
+                                            }
+                                            $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                            if(isset($duplicateIds[$row['entity_id']])){
+                                                $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
+                                            }
                                         }
                                     }
-                                    if(isset($additionalData[$row['entity_id']])){
+                                }else{
+                                    $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                    if(isset($duplicateIds[$row['entity_id']])){
+                                        $data['duplicate'.$row['entity_id']]['value_' . $lang] = $getValueForDuplicate ?
+                                            $this->getProductAttributeFromId($row['entity_id'], $typeKey, $storeId) :
+                                            $row['value'];
+                                    }
+                                    if (isset($additionalData[$row['entity_id']])) {
                                         if ($type['attribute_code'] == 'url_key') {
                                             $url = $storeBaseUrl . $row['value'] . '.html';
+
                                         } else {
                                             $url = $imageBaseUrl . $row['value'];
                                         }
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
                                         if(isset($duplicateIds[$row['entity_id']])){
-                                            $additionalData['duplicate'.$row['entity_id']] = $additionalData[$row['entity_id']];
-                                            $additionalData['duplicate'.$row['entity_id']]['entity_id'] = 'duplicate'.$row['entity_id'];
+                                            $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
                                         }
-                                    }
-                                    continue;
-                                }
-
-                                $data[$row['entity_id']]['value_' . $lang] = $row['value'];
-                                if(isset($duplicateIds[$row['entity_id']])){
-                                    if($type['attribute_code'] == 'visibility'){
-                                        $visibility = $this->getVisibilityFromId($row['entity_id'], $storeId);
-                                        $data['duplicate'.$row['entity_id']]['value_' . $lang] = $visibility;
-                                    }
-                                }
-                                if (isset($additionalData[$row['entity_id']])) {
-                                    if ($type['attribute_code'] == 'url_key') {
-                                        $url = $storeBaseUrl . $row['value'] . '.html';
-
-                                    } else {
-                                        $url = $imageBaseUrl . $row['value'];
-                                    }
-                                    $additionalData[$row['entity_id']]['value_' . $lang] = $url;
-                                    if(isset($duplicateIds[$row['entity_id']])){
-                                        $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
                                     }
                                 }
                                 continue;
@@ -1339,7 +1349,8 @@ class BxIndexer {
                                             'store_id' => $row['store_id'],
                                             'value_' . $lang => $url);
                                         if(isset($duplicateIds[$row['entity_id']])){
-                                            $additionalData['duplicate'.$row['entity_id']] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                            $additionalData['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
                                                 'value_' . $lang => $url);
                                         }
                                     }
@@ -1350,13 +1361,13 @@ class BxIndexer {
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'value_' . $lang => $url);
                                         if(isset($duplicateIds[$row['entity_id']])){
-                                            $additionalData['duplicate'.$row['entity_id']] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                            $additionalData['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
                                                 'value_' . $lang => $url);
                                         }
                                     }
                                 }
                                 if ($type['is_global'] != 1){
-
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
@@ -1368,15 +1379,15 @@ class BxIndexer {
                                             }
                                         }
                                     }else{
-                                        if(!isset($data[$row['entity_id']]) || $data[$row['entity_id']]['store_id'] < $row['store_id']) {
+                                        if(!isset($data[$row['entity_id']])) {
                                             $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                                 'store_id' => $row['store_id'],'value_' . $lang => $row['value']);
                                             if(isset($duplicateIds[$row['entity_id']])){
                                                 $data['duplicate'.$row['entity_id']] = array(
                                                     'entity_id' => 'duplicate'.$row['entity_id'],
                                                     'store_id' => $row['store_id'],
-                                                    'value_' . $lang => $type['attribute_code'] == 'visibility' ?
-                                                        $this->getVisibilityFromId($row['entity_id'], $storeId)
+                                                    'value_' . $lang => $getValueForDuplicate ?
+                                                        $this->getProductAttributeFromId($row['entity_id'], $typeKey, $storeId)
                                                         : $row['value']
                                                 );
                                             }
@@ -1384,6 +1395,7 @@ class BxIndexer {
                                     }
                                     continue;
                                 }else{
+
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
@@ -1397,6 +1409,7 @@ class BxIndexer {
                                             }
                                         }
                                     }else{
+
                                         $valueLabel = $type['attribute_code'] == 'visibility' ||
                                         $type['attribute_code'] == 'status' ||
                                         $type['attribute_code'] == 'special_from_date' ||
@@ -1408,9 +1421,10 @@ class BxIndexer {
                                             $data['duplicate'.$row['entity_id']] = array(
                                                 'entity_id' => 'duplicate'.$row['entity_id'],
                                                 'store_id' => $row['store_id'],
-                                                $valueLabel => $row['value']
+                                                $valueLabel => $getValueForDuplicate ?
+                                                    $this->getProductAttributeFromId($row['entity_id'], $typeKey, $storeId)
+                                                    : $row['value']
                                             );
-
                                         }
                                     }
                                 }
@@ -1565,6 +1579,7 @@ class BxIndexer {
                 $d = null;
                 $labelColumns = null;
             }
+
         }
         $this->bxData->addSourceNumberField($mainSourceKey, 'bx_grouped_price', 'entity_id');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_fields', 'CASE WHEN sref.value IS NOT NULL AND sref.value > 0 AND (ref.value IS NULL OR sref.value < ref.value) THEN sref.value WHEN ref.value IS NOT NULL then ref.value WHEN sprice.'.$paramSpecialPriceLabel.' IS NOT NULL AND sprice.'.$paramSpecialPriceLabel.' > 0 AND price.'.$paramPriceLabel.' > sprice.'.$paramSpecialPriceLabel.' THEN sprice.'.$paramSpecialPriceLabel.' ELSE price.'.$paramPriceLabel.' END as price_value');
@@ -1675,42 +1690,55 @@ class BxIndexer {
         $fetchedResult = null;
 
         //product parent categories
-        $select = $db->select()
+        $select1 = $db->select()
             ->from(
                 array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                array('entity_id')
-            )->joinLeft(
+                array('c_p_e.entity_id',)
+            )
+            ->joinLeft(
                 array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
-                'c_p_r.child_id = c_p_e.entity_id',
+                'c_p_e.entity_id = c_p_r.child_id',
                 array()
-            )->join(
-                array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
-                '(c_c_p.product_id = c_p_r.parent_id) OR (c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
-                array(
-                    'product_id',
-                    'category_id'
-                )
             );
+        if($this->getIndexerType() == 'delta') $select1->where('product_id IN(?)', $this->getDeltaIds());
 
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        $select2 = clone $select1;
+        $select2->join(array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
+            'c_c_p.product_id = c_p_r.parent_id',
+            array(
+                'category_id'
+            )
+        );
+        $select1->join(array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
+            'c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+            array(
+                'category_id'
+            )
+        );
+        $select = $db->select()->union(
+            array($select1, $select2),
+            \Zend_Db_Select::SQL_UNION
+        );
         $fetchedResult = $db->fetchAll($select);
-        $select = $db->select()
-            ->from(
-                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                array('entity_id')
-            )->join(
-                array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
-                'c_c_p.product_id = c_p_e.entity_id',
-                array(
-                    'product_id',
-                    'category_id'
-                )
-            )->where('c_p_e.entity_id IN(?)', $duplicateIds);
+
         if(sizeof($fetchedResult)) {
             foreach ($fetchedResult as $r) {
                 $data[] = $r;
             }
             $fetchedResult = null;
+
+            $select = $db->select()
+                ->from(
+                    array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                    array('entity_id')
+                )->join(
+                    array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
+                    'c_c_p.product_id = c_p_e.entity_id',
+                    array(
+                        'category_id'
+                    )
+                )->where('c_p_e.entity_id IN(?)', $duplicateIds);
+
             $duplicateResult = $db->fetchAll($select);
             foreach ($duplicateResult as $r){
                 $r['entity_id'] = 'duplicate'.$r['entity_id'];
@@ -1803,46 +1831,74 @@ class BxIndexer {
             $store = $this->config->getStore($account, $language);
             $storeId = $store->getId();
             $store = null;
-            $select = $db->select()
+
+            $select1 = $db->select()
                 ->from(
                     array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                    array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
-                )->joinLeft(
+                    array('entity_id')
+                )
+                ->joinLeft(
                     array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
-                    'c_p_r.child_id = c_p_e.entity_id',
+                    'c_p_e.entity_id = c_p_r.child_id',
                     array('parent_id')
-                )->joinLeft(
-                    array('c_p_e_v_a' => $this->rs->getTableName('catalog_product_entity_varchar')),
-                    '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND ((c_p_e_v_a.entity_id = c_p_r.parent_id) OR (c_p_e_v_a.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL))',
-                    array()
-                )->joinLeft(
-                    array('c_p_e_v_b' => $this->rs->getTableName('catalog_product_entity_varchar')),
-                    '(c_p_e_v_b.attribute_id = ' . $attrId . ' AND c_p_e_v_b.store_id = ' . $storeId . ') AND ((c_p_e_v_b.entity_id = c_p_r.parent_id) OR (c_p_e_v_b.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL))',
-                    array()
                 );
-            if ($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+
+            $select1->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+            if($this->getIndexerType() == 'delta') $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+
+            $select2 = clone $select1;
+            $select2->join(
+                array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+                array(
+                    't_d.value',
+                    't_d.store_id'
+                )
+            );
+            $select1->join(
+                array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                't_d.entity_id = c_p_r.parent_id',
+                array(
+                    't_d.value',
+                    't_d.store_id'
+                )
+            );
+            $select = $db->select()->union(
+                array($select1, $select2),
+                \Zend_Db_Select::SQL_UNION
+            );
             $fetchedResult = $db->fetchAll($select);
-            $select = $db->select()
-                ->from(
-                    array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                    array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
-                )->joinLeft(
-                    array('c_p_e_v_a' => $this->rs->getTableName('catalog_product_entity_varchar')),
-                    '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
-                    array()
-                )->joinLeft(
-                    array('c_p_e_v_b' => $this->rs->getTableName('catalog_product_entity_varchar')),
-                    '(c_p_e_v_b.attribute_id = ' . $attrId . ' AND c_p_e_v_b.store_id = ' . $storeId . ') AND (c_p_e_v_b.entity_id = c_p_e.entity_id)',
-                    array()
-                )->where('c_p_e.entity_id IN (?)', $duplicateIds);
+
             if (sizeof($fetchedResult)) {
                 foreach ($fetchedResult as $r) {
                     if (isset($data[$r['entity_id']])) {
-                        $data[$r['entity_id']]['value_' . $language] = $r['value'];
+                        if(isset($data[$r['entity_id']]['value_' . $language])){
+                            if($r['store_id'] > 0){
+                                $data[$r['entity_id']]['value_' . $language] = $r['value'];
+                            }
+                        }else{
+                            $data[$r['entity_id']]['value_' . $language] = $r['value'];
+                        }
                         continue;
                     }
                     $data[$r['entity_id']] = array('entity_id' => $r['entity_id'], 'value_' . $language => $r['value']);
                 }
+
+                $fetchedResult = null;
+                $select = $db->select()
+                    ->from(
+                        array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
+                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
+                    )->joinLeft(
+                        array('c_p_e_v_a' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                        '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
+                        array()
+                    )->joinLeft(
+                        array('c_p_e_v_b' => $this->rs->getTableName('catalog_product_entity_varchar')),
+                        '(c_p_e_v_b.attribute_id = ' . $attrId . ' AND c_p_e_v_b.store_id = ' . $storeId . ') AND (c_p_e_v_b.entity_id = c_p_e.entity_id)',
+                        array()
+                    )->where('c_p_e.entity_id IN (?)', $duplicateIds);
+
                 $duplicateResult = $db->fetchAll($select);
                 foreach ($duplicateResult as $r){
                     $r['entity_id'] = 'duplicate'.$r['entity_id'];
@@ -1907,13 +1963,12 @@ class BxIndexer {
 
     /**
      * @param $id
+     * @param $attributeId
      * @param $storeId
      * @return mixed
-     * @throws \Exception
      */
-    protected function getVisibilityFromId($id, $storeId){
+    protected function getProductAttributeFromId($id, $attributeId, $storeId){
         $db = $this->rs->getConnection();
-        $attrId = $this->getProductAttributeId('visibility');
         $select = $db->select()
             ->from(
                 array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
@@ -1921,12 +1976,12 @@ class BxIndexer {
             )
             ->joinLeft(
                 array('c_p_e_a' => $this->rs->getTableName('catalog_product_entity_int')),
-                'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attrId,
+                'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
                 array()
             )
             ->joinLeft(
                 array('c_p_e_b' => $this->rs->getTableName('catalog_product_entity_int')),
-                'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attrId,
+                'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
                 array()
             )
             ->where('c_p_e.entity_id = ?', $id);
