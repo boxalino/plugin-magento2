@@ -1661,34 +1661,6 @@ class BxIndexer {
         }
         $fetchedResult = null;
 
-
-        //product categories
-        $select = $db->select()
-            ->from(
-                $this->rs->getTableName('catalog_category_product'),
-                array(
-                    'entity_id' => 'product_id',
-                    'category_id',
-                    'position'
-                )
-            );
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)) {
-            foreach ($fetchedResult as $r) {
-                $data[] = $r;
-                if(isset($duplicateIds[$r['entity_id']])){
-                    $r['entity_id'] = 'duplicate'.$r['entity_id'];
-                    $data[] = $r;
-                }
-            }
-            $d = array_merge(array(array_keys(end($data))), $data);
-            $files->savePartToCsv('product_categories.csv', $d);
-            $data = null;
-            $d = null;
-        }
-        $fetchedResult = null;
-
         //product parent categories
         $select1 = $db->select()
             ->from(
@@ -1746,11 +1718,9 @@ class BxIndexer {
             }
             $duplicateResult = null;
             $d = array_merge(array(array_keys(end($data))), $data);
-            $files->savePartToCsv('product_bx_parent_categories.csv', $d);
+            $files->savePartToCsv('product_categories.csv', $d);
             $data = null;
             $d = null;
-            $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_bx_parent_categories.csv'), 'entity_id');
-            $this->bxData->addSourceStringField($attributeSourceKey, 'bx_parent_category_id', 'category_id');
         }
         $fetchedResult = null;
 
