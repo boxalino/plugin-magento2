@@ -206,7 +206,7 @@ class BxIndexer {
                 $files = new BxFiles($this->filesystem, $account, $this->config);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
-                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
+                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == 'delta');
 
                 $this->logger->info("bxLog: verify credentials for account: " . $account);
                 try{
