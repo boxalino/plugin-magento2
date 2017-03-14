@@ -12,19 +12,19 @@
     "AFL-3.0"
   ],
   "require": {
-    "php": "~5.6.0|~7.0.0",
-    "magento/module-catalog": "100.0.*",
-    "magento/module-layered-navigation": "100.0.*",
-    "magento/module-search": "100.0.*",
-    "magento/module-indexer": "100.0.*",
-    "magento/framework": "100.0.*"
+    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "magento/module-catalog": "*",
+    "magento/module-layered-navigation": "*",
+    "magento/module-search": "*",
+    "magento/module-indexer": "*",
+    "magento/framework": "*"
   },
   "autoload": {
     "files": ["registration.php"],
     "psr-4": {
       "Boxalino\\Intelligence\\": "",
       "Thrift\\":"Lib/Thrift",
-      "com\\boxalino\\bxclient\\v1":"Lib"
+      "com\\boxalino\\bxclient\\v1\\":"Lib"
     }
   }
 }
