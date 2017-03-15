@@ -159,6 +159,11 @@
                     <label>List of transaction properties to exclude from export</label>
                     <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of transaction properties to include is not empty.</comment>
                 </field>
+                <field id="export_mode" translate="label comment" sortOrder="4" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Export mode</label>
+                    <source_model>Boxalino\Intelligence\Model\Config\Source\TransactionMode</source_model>
+                    <comment>Choose how the transactions should be exported. For Incremental, the exporter will only export the last month.</comment>
+                </field>
             </group>
 			<group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>

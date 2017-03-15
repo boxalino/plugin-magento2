@@ -238,8 +238,7 @@ class BxIndexer {
                         $this->exportCustomers($account, $files);
                     }
                     if($exportTransactions) {
-                        $full = $exportProducts == false ? true : false;
-                        $this->exportTransactions($account, $files, $full);
+                        $this->exportTransactions($account, $files);
                     }
                 }
                 $this->prepareData($account, $files, $categories);
@@ -797,7 +796,7 @@ class BxIndexer {
      * @param $files
      * @param $exportFull
      */
-    protected function exportTransactions($account, $files, $exportFull){
+    protected function exportTransactions($account, $files){
 
         // don't export transactions in delta sync or when disabled
         if(!$this->config->isTransactionsExportEnabled($account)) {
@@ -807,8 +806,7 @@ class BxIndexer {
         $this->logger->info('bxLog: starting transaction export for account ' . $account);
 
         $db = $this->rs->getConnection();
-        $limit = 1000;
-        $count = $limit;
+        $limit = 5000;
         $page = 1;
         $header = true;
         $transactions_to_save = array();
@@ -820,8 +818,11 @@ class BxIndexer {
             ((string) $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY)) .
             $account
         );
+        
+        $export_mode = $this->config->getTransactionMode($account);
+        $date = date("Y-m-d H:i:s", strtotime("-1 month"));
 
-        while ($count >= $limit) {
+        while (true) {
             $this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
 
             $configurable = array();
@@ -859,11 +860,11 @@ class BxIndexer {
                     )
                 )
                 ->where('order.status <> ?', 'canceled')
-                ->order(array('order.entity_id', 'item.product_type'))
-                ->limit($limit, ($page - 1) * $limit);
+                ->limit($limit, ($page - 1) * $limit)
+                ->order('order.created_at DESC');
 
-            if(!$exportFull){
-                $select->where('order.created_at >= ? OR order.updated_at >= ?', $this->getLastIndex());
+            if ($export_mode == 0) {
+                $select->where('order.created_at >= ?', $date);
             }
 
             $transaction_attributes = $this->getTransactionAttributes($account);
@@ -974,7 +975,6 @@ class BxIndexer {
                 $final_transaction = null;
             }
             $data[] = $transactions_to_save;
-            $count = count($transactions);
             $configurable = null;
             $transactions = null;
 
