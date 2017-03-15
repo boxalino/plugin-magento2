@@ -889,8 +889,10 @@ class BxIndexer {
 
             $transactions = $db->fetchAll($select);
 
-            if(sizeof($transactions) < 1){
+            if(sizeof($transactions) < 1 && $page == 1){
                 return;
+            } elseif (sizeof($transactions) < 1 && $page > 1) {
+                break;
             }
 
             $this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
