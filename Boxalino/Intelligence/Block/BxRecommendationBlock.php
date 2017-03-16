@@ -146,7 +146,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
 
         if(isset($results[1])){
             foreach($results[1] as $index => $result){
-                if(strpos($result,'Boxalino\Intelligence')){
+                if(strpos($result,'Boxalino\Intelligence') !== false){
                     preg_match_all("/[-^\s](.*?)\=\"(.*?)\"/",$result, $sectionResults);
                     $result_holder = array();
                     foreach($sectionResults[1] as $index => $sectionResult){
