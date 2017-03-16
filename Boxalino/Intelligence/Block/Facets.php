@@ -31,7 +31,7 @@ class Facets extends \Magento\Framework\View\Element\Template{
 	/**
 	 * @var \Psr\Log\LoggerInterface
 	 */
-	private $_logger;
+	protected $_logger;
 
 	/**
 	 * Facets constructor.
@@ -48,12 +48,11 @@ class Facets extends \Magento\Framework\View\Element\Template{
 		\Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
-		\Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
         parent::__construct($context, $data);
-		$this->_logger = $logger;
+		$this->_logger = $context->getLogger();
 		$this->p13nHelper = $p13nHelper;
 		$this->layer = $layerResolver->get();
 		$this->objectManager = $objectManager;

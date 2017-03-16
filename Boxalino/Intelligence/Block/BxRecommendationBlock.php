@@ -86,7 +86,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
      * @param \Magento\Framework\App\Request\Http $request
-     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -97,12 +96,10 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
-        \Psr\Log\LoggerInterface $logger,
-
         array $data
     )
     {
-        $this->_logger = $logger;
+        $this->_logger = $context->getLogger();
         $this->bxHelperData = $bxHelperData;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->factory = $factory;

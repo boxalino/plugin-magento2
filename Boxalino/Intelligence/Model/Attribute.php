@@ -46,7 +46,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $_logger;
+    protected $_logger;
 
     /**
      * @var

@@ -35,7 +35,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $_logger;
+    protected $_logger;
 
     /**
      * @var \Magento\Catalog\Block\Category\View

@@ -99,7 +99,6 @@ class BxListProducts extends ListProduct{
      * @param \Magento\Catalog\Helper\Category $categoryHelper
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
-     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -115,11 +114,10 @@ class BxListProducts extends ListProduct{
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
-        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
-        $this->_logger = $logger;
+        $this->_logger = $context->getLogger();
         $this->_response = $actionContext->getResponse();
         $this->categoryViewBlock = $categoryViewBlock;
         $this->categoryFactory = $categoryFactory;

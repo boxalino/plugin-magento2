@@ -62,11 +62,10 @@ class Result extends Mage_Result{
         QueryFactory $queryFactory,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
-        $this->_logger = $logger;
+        $this->_logger = $context->getLogger();
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
 
