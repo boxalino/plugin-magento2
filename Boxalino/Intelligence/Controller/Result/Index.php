@@ -49,6 +49,7 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
      * @param StoreManagerInterface $storeManager
      * @param QueryFactory $queryFactory
      * @param Resolver $layerResolver
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
@@ -57,10 +58,11 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
         Session $catalogSession,
         StoreManagerInterface $storeManager,
         QueryFactory $queryFactory,
-        Resolver $layerResolver
+        Resolver $layerResolver,
+        \Psr\Log\LoggerInterface $logger
     ) {
         parent::__construct($context,$catalogSession,$storeManager,$queryFactory,$layerResolver);
-        $this->_logger = $context->getLogger();
+        $this->_logger = $logger;
         $this->bxHelperData = $bxHelperData;
         $this->p13Helper = $p13nHelper;
         $this->_queryFactory = $queryFactory;
