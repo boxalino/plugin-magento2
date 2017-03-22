@@ -28,7 +28,46 @@ class BxAutocompleteResponse
 		foreach ($this->getResponse()->hits as $hit) {
 			$suggestions[] = $hit->suggestion;
         }
-        return $suggestions;
+		return $this->reOrderSuggestions($suggestions);
+	}
+	
+	public function suggestionIsInGroup($groupName, $suggestion) {
+		$hit = $this->getTextualSuggestionHit($suggestion);
+		switch($groupName) {
+		case 'highlighted-beginning';
+			return $hit->highlighted != "" && strpos($hit->highlighted, $this->bxAutocompleteRequest->getHighlightPre()) === 0;
+		case 'highlighted-not-beginning';
+			return $hit->highlighted != "" && strpos($hit->highlighted, $this->bxAutocompleteRequest->getHighlightPre()) !== 0;
+		default:
+			return ($hit->highlighted == "");
+		}
+	}
+	
+	public function reOrderSuggestions($suggestions) {
+		$queryText = $this->getSearchRequest()->getQueryText();
+		
+		$groupNames = array('highlighted-beginning', 'highlighted-not-beginning', 'others');
+		$groupValues = array();
+		
+		foreach($groupNames as $k => $groupName) {
+			if(!isset($groupValues[$k])) {
+				$groupValues[$k] = array();
+			}
+			foreach($suggestions as $suggestion) {
+				if($this->suggestionIsInGroup($groupName, $suggestion)) {
+					$groupValues[$k][] = $suggestion;
+				}
+			}
+		}
+		
+		$final = array();
+		foreach($groupValues as $values) {
+			foreach($values as $value) {
+				$final[] = $value;
+			}
+		}
+		
+		return $final;
 	}
 	
 	protected function getTextualSuggestionHit($suggestion) {
@@ -43,6 +82,30 @@ class BxAutocompleteResponse
 	public function getTextualSuggestionTotalHitCount($suggestion) {
 		$hit = $this->getTextualSuggestionHit($suggestion);
 		return $hit->searchResult->totalHitCount;
+	}
+	
+	public function getSearchRequest() {
+		return $this->bxAutocompleteRequest->getBxSearchRequest();
+	}
+	
+	public function getTextualSuggestionFacets($suggestion) {
+		$hit = $this->getTextualSuggestionHit($suggestion);
+	
+		$facets = $this->getSearchRequest()->getFacets();
+
+		if(empty($facets)){
+			return null;
+		}
+		$facets->setFacetResponse($hit->searchResult->facetResponses);
+		return $facets;
+	}
+	
+	public function getTextualSuggestionHighlighted($suggestion) {
+		$hit = $this->getTextualSuggestionHit($suggestion);
+		if($hit->highlighted == "") {
+			return $suggestion;
+		}
+		return $hit->highlighted;
 	}
 	
 	public function getBxSearchResponse($textualSuggestion = null) {

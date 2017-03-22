@@ -50,4 +50,7 @@
     <type name="Magento\Search\Controller\Ajax\Suggest">
         <plugin name="boxalino_auto_complete_ajax" type="Boxalino\Intelligence\Plugin\Controller\AjaxPlugin" sortOrder="1"/>
     </type>
+    <type name="Magento\LayeredNavigation\Block\Navigation\FilterRenderer">
+        <plugin name="boxalino_filter_renderer" type="Boxalino\Intelligence\Plugin\FilterRendererPlugin" sortOrder="1"/>
+    </type>
 </config>

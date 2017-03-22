@@ -12,6 +12,7 @@ class BxRequest
 	protected $withRelaxation;
 	
 	protected $indexId = null;
+	protected $requestMap = null;
 	protected $returnFields = array();
 	protected $offset = 0;
 	protected $queryText = "";
@@ -157,6 +158,12 @@ class BxRequest
 			$this->setIndexId($indexId);
 		}
 	}
+	
+	public function setDefaultRequestMap($requestMap) {
+		if($this->requestMap == null) {
+			$this->requestMap = $requestMap;
+		}
+	}
 
 	public function getLanguage() {
 		return $this->language;
@@ -183,9 +190,7 @@ class BxRequest
 		$searchQuery->offset = $this->getOffset();
 		$searchQuery->hitCount = $this->getMax();
 		$searchQuery->queryText = $this->getQueryText();
-		if(in_array('products_group_id', $this->getReturnFields())){
-			$searchQuery->groupBy = $this->groupBy;
-		}
+		$searchQuery->groupBy = $this->groupBy;
 		if(sizeof($this->getFilters()) > 0) {
 			$searchQuery->filters = array();
 			foreach($this->getFilters() as $filter) {
@@ -250,6 +255,14 @@ class BxRequest
 	
 	public function getContextItems() {
 		return $this->contextItems;
+	}
+	
+	public function getRequestContextParameters() {
+		return array();
+	}
+	
+	public function retrieveHitFieldValues($item, $field, $items, $fields) {
+		return array();
 	}
 
 }

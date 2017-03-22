@@ -82,7 +82,7 @@ class BxData
 	
 	
 	
-	public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
+	public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
 		
 		$params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 		
@@ -157,10 +157,7 @@ class BxData
 	
 	public function validateColumnExistance($container, $sourceId, $col) {
 		$row = $this->getSourceCSVRow($container, $sourceId, 0);
-		if($row == null) {
-			throw new \Exception("the source '$sourceId' in the container '$container': failed to retrieve header row of CSV file: " . $this->sources[$container][$sourceId]['filePath']);
-		}
-		if(!in_array($col, $row)) {
+		if($row !== null && !in_array($col, $row)) {
 			throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
 		}
 	}
@@ -265,6 +262,38 @@ class BxData
 		$this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'][$parameterName] = $parameterValue;
 	}
 	
+	private $ftpSources = array();
+	public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null, $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
+				$timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0, $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0) {
+					
+		if($user==null){
+			$user = $this->bxClient->getAccount(false);
+		}
+		
+		if($password==null){
+			$password = $this->bxClient->getPassword();
+		}
+		
+		$params = array();
+		$params['Host'] = $host;
+		$params['Port'] = $port;
+		$params['User'] = $user;
+		$params['Pass'] = $password;
+		$params['Protocol'] = $protocol;
+		$params['Type'] = $type;
+		$params['Logontype'] = $logontype;
+		$params['TimezoneOffset'] = $timezoneoffset;
+		$params['PasvMode'] = $pasvMode;
+		$params['MaximumMultipleConnections'] = $maximumMultipeConnections;
+		$params['EncodingType'] = $encodingType;
+		$params['BypassProxy'] = $bypassProxy;
+		$params['Name'] = $user . " at " . $host;
+		$params['RemoteDir'] = $remoteDir;
+		$params['SyncBrowsing'] = $syncBrowsing;
+		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+		$this->ftpSources[$sourceId] = $params;
+	}
+	
 	public function getXML() {
 		
 		$xml = new \SimpleXMLElement('<root/>');
@@ -293,7 +322,9 @@ class BxData
 				$source = $sources->addChild('source');				
 				$source->addAttribute('id', $sourceId);
 				$source->addAttribute('type', $sourceValues['type']);
-				
+				if(isset($sourceValues['additional_item_source'])){
+					$source->addAttribute('additional_item_source', $sourceValues['additional_item_source']);
+				}
 				$sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
 				
 				$parameters = array(
@@ -366,6 +397,18 @@ class BxData
 					}
 				}
 				
+				if(isset($this->ftpSources[$sourceId])) {
+					$param = $source->addChild('location');
+					$param->addAttribute('type', 'ftp');
+					
+					$ftp = $source->addChild('ftp');
+					$ftp->addAttribute('name', 'ftp');
+					
+					foreach($this->ftpSources[$sourceId] as $ftpPn => $ftpPv) {
+						$ftp->$ftpPn = $ftpPv;
+					}
+				}
+				
 				if(isset($sourceValues['fields'])) {
 					foreach($sourceValues['fields'] as $fieldId => $fieldValues) {
 						
@@ -429,13 +472,13 @@ class BxData
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 35000);
+        curl_setopt($s, CURLOPT_TIMEOUT, 60);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $fields);
 
-        $responseBody = curl_exec($s);
+        $responseBody = @curl_exec($s);
 		
 		if($responseBody === false)
 		{
@@ -451,7 +494,7 @@ class BxData
 
         curl_close($s);
         if (strpos($responseBody, 'Internal Server Error') !== false) {
-            throw new \Exception($this->getError($responseBody));;
+            throw new \Exception($this->getError($responseBody));
         }
         return $this->checkResponseBody($responseBody, $url);
     }
@@ -541,6 +584,9 @@ class BxData
 		$files = array();
 		foreach($this->sources as $container => $containerSources) {
 			foreach($containerSources as $sourceId => $sourceValues) {
+				if(isset($this->ftpSources[$sourceId])) {
+					continue;
+				}
 				if(!isset($sourceValues['file'])) {
 					$sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
 				}

@@ -9,7 +9,7 @@ namespace Boxalino\Intelligence\Model;
 class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
 
     /**
-     * @var null
+     * @var \com\boxalino\bxclient\v1\BxFacets
      */
     private $bxFacets = null;
 
@@ -95,13 +95,21 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     }
 
     /**
-     * @param $bxFacets
+     * @param \com\boxalino\bxclient\v1\BxFacets $bxFacets
      */
-    public function setFacets($bxFacets) {
+    public function setFacets(\com\boxalino\bxclient\v1\BxFacets $bxFacets) {
         
         $this->bxFacets = $bxFacets;
     }
 
+    /**
+     * @return \com\boxalino\bxclient\v1\BxFacets
+     */
+    public function getBxFacets() {
+
+        return $this->bxFacets;
+    }
+    
     /**
      * @param $fieldName
      */

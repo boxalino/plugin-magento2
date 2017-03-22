@@ -1,4 +1,5 @@
 <?php
+$showCount = $bxFacets->showFacetValueCounters($bxFieldName);
 $om = \Magento\Framework\App\ObjectManager::getInstance();
 $data = $om->get("\Boxalino\Intelligence\Helper\Data");
 $layer = $om->get("\Magento\Catalog\Model\Layer\Resolver")->get();
@@ -13,14 +14,14 @@ if(!$data->isFilterLayoutEnabled($layer)): ?>
             <?php if ($filterItem->getCount() > 0): ?>
                 <a href="<?php echo $block->escapeUrl($filterItem->getUrl()) ?>">
                     <?php /* @escapeNotVerified */ echo $filterItem->getLabel() ?>
-                    <?php if ($this->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
+                    <?php if ($showCount): ?>
                         <span class="count"><?php /* @escapeNotVerified */ echo $filterItem->getCount()?><span class="filter-count-label">
                             <?php if ($filterItem->getCount() == 1):?> <?php /* @escapeNotVerified */ echo __('item')?><?php else:?> <?php /* @escapeNotVerified */ echo __('items') ?><?php endif;?></span></span>
                     <?php endif; ?>
                 </a>
             <?php else:?>
                 <?php /* @escapeNotVerified */ echo $filterItem->getLabel() ?>
-                <?php if ($this->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
+                <?php if ($showCount): ?>
                     <span class="count"><?php /* @escapeNotVerified */ echo $filterItem->getCount()?><span class="filter-count-label">
                         <?php if ($filterItem->getCount() == 1):?><?php /* @escapeNotVerified */ echo __('item')?><?php else:?><?php /* @escapeNotVerified */ echo __('items') ?><?php endif;?></span></span>
                 <?php endif; ?>

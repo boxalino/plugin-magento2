@@ -9,13 +9,19 @@ class BxAutocompleteRequest
 	protected $choiceId;
 	protected $textualSuggestionsHitCount;
 	protected $bxSearchRequest;
+	protected $highlight;
+	protected $highlightPre;
+	protected $highlightPost;
 	
 	protected $indexId = null;
 	
-	public function __construct($language, $queryText, $textualSuggestionsHitCount, $productSuggestionHitCount = 5, $autocompleteChoiceId = 'autocomplete', $searchChoiceId = 'search') {
+	public function __construct($language, $queryText, $textualSuggestionsHitCount, $productSuggestionHitCount = 5, $autocompleteChoiceId = 'autocomplete', $searchChoiceId = 'search', $highlight = true, $highlightPre = '<em>', $highlightPost = '</em>') {
 		$this->language = $language;
 		$this->queryText = $queryText;
 		$this->textualSuggestionsHitCount = $textualSuggestionsHitCount;
+		$this->highlight = $highlight;
+		$this->highlightPre = $highlightPre;
+		$this->highlightPost = $highlightPost;
 		if($autocompleteChoiceId == null){
 			$autocompleteChoiceId = 'autocomplete';
 		}
@@ -78,15 +84,27 @@ class BxAutocompleteRequest
 		$this->bxSearchRequest->setDefaultIndexId($indexId);
 	}
 	
+	public function getHighlight() {
+		return $this->highlight;
+	}
+	
+	public function getHighlightPre() {
+		return $this->highlightPre;
+	}
+	
+	public function getHighlightPost() {
+		return $this->highlightPost;
+	}
+	
 	private function getAutocompleteQuery() {
 		$autocompleteQuery = new \com\boxalino\p13n\api\thrift\AutocompleteQuery();
 		$autocompleteQuery->indexId = $this->getIndexId();
 		$autocompleteQuery->language = $this->language;
 		$autocompleteQuery->queryText = $this->queryText;
 		$autocompleteQuery->suggestionsHitCount = $this->textualSuggestionsHitCount;
-		$autocompleteQuery->highlight = true;
-		$autocompleteQuery->highlightPre = '<em>';
-		$autocompleteQuery->highlightPost = '</em>';
+		$autocompleteQuery->highlight = $this->highlight;
+		$autocompleteQuery->highlightPre = $this->highlightPre;
+		$autocompleteQuery->highlightPost = $this->highlightPost;
 		return $autocompleteQuery;
 	}
 	
