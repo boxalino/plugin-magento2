@@ -5,7 +5,7 @@ namespace com\boxalino\bxclient\v1;
 class BxFacets
 {
 	public $facets = array();
-	protected $facetResponse = null;
+	protected $searchResult = null;
 
 	protected $selectedPriceValues = null;
 
@@ -13,8 +13,8 @@ class BxFacets
 	
 	protected $priceFieldName = 'discountedPrice';
 	
-	public function setFacetResponse($facetResponse) {
-		$this->facetResponse = $facetResponse;
+	public function setSearchResults($searchResult) {
+		$this->searchResult = $searchResult;
 	}
 	
 	public function getCategoryFieldName() {
@@ -46,9 +46,10 @@ class BxFacets
 	public function addFacet($fieldName, $selectedValue=null, $type='string', $label=null, $order=2, $boundsOnly=false, $maxCount=-1) {
 		$selectedValues = array();
 		if($selectedValue) {
-			$selectedValues[] = $selectedValue;
+			$selectedValues = is_array($selectedValue) ? $selectedValue : [$selectedValue];
 		}
 		$this->facets[$fieldName] = array('label'=>$label, 'type'=>$type, 'order'=>$order, 'selectedValues'=>$selectedValues, 'boundsOnly'=>$boundsOnly, 'maxCount'=>$maxCount);
+
 	}
 	
 	public function setParameterPrefix($parameterPrefix) {
@@ -72,11 +73,13 @@ class BxFacets
 		foreach($this->facets as $fieldName => $facet) {
 			$facetResponse = $this->getFacetResponse($fieldName);
 			if(sizeof($facetResponse->values)>0) {
-				$fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=>-sizeof($fieldNames));
+				$fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=> sizeof($fieldNames));
 			}
 		}
+
 		uasort($fieldNames, function ($a, $b) {
 			$aValue = intval($this->getFacetExtraInfo($a['fieldName'], 'order', $a['returnedOrder']));
+
 			if($aValue == 0) {
 				$aValue =  $a['returnedOrder'];
 			}
@@ -84,12 +87,7 @@ class BxFacets
 			if($bValue == 0) {
 				$bValue =  $b['returnedOrder'];
 			}
-			if ($aValue > $bValue) {
-				return -1;
-			} elseif ($bValue > $aValue) {
-				return 1;
-			}
-			return 0;
+			return ($aValue < $bValue) ? -1 : 1;
 		});
         return array_keys($fieldNames);
     }
@@ -209,8 +207,33 @@ class BxFacets
 		return $this->getFacetDisplay($fieldName, $defaultDisplay) == 'expanded';
 	}
 	
-	public function isFacetHidden($fieldName) {
-		return $this->getFacetDisplay($fieldName) == 'hidden';
+	public function getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold = 0) {
+		$defaultHideCoverageThreshold = $this->getFacetExtraInfo($fieldName, "minDisplayCoverage", $defaultHideCoverageThreshold);
+		return $defaultHideCoverageThreshold;
+	}
+	
+	public function getTotalHitCount() {
+		return $this->searchResult->totalHitCount;
+	}
+	
+	public function getFacetCoverage($fieldName) {
+		$coverage = 0;
+		foreach($this->getFacetValues($fieldName) as $facetValue) {
+			$coverage += $this->getFacetValueCount($fieldName, $facetValue);
+		}
+		return $coverage;
+	}
+	
+	public function isFacetHidden($fieldName, $defaultHideCoverageThreshold = 0) {
+		if($this->getFacetDisplay($fieldName) == 'hidden') {
+			return true;
+		}
+		$defaultHideCoverageThreshold = $this->getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold);
+		if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
+			$ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
+			return $ratio < $defaultHideCoverageThreshold;
+		}
+		return false;
 	}
 	
 	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
@@ -223,8 +246,8 @@ class BxFacets
 	}
 
     protected function getFacetResponse($fieldName) {
-        if($this->facetResponse != null) {
-			foreach($this->facetResponse as $facetResponse) {
+        if($this->searchResult != null && $this->searchResult->facetResponses != null) {
+			foreach($this->searchResult->facetResponses as $facetResponse) {
 				if($facetResponse->fieldName == $fieldName) {
 					return $facetResponse;
 				}
@@ -425,7 +448,7 @@ class BxFacets
 					$finalFacetValues[$k] = $v;
 				}
 			}
-			$facetValues = $finalFacetValues;
+			$facetValues = empty($finalFacetValues) ? $facetValues : $finalFacetValues;
 		}
 		if($displaySelectedValues == "top") {
 			$finalFacetValues = array();
@@ -441,8 +464,8 @@ class BxFacets
 			}
 			$facetValues = $finalFacetValues;
 		}
-		
-		$enumDisplaySize = 5; //intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
+
+		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
 		if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
 			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
 			if($enumDisplaySizeMin == 0) {
@@ -795,7 +818,7 @@ class BxFacets
 	public function getParentId($fieldName, $id){
 		$hierarchy = array();
 
-		foreach ($this->facetResponse as $response) {
+		foreach ($this->searchResult->facetResponses as $response) {
 			if($response->fieldName == $fieldName){
 				foreach($response->values as $item){
 					if($item->hierarchyId == $id){

@@ -19,7 +19,7 @@ use Magento\UrlRewrite\Helper\UrlRewrite;
  * @package Boxalino\Intelligence\Block\Product
  */
 class BxListProducts extends ListProduct{
-    
+
     /**
      * @var int
      */
@@ -105,7 +105,7 @@ class BxListProducts extends ListProduct{
         \Magento\Catalog\Block\Product\Context $context,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
-        CategoryRepositoryInterface $categoryRepository, 
+        CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -136,7 +136,7 @@ class BxListProducts extends ListProduct{
 
         try{
             $layer = $this->getLayer();
-            if($this->bxHelperData->isFilterLayoutEnabled($layer)){
+            if($this->bxHelperData->isEnabledOnLayer($layer)){
                 if(count($this->_productCollection) && !$this->p13nHelper->areThereSubPhrases()){
                     return $this->_productCollection;
                 }
@@ -174,7 +174,7 @@ class BxListProducts extends ListProduct{
      * @param $entity_ids
      */
     protected function _setupCollection($entity_ids){
-        
+
         $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
         $list->setStoreId($this->_storeManager->getStore()->getId())
             ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
@@ -202,40 +202,43 @@ class BxListProducts extends ListProduct{
      * @return $this
      */
     protected function _beforeToHtml(){
-        
-        $toolbar = $this->getToolbarBlock();
 
-        // called prepare sortable parameters
+        $layer = $this->getLayer();
+        if($this->bxHelperData->isEnabledOnLayer($layer)) {
+            $toolbar = $this->getToolbarBlock();
 
-        $collection = $this->_getProductCollection();
+            // called prepare sortable parameters
 
-        // use sortable parameters
-        $orders = $this->getAvailableOrders();
-        if ($orders) {
-            $toolbar->setAvailableOrders($orders);
+            $collection = $this->_getProductCollection();
+
+            // use sortable parameters
+            $orders = $this->getAvailableOrders();
+            if ($orders) {
+                $toolbar->setAvailableOrders($orders);
+            }
+
+            $toolbar->setDefaultOrder('relevance');
+
+            $dir = $this->getDefaultDirection();
+            if ($dir) {
+                $toolbar->setDefaultDirection($dir);
+            }
+
+            $modes = $this->getModes();
+            if ($modes) {
+                $toolbar->setModes($modes);
+            }
+
+            // set collection to toolbar and apply sort
+            $toolbar->setCollection($collection);
+            $this->setChild('toolbar', $toolbar);
+            $this->_eventManager->dispatch(
+                'catalog_block_product_list_collection',
+                ['collection' => $this->_getProductCollection()]
+            );
+
+            $this->_getProductCollection()->load();
         }
-
-        $toolbar->setDefaultOrder('relevance');
-
-        $dir = $this->getDefaultDirection();
-        if ($dir) {
-            $toolbar->setDefaultDirection($dir);
-        }
-        
-        $modes = $this->getModes();
-        if ($modes) {
-            $toolbar->setModes($modes);
-        }
-
-        // set collection to toolbar and apply sort
-        $toolbar->setCollection($collection);
-        $this->setChild('toolbar', $toolbar);
-        $this->_eventManager->dispatch(
-            'catalog_block_product_list_collection',
-            ['collection' => $this->_getProductCollection()]
-        );
-
-        $this->_getProductCollection()->load();
         return parent::_beforeToHtml();
     }
 }

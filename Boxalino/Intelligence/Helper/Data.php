@@ -245,68 +245,6 @@ class Data{
     }
 
     /**
-     * @param $params
-     * @return \stdClass
-     */
-    public function getFiltersValues($params){
-
-        $filters = new \stdClass();
-        if (isset($params['cat'])) {
-
-            $filters->filter_hc_category = '';
-            $category = $this->catalogCategory->load($params['cat']);
-            $categories = explode('/', $category->getPath());
-            foreach ($categories as $cat) {
-                $name = $category = $this->catalogCategory->load($cat)->getName();
-                if (strpos($name, '/') !== false) {
-                    $name = str_replace('/', '\/', $name);
-                }
-                $filters->filter_hc_category .= '/' . $name;
-
-            }
-            unset($params['cat']);
-        }
-
-        if (isset($params['price'])) {
-            $prices = explode('-', $params['price']);
-            if (!empty($prices[0])) {
-                $filters->filter_from_incl_price = $prices[0];
-            }
-            if (!empty($prices[1])) {
-                $filters->filter_to_incl_price = $prices[1];
-            }
-            unset($params['price']);
-        }
-
-        if (isset($params)) {
-            $list = $this->factory->create();
-            $list->load();
-            foreach ($params as $param => $values) {
-                $getAttribute = null;
-                foreach($list as $cat) {
-                    if($param == $cat->getName()) {
-                        $getAttribute = $cat;
-                    }
-                }
-                if ($getAttribute !== null) {
-                    $values = html_entity_decode($values);
-                    preg_match_all('!\d+!', $values, $matches);
-                    if (is_array($matches[0])) {
-                        $attrValues = array();
-                        $paramName = 'filter_' . $param;
-                        foreach ($matches[0] as $id) {
-                            $attribute = $attribute = $getAttribute->getSource()->getOptionText($id);
-                            $attrValues[] = $attribute;
-                        }
-                        $filters->paramName = $attrValues;
-                    }
-                }
-            }
-        }
-        return $filters;
-    }
-
-    /**
      * Modifies a string to remove all non ASCII characters and spaces.
      * @param $text
      * @return mixed|null|string
@@ -345,24 +283,6 @@ class Data{
     }
 
     /**
-     * @param $fieldName
-     * @return bool
-     */
-    public function isHierarchical($fieldName){
-
-        $facetConfig = $this->config->getValue('bxSearch/left_facets', $this->scopeStore);
-        $fields = explode(",", $facetConfig['fields']);
-        $type = explode(",", $facetConfig['types']);
-
-        if(in_array($fieldName,$fields )){
-            if($type[array_search($fieldName, $fields)] == 'hierarchical'){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * @return array
      */
     public function getWidgetConfig($widgetName){
@@ -382,6 +302,25 @@ class Data{
                 'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
         }
         return $widgetConfig;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getFieldSortOrder($fieldName){
+
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+
+        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
+        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
+        foreach($fields as $index => $field){
+            if($field == $fieldName){
+                return (int)$orders[$index];
+            }
+        }
+        return 0;
     }
     
     /**
@@ -473,50 +412,6 @@ class Data{
     }
 
     /**
-     * @return bool
-     */
-    public function isLeftFilterEnabled(){
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-        return (bool)$this->bxConfig['bxSearch']['left_facets']['enabled'];
-    }
-
-    /**
-     * @return bool
-     */
-    public function isTopFilterEnabled(){
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-        return (bool)$this->bxConfig['bxSearch']['top_facet']['enabled'];
-    }
-
-    /**
-     * @return bool
-     */
-    public function isFilterLayoutEnabled($layer){
-
-        $type = '';
-        switch(get_class($layer)){
-            case 'Magento\Catalog\Model\Layer\Category\Interceptor':
-                $type = 'navigation';
-                break;
-            case 'Magento\Catalog\Model\Layer\Search\Interceptor':
-                $type = 'search';
-                break;
-            default:
-                return false;
-        }
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-        return (bool)($this->isEnabledOnLayer($layer) && $this->bxConfig['bxSearch'][$type]['filter']);
-    }
-
-    /**
      * @param $layer
      * @return bool
      */
@@ -531,18 +426,6 @@ class Data{
                 return false;
         }
     }
-    
-    /**
-     * @return bool
-     */
-    public function isSliderEnabled(){
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-        return (bool)(strpos($this->bxConfig['bxSearch']['left_facets']['fields'],'discountedPrice') !== false) && 
-            $this->isLeftFilterEnabled();
-    }
 
     /**
      * @return mixed
@@ -555,35 +438,6 @@ class Data{
         return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
     }
 
-    /**
-     * @return int
-     */
-    public function getFieldSortOrder($fieldName){
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-
-        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
-        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
-        foreach($fields as $index => $field){
-            if($field == $fieldName){
-                return (int)$orders[$index];
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * @return string
-     */
-    private function getProductAttributePrefix(){
-        return 'products_';
-    }
-    
-    /**
-     * @return array
-     */
     public function getFilterProductAttributes(){
 
         $attributes = [];
@@ -593,7 +447,6 @@ class Data{
             ->addIsFilterableFilter()
             ->addVisibleFilter()
             ->setOrder('position','ASC')->load();
-        $leftFacets = $this->getLeftFacets();
 
         $allowedTypes = array('multiselect', 'price', 'select');
         foreach($attributeCollection as $attribute) {
@@ -616,121 +469,16 @@ class Data{
                 'position' => $position
             );
         }
-        $attributes = array_merge($attributes, $leftFacets);
-
-        if(count($this->removedAttributes)){
-            foreach($this->removedAttributes as $attribute){
-                unset($attributes[$attribute]);
-            }
-        }
-        uasort($attributes, function($a, $b){
-            if($a['position'] == $b['position']){
-                return strcmp($a['label'],$b['label']);
-            }
-            if($b['position'] == -1){
-                return true;
-            }
-            return $a['position'] - $b['position'];
-        });
         return $attributes;
     }
 
-    public function getLeftFacetFieldNames(){
-
-        return array_keys($this->getFilterProductAttributes());
-    }
     /**
-     * @return array
-     * @throws \Exception
+     * @return string
      */
-    public function getLeftFacets() {
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
-        $labels = explode(',', $this->bxConfig['bxSearch']['left_facets']['labels']);
-        $types = explode(',', $this->bxConfig['bxSearch']['left_facets']['types']);
-        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
-        $position = explode(',', $this->bxConfig['bxSearch']['left_facets']['position']);
-
-        if($fields[0] == "" || !$this->isLeftFilterEnabled()) {
-            return array();
-        }
-        if(sizeof($fields) != sizeof($labels)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
-        }
-        if(sizeof($fields) != sizeof($types)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet types: " . implode(',', $fields) . " versus " . implode(',', $types));
-        }
-        if(sizeof($fields) != sizeof($orders)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
-        }
-        if(sizeof($fields) != sizeof($position)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet position: " . implode(',', $fields) . " versus " . implode(',', $position));
-        }
-
-        $facets = array();
-        foreach($fields as $k => $field){
-            if(strpos($field, 'products_') !== 0){
-                $this->bx_filter[$field] = [];
-            }
-            $facets[$field] = array(
-                'label' => $labels[$k],
-                'type' =>$types[$k],
-                'order' => $orders[$k],
-                'position' => $position[$k]);
-        }
-        return $facets;
-    }
-    
-    /**
-     * @return array
-     * @throws \Exception
-     */
-    public function getAllFacetFieldNames() {
-
-        $allFacets = array_keys($this->getFilterProductAttributes());
-        if($this->getTopFacetFieldName() != null) {
-            $allFacets[] = $this->getTopFacetFieldName();
-        }
-        return $allFacets;
-    }
-    
-    /**
-     * @return array|null
-     */
-    public function getTopFacetValues() {
-
-        if($this->isTopFilterEnabled()){
-
-            if(!isset($this->bxConfig['bxSearch'])){
-                $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-            }
-            $field = $this->bxConfig['bxSearch']['top_facet']['field'];
-            if(strpos($field, 'products_') !== 0){
-                $this->bx_filter[$field] = [];
-            }
-            $order = $this->bxConfig['bxSearch']['top_facet']['order'];
-            return array($field, $order);
-        }
-        return null;
+    private function getProductAttributePrefix(){
+        return 'products_';
     }
 
-    public function isBxAttribute($fieldName){
-        
-        return isset($this->bx_filter[$fieldName]);
-    }
-    
-    /**
-     * @return mixed
-     */
-    public function getTopFacetFieldName()
-    {
-        list($topField, $topOrder) = $this->getTopFacetValues();
-        return $topField;
-    }
-    
     /**
      * @return boolean
      */
@@ -752,7 +500,7 @@ class Data{
     public function getFallback(){
         return $this->fallback;
     }
-    
+
     /**
      * @param boolean $setup
      */
@@ -775,14 +523,6 @@ class Data{
     public function getCmsBlock(){
 
         return $this->cmsBlock;
-    }
-
-    /**
-     * @param $attribute
-     */
-    public function setRemovedAttributes($attribute){
-
-        $this->removedAttributes[] = $attribute;
     }
 
     /**

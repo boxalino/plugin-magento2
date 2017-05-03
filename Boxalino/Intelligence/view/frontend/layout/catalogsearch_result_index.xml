@@ -14,8 +14,7 @@
         <attribute name="class" value="page-products"/>
         <referenceContainer name="content">
             <block class="Boxalino\Intelligence\Block\Facets" name="search.filter.top"
-                   template="Boxalino_Intelligence::top_filters.phtml"  before="toolbar"
-                   ifconfig="bxSearch/top_facet/enabled">
+                   template="Boxalino_Intelligence::top_filters.phtml"  before="toolbar">
             </block>
         </referenceContainer>
         <referenceBlock name="catalogsearch.navigation.renderer">

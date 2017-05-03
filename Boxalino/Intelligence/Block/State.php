@@ -11,7 +11,7 @@ use Magento\Framework\DataObject;
  * @package Boxalino\Intelligence\Block
  */
 class State extends \Magento\Catalog\Model\Layer\State{
-    
+
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -81,7 +81,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     public function getFilters()
     {
         try {
-            if ($this->bxHelperData->isFilterLayoutEnabled($this->_layer)) {
+            if ($this->bxHelperData->isEnabledOnLayer($this->_layer)) {
                 $category = $this->_categoryViewBlock->getCurrentCategory();
                 if($category != null && $category->getDisplayMode() == \Magento\Catalog\Model\Category::DM_PAGE){
                     return parent::getFilters();
@@ -89,7 +89,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
                 $filters = array();
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
-                    foreach ($this->bxHelperData->getAllFacetFieldNames() as $fieldName) {
+                    foreach ($facets->getLeftFacets() as $fieldName) {
 
                         if ($facets->isSelected($fieldName)) {
                             $filter = $this->objectManager->create(
@@ -99,6 +99,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
                             $filter->setFacets($facets);
                             $filter->setFieldName($fieldName);
                             $filters[] = $filter;
+                            $filter = null;
                         }
                     }
                 }

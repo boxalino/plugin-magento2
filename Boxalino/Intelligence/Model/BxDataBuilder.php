@@ -15,7 +15,7 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
      * @var \Magento\Catalog\Model\Layer
      */
     private $_layer;
-    
+
     /**
      * BxDataBuilder constructor.
      * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
@@ -34,16 +34,18 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
      * @param int $count
      * @param null $selected
      * @param null $type
+     * @param null $hidden
      */
-    public function addItemData($label, $value, $count, $selected = null, $type = null){
-        
-        if($this->bxDataHelper->isFilterLayoutEnabled($this->_layer)){
+    public function addItemData($label, $value, $count, $selected = null, $type = null, $hidden = null){
+
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)){
             $this->_itemsData[] = [
                 'label' => $label,
                 'value' => $value,
                 'count' => $count,
                 'selected' => $selected,
-                'type' => $type
+                'type' => $type,
+                'hidden' => $hidden
             ];
         }else{
             parent::addItemData($label, $value, $count);

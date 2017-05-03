@@ -60,7 +60,7 @@ class BxToolbar extends Toolbar{
      * @return int|mixed
      */
     public function hasSubPhrases(){
-        
+
         if($this->bxHelperData->isSearchEnabled()){
             if($this->subPhrases == null){
                 $this->subPhrases = $this->p13Helper->areThereSubPhrases();

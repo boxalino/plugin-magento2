@@ -7,7 +7,7 @@ namespace Boxalino\Intelligence\Block;
  * @package Boxalino\Intelligence\Block
  */
 class Facets extends \Magento\Framework\View\Element\Template{
-	
+
 	/**
 	 * @var \Magento\Framework\ObjectManagerInterface
 	 */
@@ -64,10 +64,11 @@ class Facets extends \Magento\Framework\View\Element\Template{
 	 */
     public function getTopFilters(){
 		try{
-			if($this->bxHelperData->isFilterLayoutEnabled($this->layer) && $this->isTopFilterEnabled()){
+			if($this->bxHelperData->isEnabledOnLayer($this->layer)){
 				$facets = $this->p13nHelper->getFacets();
-				if($facets) {
-					$fieldName = $this->bxHelperData->getTopFacetFieldName();
+				$top_facets = $facets->getTopFacets();
+				if($facets && sizeof($top_facets) > 0) {
+					$fieldName = $top_facets[0];
 					$attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
 					$filter = $this->objectManager->create(
 						"Boxalino\Intelligence\Model\Attribute",
@@ -84,9 +85,4 @@ class Facets extends \Magento\Framework\View\Element\Template{
 		}
 		return array();
     }
-	
-	public function isTopFilterEnabled(){
-		
-		return $this->bxHelperData->isTopFilterEnabled();
-	}
 }

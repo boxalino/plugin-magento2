@@ -5,7 +5,7 @@ class FilterRendererPlugin{
 
     public function beforeRender($subject, $filter) {
 
-        if($filter instanceof Attribute) {
+        if ($filter instanceof Attribute) {
             $subject->assign('bxFacets', $filter->getBxFacets());
             $subject->assign('bxFieldName', $filter->getFieldName());
         }

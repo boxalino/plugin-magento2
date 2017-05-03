@@ -22,7 +22,7 @@
 
     <virtualType name="searchFilterList" type="Boxalino\Intelligence\Model\FilterList">
         <arguments>
-            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Category\FilterableAttributeList</argument>
+            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Search\FilterableAttributeList</argument>
             <argument name="filters" xsi:type="array">
                 <item name="attribute" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Attribute</item>
                 <item name="price" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Price</item>

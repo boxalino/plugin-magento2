@@ -153,7 +153,7 @@ class BxChooseResponse
 		if(empty($facets) || $searchResult == null){
 			return new \com\boxalino\bxclient\v1\BxFacets();;
 		}
-		$facets->setFacetResponse($searchResult->facetResponses);
+		$facets->setSearchResults($searchResult);
 		return $facets;
     }
 

@@ -33,12 +33,12 @@ class Adapter
 	/**
 	 * @var \Magento\Framework\App\Config\ScopeConfigInterface
 	 */
-    protected $scopeConfig;
+	protected $scopeConfig;
 
 	/**
 	 * @var \Magento\Framework\App\Request\Http
 	 */
-    protected $request;
+	protected $request;
 
 	/**
 	 * @var \Magento\Framework\App\Response\Http
@@ -48,17 +48,17 @@ class Adapter
 	/**
 	 * @var \Magento\Framework\Registry
 	 */
-    protected $registry;
+	protected $registry;
 
 	/**
 	 * @var \Magento\Search\Model\QueryFactory
 	 */
-    protected $queryFactory;
+	protected $queryFactory;
 
 	/**
 	 * @var \Magento\Store\Model\StoreManagerInterface
 	 */
-    protected $storeManager;
+	protected $storeManager;
 
 	/**
 	 * @var \Boxalino\Intelligence\Helper\Data
@@ -96,37 +96,37 @@ class Adapter
 	 * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
 	 * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
 	 */
-    public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Catalog\Model\Category $catalogCategory,
-        \Magento\Framework\App\Request\Http $request,
-        \Magento\Framework\Registry $registry,
-        \Magento\Search\Model\QueryFactory $queryFactory,
+	public function __construct(
+		\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+		\Magento\Catalog\Model\Category $catalogCategory,
+		\Magento\Framework\App\Request\Http $request,
+		\Magento\Framework\Registry $registry,
+		\Magento\Search\Model\QueryFactory $queryFactory,
 		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Catalog\Model\Layer\Resolver $layerResolver,
 		\Magento\Framework\App\Response\Http $response,
-        \Boxalino\Intelligence\Helper\Data $bxHelperData,
+		\Boxalino\Intelligence\Helper\Data $bxHelperData,
 		\Magento\Eav\Model\Config $config
 
-    )
-    {
+	)
+	{
 		$this->_modelConfig = $config;
 		$this->response = $response;
 		$this->bxHelperData = $bxHelperData;
-        $this->scopeConfig = $scopeConfig;
-        $this->catalogCategory = $catalogCategory;
+		$this->scopeConfig = $scopeConfig;
+		$this->catalogCategory = $catalogCategory;
 		$this->request = $request;
 		$this->registry = $registry;
 		$this->queryFactory = $queryFactory;
 		$this->storeManager = $storeManager;
-		
-	   $libPath = __DIR__ . '/../../Lib';
+
+		$libPath = __DIR__ . '/../../Lib';
 		require_once($libPath . '/BxClient.php');
 		\com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
 		if($this->bxHelperData->isPluginEnabled()){
 			$this->initializeBXClient();
 		}
-    }
+	}
 
 	/**
 	 * Initializes the \com\boxalino\bxclient\v1\BxClient
@@ -152,7 +152,7 @@ class Adapter
 	 * @return array
 	 */
 	public function getSystemFilters($queryText="") {
-		
+
 		$filters = array();
 		if($queryText == "") {
 			$filters[] = new \com\boxalino\bxclient\v1\BxFilter( 'products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
@@ -168,7 +168,7 @@ class Adapter
 	 * @return mixed|string
 	 */
 	public function getAutocompleteChoice() {
-		
+
 		$choice = $this->scopeConfig->getValue('bxSearch/advanced/autocomplete_choice_id',$this->scopeStore);
 		if($choice == null) {
 			$choice = "autocomplete";
@@ -181,7 +181,7 @@ class Adapter
 	 * @return mixed|string
 	 */
 	public function getSearchChoice($queryText) {
-		
+
 		if($queryText == null) {
 			$choice = $this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id',$this->scopeStore);
 			if($choice == null) {
@@ -191,7 +191,7 @@ class Adapter
 			$this->navigation = true;
 			return $choice;
 		}
-		
+
 		$choice = $this->scopeConfig->getValue('bxSearch/advanced/search_choice_id',$this->scopeStore);
 		if($choice == null) {
 			$choice = "search";
@@ -204,7 +204,7 @@ class Adapter
 	 * @return mixed|string
 	 */
 	public function getEntityIdFieldName() {
-		
+
 		$entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id',$this->scopeStore);
 		if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
 			$entityIdFieldName = 'products_group_id';
@@ -222,14 +222,14 @@ class Adapter
 		$order = array();
 		$data = array();
 		$hash = null;
-		
+
 		$autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit',$this->scopeStore);
 		$products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit',$this->scopeStore);
-			
+
 		if ($queryText) {
-			
-			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), 
-				$queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), 
+
+			$bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
+				$queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
 				$this->getSearchChoice($queryText)
 			);
 			$searchRequest = $bxRequest->getBxSearchRequest();
@@ -255,9 +255,9 @@ class Adapter
 				$row['first'] = $first;
 				$first = false;
 				$global[] = $row;
-				
+
 			}
-			
+
 			$suggestions = [];
 			$suggestionProducts = [];
 
@@ -265,9 +265,9 @@ class Adapter
 
 				$totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
 
-                if ($totalHitcount <= 0) {
-                    continue;
-                }
+				if ($totalHitcount <= 0) {
+					continue;
+				}
 
 				$_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
 					'id' => $i, 'row_class' => 'acsuggestions');
@@ -284,7 +284,7 @@ class Adapter
 				} else {
 					$suggestions[] = $_data;
 				}
-            }
+			}
 
 			$data = array_merge($suggestions, $global);
 			$data = array_merge($data, $suggestionProducts);
@@ -299,7 +299,7 @@ class Adapter
 	 * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
 	 * @param null $categoryId
 	 */
-    public function search($queryText, $pageOffset = 0, $hitCount, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
+	public function search($queryText, $pageOffset = 0, $hitCount, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
 
 		$returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
 		$additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
@@ -322,13 +322,13 @@ class Adapter
 		}
 
 		self::$bxClient->addRequest($bxRequest);
-    }
+	}
 
 	/**
-	 * 
+	 *
 	 */
 	public function simpleSearch() {
-		
+
 		$query = $this->queryFactory->get();
 		$queryText = $query->getQueryText();
 
@@ -389,24 +389,23 @@ class Adapter
 	 * @return string
 	 */
 	private function getUrlParameterPrefix() {
-		
+
 		return 'bx_';
 	}
 
 	/**
 	 * @return \com\boxalino\bxclient\v1\BxFacets
 	 */
-    private function prepareFacets(){
+	private function prepareFacets(){
 
 		$bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
-
 		$selectedValues = array();
 		$requestParams = $this->request->getParams();
 		$attributeCollection = $this->bxHelperData->getFilterProductAttributes();
 		foreach ($requestParams as $key => $values) {
 			if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
 				$fieldName = substr($key, 3);
-				$selectedValues[$fieldName] = !is_array($values) ? array($values) : $values;
+				$selectedValues[$fieldName] = $values;
 			}
 			if(isset($attributeCollection['products_' . $key])){
 				$paramValues = !is_array($values) ? array($values) : $values;
@@ -418,31 +417,22 @@ class Adapter
 		}
 
 		if(!$this->navigation){
-			$catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+			$catId = isset($selectedValues['category_id']) ? $selectedValues['category_id'] : null;
 			$bxFacets->addCategoryFacet($catId);
 		}
 
 		foreach($attributeCollection as $code => $attribute){
-			if($this->navigation && $code == 'categories'){
-				$this->bxHelperData->setRemovedAttributes($code);
-				continue;
-			}
 			$bound = $code == 'discountedPrice' ? true : false;
 			list($label, $type, $order, $position) = array_values($attribute);
 			$selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
-
-			$bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+			if($code == 'discountedPrice' && isset($selectedValues[$code])) {
+				$bxFacets->addPriceRangeFacet($selectedValues[$code]);
+			} else {
+				$bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+			}
 		}
-
-		list($topField, $topOrder) = $this->bxHelperData->getTopFacetValues();
-
-		if($topField) {
-			$selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
-			$bxFacets->addFacet($topField, $selectedValue, "string", $topField, $topOrder);
-		}
-
 		return $bxFacets;
-    }
+	}
 
 	/**
 	 *
@@ -464,32 +454,32 @@ class Adapter
 	/**
 	 * @return mixed
 	 */
-    public function getTotalHitCount(){
-		
+	public function getTotalHitCount(){
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getTotalHitCount($this->currentSearchChoice);
-    }
+	}
 
 	/**
 	 * @return mixed
 	 */
-    public function getEntitiesIds(){
-		
+	public function getEntitiesIds(){
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
-    }
+	}
 
 	/**
 	 * @return null
 	 */
 	public function getFacets() {
-		
+
 		$this->simpleSearch();
 		$facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
 		if(empty($facets)){
 			return null;
 		}
-		
+
 		$facets->setParameterPrefix($this->getUrlParameterPrefix());
 		return $facets;
 	}
@@ -498,7 +488,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getCorrectedQuery() {
-		
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getCorrectedQuery($this->currentSearchChoice);
 	}
@@ -507,7 +497,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function areResultsCorrected() {
-		
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->areResultsCorrected($this->currentSearchChoice);
 	}
@@ -525,7 +515,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhrasesQueries() {
-		
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getSubPhrasesQueries($this->currentSearchChoice);
 	}
@@ -535,7 +525,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhraseTotalHitCount($queryText) {
-		
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
 	}
@@ -545,7 +535,7 @@ class Adapter
 	 * @return mixed
 	 */
 	public function getSubPhraseEntitiesIds($queryText) {
-		
+
 		$this->simpleSearch();
 		return $this->getClientResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
 	}
@@ -559,8 +549,8 @@ class Adapter
 	 * @param bool $execute
 	 * @return array|void
 	 */
-    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
-	
+	public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
+
 		if(!$execute) {
 			if(!isset(self::$choiceContexts[$widgetName])) {
 				self::$choiceContexts[$widgetName] = array();
@@ -607,5 +597,5 @@ class Adapter
 		}
 		$count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
 		return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
-    }
+	}
 }

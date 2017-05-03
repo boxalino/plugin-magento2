@@ -1,7 +1,7 @@
 <?php
     $om = \Magento\Framework\App\ObjectManager::getInstance();
     $data = $om->get("\Boxalino\Intelligence\Helper\Data");
-    if(!$data->isFilterLayoutEnabled($block->getLayer())):
+    if(!$data->isEnabledOnLayer($block->getLayer())):
 ?>
 <?php include ($block->getTemplateFile('Magento_LayeredNavigation::layer/view.phtml')); ?>
 <?php else: ?>
@@ -18,15 +18,23 @@
                         <a href="<?php /* @escapeNotVerified */ echo $block->getClearUrl() ?>" class="action clear filter-clear"><span><?php /* @escapeNotVerified */ echo __('Clear All') ?></span></a>
                     </div>
                 <?php endif; ?>
-                <?php $wrapOptions = false; ?>
-                <?php foreach ($block->getFilters() as $filter): ?>
-                <?php $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets(); ?>
+                <?php
+                    $wrapOptions = false;
+                    $filters = $block->getFilters();
+                    $expanded = array();
+                    foreach($filters as $index => $filter){
+                        $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();
+                        if ($bxFacets->isFacetExpanded($filter->getFieldName())) $expanded[] = $index;
+                    }
+                ?>
+                <?php foreach ($filters as $filter): ?>
+                <?php $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();?>
             <?php if ($filter->getItemsCount()): ?>
             <?php if (!$wrapOptions): ?>
                 <strong role="heading" aria-level="2" class="block-subtitle filter-subtitle"><?php /* @escapeNotVerified */ echo __('Shopping Options') ?></strong>
-                <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active", "collapsible": true, "active": false, "multipleCollapsible": true}}'>
+                <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active", "collapsible": true, "active": <?php echo json_encode($expanded); ?>, "multipleCollapsible": true}}'>
                     <?php  $wrapOptions = true; endif; ?>
-                    <div data-role="collapsible<?php echo $bxFacets->isFacetExpanded($filter->getFieldName()) === true ? " active" : ""; ?>" class="filter-options-item">
+                    <div data-role="collapsible" class="filter-options-item">
                         <div data-role="title" class="filter-options-title"><?php /* @escapeNotVerified */ echo __($filter->getName()) ?></div>
                         <div data-role="content" class="filter-options-content">
                             <?php if($filter->getFieldName() == 'discountedPrice'): ?>

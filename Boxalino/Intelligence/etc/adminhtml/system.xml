@@ -26,16 +26,16 @@
                     <label>Boxalino account name</label>
                     <comment>Please request your account with credentials by contacting support@boxalino.com</comment>
                 </field>
-				<field id="password" translate="label comment" sortOrder="3" type="password" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="password" translate="label comment" sortOrder="3" type="password" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino password</label>
                     <comment>Please request your account with credentials by contacting support@boxalino.com</comment>
                 </field>
-				<field id="dev" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" >
+                <field id="dev" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Dev</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Is the account a development account or a production account? (Yes=DEV, No=PROD)</comment>
                 </field>
-				<field id="domain" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="domain" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Domain</label>
                     <comment>What is your domain (e.g.: www.myshop.com)? Used to store cookie information about session id and visitor id.</comment>
                 </field>
@@ -51,7 +51,7 @@
                 </field>
             </group>
 
-			<group id="advanced" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="advanced" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <!-- create text type field -->
                 <field id="host" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" >
@@ -70,7 +70,7 @@
                     <label>Overwrite language</label>
                     <comment>Optional: uses store's "general/locale/code" value by default</comment>
                 </field>
-				<field id="username" translate="label comment" sortOrder="5" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="username" translate="label comment" sortOrder="5" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino User name</label>
                     <comment>Optional: leave empty to use account name as username (typical case)</comment>
                 </field>
@@ -90,7 +90,7 @@
             </group>
         </section>
 
-		<section id="bxExporter" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="bxExporter" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Exporter</label>
             <!-- Assign section to tab -->
@@ -106,56 +106,56 @@
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
             </group>
-			<group id="products" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="products" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Products</label>
                 <!-- create text type field -->
-				<field id="include_properties" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="include_properties" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of product properties to include in export</label>
                     <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-				<field id="exclude_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of product properties to exclude from export</label>
                     <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of product properties to include is not empty.</comment>
                 </field>
-				<field id="export_images" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_images" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export product images</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Optional: Export image and thumbnail image urls (not required if standard usage of search and recommendations in Magento, as Magento renders the images itself). If activated, makes export slower.</comment>
                 </field>
-				<field id="export_url" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_url" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export product urls</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Optional: Export product urls (not required if standard usage of search and recommendations  in Magento, as Magento renders the url itself).. If activated, makes export slower.</comment>
                 </field>
             </group>
-			<group id="customers" translate="label" type="text"  sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="customers" translate="label" type="text"  sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customers</label>
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of customer properties to include in export</label>
                     <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-				<field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of customer properties to exclude from export</label>
                     <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of customer properties to include is not empty.</comment>
                 </field>
             </group>
-			<group id="transactions" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="transactions" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Transactions</label>
                 <!-- create text type field -->
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-				<field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of transaction properties to include in export</label>
                     <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-				<field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of transaction properties to exclude from export</label>
                     <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of transaction properties to include is not empty.</comment>
                 </field>
@@ -165,13 +165,13 @@
                     <comment>Choose how the transactions should be exported. For Incremental, the exporter will only export the last month.</comment>
                 </field>
             </group>
-			<group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
-				<field id="export_server" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_server" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Boxalino export server</label>
                     <comment>Optional: http://di1.bx-cloud.com by default if left empty</comment>
                 </field>
-				<field id="publish_configuration_changes" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="publish_configuration_changes" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Publish configuration changes automatically</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>True by default. Any changes in product/customers/transaction properties will be automatically validated. For safety, it is recommended to de-activate this option once in production to make sure no unwanted changes are automatically published. However, if not activated, changes in the configuration will not be considered until published otherwise and, in the case of property deletions, the data sync might fail until the changes are published. Publishing of the configuration can be done by re-activating this option and running a full data sync again, or by publishing the configuration directly in Boxalino Data Intelligence web-admin.</comment>
@@ -179,13 +179,13 @@
             </group>
         </section>
 
-		<section id="bxSearch" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="bxSearch" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Search - Navigation</label>
             <!-- Assign section to tab -->
             <tab>boxalino</tab>
             <resource>Boxalino_Intelligence::configuration</resource>
-			
+
             <!-- create group for fields in section -->
             <group id="search" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Search</label>
@@ -194,11 +194,6 @@
                     <label>Enable search</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search active?</comment>
-                </field>
-                <field id="filter" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable boxalino filter layout</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    <comment>Is Boxalino filter layout active?</comment>
                 </field>
             </group>
 
@@ -209,15 +204,10 @@
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino navigation active?</comment>
                 </field>
-                <field id="filter" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable boxalino filter layout</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    <comment>Is Boxalino filter layout active?</comment>
-                </field>
             </group>
 
 
-            <group id="left_facets" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="left_facets" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Left facets</label>
                 <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable left filter</label>
@@ -246,24 +236,7 @@
                 </field>
             </group>
 
-            <group id="top_facet" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Top facet</label>
-                <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable top filter</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    <comment>Is Boxalino top filter active?</comment>
-                </field>
-                <field id="field" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Field name</label>
-                    <comment>Optional: display a list of filter values on top of the search results (typically "value-oriented" facets with icons like: "in discount", "new", "top ranked", etc.). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountedPrice and categories)</comment>
-                </field>
-                <field id="order" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Ordering of facet values</label>
-                    <comment><![CDATA[The ordering to sort the values in a facet.<br />0 = "order by count values from biggest to smallest"<br />1 = "order alphabetically the values from A to Z"]]></comment>
-                </field>
-            </group>
-
-            <group id="autocomplete" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="autocomplete" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable autocomplete</label>
@@ -280,7 +253,7 @@
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <field id="search_choice_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Search choice ID</label>

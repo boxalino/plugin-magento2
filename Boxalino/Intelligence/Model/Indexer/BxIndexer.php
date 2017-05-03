@@ -818,76 +818,76 @@ class BxIndexer {
             ((string) $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY)) .
             $account
         );
-        
+
         $export_mode = $this->config->getTransactionMode($account);
         $date = date("Y-m-d H:i:s", strtotime("-1 month"));
-
-        while (true) {
-            $this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
-
-            $configurable = array();
-            $select = $db
-                ->select()
-                ->from(
-                    array('order' => $this->rs->getTableName('sales_order')),
-                    array(
-                        'entity_id',
-                        'status',
-                        'updated_at',
-                        'created_at',
-                        'customer_id',
-                        'base_subtotal',
-                        'shipping_amount',
-                    )
+        $transaction_attributes = $this->getTransactionAttributes($account);
+        $sales_order_table = $this->rs->getTableName('sales_order');
+        $sales_order_item = $this->rs->getTableName('sales_order_item');
+        $sales_order_address =  $this->rs->getTableName('sales_order_address');
+        $temp_select = $db
+            ->select()
+            ->from(
+                array('order' => $sales_order_table),
+                array(
+                    'entity_id',
+                    'status',
+                    'updated_at',
+                    'created_at',
+                    'customer_id',
+                    'base_subtotal',
+                    'shipping_amount',
                 )
-                ->joinLeft(
-                    array('item' => $this->rs->getTableName('sales_order_item')),
-                    'order.entity_id = item.order_id',
-                    array(
-                        'product_id',
-                        'product_options',
-                        'price',
-                        'original_price',
-                        'product_type',
-                        'qty_ordered',
-                    )
+            )
+            ->joinLeft(
+                array('item' => $sales_order_item),
+                'order.entity_id = item.order_id',
+                array(
+                    'product_id',
+                    'product_options',
+                    'price',
+                    'original_price',
+                    'product_type',
+                    'qty_ordered',
                 )
-                ->joinLeft(
-                    array('guest' => $this->rs->getTableName('sales_order_address')),
-                    'order.billing_address_id = guest.entity_id',
-                    array(
-                        'guest_id' => 'IF(guest.email IS NOT NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
-                    )
+            )
+            ->joinLeft(
+                array('guest' => $sales_order_address),
+                'order.billing_address_id = guest.entity_id',
+                array(
+                    'guest_id' => 'IF(guest.email IS NOT NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
                 )
-                ->where('order.status <> ?', 'canceled')
-                ->limit($limit, ($page - 1) * $limit)
-                ->order('order.created_at DESC');
-
-            if ($export_mode == 0) {
-                $select->where('order.created_at >= ?', $date);
+            );
+        if ($export_mode == 0) {
+            $temp_select->where('order.created_at >= ?', $date);
+        }
+        if (count($transaction_attributes)) {
+            $billing_columns = $shipping_columns = array();
+            foreach ($transaction_attributes as $attribute) {
+                $billing_columns['billing_' . $attribute] = $attribute;
+                $shipping_columns['shipping_' . $attribute] = $attribute;
             }
-
-            $transaction_attributes = $this->getTransactionAttributes($account);
-
-            if (count($transaction_attributes)) {
-                $billing_columns = $shipping_columns = array();
-                foreach ($transaction_attributes as $attribute) {
-                    $billing_columns['billing_' . $attribute] = $attribute;
-                    $shipping_columns['shipping_' . $attribute] = $attribute;
-                }
-                $select->joinLeft(
+            $temp_select
+                ->joinLeft(
                     array('billing_address' => $this->rs->getTableName('sales_order_address')),
                     'order.billing_address_id = billing_address.entity_id',
                     $billing_columns
                 )
-                    ->joinLeft(
-                        array('shipping_address' => $this->rs->getTableName('sales_order_address')),
-                        'order.shipping_address_id = shipping_address.entity_id',
-                        $shipping_columns
-                    );
-            }
+                ->joinLeft(
+                    array('shipping_address' => $this->rs->getTableName('sales_order_address')),
+                    'order.shipping_address_id = shipping_address.entity_id',
+                    $shipping_columns
+                );
+        }
 
+        while (true) {
+
+            $this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
+            $configurable = array();
+            $select = clone $temp_select;
+            $select->limit($limit, ($page - 1) * $limit);
             $transactions = $db->fetchAll($select);
+            $select = null;
 
             if(sizeof($transactions) < 1 && $page == 1){
                 return;
@@ -964,7 +964,7 @@ class BxIndexer {
                     'shipping_date' => $status == 2 ? $transaction['updated_at'] : null,
                     'status' => $transaction['status'],
                 );
-
+                $status = null;
                 if (count($transaction_attributes)) {
                     foreach ($transaction_attributes as $attribute) {
                         $final_transaction['billing_' . $attribute] = $transaction['billing_' . $attribute];
@@ -977,13 +977,13 @@ class BxIndexer {
                 $final_transaction = null;
             }
             $data[] = $transactions_to_save;
+            $transactions_to_save = null;
             $configurable = null;
             $transactions = null;
 
             if ($header) {
-                $data = array_merge(array(array_keys(end($transactions_to_save))), $transactions_to_save);
+                $data = array_merge(array(array_keys(end($data))), $data);
                 $header = false;
-                $transactions_to_save = null;
             }
 
             $this->logger->info('bxLog: Transactions - save to file for account ' . $account);
@@ -994,7 +994,6 @@ class BxIndexer {
 
         $sourceKey = $this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
         $this->bxData->addSourceCustomerGuestProperty($sourceKey,'guest_id');
-
         $this->logger->info('bxLog: Transactions - end of export for account ' . $account);
     }
 

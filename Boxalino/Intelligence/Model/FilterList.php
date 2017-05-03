@@ -58,12 +58,13 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     public function getFilters(\Magento\Catalog\Model\Layer $layer){
 
         try {
-            if ($this->bxHelperData->isFilterLayoutEnabled($layer) && $this->bxHelperData->isLeftFilterEnabled()) {
+            if ($this->bxHelperData->isEnabledOnLayer($layer)) {
 
                 $filters = array();
                 $facets = $this->getBxFacets();
                 if ($facets) {
-                    foreach ($this->bxHelperData->getLeftFacetFieldNames() as $fieldName) {
+                    foreach ($facets->getLeftFacets() as $fieldName) {
+                        if ($facets->getFacetCoverage($fieldName) <= 0) continue;
                         $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
                         $filter = $this->objectManager->create(
                             "Boxalino\Intelligence\Model\Attribute",
@@ -73,6 +74,8 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                         $filter->setFacets($facets);
                         $filter->setFieldName($fieldName);
                         $filters[] = $filter;
+
+                        $filter = null;
                     }
                 }
                 return $filters;
@@ -87,7 +90,6 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     }
     
     private function getBxFacets(){
-        
         if($this->bxFacets == null){
             $this->bxFacets = $this->p13nHelper->getFacets();
         }

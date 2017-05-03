@@ -96,7 +96,7 @@ class BxAutocompleteResponse
 		if(empty($facets)){
 			return null;
 		}
-		$facets->setFacetResponse($hit->searchResult->facetResponses);
+		$facets->setSearchResults($hit->searchResult);
 		return $facets;
 	}
 	
