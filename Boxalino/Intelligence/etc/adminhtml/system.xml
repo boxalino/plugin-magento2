@@ -206,36 +206,6 @@
                 </field>
             </group>
 
-
-            <group id="left_facets" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Left facets</label>
-                <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable left filter</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    <comment>Is Boxalino left filter active?</comment>
-                </field>
-                <field id="fields" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Field names</label>
-                    <comment>The list of the field names of the facets to display on the left (extends Magento Search Layered Navigation). Ordered list (from top to bottom) of the field names to be used as left facets (values separated by ','). N.b.: prefix "products_" is needed for all non-system fields (most of the fields except price, discountedPrice and categories).N.b.: value for categories is "categories"; field name of price is "discountedPrice"</comment>
-                </field>
-                <field id="labels" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Facet labels</label>
-                    <comment>Label to be displayed on the store (should be set in each store language individually). Ordered list matching the values of Field names (values separated by ',').</comment>
-                </field>
-                <field id="types" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Facet types</label>
-                    <comment>The type of the facet. Ordered list matching the values of Field names (values separated by ','). Possible values: "list" (most common value, to be used in most cases), "ranged" (e.g.: for "discountedPrice"), "hierarchical" (e.g.: for "categories"), "numerical" (for numerical values)</comment>
-                </field>
-                <field id="orders" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Ordering of facet values</label>
-                    <comment><![CDATA[The ordering to sort the values in a facet. Ordered list matching the values of Field names (values separated by ',').<br />0 = "order by count values from biggest to smallest"<br />1 = "order alphabetically the values from A to Z"<br />2 = "order by Magento categorization"]]></comment>
-                </field>
-                <field id="position" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Position of facet values</label>
-                    <comment><![CDATA[The position of the facet appearing in the filter. Ordered list matching the values of Field names (values separated by ',').<br />If the position overlaps with other attributes defined in magento, the position is determined alphabetically.]]></comment>
-                </field>
-            </group>
-
             <group id="autocomplete" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Autocomplete</label>
                 <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">

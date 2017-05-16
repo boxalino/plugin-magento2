@@ -152,6 +152,9 @@ class BxFacets
 	}
 	
 	public function getFacetExtraInfo($fieldName, $extraInfoKey, $defaultExtraInfoValue = null) {
+		if ($fieldName == $this->getCategoryFieldName()) {
+			$fieldName = 'category_id';
+		}
 		try {
 			return $this->getFacetResponseExtraInfo($this->getFacetResponse($fieldName), $extraInfoKey, $defaultExtraInfoValue);
 		} catch(\Exception $e) {

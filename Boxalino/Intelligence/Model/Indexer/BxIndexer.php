@@ -976,7 +976,7 @@ class BxIndexer {
                 $guest_id_transaction = null;
                 $final_transaction = null;
             }
-            $data[] = $transactions_to_save;
+            $data = $transactions_to_save;
             $transactions_to_save = null;
             $configurable = null;
             $transactions = null;

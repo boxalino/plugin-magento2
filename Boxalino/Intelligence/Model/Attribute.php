@@ -195,12 +195,13 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     protected function _getItemsData(){
 
-        $this->_requestVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
-        $order = $this->bxDataHelper->getFieldSortOrder($this->fieldName);
+        $bxFacets = $this->bxFacets;
+        $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($this->fieldName));
+        $order = $bxFacets->getFacetExtraInfo($this->fieldName, 'valueorderEnums');
         
-        if ($this->fieldName == $this->bxFacets->getCategoryFieldName()) {
+        if ($this->fieldName == $bxFacets->getCategoryFieldName()) {
             $count = 1;
-            $parentCategories = $this->bxFacets->getParentCategories();
+            $parentCategories = $bxFacets->getParentCategories();
             $parentCount = count($parentCategories);
             $value = false;
             foreach ($parentCategories as $key => $parentCategory) {
@@ -210,7 +211,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($homeLabel),
                         2,
-                        $this->bxFacets->getParentCategoriesHitCount($key),
+                        $bxFacets->getParentCategoriesHitCount($key),
                         $value,
                         'home parent',
                         false
@@ -223,15 +224,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 $this->itemDataBuilder->addItemData(
                     $this->tagFilter->filter($parentCategory),
                     $key,
-                    $this->bxFacets->getParentCategoriesHitCount($key),
+                    $bxFacets->getParentCategoriesHitCount($key),
                     $value,
                     'parent',
                     false
                 );
             }
             $facetValues = null;
-            if($order == 2){
-                $facetLabels = $this->bxFacets->getCategoriesKeyLabels();
+            if($order == 'custom'){
+                $facetLabels = $bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];
                 $childParentId = $this->categoryFactory->create()->load($childId)->getParentId();
                 end($parentCategories);
@@ -246,58 +247,59 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 }
             }
             if($facetValues == null){
-                $facetValues = $this->bxFacets->getFacetValues($this->fieldName);
+                $facetValues = $bxFacets->getFacetValues($this->fieldName);
             }
 
             foreach ($facetValues as $facetValue) {
-                $id =  $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue);
+                $id =  $bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue);
                 if($this->categoryHelper->canShow($this->categoryFactory->create()->load($id))){
                     $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                        $this->tagFilter->filter($bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
                         $id,
-                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                        $bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                         false,
                         $value ? 'children' : 'home',
-                        $this->bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                        $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                     );
                 }
             }
+            
         } else {
 
             $attributeModel = $this->_config->getAttribute('catalog_product', substr($this->fieldName,9))->getSource();
-            if ($order == 2) {
-                $responseValues = $this->bxDataHelper->useValuesAsKeys($this->bxFacets->getFacetValues($this->fieldName));
+            if ($order == 'custom') {
+                $responseValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($this->fieldName));
                 $values = $attributeModel->getAllOptions();
 
                 foreach($values as $value){
                     $label = is_array($value) ? $value['label'] : $value;
                     if(isset($responseValues[$label])){
                         $facetValue = $responseValues[$label];
-                        $selected = $this->bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
-                        $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
+                        $selected = $bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
+                        $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
                         $this->itemDataBuilder->addItemData(
-                            $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                            $this->tagFilter->filter($bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
                             $selected ? 0 : $paramValue,
-                            $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                            $bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                             $selected,
                             'flat',
-                            $this->bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                            $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                         );
                     }
                 }
             } else {
-                foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
-                    $selected = $this->bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
-                    $paramValue = false ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue):
-                        $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
+                foreach ($bxFacets->getFacetValues($this->fieldName) as $facetValue) {
+                    $selected = $bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
+                    $paramValue = false ? $bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue):
+                        $attributeModel->getOptionId($bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
 
                     $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                        $this->tagFilter->filter($bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
                         $selected ? 0 : $paramValue,
-                        $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                        $bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                         $selected,
                         'flat',
-                        $this->bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                        $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                     );
                 }
             }

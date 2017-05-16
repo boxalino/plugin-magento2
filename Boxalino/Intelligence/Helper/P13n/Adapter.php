@@ -417,7 +417,7 @@ class Adapter
 		}
 
 		if(!$this->navigation){
-			$catId = isset($selectedValues['category_id']) ? $selectedValues['category_id'] : null;
+			$catId = isset($selectedValues['category_id']) ? $selectedValues['category_id'] : 2;
 			$bxFacets->addCategoryFacet($catId);
 		}
 

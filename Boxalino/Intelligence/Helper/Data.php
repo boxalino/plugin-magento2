@@ -283,6 +283,68 @@ class Data{
     }
 
     /**
+     * @param $params
+     * @return \stdClass
+     */
+    public function getFiltersValues($params){
+
+        $filters = new \stdClass();
+        if (isset($params['cat'])) {
+
+            $filters->filter_hc_category = '';
+            $category = $this->catalogCategory->load($params['cat']);
+            $categories = explode('/', $category->getPath());
+            foreach ($categories as $cat) {
+                $name = $category = $this->catalogCategory->load($cat)->getName();
+                if (strpos($name, '/') !== false) {
+                    $name = str_replace('/', '\/', $name);
+                }
+                $filters->filter_hc_category .= '/' . $name;
+
+            }
+            unset($params['cat']);
+        }
+
+        if (isset($params['price'])) {
+            $prices = explode('-', $params['price']);
+            if (!empty($prices[0])) {
+                $filters->filter_from_incl_price = $prices[0];
+            }
+            if (!empty($prices[1])) {
+                $filters->filter_to_incl_price = $prices[1];
+            }
+            unset($params['price']);
+        }
+
+        if (isset($params)) {
+            $list = $this->factory->create();
+            $list->load();
+            foreach ($params as $param => $values) {
+                $getAttribute = null;
+                foreach($list as $cat) {
+                    if($param == $cat->getName()) {
+                        $getAttribute = $cat;
+                    }
+                }
+                if ($getAttribute !== null) {
+                    $values = html_entity_decode($values);
+                    preg_match_all('!\d+!', $values, $matches);
+                    if (is_array($matches[0])) {
+                        $attrValues = array();
+                        $paramName = 'filter_' . $param;
+                        foreach ($matches[0] as $id) {
+                            $attribute = $attribute = $getAttribute->getSource()->getOptionText($id);
+                            $attrValues[] = $attribute;
+                        }
+                        $filters->paramName = $attrValues;
+                    }
+                }
+            }
+        }
+        return $filters;
+    }
+
+    /**
      * @return array
      */
     public function getWidgetConfig($widgetName){
@@ -302,25 +364,6 @@ class Data{
                 'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
         }
         return $widgetConfig;
-    }
-    
-    /**
-     * @return int
-     */
-    public function getFieldSortOrder($fieldName){
-
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
-        }
-
-        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
-        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
-        foreach($fields as $index => $field){
-            if($field == $fieldName){
-                return (int)$orders[$index];
-            }
-        }
-        return 0;
     }
     
     /**
@@ -471,7 +514,7 @@ class Data{
         }
         return $attributes;
     }
-
+    
     /**
      * @return string
      */
