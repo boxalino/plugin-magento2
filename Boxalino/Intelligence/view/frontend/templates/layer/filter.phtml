@@ -8,7 +8,7 @@ if(!$data->isEnabledOnLayer($layer)): ?>
 ?>
 <?php else: ?>
 <ol class="items">
-    <?php $showCount = $bxFacets->showFacetValueCounters($bxFieldName); $showedMoreLink = false; ?>
+    <?php $showCount = $bxFacets->showFacetValueCounters($bxFieldName, false); $showedMoreLink = false; ?>
     <?php foreach ($filterItems as $filterItem): ?>
         <?php $hidden = $filterItem->getHidden(); if(!$showedMoreLink && $hidden) {
             $showedMoreLink = true;
