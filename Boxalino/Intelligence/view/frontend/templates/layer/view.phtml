@@ -62,5 +62,21 @@
                 <?php endif; ?>
             </div>
         </div>
+        <script>
+            require([
+                'jquery'
+            ], function($) {
+                $(".show-more-values").on('click', function () {
+                    var header = $(this);
+                    var content = header.parent().find('.hidden-items');
+                    content.slideToggle(500, function () {
+                        header.text(function () {
+                            return content.is(":visible") ? "<?php echo __('less values');?>" : "<?php echo __('more values');?>";
+                        });
+                    });
+                });
+            });
+        </script>
     <?php endif; ?>
 <?php endif; ?>
+

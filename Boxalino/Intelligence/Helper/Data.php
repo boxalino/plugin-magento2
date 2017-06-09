@@ -576,4 +576,13 @@ class Data{
 
         return array_combine(array_keys(array_flip($array)),$array);
     }
+
+    /**
+     * @return mixed|string
+     */
+    public function notificationTrace() {
+        $e = new \Exception();
+        $trace = $e->getTraceAsString();
+        return $trace;
+    }
 }

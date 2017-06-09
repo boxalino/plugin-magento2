@@ -16,22 +16,6 @@ $account = $this->getAccount();
     ], function ($) {
         'use strict';
 
-        $(".show-more-values").on('click', function () {
-            var header = $(this);
-            //getting the next element
-            var content = header.parent().find('.hidden-items');
-            //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
-            content.slideToggle(500, function () {
-                //execute this after slideToggle is done
-                //change text of header based on visibility of content div
-                header.text(function () {
-                    //change text based on condition
-                    return content.is(":visible") ? "<?php echo __('less values');?>" : "<?php echo __('more values');?>";
-                });
-            });
-
-        });
-
         $('#product_addtocart_form').mage('validation', {
             radioCheckboxClosest: '.nested',
             submitHandler: function (form) {

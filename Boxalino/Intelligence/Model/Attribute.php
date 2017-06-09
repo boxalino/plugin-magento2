@@ -88,6 +88,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Eav\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\Locale\Resolver $locale,
+        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         array $data=[]
     )
     {
@@ -98,6 +99,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         $this->categoryHelper = $categoryHelper;
         $this->categoryFactory = $categoryFactory;
         $this->bxDataHelper = $bxDataHelper;
+        $this->p13nHelper = $p13nHelper;
         parent::__construct($filterItemFactory, $storeManager, $layer, $itemDataBuilder, $filterAttributeFactory, $string, $tagFilter, $data);
     }
 
@@ -105,7 +107,6 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param \com\boxalino\bxclient\v1\BxFacets $bxFacets
      */
     public function setFacets(\com\boxalino\bxclient\v1\BxFacets $bxFacets) {
-        
         $this->bxFacets = $bxFacets;
     }
 
@@ -113,7 +114,10 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return \com\boxalino\bxclient\v1\BxFacets
      */
     public function getBxFacets() {
-
+        if($this->bxFacets == null) {
+            $this->p13nHelper->notifyWarning(["message" => "Attribute requested getBxFacets before bxFacets have been set!", "stacktrace" => $this->bxDataHelper->notificationTrace()]);
+            $this->bxFacets = $this->p13nHelper->getFacets();
+        }
         return $this->bxFacets;
     }
     
@@ -121,7 +125,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param $fieldName
      */
     public function setFieldName($fieldName) {
-        
+
         $this->fieldName = $fieldName;
     }
 
@@ -130,7 +134,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function getName(){
 
-        return $this->bxFacets->getFacetLabel($this->fieldName, $this->_locale);
+        return $this->getBxFacets()->getFacetLabel($this->fieldName, $this->_locale);
     }
 
     /**
@@ -194,8 +198,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @return array
      */
     protected function _getItemsData(){
-
-        $bxFacets = $this->bxFacets;
+        $bxFacets = $this->getBxFacets();
         $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($this->fieldName));
         $order = $bxFacets->getFacetExtraInfo($this->fieldName, 'valueorderEnums');
         

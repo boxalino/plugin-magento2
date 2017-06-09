@@ -102,6 +102,9 @@ class State extends \Magento\Catalog\Model\Layer\State{
                             $filter = null;
                         }
                     }
+                } else {
+                    $this->p13nHelper->notifyWarning(["message"=>"BxFacets is not defined in " . get_class($this),
+                        "stacktrace"=>$this->bxHelperData->notificationTrace()]);
                 }
                 return $filters;
             }

@@ -59,7 +59,6 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
 
         try {
             if ($this->bxHelperData->isEnabledOnLayer($layer)) {
-
                 $filters = array();
                 $facets = $this->getBxFacets();
                 if ($facets) {
@@ -74,9 +73,11 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                         $filter->setFacets($facets);
                         $filter->setFieldName($fieldName);
                         $filters[] = $filter;
-
                         $filter = null;
                     }
+                } else {
+                    $this->p13nHelper->notifyWarning(["message"=>"BxFacets is not defined in " . get_class($this),
+                        "stacktrace"=>$this->bxHelperData->notificationTrace()]);
                 }
                 return $filters;
             }else{

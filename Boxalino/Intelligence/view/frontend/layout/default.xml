@@ -10,5 +10,10 @@
                    template="Boxalino_Intelligence::script.phtml">
             </block>
         </referenceContainer>
+        <referenceContainer name="before.body.end">
+            <block class="Boxalino\Intelligence\Block\Notification" name="bxNotification"
+                   template="Boxalino_Intelligence::notification.phtml">
+            </block>
+        </referenceContainer>
     </body>
 </page>
