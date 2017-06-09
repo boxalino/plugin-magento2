@@ -206,6 +206,7 @@ class BxFacets
 	}
 	
 	public function isFacetExpanded($fieldName, $default=true) {
+	    $fieldName = $fieldName == $this->getCategoryFieldName() ? 'category_id' : $fieldName;
 		$defaultDisplay = $default ? 'expanded' : null;
 		return $this->getFacetDisplay($fieldName, $defaultDisplay) == 'expanded';
 	}

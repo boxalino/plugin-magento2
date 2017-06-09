@@ -16,7 +16,7 @@ $account = $this->getAccount();
     ], function ($) {
         'use strict';
 
-        $(".show-more-values").click(function () {
+        $(".show-more-values").on('click', function () {
             var header = $(this);
             //getting the next element
             var content = header.parent().find('.hidden-items');
