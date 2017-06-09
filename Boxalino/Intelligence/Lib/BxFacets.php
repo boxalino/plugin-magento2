@@ -469,9 +469,9 @@ class BxFacets
 			$facetValues = $finalFacetValues;
 		}
 
-		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
+		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplayMaxSize"));
 		if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
-			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
+			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
 			if($enumDisplaySizeMin == 0) {
 				$enumDisplaySizeMin = $enumDisplaySize;
 			}
