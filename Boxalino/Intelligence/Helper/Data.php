@@ -512,6 +512,15 @@ class Data{
                 'position' => $position
             );
         }
+        uasort($attributes, function($a, $b){
+            if($a['position'] == $b['position']){
+                return strcmp($a['label'],$b['label']);
+            }
+            if($b['position'] == -1){
+                return true;
+            }
+            return $a['position'] - $b['position'];
+        });
         return $attributes;
     }
     

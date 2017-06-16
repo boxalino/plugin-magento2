@@ -24,7 +24,7 @@
                     $expanded = array();
                     foreach($filters as $index => $filter){
                         $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();
-                        if ($bxFacets->isFacetExpanded($filter->getFieldName(), false)) $expanded[] = $index;
+                        if (!is_null($bxFacets) && $bxFacets->isFacetExpanded($filter->getFieldName(), false)) $expanded[] = $index;
                     }
                 ?>
                 <?php foreach ($filters as $filter): ?>
