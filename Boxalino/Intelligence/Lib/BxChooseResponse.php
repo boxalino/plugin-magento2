@@ -39,7 +39,7 @@ class BxChooseResponse
 			$variant->searchResult = $response;
 			return $variant;
 		}
-		throw new \Exception("no variant provided in choice response for variant id $id");
+		throw new \Exception("no variant provided in choice response for variant id $id, bxRequest: " . json_encode($this->bxRequests));
 	}
 	
 	protected function getFirstPositiveSuggestionSearchResult($variant, $maxDistance=10) {
