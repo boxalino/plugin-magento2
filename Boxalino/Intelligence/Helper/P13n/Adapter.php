@@ -218,28 +218,22 @@ class Adapter
     }
 
     /**
-     * @param string $queryText
+     * @param $queryText
      * @param \Boxalino\Intelligence\Helper\Autocomplete $autocomplete
      * @return array
      */
     public function autocomplete($queryText, \Boxalino\Intelligence\Helper\Autocomplete $autocomplete)
     {
-
-        $order = array();
         $data = array();
         $hash = null;
-
         $autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit', $this->scopeStore);
         $products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit', $this->scopeStore);
-
         if ($queryText) {
-
             $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
                 $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
                 $this->getSearchChoice($queryText)
             );
             $searchRequest = $bxRequest->getBxSearchRequest();
-
             $searchRequest->setReturnFields(array('products_group_id'));
             $searchRequest->setGroupBy('products_group_id');
             $searchRequest->setFilters($this->getSystemFilters($queryText));
@@ -261,7 +255,6 @@ class Adapter
                 $row['first'] = $first;
                 $first = false;
                 $global[] = $row;
-
             }
 
             $suggestions = [];
@@ -291,7 +284,6 @@ class Adapter
                     $suggestions[] = $_data;
                 }
             }
-
             $data = array_merge($suggestions, $global);
             $data = array_merge($data, $suggestionProducts);
         }
@@ -336,7 +328,6 @@ class Adapter
      */
     public function simpleSearch()
     {
-
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
 
@@ -574,7 +565,6 @@ class Adapter
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute = true)
     {
-
         if (!$execute) {
             if (!isset(self::$choiceContexts[$widgetName])) {
                 self::$choiceContexts[$widgetName] = array();
@@ -623,11 +613,20 @@ class Adapter
         return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
     }
 
+    /**
+     * @param $warning
+     */
     public function notifyWarning($warning) {
         self::$bxClient->notifyWarning($warning);
     }
 
+    /**
+     * @param bool $force
+     * @param string $requestMapKey
+     */
     public function finalNotificationCheck($force = false, $requestMapKey = 'dev_bx_notifications') {
-        self::$bxClient->finalNotificationCheck($force, $requestMapKey);
+        if(!is_null(self::$bxClient)) {
+            self::$bxClient->finalNotificationCheck($force, $requestMapKey);
+        }
     }
 }

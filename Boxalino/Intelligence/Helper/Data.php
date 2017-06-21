@@ -451,7 +451,7 @@ class Data{
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled']);
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled']);
     }
 
     /**

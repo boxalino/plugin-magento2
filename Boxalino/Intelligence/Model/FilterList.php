@@ -28,12 +28,18 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     protected $_logger;
 
     /**
+     * @var \Magento\Catalog\Block\Category\View
+     */
+    protected $categoryViewBlock;
+
+    /**
      * FilterList constructor.
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param \BOxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
      * @param array $filters
      */
     public function __construct(
@@ -42,11 +48,13 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \BOxalino\Intelligence\Helper\Data $bxHelperData,
         \Psr\Log\LoggerInterface $logger,
+        \Magento\Catalog\Block\Category\View $categoryViewBlock,
         array $filters = []
     )
     {
         parent::__construct($objectManager, $filterableAttributes, $filters);
         $this->_logger = $logger;
+        $this->categoryViewBlock = $categoryViewBlock;
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
     }
@@ -59,7 +67,15 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
 
         try {
             if ($this->bxHelperData->isEnabledOnLayer($layer)) {
+
                 $filters = array();
+
+                if($layer instanceof \Magento\Catalog\Model\Layer\Category) {
+                    if ($this->categoryViewBlock->isContentMode()) {
+                        $this->bxHelperData->setFallback(true);
+                        return $filters;
+                    }
+                }
                 $facets = $this->getBxFacets();
                 if ($facets) {
                     foreach ($facets->getLeftFacets() as $fieldName) {

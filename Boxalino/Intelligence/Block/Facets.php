@@ -33,6 +33,11 @@ class Facets extends \Magento\Framework\View\Element\Template{
 	 */
 	protected $_logger;
 
+    /**
+     * @var \Magento\Catalog\Block\Category\View
+     */
+	protected $categoryViewBlock;
+
 	/**
 	 * Facets constructor.
 	 * @param \Magento\Framework\View\Element\Template\Context $context
@@ -48,11 +53,13 @@ class Facets extends \Magento\Framework\View\Element\Template{
 		\Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
+        \Magento\Catalog\Block\Category\View $categoryViewBlock,
         array $data = []
     )
     {
         parent::__construct($context, $data);
 		$this->_logger = $context->getLogger();
+		$this->categoryViewBlock = $categoryViewBlock;
 		$this->p13nHelper = $p13nHelper;
 		$this->layer = $layerResolver->get();
 		$this->objectManager = $objectManager;
@@ -65,6 +72,12 @@ class Facets extends \Magento\Framework\View\Element\Template{
     public function getTopFilters(){
 		try{
 			if($this->bxHelperData->isEnabledOnLayer($this->layer)){
+                if($this->layer instanceof \Magento\Catalog\Model\Layer\Category){
+                    if($this->categoryViewBlock->isContentMode()){
+                        $this->bxHelperData->setFallback(true);
+                        return array();
+                    }
+                }
 				$facets = $this->p13nHelper->getFacets();
 				$top_facets = $facets->getTopFacets();
 				if($facets && sizeof($top_facets) > 0) {

@@ -33,11 +33,6 @@ class AjaxPlugin{
     protected $request;
 
     /**
-     * @var \Magento\Framework\UrlInterface
-     */
-    protected $url;
-
-    /**
      * @var \Boxalino\Intelligence\Helper\Autocomplete
      */
     protected $autocompleteHelper;
@@ -47,7 +42,6 @@ class AjaxPlugin{
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param AutocompleteInterface $autocomplete
      * @param \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
      */
     public function __construct(
@@ -58,7 +52,6 @@ class AjaxPlugin{
     )
     {
         $this->autocompleteHelper = $autocompleteHelper;
-        $this->url =  $context->getUrl();
         $this->request = $context->getRequest();
         $this->p13nHelper = $p13nHelper;
         $this->resultFactory = $context->getResultFactory();
@@ -66,18 +59,14 @@ class AjaxPlugin{
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\Result\Redirect|null
+     * @param \Magento\Search\Controller\Ajax\Suggest $subject
+     * @param callable $proceed
+     * @return \Magento\Framework\Controller\Result\Json
      */
-    public function aroundExecute(){
-        $query = $this->request->getParam('q', false);
-        if (!$query) {
-            /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
-            $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-            $resultRedirect->setUrl($this->url->getBaseUrl());
-            return $resultRedirect;
-        }
+    public function aroundExecute(\Magento\Search\Controller\Ajax\Suggest $subject, callable $proceed){
 
-        if($this->bxHelperData->isAutocompleteEnabled()){
+        $query = $this->request->getParam('q', false);
+        if($this->bxHelperData->isAutocompleteEnabled() && $query !== false){
             $responseData = $this->p13nHelper->autocomplete($query, $this->autocompleteHelper);
 
             /** @var \Magento\Framework\Controller\Result\Json $resultJson */
@@ -85,6 +74,6 @@ class AjaxPlugin{
             $resultJson->setData($responseData);
             return $resultJson;
         }
-        return null;
+        return $proceed();
     }
 }

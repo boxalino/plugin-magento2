@@ -118,7 +118,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     public function _construct(){
 
         try{
-            if($this->bxHelperData->isSetup()){
+            if($this->bxHelperData->isPluginEnabled() && $this->bxHelperData->isSetup()){
                 $cmsBlock = $this->bxHelperData->getCmsBlock();
                 if($cmsBlock){
                     $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
@@ -182,6 +182,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                         $recommendation['context']  = $this->getWidgetContext($widgetConfig['scenario']);
                     }
 
+
                     $this->p13nHelper->getRecommendation(
                         $widget['widget'],
                         $recommendation['context'],
@@ -202,29 +203,29 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _prepareData(){
+        if($this->bxHelperData->isPluginEnabled() ){
+            $context = isset($this->_data['context']) ? $this->_data['context'] : array();
+            $entity_ids = array();
+            try{
+                $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
+            }catch (\Exception $e){
+                $this->bxHelperData->setFallback(true);
+                $this->_logger->critical($e);
+                return $this;
+            }
 
-        $context = isset($this->_data['context']) ? $this->_data['context'] : array();
-        $entity_ids = array();
-        try{
-            $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
-        }catch (\Exception $e){
-            $this->bxHelperData->setFallback(true);
-            $this->_logger->critical($e);
-            return $this;
+            if ((count($entity_ids) == 0)) {
+                $entity_ids = array(0);
+            }
+
+            $this->_itemCollection = $this->factory->create()
+                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+            $this->_itemCollection->load();
+
+            foreach ($this->_itemCollection as $product) {
+                $product->setDoNotUseCategoryId(true);
+            }
         }
-    
-        if ((count($entity_ids) == 0)) {
-            $entity_ids = array(0);
-        }
-
-        $this->_itemCollection = $this->factory->create()
-            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-        $this->_itemCollection->load();
-
-        foreach ($this->_itemCollection as $product) {
-            $product->setDoNotUseCategoryId(true);
-        }
-
         return $this;
     }
 
