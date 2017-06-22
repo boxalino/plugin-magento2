@@ -37,7 +37,16 @@ $account = $this->getAccount();
         });
 
         <?php if($_helper->isAutocompleteEnabled()): ?>
-            var timer;
+            var timer,
+                observer = new MutationObserver(function(mutations){
+                    mutations.forEach(function(mutation) {
+                        if(mutation.type === 'childList'){
+                            jQuery('.sub_product_suggestions').hide();
+                        }
+                    });
+                });
+            var config = {childList: true};
+            observer.observe(document.getElementById('search_autocomplete'), config);
             $("body").on('mouseenter', '.acsuggestions', function () {
                 var $this = $(this);
                 timer = setTimeout(function () {
@@ -79,7 +88,7 @@ $account = $this->getAccount();
         <?php endif; ?>
     });
 <?php if($_helper->isTrackerEnabled()): ?>
-    var _bxq = _bxq || []
+    var _bxq = _bxq || [];
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
     
