@@ -1,9 +1,9 @@
 {
-  "name": "boxalino/module-intelligence",
+  "name": "boxalino/plugin-magento2",
   "description": "Boxalino Magento 2 plug-in",
-  "version": "1.0.0",
   "type": "magento2-module",
   "homepage": "http://www.boxalino.com",
+  "keywords": ["boxalino","intelligence","real-time","personalization","magento"],
   "support": {
     "email": "support@boxalino.com"
   },
