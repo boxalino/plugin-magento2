@@ -18,7 +18,6 @@ class BxClient
 	private $isTest = null;
 
 	private $debugOutput = '';
-	private $requestParams = array();
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
 	
@@ -42,10 +41,10 @@ class BxClient
 
 	private $notifications = array();
 
-	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
+	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request) {
 		$this->account = $account;
 		$this->password = $password;
-		$this->requestMap = $_REQUEST;
+		$this->requestMap = $request;
 		$this->isDev = $isDev;
 		$this->host = $host;
 		if($this->host == null) {
@@ -94,8 +93,14 @@ class BxClient
 		$cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
 		$cl->registerNamespace('Thrift', $libPath);
 		$cl->register(true);
-		require_once($libPath . '/P13nService.php');
-		require_once($libPath . '/Types.php');
+
+        $folders = ['P13n'];
+        foreach ($folders as $folder) {
+            $files =  glob($libPath . '/'. $folder . '/*.php', GLOB_NOSORT);
+            foreach ($files as $file) {
+                require_once($file);
+            }
+        }
 
 		require_once($libPath . "/BxFacets.php");
 		require_once($libPath . "/BxFilter.php");
@@ -335,13 +340,8 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-				echo "<pre><h1>Choice Request</h1>";
-				var_dump($choiceRequest);
-				echo "<br><h1>Choice Response</h1>";
-				var_dump($choiceResponse);
-				echo "</pre>";
-				exit;
-			}
+                $this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+            }
 			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
@@ -450,13 +450,8 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-				echo "<pre><h1>Autocomplete Request</h1>";
-				var_dump($autocompleteRequest);
-				echo "<br><h1>Choice Response</h1>";
-				var_dump($choiceResponse);
-				echo "</pre>";
-				exit;
-			}
+                $this->debugOutput = "<pre><h1>Autocomplete Request</h1>" . var_export($autocompleteRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+            }
 			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
@@ -492,13 +487,8 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-				echo "<pre><h1>Request bundle</h1>";
-				var_dump($requestBundle);
-				echo "<br><h1>Choice Response</h1>";
-				var_dump($choiceResponse);
-				echo "</pre>";
-				exit;
-			}
+                $this->debugOutput = "<pre><h1>Request bundle</h1>" . var_export($requestBundle, true) .  "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+            }
 			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
@@ -516,12 +506,7 @@ class BxClient
 		$this->_timeout = $timeout;
 		return $this;
 	}
-	
-	public function setRequestParams($params){
-		$this->requestParams = $params;
-		return $this;
-	}
-	
+
 	public function getDebugOutput(){
 		return $this->debugOutput;
 	}
@@ -540,10 +525,7 @@ class BxClient
     public function finalNotificationCheck($force=false, $requestMapKey = 'dev_bx_notifications')
     {
         if ($force || (isset($this->requestMap[$requestMapKey]) && $this->requestMap[$requestMapKey] == 'true')) {
-            echo "<pre><h1>Notifications</h1>";
-            var_dump($this->notifications);
-            echo "</pre>";
-            exit;
+            return "<pre><h1>Notifications</h1>" .  var_export($this->notifications, true) . "</pre>";
         }
     }
 }

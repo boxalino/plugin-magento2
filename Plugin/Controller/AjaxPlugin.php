@@ -38,19 +38,27 @@ class AjaxPlugin{
     protected $autocompleteHelper;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * AjaxPlugin constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Psr\Log\LoggerInterface $logger
      * @param \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
      */
     public function __construct(
         Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Psr\Log\LoggerInterface $logger,
         \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
     )
     {
+        $this->logger = $logger;
         $this->autocompleteHelper = $autocompleteHelper;
         $this->request = $context->getRequest();
         $this->p13nHelper = $p13nHelper;
@@ -66,13 +74,16 @@ class AjaxPlugin{
     public function aroundExecute(\Magento\Search\Controller\Ajax\Suggest $subject, callable $proceed){
 
         $query = $this->request->getParam('q', false);
-        if($this->bxHelperData->isAutocompleteEnabled() && $query !== false){
-            $responseData = $this->p13nHelper->autocomplete($query, $this->autocompleteHelper);
-
-            /** @var \Magento\Framework\Controller\Result\Json $resultJson */
-            $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-            $resultJson->setData($responseData);
-            return $resultJson;
+        try{
+            if($this->bxHelperData->isAutocompleteEnabled() && $query !== false){
+                $responseData = $this->p13nHelper->autocomplete($query, $this->autocompleteHelper);
+                /** @var \Magento\Framework\Controller\Result\Json $resultJson */
+                $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+                $resultJson->setData($responseData);
+                return $resultJson;
+            }
+        }catch(\Exception $e) {
+            $this->logger->critical($e);
         }
         return $proceed();
     }

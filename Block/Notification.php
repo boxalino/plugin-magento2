@@ -18,6 +18,13 @@ class Notification extends \Magento\Framework\View\Element\Template{
      */
     private $bxHelperData;
 
+    /**
+     * Notification constructor.
+     * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param array $data
+     */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -30,6 +37,9 @@ class Notification extends \Magento\Framework\View\Element\Template{
         $this->bxHelperData = $bxHelperData;
     }
 
+    /**
+     * Display BxNotification for debugging purposes
+     */
     public function displayNotification() {
         $this->p13nHelper->finalNotificationCheck();
     }

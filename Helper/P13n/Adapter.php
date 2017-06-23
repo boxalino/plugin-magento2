@@ -108,8 +108,7 @@ class Adapter
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Eav\Model\Config $config
 
-    )
-    {
+    ){
         $this->_modelConfig = $config;
         $this->response = $response;
         $this->bxHelperData = $bxHelperData;
@@ -119,11 +118,10 @@ class Adapter
         $this->registry = $registry;
         $this->queryFactory = $queryFactory;
         $this->storeManager = $storeManager;
-
-        $libPath = __DIR__ . '/../../Lib';
-        require_once($libPath . '/BxClient.php');
-        \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
         if ($this->bxHelperData->isPluginEnabled()) {
+            $libPath = __DIR__ . '/../../Lib';
+            require_once($libPath . '/BxClient.php');
+            \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
             $this->initializeBXClient();
         }
     }
@@ -133,9 +131,7 @@ class Adapter
      */
     protected function initializeBXClient()
     {
-
         if (self::$bxClient == null) {
-
             $account = $this->scopeConfig->getValue('bxGeneral/general/account_name', $this->scopeStore);
             $password = $this->scopeConfig->getValue('bxGeneral/general/password', $this->scopeStore);
             $isDev = $this->scopeConfig->getValue('bxGeneral/general/dev', $this->scopeStore);
@@ -143,8 +139,8 @@ class Adapter
             $p13n_username = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_username', $this->scopeStore);
             $p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password', $this->scopeStore);
             $domain = $this->scopeConfig->getValue('bxGeneral/general/domain', $this->scopeStore);
-            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
-            self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout', $this->scopeStore))->setRequestParams($this->request->getParams());
+            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $this->request->getParams());
+            self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout', $this->scopeStore));
         }
     }
 
@@ -154,7 +150,6 @@ class Adapter
      */
     public function getSystemFilters($queryText = "")
     {
-
         $filters = array();
         if ($queryText == "") {
             $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
@@ -171,7 +166,6 @@ class Adapter
      */
     public function getAutocompleteChoice()
     {
-
         $choice = $this->scopeConfig->getValue('bxSearch/advanced/autocomplete_choice_id', $this->scopeStore);
         if ($choice == null) {
             $choice = "autocomplete";
@@ -185,7 +179,6 @@ class Adapter
      */
     public function getSearchChoice($queryText)
     {
-
         if ($queryText == null) {
             $choice = $this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id', $this->scopeStore);
             if ($choice == null) {
@@ -209,7 +202,6 @@ class Adapter
      */
     public function getEntityIdFieldName()
     {
-
         $entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id', $this->scopeStore);
         if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
             $entityIdFieldName = 'products_group_id';
@@ -299,7 +291,6 @@ class Adapter
      */
     public function search($queryText, $pageOffset = 0, $hitCount, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null)
     {
-
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
         $returnFields = array_merge($returnFields, $additionalFields);
@@ -626,7 +617,10 @@ class Adapter
      */
     public function finalNotificationCheck($force = false, $requestMapKey = 'dev_bx_notifications') {
         if(!is_null(self::$bxClient)) {
-            self::$bxClient->finalNotificationCheck($force, $requestMapKey);
+            $output = self::$bxClient->finalNotificationCheck($force, $requestMapKey);
+            if($output != '') {
+                $this->response->appendBody($output);
+            }
         }
     }
 }
