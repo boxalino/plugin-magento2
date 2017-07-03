@@ -663,7 +663,8 @@ class BxFacets
 			$to = round($this->selectedPriceValues[0]->rangeToExclusive, 2);
 			$valueLabel = $from . ' - ' . $to;
 			$paramValue = "$from-$to";
-			return array($valueLabel, $paramValue, null, true, false);
+			$hitCount = $this->getFacetResponse($fieldName)->values[0]->hitCount;
+			return array($valueLabel, $paramValue, $hitCount, true, false);
 		}
 
         $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);

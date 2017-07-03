@@ -79,7 +79,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                 $facets = $this->getBxFacets();
                 if ($facets) {
                     foreach ($facets->getLeftFacets() as $fieldName) {
-                        if ($facets->getFacetCoverage($fieldName) <= 0) continue;
+
                         $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
                         $filter = $this->objectManager->create(
                             "Boxalino\Intelligence\Model\Attribute",
