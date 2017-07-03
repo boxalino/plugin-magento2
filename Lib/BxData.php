@@ -467,12 +467,12 @@ class BxData
 		return $dom->saveXML();
 	}
 
-    protected function callAPI($fields, $url, $temporaryFilePath=null)
+    protected function callAPI($fields, $url, $temporaryFilePath=null, $timeout = 60)
     {
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 60);
+        curl_setopt($s, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -538,8 +538,8 @@ class BxData
 		$this->publishOwnerChanges(false);
 	}
 	
-	public function publishChanges() {
-		$this->publishOwnerChanges(true);
+	public function publishChanges($publish=true) {
+		$this->publishOwnerChanges($publish);
 	}
 	
 	public function publishOwnerChanges($publish=true) {
@@ -651,7 +651,7 @@ class BxData
 		return $zipFilePath;
     }
 	
-	public function pushData($temporaryFilePath=null) {
+	public function pushData($temporaryFilePath=null, $timeout = 60) {
 		
 		$zipFile = $this->createZip($temporaryFilePath);
 		
@@ -666,7 +666,7 @@ class BxData
         );
 
         $url = $this->host . self::URL_ZIP;
-		return $this->callAPI($fields, $url, $temporaryFilePath);
+		return $this->callAPI($fields, $url, $temporaryFilePath, $timeout);
 	}
 
     protected function getCurlFile($filename, $type)

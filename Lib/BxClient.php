@@ -41,7 +41,7 @@ class BxClient
 
 	private $notifications = array();
 
-	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request) {
+	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request=null) {
 		$this->account = $account;
 		$this->password = $password;
 		$this->requestMap = $request;

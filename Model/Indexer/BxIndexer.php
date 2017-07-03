@@ -205,7 +205,7 @@ class BxIndexer {
                 $this->logger->info("bxLog: initialize files on account: " . $account);
                 $files = new BxFiles($this->filesystem, $account, $this->config);
 
-                $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
+                $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "", $this->config->isAccountDev($account));
                 $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == 'delta');
 
                 $this->logger->info("bxLog: verify credentials for account: " . $account);
@@ -268,7 +268,7 @@ class BxIndexer {
 
                         $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
                         $publish = $this->config->publishConfigurationChanges($account);
-                        $changes = $this->bxData->publishChanges();
+                        $changes = $this->bxData->publishOwnerChanges($publish);
                         if(sizeof($changes['changes']) > 0 && !$publish) {
                             $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
                         }
@@ -277,7 +277,8 @@ class BxIndexer {
                     }
                     $this->logger->info('pushing to DI');
                     try{
-                        $this->bxData->pushData();
+                        $timeout = $this->getIndexerType() == 'delta' ? 60 : 3600;
+                        $this->bxData->pushData(null , $timeout);
                     }catch(\Exception $e){
                         $this->logger->info($e);
                         throw $e;
