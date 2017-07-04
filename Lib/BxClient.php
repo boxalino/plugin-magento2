@@ -95,13 +95,21 @@ class BxClient
 		$cl->register(true);
 
         $folders = ['P13n'];
+        $deferred = '';
         foreach ($folders as $folder) {
             $files =  glob($libPath . '/'. $folder . '/*.php', GLOB_NOSORT);
             foreach ($files as $file) {
+                if(strpos($file, 'P13nServiceClient') !== false){
+                    $deferred = $file;
+                    continue;
+                }
                 require_once($file);
             }
         }
+        if($deferred !== ''){
 
+            require_once($deferred);
+        }
 		require_once($libPath . "/BxFacets.php");
 		require_once($libPath . "/BxFilter.php");
 		require_once($libPath . "/BxRequest.php");
