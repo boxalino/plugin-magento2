@@ -58,7 +58,7 @@ N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, 
 
 ## Documentation
 
-Latest document available up request.
+Latest document available upon request.
 
 ## Contact us!
 
