@@ -1,0 +1,107 @@
+<?php
+/**
+ * Boxalino Script Block
+ */
+
+$_helper = $this->getBxHelperData();
+$_autocompleteHelper = $this->getAutocompleteHelper();
+$account = $this->getAccount();
+?>
+<script>
+    require([
+        'jquery',
+        'mage/mage',
+        'Magento_Catalog/product/view/validation',
+        'Magento_Catalog/js/catalog-add-to-cart'
+    ], function ($) {
+        'use strict';
+
+        $('#product_addtocart_form').mage('validation', {
+            radioCheckboxClosest: '.nested',
+            submitHandler: function (form) {
+                _bxq.push(['trackAddToBasket', $(form).find('input[name="product"]').val(), $(form).find('input[name="qty"]').val(),"", ""]);
+
+                var widget = $(form).catalogAddToCart({
+                    bindSubmit: false
+                });
+
+                widget.catalogAddToCart('submitForm', $(form));
+
+                return false;
+            }
+
+        });
+        $("div.top_filters>ol.items>li.item>a>span.count").text(function () {
+            var text = $(this).clone().children().remove().end().text(); //get text without children
+            return "(" + text + ")" ;
+        });
+
+        <?php if($_helper->isAutocompleteEnabled()): ?>
+            var timer,
+                observer = new MutationObserver(function(mutations){
+                    mutations.forEach(function(mutation) {
+                        if(mutation.type === 'childList'){
+                            jQuery('.sub_product_suggestions').hide();
+                        }
+                    });
+                });
+            var config = {childList: true};
+            observer.observe(document.getElementById('search_autocomplete'), config);
+            $("body").on('mouseenter', '.acsuggestions', function () {
+                var $this = $(this);
+                timer = setTimeout(function () {
+                    $('.global_product_suggestions').hide();
+                    $('.sub_product_suggestions').hide();
+                    $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
+                }, 1000);
+            }).on('mouseleave', '.acsuggestions', function () {
+                clearTimeout(timer);
+                $(this).removeClass("selected");
+            });
+
+            $("body").on('mouseleave', '#search_autocomplete', function () {
+                $('.global_product_suggestions').show();
+                $('.sub_product_suggestions').hide();
+            });
+
+            $( "#search" ).click(function(e){
+                $("#search_autocomplete").show();
+            });
+
+            $( "#search" ).keydown(function(e) {
+                if(e.key == "Enter"){
+                    window.stop();
+                }else{
+                    if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
+                        $("#search").data().mageQuickSearch.options.template =
+                            '<% if(data.type == "suggestion" ){ %>' +
+                            $("#search").data().mageQuickSearch.options.template +
+                            '<% }else{ %>' +
+                            '<% if(data.first){ %>'+
+                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
+                            '<% }; %>'+
+                            '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
+                            '<% }; %>';
+                    }
+                }
+            });
+        <?php endif; ?>
+    });
+<?php if($_helper->isTrackerEnabled()): ?>
+    var _bxq = _bxq || [];
+    _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
+    <?php echo $this->getScripts(); ?>
+    
+    _bxq.push(['trackPageView']);
+
+    <?php if ($this->isSearch()): ?>
+        <?php echo $_helper->reportSearch($this->getRequest()->getParam('q'), $_helper->getFiltersValues($this->getRequest()->getParams())); ?>
+    <?php endif; ?>
+    (function () {
+        var s = document.createElement('script');
+        s.async = 1;
+        s.src = '//cdn.bx-cloud.com/frontend/rc/js/ba.min.js';
+        document.getElementsByTagName('head')[0].appendChild(s);
+    })();
+<?php endif; ?>
+</script>

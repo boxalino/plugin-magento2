@@ -1,0 +1,37 @@
+<?php
+$om = \Magento\Framework\App\ObjectManager::getInstance();
+$data = $om->get("\Boxalino\Intelligence\Helper\Data");
+$layer = $om->get("\Magento\Catalog\Model\Layer\Resolver")->get();
+if(!$data->isEnabledOnLayer($layer)): ?>
+<?php
+    include ($block->getTemplateFile('Magento_LayeredNavigation::layer/filter.phtml'));
+?>
+<?php else: ?>
+<ol class="items">
+    <?php $showCount = $bxFacets->showFacetValueCounters($bxFieldName, false); $showedMoreLink = false; ?>
+    <?php foreach ($filterItems as $filterItem): ?>
+        <?php $hidden = $filterItem->getHidden(); if(!$showedMoreLink && $hidden) {
+            $showedMoreLink = true;
+            $more_values = __('more values');
+            echo "<li style=\"cursor:pointer\" class=\"show-more-values\">{$more_values}</li>";
+        } ?>
+        <li class="item <?php echo $filterItem->getType(); echo $filterItem->getSelected() == true ?  ' selected' : ''; ?> <?php echo $hidden == true ? ' hidden-items' : ''; ?>" style="<?php echo $hidden ? "display:none" : ""; ?>">
+            <?php if ($filterItem->getCount() > 0): ?>
+                <a href="<?php echo $block->escapeUrl($filterItem->getUrl()) ?>">
+                    <?php /* @escapeNotVerified */ echo $filterItem->getLabel() ?>
+                    <?php if ($showCount): ?>
+                        <span class="count"><?php /* @escapeNotVerified */ echo $filterItem->getCount()?><span class="filter-count-label">
+                            <?php if ($filterItem->getCount() == 1):?> <?php /* @escapeNotVerified */ echo __('item')?><?php else:?> <?php /* @escapeNotVerified */ echo __('items') ?><?php endif;?></span></span>
+                    <?php endif; ?>
+                </a>
+            <?php else:?>
+                <?php /* @escapeNotVerified */ echo $filterItem->getLabel() ?>
+                <?php if ($showCount): ?>
+                    <span class="count"><?php /* @escapeNotVerified */ echo $filterItem->getCount()?><span class="filter-count-label">
+                        <?php if ($filterItem->getCount() == 1):?><?php /* @escapeNotVerified */ echo __('item')?><?php else:?><?php /* @escapeNotVerified */ echo __('items') ?><?php endif;?></span></span>
+                <?php endif; ?>
+            <?php endif; ?>
+        </li>
+    <?php endforeach ?>
+</ol>
+<?php endif; ?>

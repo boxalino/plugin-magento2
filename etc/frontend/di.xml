@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\CatalogSearch\Block\SearchResult\ListProduct" type="Boxalino\Intelligence\Block\Product\BxListProducts" />
+
+    <virtualType name="categoryFilterList" type="Boxalino\Intelligence\Model\FilterList">
+        <arguments>
+            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Category\FilterableAttributeList</argument>
+            <argument name="filters" xsi:type="array">
+                <item name="attribute" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Attribute</item>
+                <item name="price" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Price</item>
+                <item name="decimal" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Decimal</item>
+                <item name="category" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Category</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="searchFilterList" type="Boxalino\Intelligence\Model\FilterList">
+        <arguments>
+            <argument name="filterableAttributes" xsi:type="object">Magento\Catalog\Model\Layer\Search\FilterableAttributeList</argument>
+            <argument name="filters" xsi:type="array">
+                <item name="attribute" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Attribute</item>
+                <item name="price" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Price</item>
+                <item name="decimal" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Decimal</item>
+                <item name="category" xsi:type="string">Magento\CatalogSearch\Model\Layer\Filter\Category</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\LayeredNavigation\Block\Navigation\Category" type="Magento\LayeredNavigation\Block\Navigation">
+        <arguments>
+            <argument name="filterList" xsi:type="object">categoryFilterList</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\LayeredNavigation\Block\Navigation\Search" type="Magento\LayeredNavigation\Block\Navigation">
+        <arguments>
+            <argument name="filterList" xsi:type="object">searchFilterList</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Widget\Model\Template\Filter">
+        <plugin name="boxalino_cms_block" type="Boxalino\Intelligence\Plugin\FilterPlugin" sortOrder="1"/>
+    </type>
+    <type name="Magento\Search\Controller\Ajax\Suggest">
+        <plugin name="boxalino_auto_complete_ajax" type="Boxalino\Intelligence\Plugin\Controller\AjaxPlugin" sortOrder="1"/>
+    </type>
+    <type name="Magento\LayeredNavigation\Block\Navigation\FilterRenderer">
+        <plugin name="boxalino_filter_renderer" type="Boxalino\Intelligence\Plugin\FilterRendererPlugin" sortOrder="1"/>
+    </type>
+</config>

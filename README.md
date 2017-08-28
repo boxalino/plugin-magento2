@@ -33,17 +33,26 @@ N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, 
 
 ## Installation
 
-1. Copy the Boxalino folder with all files in your app/code folder (create the folder if it doesn't already exist).
+1. Download the archive and extract to app/code/Boxalino/Intelligence (create the folder if it doesn't already exist) or via composer:
+	```
+	composer require boxalino/plugin-magento2
+	```
 2. Set chmod for Boxalino directory and files:
-    * chmod 755 -R app/code/Boxalino
-3. Upgrade with the module
-	* run the command line (from your main magento folder): php bin/magento setup:upgrade
+	```
+	chmod 755 -R app/code/Boxalin
+	```
+3. Upgrade with the module.
+	```
+	php bin/magento setup:upgrade
+	```
 4. Update the administrator role:
     * System > Permissions > Roles > Administrators - Save Role
 5. Indicate your account name and password in the Store -> Configuration -> Boxalion -> General
 6. Run a full data sync (direct command line from your main magento folder): php bin/magento indexer:reindex boxalino_indexer
-7. Delete all folders under /pub/static/frontend and /pub/static/_requirejs/frontend. 
-    * run the command line: php bin/magento setup:static-content:deploy de_CH (language is optional).
+7. Delete all folders under /pub/static/frontend and /pub/static/_requirejs/frontend and deploy static view files.
+	```
+	php bin/magento setup:static-content:deploy
+	```
 8. Activate the search, facets, autocompletion and recommendations (one after the other).
 9. Set up a an indexing cronjob, running at least one full index per day. Use the delta indexer if you want to update more than once per hour.
 

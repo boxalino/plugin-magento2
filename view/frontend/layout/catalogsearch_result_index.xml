@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Boxalino_Intelligence::css/filter.css"/>
+        <css src="Boxalino_Intelligence::css/nouislider.css"/>
+    </head>
+    <body>
+        <attribute name="class" value="page-products"/>
+        <referenceContainer name="content">
+            <block class="Boxalino\Intelligence\Block\Facets" name="search.filter.top"
+                   template="Boxalino_Intelligence::top_filters.phtml"  before="toolbar">
+            </block>
+        </referenceContainer>
+        <referenceBlock name="catalogsearch.navigation.renderer">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="catalogsearch.leftnav">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/view.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

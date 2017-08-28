@@ -1,0 +1,6 @@
+<?php $filterItems = $this->getTopFilters(); ?>
+<?php if(!empty($filterItems)): ?>
+    <div class="top_filters">
+        <?php include ($block->getTemplateFile('Magento_LayeredNavigation::layer/filter.phtml')); ?>
+    </div>
+<?php endif; ?>

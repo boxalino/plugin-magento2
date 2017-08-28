@@ -1,0 +1,43 @@
+.suggestion-item{
+    padding-right: 10px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 60px;
+}
+span.product-name{
+    color: #0a0a0a;
+    display: block;
+    float: right;
+    overflow: hidden;
+    position: relative;
+    text-align: right;
+    text-overflow: ellipsis;
+    top: 7px;
+    white-space: nowrap;
+    width: 175px;
+}
+span.product-image{
+    width:50px;
+    position: relative;
+    float: left;
+    display: block;
+}
+span.product-price{
+    color: #0A0A0A;
+    top: 15px;
+    font-weight: bold;
+    float:right;
+    position: relative;
+    text-align: right;
+
+}
+h4.suggestion-title{
+    padding:5px 40px 5px 10px;
+    background-color: lightcyan;
+    margin:0;
+}
+h4.product-title{
+    padding:5px 40px 5px 10px;
+    background-color: lightcyan;
+    margin:0;
+}
