@@ -49,7 +49,7 @@ N.B.: This project is for Magento 2, in case you need our plugin for Magento 1, 
 
 ## Documentation
 
-http://documentation.boxalino.com/boxalino-magento-1-x-and-2-x-plugin/
+Latest document available up request.
 
 ## Contact us!
 
