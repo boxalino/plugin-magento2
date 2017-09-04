@@ -73,7 +73,14 @@ class BxFacets
         if(sizeof($this->facets) !== sizeof($this->searchResult->facetResponses)) {
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
-                    $this->facets[$facetResponse->fieldName] = ['label' => $facetResponse->fieldName];
+                    $this->facets[$facetResponse->fieldName] = [
+                        'label' => $facetResponse->fieldName,
+                        'type' => $facetResponse->numerical ? 'ranged' : 'list',
+                        'order' => sizeof($this->facets),
+                        'selectedValues' => [],
+                        'boundsOnly' => $facetResponse->range,
+                        'maxCount' => -1
+                    ];
                 }
             }
         }
