@@ -277,4 +277,104 @@ class BxChooseResponse
 		}
 		return json_encode($object);
 	}
+ 
+	public function getSearchResultExtraInfo($searchResult, $extraInfoKey, $defaultExtraInfoValue = null) {
+		if($searchResult) {
+			if(is_array($searchResult->extraInfo) && sizeof($searchResult->extraInfo) > 0 && isset($searchResult->extraInfo[$extraInfoKey])) {
+				return $searchResult->extraInfo[$extraInfoKey];
+			}
+			return $defaultExtraInfoValue;
+		}
+		return $defaultExtraInfoValue;
+	}
+
+
+	public function getVariantExtraInfo($variant, $extraInfoKey, $defaultExtraInfoValue = null) {
+		if($variant) {
+			if(is_array($variant->extraInfo) && sizeof($variant->extraInfo) > 0 && isset($variant->extraInfo[$extraInfoKey])) {
+				return $variant->extraInfo[$extraInfoKey];
+			}
+			return $defaultExtraInfoValue;
+		}
+		return $defaultExtraInfoValue;
+	}
+
+	public function getExtraInfo($extraInfoKey, $defaultExtraInfoValue = null, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		
+		$variant = $this->getChoiceResponseVariant($choice, $count);
+
+		return $this->getVariantExtraInfo($variant, $extraInfoKey);
+	}
+	
+	public function prettyPrintLabel($label, $prettyPrint=false) {
+		if($prettyPrint) {
+			$label = str_replace('_', ' ', $label);
+			$label = str_replace('products', '', $label);
+			$label = ucfirst(trim($label));
+		}
+		return $label;
+	}
+
+	public function getLanguage($defaultLanguage = 'en') {
+		if(isset($this->bxRequests[0])) {
+			return $this->bxRequests[0]->getLanguage();
+		}
+		return $defaultLanguage;
+	}
+
+	public function getExtraInfoLocalizedValue($extraInfoKey, $language=null, $defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		$jsonLabel = $this->getExtraInfo($extraInfoKey, $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases, $defaultValue=NULL);
+		if($jsonLabel == null) {
+			return $this->prettyPrintLabel($defaultValue, $prettyPrint);
+		}
+		$labels = json_decode($jsonLabel);
+		if($language == null) {
+			$language = $this->getLanguage();
+		}
+		if(!is_array($labels)) {
+			return $jsonLabel;
+		}
+		foreach($labels as $label) {
+			if($language && $label->language != $language) {
+				continue;
+			}
+			if($label->value != null) {
+				return $this->prettyPrintLabel($label->value, $prettyPrint);
+			}
+		}
+		return $this->prettyPrintLabel($defaultValue, $prettyPrint);
+	}
+
+	public function getSearchMessageTitle($language=null, $defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) { 
+		return $this->getExtraInfoLocalizedValue('search_message_title', $language, $defaultExtraInfoValue, $prettyPrint, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageDescription($language=null, $defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfoLocalizedValue('search_message_description', $language, $defaultExtraInfoValue, $prettyPrint, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageTitleStyle($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfo('search_message_title_style', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageDescriptionStyle($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfo('search_message_description_style', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageMainImage($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfo('search_message_main_image', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageSideImage($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfo('search_message_side_image', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getSearchMessageLink($language=null, $defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) { 
+		return $this->getExtraInfoLocalizedValue('search_message_link', $language, $defaultExtraInfoValue, $prettyPrint, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
+	public function getRedirectLink($language=null, $defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfoLocalizedValue('redirect_url', $language, $defaultExtraInfoValue, $prettyPrint, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+	
 }
