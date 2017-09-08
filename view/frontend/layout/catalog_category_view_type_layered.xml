@@ -16,11 +16,19 @@
                    template="Boxalino_Intelligence::top_filters.phtml" before="-">
             </block>
         </referenceContainer>
+
         <referenceBlock name="catalog.navigation.renderer">
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
             </action>
-        </referenceBlock>
+        </referenceBlock> 
+
+        <referenceContainer name="content">
+            <block class="Boxalino\Intelligence\Block\searchMessage" name="bxSearchMessage" 
+                   template="Boxalino_Intelligence::searchMessage.phtml" >
+            </block>
+        </referenceContainer>
+
         <referenceBlock name="catalog.leftnav">
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/view.phtml</argument>

@@ -53,5 +53,10 @@
                     <max>3</max>
                 </upsell>
             </bxRecommendations>
+            <bxBanner>
+                <banner>
+                    <enabled>1</enabled>
+                </banner>
+            </bxBanner>
         </default>
     </config>

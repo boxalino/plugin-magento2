@@ -18,6 +18,8 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
      */
     private $bxHelperData;
 
+    private $bxResponse;
+
     /**
      * SearchMessage constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
@@ -41,9 +43,12 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
 
     public function getResponse(){
 
-        $bxResponse = $this->p13nHelper->getResponse();
+        if(is_null($this->bxResponse)){
 
-        return $bxResponse;
+            $this->bxResponse = $this->p13nHelper->getResponse();
+        }
+
+        return $this->bxResponse;
 
     }
 

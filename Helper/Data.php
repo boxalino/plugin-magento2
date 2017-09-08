@@ -446,6 +446,17 @@ class Data{
     /**
      * @return bool
      */
+    public function isBannerEnabled(){
+
+        if(!isset($this->bxConfig['bxBanner'])) {
+            $this->bxConfig['bxBanner'] = $this->config->getValue('bxBanner', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxBanner']['banner']['status']);
+    }
+
+    /**
+     * @return bool
+     */
     public function isNavigationEnabled(){
 
         if(!isset($this->bxConfig['bxSearch'])){

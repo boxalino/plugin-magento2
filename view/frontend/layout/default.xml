@@ -11,13 +11,6 @@
             </block>
         </referenceContainer>
 
-        <referenceContainer name="content">
-            
-            <block class="Boxalino\Intelligence\Block\searchMessage" name="bxSearchMessage" 
-                   template="Boxalino_Intelligence::searchMessage.phtml" >
-            </block>
-        </referenceContainer>
-
         <referenceContainer name="before.body.end">
             <block class="Boxalino\Intelligence\Block\Notification" name="bxNotification"
                    template="Boxalino_Intelligence::notification.phtml">

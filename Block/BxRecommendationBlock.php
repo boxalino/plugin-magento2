@@ -158,16 +158,13 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         }
         return $recommendations;
     }
-
     /**
      * @param array $recommendations
      * @return null
      */
-    protected function prepareRecommendations($recommendations = array()){
-
+    protected function prepareRecommendations($recommendations = array(), $returnFields = array()){
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
-
                 try{
                     $recommendation = array();
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
@@ -175,21 +172,19 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                         $widgetConfig['scenario'];
                     $recommendation['min'] = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
                     $recommendation['max'] = isset($widget['max']) ? $widget['max'] : $widgetConfig['max'];
-
                     if (isset($widget['context'])) {
                         $recommendation['context'] = explode(',', str_replace(' ', '', $widget['context']));
                     } else {
                         $recommendation['context']  = $this->getWidgetContext($widgetConfig['scenario']);
                     }
-
-
                     $this->p13nHelper->getRecommendation(
                         $widget['widget'],
                         $recommendation['context'],
                         $recommendation['scenario'],
                         $recommendation['min'],
                         $recommendation['max'],
-                        false
+                        false,
+                        $returnFields
                     );
                 }catch(\Exception $e){
                     $this->_logger->critical($e);

@@ -432,7 +432,7 @@ class Adapter
     /**
      *
      */
-    protected function getClientResponse()
+    public function getClientResponse()
     {
         try {
             $response = self::$bxClient->getResponse();
@@ -554,7 +554,7 @@ class Adapter
      * @param bool $execute
      * @return array|void
      */
-    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute = true)
+    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute = true, $returnFields = array())
     {
         if (!$execute) {
             if (!isset(self::$choiceContexts[$widgetName])) {
@@ -579,7 +579,7 @@ class Adapter
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     $bxRequest->setGroupBy('products_group_id');
                     $bxRequest->setFilters($this->getSystemFilters());
-                    $bxRequest->setReturnFields(array($this->getEntityIdFieldName()));
+                    $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
                     if ($widgetType === 'basket' && is_array($context)) {
                         $basketProducts = array();
                         foreach ($context as $product) {
@@ -622,5 +622,18 @@ class Adapter
                 $this->response->appendBody($output);
             }
         }
+    }
+
+    public function getResponse()
+    {
+
+       $this->simpleSearch();
+        $response = $this->getClientResponse();
+            
+        if (empty($response)) {
+            return "nothing";
+        }
+
+        return $response;
     }
 }
