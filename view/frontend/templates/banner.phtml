@@ -1,17 +1,40 @@
 <?php 
-    if ($this->isActive()) {
-?>    
-<script src="https://www.jssor.com/script/jssor.slider-26.1.5.min.js" type="text/javascript"></script>
-<script type="text/javascript">
-    <?php echo $this->getBannerJssorId() ?>_slider_init = function() {
 
-        var jssor_1_SlideoTransitions = <?php echo $this->getBannerJssorSlideTransitions() ?>
+if ($this->isActive() && $this->check()) { 
 
-        var jssor_1_options = <?php echo $this->getBannerJssorOptions() ?>;
+        $jssorSlides = $this->getBannerSlides();
+        $jssorId = $this->getBannerJssorId();
+        $jssorSlideTransitions = $this->getBannerJssorSlideTransitions();
+        $jssorSlideBreaks = $this->getBannerJssorSlideBreaks();
+        $jssorSlideControls = $this->getBannerJssorSlideControls();
+        $jssorOptions = $this->getBannerJssorOptions();
+        $jssorMaxWidth = $this->getBannerJssorMaxWidth();
+        $jssorCSS = $this->getBannerJssorCSS();
+        $jssorStyle = $this->getBannerJssorStyle();
+        $jssorLoadingScreen = $this->getBannerJssorLoadingScreen();
+        $jssorSlidesStyle = $this->getBannerJssorSlidesStyle();
+        $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
+        $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
 
-        var jssor_1_slider = new $JssorSlider$(<?php echo $this->getBannerJssorId() ?>, jssor_1_options);
+        
+?>
 
-        var MAX_WIDTH = <?php echo $this->getBannerJssorMaxWidth() ?>;
+
+    <script src="https://www.jssor.com/script/jssor.slider-26.1.5.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+    <?php echo $jssorId ?>_slider_init = function() {
+
+        var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+
+        var jssor_1_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+
+        var jssor_1_SlideoControls = <?php echo $jssorSlideControls ?>;
+
+        var jssor_1_options = <?php echo $jssorOptions ?>;
+
+        var jssor_1_slider = new $JssorSlider$(<?php echo $jssorId ?>, jssor_1_options);
+
+        var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
 
         function ScaleSlider() {
             var containerElement = jssor_1_slider.$Elmt.parentNode;
@@ -33,32 +56,39 @@
         $Jssor$.$AddEvent(window, "load", ScaleSlider);
         $Jssor$.$AddEvent(window, "resize", ScaleSlider);
         $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
-        /*#endregion responsive code end*/
     };
-</script>
-<style>
-    <?php echo $this->getBannerJssorCSS() ?>
-</style>
-<div id="<?php echo $this->getBannerJssorId() ?>">
+    </script>
 
-    <?php echo $this->getBannerJssorLoadingScreen() ?>
+    <style>
+        <?php echo $jssorCSS ?>
+    </style>
+
+    <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+
+    <?php echo $jssorLoadingScreen ?>
     
-    <div data-u="slides" style="cursor:default;position:relative;top:0px;left:0px;width:1300px;height:500px;overflow:hidden;">
+        <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
 
-        <?php 
+            <?php 
 
-            foreach($this->getBannerSlides() as $bannerSlideId => $values ) {
+                foreach($jssorSlides as $bannerSlideId => $values ) {
 
-                echo $values['div'];
-            }
+                    echo $values['div'];
+                }
 
-        ?>
-        <a data-u="any" href="https://www.jssor.com" style="display:none">bootstrap carousel</a>
+            ?>
+           
+        </div>
+
+        <?php echo $jssorBulletNavigator ?>
+        <?php echo $jssorArrowNavigator ?>
+    
     </div>
-
-    <?php echo $this->getBannerJssorBulletNavigator() ?>
-    <?php echo $this->getBannerJssorArrowNavigator() ?>
+    <script type="text/javascript"><?php echo $jssorId ?>_slider_init();</script>
     
-</div>
-<script type="text/javascript"><?php echo $this->getBannerJssorId() ?>_slider_init();</script>
-<?php } ?>
+
+<?php
+
+}
+
+?>
