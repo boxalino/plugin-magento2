@@ -602,6 +602,8 @@ class Adapter
                         $bxRequest->setGroupBy('id');
                         $filters = array(new \com\boxalino\bxclient\v1\BxFilter('bx_type', array('bxi_content'), false));
                         $bxRequest->setFilters($filters);
+                        $categoryValues = is_array($context) ? $context : array($context);
+                        self::$bxClient->addRequestContextParameter('current_category_id', $categoryValues);
                     }
                     self::$bxClient->addRequest($bxRequest);
                 }
