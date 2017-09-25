@@ -56,7 +56,7 @@ class BxData
         return $sourceKey;
     }
 
-    public function addCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=20) {
+    public function addCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=23) {
         $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
             $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
@@ -64,14 +64,14 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'CSV', $params, $validate);
     }
 
-    public function addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding = 'UTF-8', $sourceId = null, $container = 'products', $validate=true, $maxLength=20){
+    public function addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding = 'UTF-8', $sourceId = null, $container = 'products', $validate=true, $maxLength=23){
         $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'baseXPath'=>$xPath);
         if($sourceId == null) {
             $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
         }
         return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'XML', $params, $validate);
     }
-    public function addCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'customers', $validate=true, $maxLength=20) {
+    public function addCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'customers', $validate=true, $maxLength=23) {
         $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
             $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
@@ -84,7 +84,7 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'hierarchical', 'CSV', $params, $validate);
     }
 
-    public function addResourceFile($filePath, $categoryIdColumn, $labelColumns, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=20) {
+    public function addResourceFile($filePath, $categoryIdColumn, $labelColumns, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=23) {
         $params = array('referenceIdColumn'=>$categoryIdColumn, 'labelColumns'=>$labelColumns, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
             $sourceId = 'resource_' . $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
@@ -607,7 +607,7 @@ class BxData
         return $postFix;
     }
 
-    public function getSourceIdFromFileNameFromPath($filePath, $container, $maxLength=20, $withoutExtension=false) {
+    public function getSourceIdFromFileNameFromPath($filePath, $container, $maxLength=23, $withoutExtension=false) {
         $sourceId = $this->getFileNameFromPath($filePath, $withoutExtension);
         $shortened = false;
         if(strlen($sourceId) > $maxLength) {
