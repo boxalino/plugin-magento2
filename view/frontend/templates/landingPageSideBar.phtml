@@ -1,0 +1,8 @@
+<?php
+$state = $block->getLayout()->createBlock('Magento\LayeredNavigation\Block\Navigation\State')->setBlockId('catalog.navigation.state');
+
+$filter = $block->getLayout()->createBlock('Magento\LayeredNavigation\Block\Navigation\FilterRenderer')->setBlockId('catalog.navigation.renderer')->setTemplate("layer/filter.phtml");
+
+echo $block->getLayout()->createBlock('Magento\LayeredNavigation\Block\Navigation\Category')->setBlockId('catalog.leftnav')->setTemplate("layer/view.phtml")->setChild('state', $state)->setChild('renderer', $filter)->toHtml();
+
+?>

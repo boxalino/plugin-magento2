@@ -152,9 +152,9 @@ class Adapter
     {
         $filters = array();
         if ($queryText == "") {
-            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
+            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
         } else {
-            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
         }
         $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
 
@@ -221,7 +221,7 @@ class Adapter
         $autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit', $this->scopeStore);
         $products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit', $this->scopeStore);
         if ($queryText) {
-            $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->getLanguage(),
+            $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
                 $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
                 $this->getSearchChoice($queryText)
             );
@@ -289,30 +289,40 @@ class Adapter
      * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
      * @param null $categoryId
      */
-    public function search($queryText, $pageOffset = 0, $hitCount, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null)
-    {
-        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
-        $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
-        $returnFields = array_merge($returnFields, $additionalFields);
+     public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null)
+     {
+         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
+         $returnFields = array_merge($returnFields, $additionalFields);
 
-        //create search request
-        $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-        $bxRequest->setGroupBy('products_group_id');
-        $bxRequest->setReturnFields($returnFields);
-        $bxRequest->setOffset($pageOffset);
-        $bxRequest->setSortFields($bxSortFields);
-        $bxRequest->setFacets($this->prepareFacets());
-        $bxRequest->setFilters($this->getSystemFilters($queryText));
+         if (empty($queryText) && is_null($categoryId)) {
 
-        if ($categoryId != null) {
-            $filterField = "category_id";
-            $filterValues = array($categoryId);
-            $filterNegative = false;
-            $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-        }
+           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
+           $this->currentSearchChoice = 'landingpage';
 
-        self::$bxClient->addRequest($bxRequest);
-    }
+         } else {
+
+           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+
+         }
+         //create search request
+
+         $bxRequest->setGroupBy('products_group_id');
+         $bxRequest->setReturnFields($returnFields);
+         $bxRequest->setOffset($pageOffset);
+         $bxRequest->setSortFields($bxSortFields);
+         $bxRequest->setFacets($this->prepareFacets());
+         $bxRequest->setFilters($this->getSystemFilters($queryText));
+
+         if ($categoryId != null) {
+             $filterField = "category_id";
+             $filterValues = array($categoryId);
+             $filterNegative = false;
+             $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
+         }
+
+         self::$bxClient->addRequest($bxRequest);
+     }
 
     /**
      *
@@ -569,7 +579,7 @@ class Adapter
             }
             self::$choiceContexts[$widgetName][] = json_encode($context);
             if ($widgetType == '') {
-                $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount);
+                $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount);
                 $bxRequest->setGroupBy('products_group_id');
                 $bxRequest->setMin($minAmount);
                 $bxRequest->setFilters($this->getSystemFilters());
@@ -580,7 +590,7 @@ class Adapter
                 self::$bxClient->addRequest($bxRequest);
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
-                    $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->getLanguage(), $widgetName, $amount, $minAmount);
+                    $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     $bxRequest->setGroupBy('products_group_id');
                     $bxRequest->setFilters($this->getSystemFilters());
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));

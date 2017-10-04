@@ -73,7 +73,7 @@ class Facets extends \Magento\Framework\View\Element\Template{
 		try{
 			if($this->bxHelperData->isEnabledOnLayer($this->layer)){
                 if($this->layer instanceof \Magento\Catalog\Model\Layer\Category){
-                    if($this->categoryViewBlock->isContentMode()){
+                    if(!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()){
                         $this->bxHelperData->setFallback(true);
                         return array();
                     }

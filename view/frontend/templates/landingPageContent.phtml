@@ -1,0 +1,15 @@
+<?php
+
+echo $block->getLayout()->createBlock('Boxalino\Intelligence\Block\SearchMessage')->setBlockId('bxSearchMessage')->setTemplate("Boxalino_Intelligence::searchMessage.phtml")->toHtml();
+
+echo $block->getLayout()->createBlock('Boxalino\Intelligence\Block\Facets')->setBlockId('search.filter.top')->setTemplate("Boxalino_Intelligence::top_filters.phtml")->toHtml();
+
+$pager = $block->getLayout()->createBlock('Magento\Theme\Block\Html\Pager', 'product_list_toolbar_pager');
+
+$toolbar = $block->getLayout()->createBlock('Magento\Catalog\Block\Product\ProductList\Toolbar', 'product_list_toolbar')->setTemplate("product/list/toolbar.phtml")->setChild('product_list_toolbar_pager', $pager);
+
+$results = $block->getLayout()->createBlock('Boxalino\Intelligence\Block\Product\BxListProducts')->setBlockId('searchResults')->setTemplate("Boxalino_Intelligence::product/list.phtml")->setToolbarBlockName('product_list_toolbar')->setChild('product_list_toolbar', $toolbar);
+
+echo $results->toHtml();
+
+?>
