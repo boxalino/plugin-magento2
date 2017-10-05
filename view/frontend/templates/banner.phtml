@@ -15,48 +15,17 @@ if ($this->isActive() && $this->check()) {
         $jssorSlidesStyle = $this->getBannerJssorSlidesStyle();
         $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
+        $jssorFunction = $this->getBannerFunction();
 
-        
+
 ?>
 
 
     <script src="https://www.jssor.com/script/jssor.slider-26.1.5.min.js" type="text/javascript"></script>
     <script type="text/javascript">
-    <?php echo $jssorId ?>_slider_init = function() {
 
-        var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+    <?php echo $jssorId ?>_slider_init = <?php echo $jssorFunction ?>;
 
-        var jssor_1_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
-
-        var jssor_1_SlideoControls = <?php echo $jssorSlideControls ?>;
-
-        var jssor_1_options = <?php echo $jssorOptions ?>;
-
-        var jssor_1_slider = new $JssorSlider$(<?php echo $jssorId ?>, jssor_1_options);
-
-        var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
-
-        function ScaleSlider() {
-            var containerElement = jssor_1_slider.$Elmt.parentNode;
-            var containerWidth = containerElement.clientWidth;
-
-            if (containerWidth) {
-
-                var expectedWidth = Math.min(MAX_WIDTH || containerWidth, containerWidth);
-
-                jssor_1_slider.$ScaleWidth(expectedWidth);
-            }
-            else {
-                window.setTimeout(ScaleSlider, 30);
-            }
-        }
-
-        ScaleSlider();
-
-        $Jssor$.$AddEvent(window, "load", ScaleSlider);
-        $Jssor$.$AddEvent(window, "resize", ScaleSlider);
-        $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
-    };
     </script>
 
     <style>

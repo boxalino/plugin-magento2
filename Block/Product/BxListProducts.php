@@ -142,7 +142,7 @@ class BxListProducts extends ListProduct{
                 }
 
                 if($layer instanceof \Magento\Catalog\Model\Layer\Category){
-                    if($this->categoryViewBlock->isContentMode()){
+                    if(!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()){
                         $this->bxHelperData->setFallback(true);
                         return parent::_getProductCollection();
                     }

@@ -71,7 +71,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                 $filters = array();
 
                 if($layer instanceof \Magento\Catalog\Model\Layer\Category) {
-                    if ($this->categoryViewBlock->isContentMode()) {
+                    if (!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()) {
                         $this->bxHelperData->setFallback(true);
                         return $filters;
                     }

@@ -69,7 +69,8 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         9 => $this->getBannerJssorLoadingScreen(),
         10 => $this->getBannerJssorSlidesStyle(),
         11 => $this->getBannerJssorBulletNavigator(),
-        12 => $this->getBannerJssorArrowNavigator()
+        12 => $this->getBannerJssorArrowNavigator(),
+        13 => $this->getBannerFunction()
 
         );
 
@@ -255,6 +256,14 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         $bannerJssorArrowNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator');
 
         return $bannerJssorArrowNavigator;
+
+    }
+
+    public function getBannerFunction() {
+
+        $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function');
+
+        return $bannerFunction;
 
     }
 
