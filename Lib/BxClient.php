@@ -252,21 +252,32 @@ class BxClient
 		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
 		$hostname = @$_SERVER['HTTP_HOST'];
 		$requesturi = @$_SERVER['REQUEST_URI'];
-		
+
 		if($hostname == "") {
 			return "";
 		}
 
 		return $protocol . '://' . $hostname . $requesturi;
 	}
-	
+
+	public function forwardRequestMapAsContextParameters($filterPrefix = '', $setPrefix = ''){
+		foreach ($this->requestMap as $key => $value) {
+			if($filterPrefix != ''){
+				if(strpos($key, $filterPrefix) !== 0) {
+					continue;
+				}
+			}
+			$this->requestContextParameters[$setPrefix . $key] = is_array($value) ? $value : array($value);
+		}
+	}
+
 	public function addRequestContextParameter($name, $values) {
 		if(!is_array($values)) {
 			$values = array($values);
 		}
 		$this->requestContextParameters[$name] = $values;
 	}
-	
+
 	public function resetRequestContextParameter() {
 		$this->requestContextParameters = array();
 	}

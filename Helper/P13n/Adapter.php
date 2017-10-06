@@ -299,7 +299,7 @@ class Adapter
 
            $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
            $this->currentSearchChoice = 'landingpage';
-           //$bxRequest->forwardUrlParamters(true, '', '');
+           self::$bxClient->forwardRequestMapAsContextParameters();
 
          } else {
 
