@@ -267,4 +267,12 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     }
 
+    public function geHitCount(){
+
+      $hitCount = $this->p13nHelper->getClientResponse()->getTotalHitCount();
+
+      return $hitCount;
+
+    }
+
 }

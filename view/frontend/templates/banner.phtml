@@ -1,6 +1,8 @@
-<?php 
+<?php
 
-if ($this->isActive() && $this->check()) { 
+  $hitCount = $this->getHitCount();
+
+if ($this->isActive() && $this->check()) {
 
         $jssorSlides = $this->getBannerSlides();
         $jssorId = $this->getBannerJssorId();
@@ -67,15 +69,19 @@ if ($this->isActive() && $this->check()) {
                 }
 
             ?>
-           
+
         </div>
 
-        <?php echo $jssorBulletNavigator ?>
-        <?php echo $jssorArrowNavigator ?>
-    
+        <?php if ($hitCount > 1){
+
+          echo $jssorBulletNavigator;
+          echo $jssorArrowNavigator;
+
+        }; ?>
+
     </div>
     <script type="text/javascript"><?php echo $jssorId ?>_slider_init();</script>
-    
+
 
 <?php
 
