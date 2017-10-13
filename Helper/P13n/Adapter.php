@@ -595,6 +595,10 @@ class Adapter
                     $bxRequest->setGroupBy('products_group_id');
                     $bxRequest->setFilters($this->getSystemFilters());
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
+
+                    $categoryId = is_null($this->registry->registry('current_category')) ? 2 : $this->registry->registry('current_category')->getId();
+                    self::$bxClient->addRequestContextParameter('current_category_id', $categoryId);
+
                     if ($widgetType === 'basket' && is_array($context)) {
                         $basketProducts = array();
                         foreach ($context as $product) {
@@ -612,8 +616,8 @@ class Adapter
                     } elseif ($widgetType === 'banner') {
                         $bxRequest->setGroupBy('id');
                         $bxRequest->setFilters(array());
-                        $categoryValues = is_array($context) ? $context : array($context);
-                        self::$bxClient->addRequestContextParameter('current_category_id', $categoryValues);
+                        $contextValues = is_array($context) ? $context : array($context);
+                        self::$bxClient->addRequestContextParameter('banner_context', $contextValues);
                     }
                     self::$bxClient->addRequest($bxRequest);
                 }
