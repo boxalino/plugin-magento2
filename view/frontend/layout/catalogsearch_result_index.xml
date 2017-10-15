@@ -25,7 +25,7 @@
         </referenceBlock>
 
         <referenceContainer name="content">
-            <block class="Boxalino\Intelligence\Block\searchMessage" name="bxSearchMessage" 
+            <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage"
                    template="Boxalino_Intelligence::searchMessage.phtml" >
             </block>
         </referenceContainer>
