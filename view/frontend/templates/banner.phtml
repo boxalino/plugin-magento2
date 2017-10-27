@@ -31,13 +31,23 @@ if ($this->isActive() && $this->check()) {
 
         var <?php echo $jssorId ?>_slider_init = function() {
 
+            var hitCount = <?php echo $hitCount ?>;
+
+            if (hitCount < 2) {
+
+              var jssor_1_options = { $DragOrientation:0 };
+
+            } else {
+
+              var jssor_1_options = <?php echo $jssorOptions ?>;
+
+            }
+
             var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
 
             var jssor_1_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
 
             var jssor_1_SlideoControls = <?php echo $jssorSlideControls ?>;
-
-            var jssor_1_options = <?php echo $jssorOptions ?>;
 
             var jssor_1_slider = new $JssorSlider$(<?php echo $jssorId ?>, jssor_1_options);
 
