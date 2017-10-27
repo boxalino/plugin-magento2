@@ -19,6 +19,9 @@ if ($this->isActive() && $this->check()) {
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
 
+        if ($hitCount < 2) {
+         $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
+        }
 
 ?>
 
@@ -31,17 +34,7 @@ if ($this->isActive() && $this->check()) {
 
         var <?php echo $jssorId ?>_slider_init = function() {
 
-            var hitCount = <?php echo $hitCount ?>;
-
-            if (hitCount < 2) {
-
-              var jssor_1_options = { $DragOrientation:0 };
-
-            } else {
-
-              var jssor_1_options = <?php echo $jssorOptions ?>;
-
-            }
+            var jssor_1_options = <?php echo $jssorOptions ?>;
 
             var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
 
