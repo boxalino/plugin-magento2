@@ -91,6 +91,11 @@ class BxIndexer {
     protected $indexerModel;
 
     /**
+     * @var \Magento\Directory\Model\CountryFactory
+     */
+    protected $countryFactory;
+
+    /**
      * BxIndexer constructor.
      * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
@@ -101,6 +106,7 @@ class BxIndexer {
      * @param ProductFactory $productFactory
      * @param \Magento\Framework\App\ProductMetadata $productMetaData
      * @param \Magento\Indexer\Model\Indexer $indexer
+     * @param \Magento\Directory\Model\CountryFactory $countryFactory
      */
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -111,9 +117,11 @@ class BxIndexer {
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         ProductFactory $productFactory,
         \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Indexer\Model\Indexer $indexer
+        \Magento\Indexer\Model\Indexer $indexer,
+        \Magento\Directory\Model\CountryFactory $countryFactory
     )
     {
+        $this->countryFactory = $countryFactory;
         $this->indexerModel = $indexer;
         $this->storeManager = $storeManager;
         $this->logger = $logger;
@@ -453,7 +461,7 @@ class BxIndexer {
         }
 
         $this->logger->info('bxLog: starting exporting customers for account: ' . $account);
-
+        $countryHelper = $this->countryFactory->create();
         $limit = 1000;
         $count = $limit;
         $page = 1;
@@ -468,7 +476,6 @@ class BxIndexer {
 
         $this->logger->info('bxLog: get final customer attributes for account: ' . $account);
         $customer_attributes = $this->getCustomerAttributes($account);
-
         $this->logger->info('bxLog: get customer attributes backend types for account: ' . $account);
         $db = $this->rs->getConnection();
         $select = $db->select()
@@ -476,6 +483,7 @@ class BxIndexer {
                 array('main_table' => $this->rs->getTableName('eav_attribute')),
                 array(
                     'aid' => 'attribute_id',
+                    'attribute_code',
                     'backend_type',
                 )
             )
@@ -489,26 +497,25 @@ class BxIndexer {
 
         foreach ($db->fetchAll($select) as $attr) {
             if (isset($attrsFromDb[$attr['backend_type']])) {
-                $attrsFromDb[$attr['backend_type']][] = $attr['aid'];
+                $attrsFromDb[$attr['backend_type']][] = $attr['backend_type'] == 'static' ? $attr['attribute_code'] : $attr['aid'];
             }
         }
+
 
         do {
             $this->logger->info('bxLog: Customers - load page $page for account: ' . $account);
             $customers_to_save = array();
-
-            $customers = array();
-
             $this->logger->info('bxLog: Customers - get customer ids for page $page for account: ' . $account);
             $select = $db->select()
                 ->from(
-                    $this->rs->getTableName('customer_entity'),
-                    array('entity_id', 'created_at', 'updated_at')
+                    $this->rs->getTableName('customer_entity'), array_merge(['entity_id', 'confirmation'], $attrsFromDb['static'])
                 )
+                ->join($this->rs->getTableName('customer_address_entity'), 'customer_entity.entity_id = customer_address_entity.parent_id',
+                array('country_id', 'postcode'))
+                ->group('customer_entity.entity_id')
                 ->limit($limit, ($page - 1) * $limit);
-            foreach ($db->fetchAll($select) as $r) {
-                $customers[$r['entity_id']] = array('id' => $r['entity_id']);
-            }
+
+            $customers = $db->fetchAll($select);
 
             $this->logger->info('bxLog: Customers - prepare side queries page $page for account: ' . $account);
             $ids = array_keys($customers);
@@ -528,7 +535,6 @@ class BxIndexer {
             $select4 = null;
 
             $selects = array();
-
             if (count($attrsFromDb['varchar']) > 0) {
                 $select1 = clone $select;
                 $select1->from(array('ce' => $this->rs->getTableName('customer_entity_varchar')), $columns)
@@ -553,20 +559,6 @@ class BxIndexer {
                 $selects[] = $select3;
             }
 
-            // only supports email
-            if (count($attrsFromDb['static']) > 0) {
-                $attributeId = current($attrsFromDb['static']);
-                $select4 = $db->select()
-                    ->from(array('ce' => $this->rs->getTableName('customer_entity')), array(
-                        'entity_id' => 'entity_id',
-                        'attribute_id' =>  new \Zend_Db_Expr($attributeId),
-                        'value' => 'email',
-                    ))
-                    ->joinLeft(array('ea' => $this->rs->getTableName('eav_attribute')), 'ea.attribute_id = ' . $attributeId, 'ea.attribute_code')
-                    ->where('ce.entity_id IN (?)', $ids);
-                $selects[] = $select4;
-            }
-
             $select = $db->select()
                 ->union(
                     $selects,
@@ -585,57 +577,11 @@ class BxIndexer {
             $select4 = null;
             $selects = null;
 
-            $this->logger->info('bxLog: Customers - get postcode for page $page for account: ' . $account);
-            $select = $db->select()
-                ->from(
-                    $this->rs->getTableName('eav_attribute'),
-                    array(
-                        'attribute_id',
-                        'attribute_code',
-                    )
-                )
-                ->where('entity_type_id = ?', $this->getEntityIdFor('customer_address'))
-                ->where('attribute_code IN (?)', array('country_id', 'postcode'));
-
-            $addressAttr = array();
-            foreach ($db->fetchAll($select) as $r) {
-                $addressAttr[$r['attribute_id']] = $r['attribute_code'];
-            }
-            $addressIds = array_keys($addressAttr);
-
             $this->logger->info('bxLog: Customers - load data per customer for page $page for account: ' . $account);
+
             foreach ($customers as $customer) {
-                $id = $customer['id'];
-
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('customer_address_entity'),
-                        array('entity_id')
-                    )
-                    ->where('parent_id = ?', $id)
-                    ->order('entity_id DESC')
-                    ->limit(1);
-
-                $select = $db->select()
-                    ->from(
-                        $this->rs->getTableName('customer_address_entity_varchar'),
-                        array('attribute_id', 'value')
-                    )
-                    ->where('entity_id = ?', $select)
-                    ->where('attribute_id IN(?)', $addressIds);
-
-                $billingResult = array();
-                foreach ($db->fetchAll($select) as $br) {
-                    if (in_array($br['attribute_id'], $addressIds)) {
-                        $billingResult[$addressAttr[$br['attribute_id']]] = $br['value'];
-                    }
-                }
-
-                $countryCode = null;
-                if (isset($billingResult['country_id'])) {
-                    $countryCode = $billingResult['country_id'];
-                }
-
+                $id = $customer['entity_id'];
+                $countryCode = $customer['country_id'];
                 if (array_key_exists('gender', $customer)) {
                     if ($customer['gender'] % 2 == 0) {
                         $customer['gender'] = 'female';
@@ -643,18 +589,16 @@ class BxIndexer {
                         $customer['gender'] = 'male';
                     }
                 }
-
                 $customer_to_save = array(
                     'customer_id' => $id,
-                    'country' => !empty($countryCode) ? $this->_helperExporter->getCountry($countryCode)->getName() : '',
-                    'zip' => array_key_exists('postcode', $billingResult) ? $billingResult['postcode'] : '',
+                    'country' => !empty($countryCode) ? $countryHelper->loadByCode($countryCode)->getName() : '',
+                    'zip' => array_key_exists('postcode', $customer) ? $customer['postcode'] : '',
                 );
                 foreach($customer_attributes as $attr) {
                     $customer_to_save[$attr] = array_key_exists($attr, $customer) ? $customer[$attr] : '';
                 }
                 $customers_to_save[] = $customer_to_save;
             }
-
             $data = $customers_to_save;
 
             if (count($customers) == 0 && $header) {
@@ -1491,7 +1435,6 @@ class BxIndexer {
                     $files->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
                     $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                     $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
-
                     switch($type['attribute_code']){
                         case $optionSelect == true:
                             $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'],
