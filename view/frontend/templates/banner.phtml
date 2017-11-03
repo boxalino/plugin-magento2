@@ -1,15 +1,13 @@
 <?php
 
-  $hitCount = $this->getHitCount();
-
 if ($this->isActive() && $this->check()) {
 
+        $hitCount = $this->getHitCount();
         $jssorSlides = $this->getBannerSlides();
         $jssorId = $this->getBannerJssorId();
         $jssorSlideTransitions = $this->getBannerJssorSlideTransitions();
         $jssorSlideBreaks = $this->getBannerJssorSlideBreaks();
         $jssorSlideControls = $this->getBannerJssorSlideControls();
-        $jssorOptions = $this->getBannerJssorOptions();
         $jssorMaxWidth = $this->getBannerJssorMaxWidth();
         $jssorCSS = $this->getBannerJssorCSS();
         $jssorStyle = $this->getBannerJssorStyle();
@@ -18,6 +16,8 @@ if ($this->isActive() && $this->check()) {
         $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
+
+        $jssorOptions = $this->getBannerJssorOptions();
 
         if ($hitCount < 2) {
          $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);

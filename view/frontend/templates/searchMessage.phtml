@@ -1,37 +1,41 @@
 <?php
 
-$response = $this->getResponse(); 
+if ($this->isActive()) {
 
-if($response->getSearchMessageTitle() != "" && $response->getSearchMessageMainImage() == "") {
+  $response = $this->getResponse();
 
-?>
+  if($response->getSearchMessageTitle() != "" && $response->getSearchMessageMainImage() == "") {
 
-<div class="bx-search-message">
-    <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
-        <span class="content bx-search-message-title">
-            <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
-            <span class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>"><?php echo $response->getSearchMessageDescription(); ?></span>
-        </span>
-        <span class="image bx-search-message-side-image"><img src="<?php echo $response->getSearchMessageSideImage(); ?>" alt="" /></span>
-    </a>
-</div>
+  ?>
 
-<?php
-}
-if($response->getSearchMessageMainImage() != "") {
-?>
+  <div class="bx-search-message">
+      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
+          <span class="content bx-search-message-title">
+              <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
+              <span class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>"><?php echo $response->getSearchMessageDescription(); ?></span>
+          </span>
+          <span class="image bx-search-message-side-image"><img src="<?php echo $response->getSearchMessageSideImage(); ?>" alt="" /></span>
+      </a>
+  </div>
 
-<div class="bx-search-message">
-    <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
-        <span class="content" style="float: left;">
-            <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?> margin-bottom: 0px;"><?php echo $response->getSearchMessageTitle(); ?></strong>
-        </span>
-        <span class="image bx-search-message-main-image" style="float: left;">
-            <img src="<?php echo $response->getSearchMessageMainImage(); ?>" alt="" style ="width: 100%;"/>
-        </span>
-    </a>
-</div>
+  <?php
+  }
+  if($response->getSearchMessageMainImage() != "") {
+  ?>
 
-<?php
+  <div class="bx-search-message">
+      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
+          <span class="content" style="float: left;">
+              <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?> margin-bottom: 0px;"><?php echo $response->getSearchMessageTitle(); ?></strong>
+          </span>
+          <span class="image bx-search-message-main-image" style="float: left;">
+              <img src="<?php echo $response->getSearchMessageMainImage(); ?>" alt="" style ="width: 100%;"/>
+          </span>
+      </a>
+  </div>
+
+  <?php
+  }
+
 }
 ?>

@@ -1,5 +1,7 @@
 <?php
 
+if ($this->isActive()) {
+
 echo $block->getLayout()->createBlock('Boxalino\Intelligence\Block\SearchMessage')->setBlockId('bxSearchMessage')->setTemplate("Boxalino_Intelligence::searchMessage.phtml")->toHtml();
 
 echo $block->getLayout()->createBlock('Boxalino\Intelligence\Block\Facets')->setBlockId('search.filter.top')->setTemplate("Boxalino_Intelligence::top_filters.phtml")->toHtml();
@@ -11,5 +13,7 @@ $toolbar = $block->getLayout()->createBlock('Magento\Catalog\Block\Product\Produ
 $results = $block->getLayout()->createBlock('Boxalino\Intelligence\Block\Product\BxListProducts')->setBlockId('searchResults')->setTemplate("Boxalino_Intelligence::product/list.phtml")->setToolbarBlockName('product_list_toolbar')->setChild('product_list_toolbar', $toolbar);
 
 echo $results->toHtml();
+
+}
 
 ?>

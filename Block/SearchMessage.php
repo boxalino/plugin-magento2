@@ -41,6 +41,16 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
 
     }
 
+    public function isActive(){
+
+        if ($this->bxHelperData->isPluginEnabled()) {
+
+            return true;
+
+        }
+
+    }
+
     public function getResponse(){
 
         if(is_null($this->bxResponse)){
