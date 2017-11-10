@@ -37,54 +37,56 @@ $account = $this->getAccount();
         });
 
         <?php if($_helper->isAutocompleteEnabled()): ?>
-            var timer,
-                observer = new MutationObserver(function(mutations){
-                    mutations.forEach(function(mutation) {
-                        if(mutation.type === 'childList'){
-                            jQuery('.sub_product_suggestions').hide();
-                        }
+            if(document.getElementById('search_autocomplete')){
+                var timer,
+                    observer = new MutationObserver(function(mutations){
+                        mutations.forEach(function(mutation) {
+                            if(mutation.type === 'childList'){
+                                jQuery('.sub_product_suggestions').hide();
+                            }
+                        });
                     });
+                var config = {childList: true};
+                observer.observe(document.getElementById('search_autocomplete'), config);
+                $("body").on('mouseenter', '.acsuggestions', function () {
+                    var $this = $(this);
+                    timer = setTimeout(function () {
+                        $('.global_product_suggestions').hide();
+                        $('.sub_product_suggestions').hide();
+                        $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
+                    }, 1000);
+                }).on('mouseleave', '.acsuggestions', function () {
+                    clearTimeout(timer);
+                    $(this).removeClass("selected");
                 });
-            var config = {childList: true};
-            observer.observe(document.getElementById('search_autocomplete'), config);
-            $("body").on('mouseenter', '.acsuggestions', function () {
-                var $this = $(this);
-                timer = setTimeout(function () {
-                    $('.global_product_suggestions').hide();
+
+                $("body").on('mouseleave', '#search_autocomplete', function () {
+                    $('.global_product_suggestions').show();
                     $('.sub_product_suggestions').hide();
-                    $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
-                }, 1000);
-            }).on('mouseleave', '.acsuggestions', function () {
-                clearTimeout(timer);
-                $(this).removeClass("selected");
-            });
+                });
 
-            $("body").on('mouseleave', '#search_autocomplete', function () {
-                $('.global_product_suggestions').show();
-                $('.sub_product_suggestions').hide();
-            });
+                $( "#search" ).click(function(e){
+                    $("#search_autocomplete").show();
+                });
 
-            $( "#search" ).click(function(e){
-                $("#search_autocomplete").show();
-            });
-
-            $( "#search" ).keydown(function(e) {
-                if(e.key == "Enter"){
-                    window.stop();
-                }else{
-                    if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
-                        $("#search").data().mageQuickSearch.options.template =
-                            '<% if(data.type == "suggestion" ){ %>' +
-                            $("#search").data().mageQuickSearch.options.template +
-                            '<% }else{ %>' +
-                            '<% if(data.first){ %>'+
-                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
-                            '<% }; %>'+
-                            '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
-                            '<% }; %>';
+                $( "#search" ).keydown(function(e) {
+                    if(e.key == "Enter"){
+                        window.stop();
+                    }else{
+                        if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
+                            $("#search").data().mageQuickSearch.options.template =
+                                '<% if(data.type == "suggestion" ){ %>' +
+                                $("#search").data().mageQuickSearch.options.template +
+                                '<% }else{ %>' +
+                                '<% if(data.first){ %>'+
+                                '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
+                                '<% }; %>'+
+                                '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
+                                '<% }; %>';
+                        }
                     }
-                }
-            });
+                });
+            }
         <?php endif; ?>
     });
 <?php if($_helper->isTrackerEnabled()): ?>

@@ -38,24 +38,24 @@
             </bxSearch>
             <bxRecommendations>
                 <cart>
-                    <enabled>1</enabled>
+                    <status>1</status>
                     <min>3</min>
                     <max>3</max>
                 </cart>
                 <related>
-                    <enabled>1</enabled>
+                    <status>1</status>
                     <min>3</min>
                     <max>3</max>
                 </related>
                 <upsell>
-                    <enabled>1</enabled>
+                    <status>1</status>
                     <min>3</min>
                     <max>3</max>
                 </upsell>
             </bxRecommendations>
             <bxBanner>
                 <banner>
-                    <enabled>1</enabled>
+                    <status>1</status>
                 </banner>
             </bxBanner>
         </default>
