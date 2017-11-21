@@ -1,0 +1,50 @@
+@media screen and (min-width: 640px) {
+  .blogArticlePost{
+    width: 32% !important;
+    height: 420px !important;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .blogArticlePost{
+    width: 16.6666% !important;
+    height: 425px !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .blogArticlePost{
+    width: 100% !important;
+    max-height: 450px !important;
+  }
+}
+
+.blogArticlePost{
+
+  border:1px solid #ddd;
+  border-radius: 4px;
+  box-shadow:0 0 8px 0 rgba(0,0,0,.1);
+  padding:0 !important;
+  padding-bottom:5px;
+  margin:2px !important;
+  overflow: hidden;
+
+}
+
+.blogArticleTextArea{
+
+  padding:5px !important;
+
+}
+
+.blogArticleHeader{
+
+  margin-top:0 !important;
+
+}
+
+.blogArticleOrderedList{
+
+  margin-left: 0 !important;
+
+}

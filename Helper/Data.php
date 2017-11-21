@@ -365,7 +365,88 @@ class Data{
         }
         return $widgetConfig;
     }
-    
+
+    public function getCmsRecommendationBlocks($content) {
+
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'read';
+
+      $recs = array();
+      $recs[] = array(
+        'widget'=>$choiceId,
+        'scenario'=>'blog',
+        'min'=>$config['min'],
+        'max'=>$config['max']
+      );
+
+      return $recs;
+    }
+
+    public function getExcerptFieldName() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      if (isset($config['excerptFieldName'])) {
+        return $config['excerptFieldName'];
+      }
+      return 'products_blog_excerpt';
+    }
+
+    public function getLinkFieldName() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['linkFieldName'])) {
+        return $config['linkFieldName'];
+      }
+      return 'products_blog_link';
+    }
+
+    public function getMediaUrlFieldName() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['mediaUrlFieldName'])) {
+        return $config['mediaUrlFieldName'];
+      }
+      return 'products_blog_featured_media_url';
+    }
+
+    public function getDateFieldName() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['dateFieldName'])) {
+        return $config['dateFieldName'];
+      }
+      return 'products_blog_date';
+    }
+
+    public function getExtraFieldNames() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['extraFieldNamesFieldName'])) {
+        return explode(',', $config['extraFieldNamesFieldName']);
+      }
+
+      return array();
+    }
+
+    public function getBlogArticleImageWidth() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['blogArticleImageHeight'])) {
+        return explode(',', $config['blogArticleImageHeight']);
+      }
+
+      return 960;
+    }
+
+    public function getBlogArticleImageHeight() {
+      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+
+      if (isset($config['getBlogArticleImageWidth'])) {
+        return explode(',', $config['getBlogArticleImageWidth']);
+      }
+
+      return 580;
+    }
+
     /**
      * @return bool
      */
@@ -441,6 +522,17 @@ class Data{
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
         return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['upsell']['status']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBlogRecommendationEnabled(){
+
+        if(!isset($this->bxConfig['bxRecommendations'])) {
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['blog']['status']);
     }
 
     /**

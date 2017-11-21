@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-     <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
         <default>
 			<bxGeneral>
@@ -52,6 +52,18 @@
                     <min>3</min>
                     <max>3</max>
                 </upsell>
+                <blog>
+                    <enabled>0</enabled>
+                    <min>3</min>
+                    <max>3</max>
+                    <excerptFieldName></excerptFieldName>
+                    <linkFieldName></linkFieldName>
+                    <mediaUrlFieldName></mediaUrlFieldName>
+                    <dateFieldName></dateFieldName>
+                    <extraFieldNames></extraFieldNames>
+                    <blogArticleImageWidth></blogArticleImageWidth>
+                    <blogArticleImageHeight></blogArticleImageHeight>
+                </blog>
             </bxRecommendations>
             <bxBanner>
                 <banner>

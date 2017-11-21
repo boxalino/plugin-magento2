@@ -322,8 +322,60 @@
                 </field>
             </group>
 
+            <!-- Blog Configuration -->
+            <group id="blog" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                <label>Product detail page: blog recommendations</label>
+                <comment><![CDATA[ Widget configuration for blog recommendation on product page. ]]></comment>
+
+                <!-- Fields -->
+                <field id="enabled" type="select" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Widgets enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Minimum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Maximum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Widget name</label>
+                    <comment>Optional: default value is "read" and should normally not be changed</comment>
+                </field>
+                <field id="excerptFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Excerpt Fieldname</label>
+                    <comment>Optional: default value is "products_blog_excerpt" and should normally not be changed</comment>
+                </field>
+                <field id="linkFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
+                    <label>Link Fieldname</label>
+                    <comment>Optional: default value is "products_blog_link" and should normally not be changed</comment>
+                </field>
+                <field id="mediaUrlFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
+                    <label>Custom Media URL Fieldname</label>
+                    <comment>Optional: default value is "products_blog_featured_media_url" and should normally not be changed</comment>
+                </field>
+                <field id="dateFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
+                    <label>Date Fieldname</label>
+                    <comment>Optional: default value is "products_blog_date" and should normally not be changed</comment>
+                </field>
+                <field id="extraFieldNames" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
+                    <label>Extra Fieldnames</label>
+                    <comment>Optional: If you want some extra Elements in your Blog Recommendations you can enter the required field names here. (separated by coma)</comment>
+                </field>
+                <field id="blogArticleImageWidth" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
+                    <label>Blog Article Image Width</label>
+                    <comment>Set the width of the image that accompanies the blog.</comment>
+                </field>
+                <field id="blogArticleImageHeight" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
+                    <label>Blog Article Image Height</label>
+                    <comment>Set the height of the image that accompanies the blog.</comment>
+                </field>
+            </group>
+
             <!-- Upsell Configuration -->
-            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
                 <label>Other recommendations Configuration</label>
                 <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
 
@@ -346,7 +398,7 @@
                 </field>
             </group>
         </section>
-        <section id="bxBanner" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="bxBanner" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Banner</label>
             <tab>boxalino</tab>

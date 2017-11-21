@@ -1,0 +1,17 @@
+<?php if ($this->isActive()) { ?>
+
+  <div class="block blog">
+    <div class="block-title title">
+      <strong><?php echo $this->getBlogArticleTitle() ?></strong></div>
+    <div class="block-content content">
+      <div class="products wrapper grid products-grid products-blog">
+        <ol class="blogArticleOrderedList">
+          <?php foreach ($this->getBlogArticles() as $blogArticle) { ?>
+            <?php include('blog_article.phtml'); ?>
+          <?php } ?>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+<?php } ?>

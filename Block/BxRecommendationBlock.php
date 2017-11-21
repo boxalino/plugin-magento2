@@ -120,18 +120,22 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         try{
             if($this->bxHelperData->isPluginEnabled() && $this->bxHelperData->isSetup()){
                 $cmsBlock = $this->bxHelperData->getCmsBlock();
-                if($cmsBlock){
+                if($cmsBlock || sizeof($this->_data) == 0){
                     $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
-                    $this->prepareRecommendations($recommendationBlocks);
+                    $this->prepareRecommendations($recommendationBlocks, $this->getReturnFields());
                     $this->bxHelperData->setSetup(false);
                 }else{
-                    $this->prepareRecommendations(array($this->_data));
+                    $this->prepareRecommendations(array($this->_data), $this->getReturnFields());
                 }
             }
         }catch(\Exception $e){
             $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
         }
+    }
+
+    public function getReturnFields() {
+      return array();
     }
 
     /**
@@ -175,7 +179,8 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                     if (isset($widget['context'])) {
                         $recommendation['context'] = explode(',', str_replace(' ', '', $widget['context']));
                     } else {
-                        $recommendation['context']  = $this->getWidgetContext($widgetConfig['scenario']);
+                        $scenario = isset($widget['scenario']) ? $widget['scenario'] : $widgetConfig['scenario'];
+                        $recommendation['context']  = $this->getWidgetContext($scenario);
                     }
                     $this->p13nHelper->getRecommendation(
                         $widget['widget'],
@@ -229,7 +234,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array|mixed
      */
     protected function getWidgetContext($scenario){
-        
+
         $context = array();
         switch($scenario){
             case 'category':
@@ -237,6 +242,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                     $context = $this->registry->registry('current_category')->getId();
                 }
                 break;
+            case 'blog':
             case 'product':
                 if($this->_coreRegistry->registry('product') != null){
                     $context = $this->_coreRegistry->registry('product');
@@ -262,15 +268,15 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed|string
      */
     public function getRecommendationTitle(){
-        
+
         return isset($this->_data['title']) ? $this->_data['title'] : 'Recommendation';
     }
-    
+
     /**
      * @return \Magento\Quote\Model\Quote
      */
     protected function getQuote(){
-        
+
         return $this->_checkoutSession->getQuote();
     }
 
@@ -278,7 +284,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed
      */
     public function getItems(){
-        
+
         return $this->_itemCollection;
     }
 
@@ -286,7 +292,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _beforeToHtml(){
-        
+
         $this->_prepareData();
         return parent::_beforeToHtml();
     }
@@ -295,7 +301,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     public function getIdentities(){
-        
+
         $identities = [];
         if($this->getItems() != null){
             foreach ($this->getItems() as $item) {
@@ -309,7 +315,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return bool
      */
     public function canItemsAddToCart(){
-        
+
         foreach ($this->getItems() as $item) {
             if (!$item->isComposite() && $item->isSaleable() && !$item->getRequiredOptions()) {
                 return true;

@@ -26,7 +26,14 @@ class LandingPage extends \Magento\Framework\View\Element\Template{
 
   public function isActive(){
 
+    $this->setLandingPageChoiceId();
     return $this->bxHelperData->isPluginEnabled();
+
+  }
+
+  public function setLandingPageChoiceId($choice = 'landingpage'){
+
+    $this->p13nHelper->setLandingPageChoiceId($choice);
 
   }
 

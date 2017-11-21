@@ -86,6 +86,11 @@ class Adapter
     protected $_modelConfig;
 
     /**
+     * @var String
+     */
+    protected $landingPageChoice;
+
+    /**
      * Adapter constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -173,12 +178,30 @@ class Adapter
         return $choice;
     }
 
+    public function setLandingPageChoiceId($choice = ''){
+
+      if (!empty($choice)) {
+        return $this->landingPageChoice = $choice;
+      }
+
+      return $choice;
+
+    }
+
     /**
      * @param $queryText
      * @return mixed|string
      */
     public function getSearchChoice($queryText)
     {
+
+        $landingPageChoiceId = $this->landingPageChoice;
+
+        if (!empty($landingPageChoiceId)) {
+          $this->currentSearchChoice = $landingPageChoiceId;
+          return $landingPageChoiceId;
+        }
+
         if ($queryText == null) {
             $choice = $this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id', $this->scopeStore);
             if ($choice == null) {
@@ -295,17 +318,8 @@ class Adapter
          $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
          $returnFields = array_merge($returnFields, $additionalFields);
 
-         if (empty($queryText) && is_null($categoryId)) {
-
-           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
-           $this->currentSearchChoice = 'landingpage';
-           self::$bxClient->forwardRequestMapAsContextParameters();
-
-         } else {
-
-           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-
-         }
+         self::$bxClient->forwardRequestMapAsContextParameters();
+         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
          //create search request
 
          $bxRequest->setGroupBy('products_group_id');
@@ -592,8 +606,11 @@ class Adapter
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
-                    $bxRequest->setGroupBy('products_group_id');
-                    $bxRequest->setFilters($this->getSystemFilters());
+
+                    if ($widgetType != 'blog') {
+                      $bxRequest->setGroupBy('products_group_id');
+                      $bxRequest->setFilters($this->getSystemFilters());
+                    }
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
 
                     $categoryId = is_null($this->registry->registry('current_category')) ? 2 : $this->registry->registry('current_category')->getId();
@@ -605,7 +622,7 @@ class Adapter
                             $basketProducts[] = array('id' => $product->getId(), 'price' => $product->getPrice());
                         }
                         $bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
-                    } elseif ($widgetType === 'product' && !is_array($context)) {
+                    } elseif (($widgetType === 'product' || $widgetType === 'blog') && !is_array($context)) {
                         $product = $context;
                         $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
                     } elseif ($widgetType === 'category' && $context != null) {

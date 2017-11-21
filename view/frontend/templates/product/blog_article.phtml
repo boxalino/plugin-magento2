@@ -1,0 +1,26 @@
+<li class="item product product-item blogArticlePost">
+
+  <figure>
+    <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
+      <img
+        width="<?php echo $this->getBlogArticleImageWidth() ?>"
+        height="<?php echo $this->getBlogArticleImageHeight() ?>"
+        src="<?php echo $blogArticle[$this->getMediaUrlFieldName()] ?>"
+       >
+    </a>
+  </figure>
+
+  <div class="blogArticleTextArea">
+
+  <h4 class="blogArticleHeader">
+    <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
+      <?php echo $blogArticle['title'] ?>
+    </a>
+  </h4>
+
+  <div class="blogArticleExcerpt">
+    <?php echo $blogArticle[$this->getExcerptFieldName()] ?>
+  </div>
+
+  </div>
+</li>
