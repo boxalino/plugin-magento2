@@ -8,13 +8,15 @@ if ($this->isActive()) {
 
   ?>
 
-  <div class="bx-search-message">
-      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
-          <span class="content bx-search-message-title">
-              <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
+  <div class="bx-search-message" style="<?php echo $response->getSearchMessageContainerStyle(); ?>">
+      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="bx-search-message-link" style="<?php echo $response->getSearchMessageLinkStyle(); ?>">
+          <span>
+              <strong class="bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
               <span class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>"><?php echo $response->getSearchMessageDescription(); ?></span>
           </span>
-          <span class="image bx-search-message-side-image"><img src="<?php echo $response->getSearchMessageSideImage(); ?>" alt="" /></span>
+          <span class="bx-search-message-side-image">
+            <img src="<?php echo $response->getSearchMessageSideImage(); ?>" style="<?php echo $response->getSearchMessageSideImageStyle(); ?>" alt="" />
+          </span>
       </a>
   </div>
 
@@ -23,12 +25,12 @@ if ($this->isActive()) {
   if($response->getSearchMessageMainImage() != "") {
   ?>
 
-  <div class="bx-search-message">
-      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="block-promo womens-erin">
-          <span class="content" style="float: left;">
-              <strong class="title bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?> margin-bottom: 0px;"><?php echo $response->getSearchMessageTitle(); ?></strong>
+  <div class="bx-search-message" style="<?php echo $response->getSearchMessageContainerStyle(); ?>">
+      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="bx-search-message-link" style="<?php echo $response->getSearchMessageLinkStyle(); ?>">
+          <span>
+              <strong class="bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
           </span>
-          <span class="image bx-search-message-main-image" style="float: left;">
+          <span class="bx-search-message-main-image" style="<?php echo $response->getSearchMessageMainImageStyle(); ?>">
               <img src="<?php echo $response->getSearchMessageMainImage(); ?>" alt="" style ="width: 100%;"/>
           </span>
       </a>
