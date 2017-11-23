@@ -10,6 +10,12 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
 
   protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
+  protected $_logger;
+
+  protected $bxHelperData;
+
+  protected $p13nHelper;
+
     /**
      * Blog constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
@@ -29,6 +35,8 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
     )
     {
         $this->_logger = $context->getLogger();
+        $this->p13nHelper = $p13nHelper;
+        $this->bxHelperData = $bxHelperData;
         parent::__construct($context,
                             $p13nHelper,
                             $bxHelperData,

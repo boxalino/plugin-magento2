@@ -1,0 +1,28 @@
+<?php
+
+$productCollection = $this->getItems();
+$widget = $this->getData('widget');
+$image = 'upsell_products_list';
+
+$json = array();
+$json['title'] = $this->getRecommendationTitle();
+$json['widget'] = $widget;
+$json['products'] = array();
+if($productCollection) {
+  foreach($productCollection as $product) {
+      $jsonProduct = array();
+      $jsonProduct['url'] =  $block->getProductUrl($product);
+      $jsonProduct['image_attributes'] =  $block->getImage($product, $image)->getCustomAttributes();
+      $jsonProduct['image_url'] =  $block->getImage($product, $image)->getImageUrl();
+      $jsonProduct['image_width'] =  $block->getImage($product, $image)->getWidth();
+      $jsonProduct['image_height'] =  $block->getImage($product, $image)->getHeight();
+      $jsonProduct['image_alt'] =  $block->getImage($product, $image)->stripTags($block->getLabel(), null, true);
+      $jsonProduct['name'] =  $product->getName();
+      $priceInfo = $product->getPriceInfo();
+      $jsonProduct['final_price'] =  $priceInfo->getPrice('final_price')->getValue();
+      $jsonProduct['base_price'] =  $priceInfo->getPrice('base_price')->getValue();
+      $json['products'][] = $jsonProduct;
+  }
+}
+
+echo json_encode($json);

@@ -96,7 +96,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
-        array $data
+        array $data = []
     )
     {
         $this->_logger = $context->getLogger();
