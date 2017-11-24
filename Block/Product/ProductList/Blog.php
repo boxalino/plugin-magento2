@@ -18,9 +18,13 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
 
     /**
      * Blog constructor.
-     * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
+     * @param \Magento\Framework\App\Request\Http $request
      * @param array $data
      */
     public function __construct(
@@ -31,7 +35,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
-        array $data
+        array $data = []
     )
     {
         $this->_logger = $context->getLogger();

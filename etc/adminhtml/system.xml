@@ -404,7 +404,7 @@
             <tab>boxalino</tab>
             <resource>Boxalino_Intelligence::config</resource>
 
-            <!-- Cart Configuration -->
+            <!-- Banner Configuration -->
             <group id="banner" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="0">
                 <label>Banner options</label>
                 <comment><![CDATA[ Widget configuration for the banner. ]]></comment>

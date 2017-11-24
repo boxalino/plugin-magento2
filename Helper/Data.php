@@ -532,7 +532,7 @@ class Data{
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
-        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['blog']['status']);
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['blog']['enabled']);
     }
 
     /**
