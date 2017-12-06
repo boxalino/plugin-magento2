@@ -100,9 +100,15 @@ class Autocomplete{
 			$value['url'] = $product->getProductUrl();
 			$value['price'] = $this->_priceCurrency->format($price, false);
 			$value['image'] = $image;
-			$values[] = $value;
+			$values[$product->getId()] = $value;
 		}
-		return $values;
+		$returnValues = array();
+		foreach ($ids as $id) {
+		    if(isset($values[$id])){
+                $returnValues[] = $values[$id];
+            }
+        }
+		return $returnValues;
 	}
 
 	/**

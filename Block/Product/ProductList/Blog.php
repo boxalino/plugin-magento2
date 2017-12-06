@@ -56,9 +56,11 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
         return $this;
     }
 
-
     public function getCmsRecommendationBlocks($content) {
-      return $this->bxHelperData->getCmsRecommendationBlocks($content);
+        if($this->isActive() == false) {
+            return array();
+        }
+        return $this->bxHelperData->getCmsRecommendationBlocks($content);
     }
 
     public function getReturnFields() {

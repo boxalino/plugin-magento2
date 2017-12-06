@@ -218,8 +218,9 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                 $entity_ids = array(0);
             }
 
-            $this->_itemCollection = $this->factory->create()
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+            $this->_itemCollection = $this->factory->create();
+            $this->_itemCollection = $this->bxHelperData->prepareProductCollection($this->_itemCollection, $entity_ids)
+                ->addAttributeToSelect('*');
             $this->_itemCollection->load();
 
             foreach ($this->_itemCollection as $product) {

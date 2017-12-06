@@ -177,9 +177,8 @@ class BxListProducts extends ListProduct{
     protected function _setupCollection($entity_ids){
 
         $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
-        $list->setStoreId($this->_storeManager->getStore()->getId())
-            ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
-        $list->getSelect()->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
+        $list = $this->bxHelperData->prepareProductCollection($list, $entity_ids);
+        $list->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
         $list->load();
 
         $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());

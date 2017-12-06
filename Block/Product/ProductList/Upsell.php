@@ -93,9 +93,9 @@ class Upsell extends MageUpsell{
             if ((count($entity_ids) == 0)) {
                 $entity_ids = array(0);
             }
-            
-            $this->_itemCollection = $this->factory->create()
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+            $this->_itemCollection = $this->factory->create();
+            $this->_itemCollection = $this->bxHelperData->prepareProductCollection($this->_itemCollection, $entity_ids)
+                ->addAttributeToSelect('*');
 
             $this->_itemCollection->setVisibility($this->_catalogProductVisibility->getVisibleInCatalogIds());
             $this->_itemCollection->load();

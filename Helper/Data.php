@@ -574,6 +574,18 @@ class Data{
     }
 
     /**
+     * @param $productCollection
+     * @param $ids
+     * @return mixed
+     */
+    public function prepareProductCollection($productCollection, $ids) {
+
+        $productCollection->addFieldToFilter('entity_id', $ids)->getSelect()
+            ->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $ids).')'));
+        return $productCollection;
+    }
+
+    /**
      * @return mixed
      */
     public function getSubPhrasesLimit(){
