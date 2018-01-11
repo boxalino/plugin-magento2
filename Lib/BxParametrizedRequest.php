@@ -14,6 +14,8 @@ class BxParametrizedRequest extends BxRequest
 	private $requestSortFieldPrefix = "bxsf_";
 	
 	private $requestReturnFieldsName = "bxrf";
+	private $requestContextItemFieldName = "bxcif";
+	private $requestContextItemFieldValues = "bxciv";
 	
 	public function __construct($language, $choiceId, $max=10, $min=0, $bxReturnFields=null, $getItemFieldsCB=null) {
 		parent::__construct($language, $choiceId, $max, $min);
@@ -72,6 +74,22 @@ class BxParametrizedRequest extends BxRequest
 		return $this->requestReturnFieldsName;
 	}
 	
+	public function setRequestContextItemFieldName($requestContextItemFieldName) {
+		$this->requestContextItemFieldName = $requestContextItemFieldName;
+	}
+	
+	public function getRequestContextItemFieldName() {
+		return $this->requestContextItemFieldName;
+	}
+	
+	public function setRequestContextItemFieldValues($requestContextItemFieldValues) {
+		$this->requestContextItemFieldValues = $requestContextItemFieldValues;
+	}
+	
+	public function getRequestContextItemFieldValues() {
+		return $this->requestContextItemFieldValues;
+	}
+	
 	public function getPrefixes() {
 		return array($this->requestParametersPrefix, $this->requestWeightedParametersPrefix, $this->requestFiltersPrefix, $this->requestFacetsPrefix, $this->requestSortFieldPrefix);
 	}
@@ -98,6 +116,35 @@ class BxParametrizedRequest extends BxRequest
 			}
 		}
 		return $params;
+	}
+	
+	public function getContextItems() {
+		$contextItemFieldName = null;
+		$contextItemFieldValues = array();
+		foreach($this->getPrefixedParameters($this->requestParametersPrefix, false) as $name => $values) {
+			if($name == $this->requestContextItemFieldName) {
+				$value = $values;
+				if(is_array($value) && sizeof($value) > 0) {
+					$value = $values[0];
+				}
+				$contextItemFieldName = $value; 
+				continue;
+			}if($name == $this->requestContextItemFieldValues) {
+				$value = $values;
+				if(!is_array($value)) {
+					$value = explode(',', $values);
+				}
+				$contextItemFieldValues = $value; 
+				continue;
+			}
+			$params[$name] = $values;
+		}
+		if($contextItemFieldName) {
+			foreach($contextItemFieldValues as contextItemFieldValue) {
+				$this->setProductContext($contextItemFieldName, $contextItemFieldValue);
+			}
+		}
+		return parent::getContextItems();
 	}
 	
 	public function getRequestContextParameters() {

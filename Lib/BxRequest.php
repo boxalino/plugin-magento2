@@ -146,7 +146,7 @@ class BxRequest
 	
 	public function setIndexId($indexId) {
 		$this->indexId = $indexId;
-		foreach($this->contextItems as $k => $contextItem) {
+		foreach($this->getContextItems() as $k => $contextItem) {
 			if($contextItem->indexId == null) {
 				$this->contextItems[$k]->indexId = $indexId;
 			}
@@ -210,6 +210,11 @@ class BxRequest
 	
 	protected $contextItems = array();
 	public function setProductContext($fieldName, $contextItemId, $role = 'mainProduct') {
+		foreach($this->contextItems as $contextItem) {
+			if($contextItem->fieldName == $fieldName && $contextItem->contextItemId == $contextItemId) {
+				return;
+			}
+		}
 		$contextItem = new \com\boxalino\p13n\api\thrift\ContextItem();
 		$contextItem->indexId = $this->getIndexId();
 		$contextItem->fieldName = $fieldName;
