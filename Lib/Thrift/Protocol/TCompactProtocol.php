@@ -389,7 +389,7 @@ class TCompactProtocol extends TProtocol {
 	  throw new TProtocolException('Bad version in TCompact message');
 	}
 	$result += $this->readVarint($seqId);
-	$name += $this->readString($name);
+	$name .= $this->readString($name);
 
 	return $result;
   }

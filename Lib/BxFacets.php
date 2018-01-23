@@ -70,7 +70,7 @@ class BxFacets
 
     public function getFieldNames() {
 		$fieldNames = array();
-        if(sizeof($this->facets) !== sizeof($this->searchResult->facetResponses)) {
+        if(!sizeof($this->facets) !== sizeof($this->searchResult->facetResponses)) {
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
                     $this->facets[$facetResponse->fieldName] = [
@@ -252,7 +252,10 @@ class BxFacets
 		}
 		$defaultHideCoverageThreshold = $this->getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold);
 		if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
-			$ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
+            $ratio = 0;
+		    if($this->getTotalHitCount() > 0) {
+                $ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
+            }
 			return floatval($ratio) < floatval($defaultHideCoverageThreshold);
 		}
 		return false;
@@ -442,10 +445,26 @@ class BxFacets
 			}
 			break;
 		default:
-			foreach($facetResponse->values as $facetValue) {
-				$facetValues[$facetValue->stringValue] = $facetValue;
-			}
-			break;
+            foreach($facetResponse->values as $facetValue) {
+                $facetValues[$facetValue->stringValue] = $facetValue;
+            }
+
+            if(is_array($this->facets[$fieldName]['selectedValues'])) {
+                foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
+                    if(!isset($facetValues[$value])) {
+                        $newValue = new \com\boxalino\p13n\api\thrift\FacetValue();
+                        $newValue->rangeFromInclusive = null;
+                        $newValue->rangeToExclusive = null;
+                        $newValue->hierarchyId = null;
+                        $newValue->hierarchy = null;
+                        $newValue->stringValue = $value;
+                        $newValue->hitCount = 0;
+                        $newValue->selected = true;
+                        $facetValues[$value] = $newValue;
+                    }
+                }
+            }
+            break;
 		}
 		$overWriteRanking = $this->getFacetExtraInfo($fieldName, "valueorderEnums");
 		if($overWriteRanking == "counter") {

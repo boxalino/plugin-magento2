@@ -849,7 +849,14 @@ class BxIndexer {
                     continue;
                 }
 
-                $productOptions = unserialize($transaction['product_options']);
+                $productOptions = @unserialize($transaction['product_options']);
+                if($productOptions === FALSE) {
+                    $productOptions = @json_decode($transaction['product_options'], true);
+                    if(is_null($productOptions)) {
+                        $this->logger->error("bxLog: failed to unserialize and json decode product_options for order with entity_id: " . $transaction['entity_id']);
+                        continue;
+                    }
+                }
 
                 //is configurable - simple product
                 if (intval($transaction['price']) == 0 && $transaction['product_type'] == 'simple' && isset($productOptions['info_buyRequest']['product'])) {

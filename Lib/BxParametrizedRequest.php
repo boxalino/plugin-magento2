@@ -140,7 +140,7 @@ class BxParametrizedRequest extends BxRequest
 			$params[$name] = $values;
 		}
 		if($contextItemFieldName) {
-			foreach($contextItemFieldValues as contextItemFieldValue) {
+			foreach($contextItemFieldValues as $contextItemFieldValue) {
 				$this->setProductContext($contextItemFieldName, $contextItemFieldValue);
 			}
 		}
