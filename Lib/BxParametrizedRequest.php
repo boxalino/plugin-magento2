@@ -107,9 +107,12 @@ class BxParametrizedRequest extends BxRequest
 		}
 		return $prefix == null || strpos($string, $prefix) === 0;
 	}
-	
+
 	public function getPrefixedParameters($prefix, $checkOtherPrefixes=true) {
 		$params = array();
+		if(!is_array($this->requestMap)) {
+			return array();
+		}
 		foreach($this->requestMap as $k => $v) {
 			if($this->matchesPrefix($k, $prefix, $checkOtherPrefixes)) {
 				$params[substr($k, strlen($prefix))] = $v;
@@ -117,24 +120,25 @@ class BxParametrizedRequest extends BxRequest
 		}
 		return $params;
 	}
-	
+
 	public function getContextItems() {
 		$contextItemFieldName = null;
 		$contextItemFieldValues = array();
-		foreach($this->getPrefixedParameters($this->requestParametersPrefix, false) as $name => $values) {
+		$params = $this->getPrefixedParameters($this->requestParametersPrefix, false);
+		foreach($params as $name => $values) {
 			if($name == $this->requestContextItemFieldName) {
 				$value = $values;
 				if(is_array($value) && sizeof($value) > 0) {
 					$value = $values[0];
 				}
-				$contextItemFieldName = $value; 
+				$contextItemFieldName = $value;
 				continue;
 			}if($name == $this->requestContextItemFieldValues) {
 				$value = $values;
 				if(!is_array($value)) {
 					$value = explode(',', $values);
 				}
-				$contextItemFieldValues = $value; 
+				$contextItemFieldValues = $value;
 				continue;
 			}
 			$params[$name] = $values;

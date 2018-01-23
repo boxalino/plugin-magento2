@@ -64,6 +64,10 @@ class Parametrized extends \Boxalino\Intelligence\Block\BxRecommendationBlock im
       return 'parametrized';
     }
 
+    public function getLanguage() {
+      return $this->bxHelperData->getLanguage();
+    }
+
     public function getCmsRecommendationBlocks($content) {
 
       $recs = array();

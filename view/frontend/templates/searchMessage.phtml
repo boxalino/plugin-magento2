@@ -18,24 +18,54 @@ if ($this->isActive()) {
 
   }
 
-  if($response->getSearchMessageTitle() != "" && $response->getSearchMessageMainImage() == "") {
+  if($response->getSearchMessageTitle() != "" && $response->getSearchMessageMainImage() == "" && $response->getSearchMessageSideImage() == "") {
 
   ?>
 
   <div class="bx-search-message" style="<?php echo $response->getSearchMessageContainerStyle(); ?>">
+
+      <p class="bx-search-message-title" style="<?php echo $response->getSearchMessageTitleStyle(); ?>">
+        <?php echo $response->getSearchMessageTitle(); ?>
+      </p>
       <a href="<?php echo $response->getSearchMessageLink(); ?>" class="bx-search-message-link" style="<?php echo $response->getSearchMessageLinkStyle(); ?>">
-          <span>
-              <strong class="bx-search-message-title"  style="<?php echo $response->getSearchMessageTitleStyle(); ?>"><?php echo $response->getSearchMessageTitle(); ?></strong>
-              <span class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>"><?php echo $response->getSearchMessageDescription(); ?></span>
-          </span>
-          <span class="bx-search-message-side-image">
-            <img src="<?php echo $response->getSearchMessageSideImage(); ?>" style="<?php echo $response->getSearchMessageSideImageStyle(); ?>" alt="" />
-          </span>
+        <p class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>">
+          <?php echo $response->getSearchMessageDescription(); ?>
+        </p>
       </a>
+
   </div>
 
   <?php
   }
+
+  if($response->getSearchMessageTitle() != "" && $response->getSearchMessageMainImage() == "" && $response->getSearchMessageSideImage() != "") {
+
+  ?>
+
+  <div class="bx-search-message" style="<?php echo $response->getSearchMessageContainerStyle(); ?>">
+
+    <div class="bx-search-message-container-left" style="width:60%;float:left;">
+      <p class="bx-search-message-title" style="<?php echo $response->getSearchMessageTitleStyle(); ?>">
+        <?php echo $response->getSearchMessageTitle(); ?>
+      </p>
+      <a href="<?php echo $response->getSearchMessageLink(); ?>" class="bx-search-message-link" style="<?php echo $response->getSearchMessageLinkStyle(); ?>">
+        <p class="info bx-search-message-description" style="<?php echo $response->getSearchMessageDescriptionStyle(); ?>">
+          <?php echo $response->getSearchMessageDescription(); ?>
+        </p>
+      </a>
+    </div>
+
+    <div class="bx-search-message-container-right" style="width:40%; float:right;">
+      <div class="bx-search-message-side-image">
+        <img src="<?php echo $response->getSearchMessageSideImage(); ?>" style="<?php echo $response->getSearchMessageSideImageStyle(); ?>"/>
+      </div>
+    </div>
+
+  </div>
+
+  <?php
+  }
+
   if($response->getSearchMessageMainImage() != "") {
   ?>
 

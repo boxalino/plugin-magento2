@@ -3,10 +3,12 @@
 $productCollection = $this->getItems();
 $widget = $this->getData('widget');
 $image = 'upsell_products_list';
+$lang = $this->getLanguage();
 
 $json = array();
 $json['title'] = $this->getRecommendationTitle();
 $json['widget'] = $widget;
+$json['lang'] = $lang;
 $json['products'] = array();
 if($productCollection) {
   foreach($productCollection as $product) {
@@ -24,5 +26,4 @@ if($productCollection) {
       $json['products'][] = $jsonProduct;
   }
 }
-
 echo json_encode($json);
