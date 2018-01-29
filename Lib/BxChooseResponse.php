@@ -412,4 +412,8 @@ class BxChooseResponse
 		return $this->getExtraInfo('search_message_general_css', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
 	}
 
+	public function getSearchMessageDisplayType($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+		return $this->getExtraInfo('search_message_display_type', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
+	}
+
 }

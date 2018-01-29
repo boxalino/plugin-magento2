@@ -3,12 +3,15 @@
     width: 32% !important;
     height: 420px !important;
   }
+  .blogRecTitle{
+    font-size: 3.6rem !important;
+  }
 }
 
 @media screen and (min-width: 1024px) {
   .blogArticlePost{
-    width: 16.6666% !important;
-    height: 425px !important;
+    width: 32% !important;
+    height: 420px !important;
   }
 }
 
