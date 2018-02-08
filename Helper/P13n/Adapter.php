@@ -153,7 +153,7 @@ class Adapter
      * @param string $queryText
      * @return array
      */
-    public function getSystemFilters($queryText = "")
+    public function getSystemFilters($queryText = "", $type='product')
     {
         $filters = array();
         if ($queryText == "") {
@@ -162,6 +162,11 @@ class Adapter
             $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
         }
         $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
+        if($type == 'blog'){
+            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('is_blog', array(1));
+        } else {
+            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('is_blog', array(0));
+        }
 
         return $filters;
     }
@@ -192,9 +197,15 @@ class Adapter
      * @param $queryText
      * @return mixed|string
      */
-    public function getSearchChoice($queryText)
+    public function getSearchChoice($queryText, $isBlog = false)
     {
-
+        if($isBlog) {
+            $choice = $this->scopeConfig->getValue('bxSearch/advanced/blog_choice_id', $this->scopeStore);
+            if ($choice == null) {
+                $choice = "read";
+            }
+            return $choice;
+        }
         $landingPageChoiceId = $this->landingPageChoice;
 
         if (!empty($landingPageChoiceId)) {
@@ -243,64 +254,79 @@ class Adapter
         $hash = null;
         $autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit', $this->scopeStore);
         $products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit', $this->scopeStore);
+        $searches = $this->bxHelperData->isBlogEnabled() ? array('product', 'blog') : array('product');
         if ($queryText) {
-            $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
-                $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
-                $this->getSearchChoice($queryText)
-            );
-            $searchRequest = $bxRequest->getBxSearchRequest();
-            $searchRequest->setReturnFields(array('products_group_id'));
-            $searchRequest->setGroupBy('products_group_id');
-            $searchRequest->setFilters($this->getSystemFilters($queryText));
-            self::$bxClient->setAutocompleteRequest($bxRequest);
+            $bxRequests = array();
+            foreach ($searches as $search) {
+                $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
+                    $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
+                    $this->getSearchChoice($queryText)
+                );
+                $searchRequest = $bxRequest->getBxSearchRequest();
+                $returnFields = $search == 'blog' ? $this->bxHelperData->getBlogReturnFields() : array('products_group_id');
+                $searchRequest->setReturnFields($returnFields);
+                $id = $search == 'blog' ? 'id' : 'products_group_id';
+                $searchRequest->setGroupBy($id);
+                $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
+                $bxRequests[] = $bxRequest;
+            }
+            self::$bxClient->setAutocompleteRequests($bxRequests);
+
+
             self::$bxClient->autocomplete();
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 
-            $first = true;
-            $global = [];
+            foreach ($searches as $search) {
+                if($search == 'product'){
+                    $first = true;
+                    $global = [];
 
-            $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
-            $searchChoiceProducts = $autocomplete->getListValues($searchChoiceIds);
+                    $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+                    $searchChoiceProducts = $autocomplete->getListValues($searchChoiceIds);
 
-            foreach ($searchChoiceProducts as $product) {
-                $row = array();
-                $row['type'] = 'global_products';
-                $row['row_class'] = 'suggestion-item global_product_suggestions';
-                $row['product'] = $product;
-                $row['first'] = $first;
-                $first = false;
-                $global[] = $row;
-            }
+                    foreach ($searchChoiceProducts as $product) {
+                        $row = array();
+                        $row['type'] = 'global_products';
+                        $row['row_class'] = 'suggestion-item global_product_suggestions';
+                        $row['product'] = $product;
+                        $row['first'] = $first;
+                        $first = false;
+                        $global[] = $row;
+                    }
 
-            $suggestions = [];
-            $suggestionProducts = [];
+                    $suggestions = [];
+                    $suggestionProducts = [];
 
-            foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
+                    foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
 
-                $totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
+                        $totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
 
-                if ($totalHitcount <= 0) {
-                    continue;
-                }
+                        if ($totalHitcount <= 0) {
+                            continue;
+                        }
 
-                $_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
-                    'id' => $i, 'row_class' => 'acsuggestions');
+                        $_data = array('title' => $suggestion, 'num_results' => $totalHitcount, 'type' => 'suggestion',
+                            'id' => $i, 'row_class' => 'acsuggestions');
 
-                $suggestionProductIds = $bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
-                $suggestionProductValues = $autocomplete->getListValues($suggestionProductIds);
-                foreach ($suggestionProductValues as $product) {
-                    $suggestionProducts[] = array("type" => "sub_products", "product" => $product,
-                        'row_class' => 'suggestion-item sub_product_suggestions sub_id_' . $i);
-                }
+                        $suggestionProductIds = $bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+                        $suggestionProductValues = $autocomplete->getListValues($suggestionProductIds);
+                        foreach ($suggestionProductValues as $product) {
+                            $suggestionProducts[] = array("type" => "sub_products", "product" => $product,
+                                'row_class' => 'suggestion-item sub_product_suggestions sub_id_' . $i);
+                        }
 
-                if ($_data['title'] == $queryText) {
-                    array_unshift($suggestions, $_data);
+                        if ($_data['title'] == $queryText) {
+                            array_unshift($suggestions, $_data);
+                        } else {
+                            $suggestions[] = $_data;
+                        }
+                    }
+                    $data = array_merge($suggestions, $global);
+                    $data = array_merge($data, $suggestionProducts);
                 } else {
-                    $suggestions[] = $_data;
+                    //blog data
                 }
             }
-            $data = array_merge($suggestions, $global);
-            $data = array_merge($data, $suggestionProducts);
         }
         return $data;
     }
@@ -336,6 +362,18 @@ class Adapter
              $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
          }
 
+         self::$bxClient->addRequest($bxRequest);
+         if($this->bxHelperData->isBlogEnabled()) {
+//             $this->addBlogResult($queryText, $hitCount);
+         }
+     }
+
+     private function addBlogResult($queryText, $hitCount) {
+         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
+
+         $bxRequest->setGroupBy('id');
+         $returnFields = $this->bxHelperData->getBlogReturnFields();
+         $bxRequest->setReturnFields($returnFields);
          self::$bxClient->addRequest($bxRequest);
      }
 
@@ -425,7 +463,8 @@ class Adapter
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
         $requestParams = $this->request->getParams();
-        $attributeCollection = $this->bxHelperData->getFilterProductAttributes();
+        $context = $this->navigation ? 'navigation' : 'search';
+        $attributeCollection = $this->bxHelperData->getFilterProductAttributes($context);
         foreach ($requestParams as $key => $values) {
             if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
                 $fieldName = substr($key, 3);
@@ -446,13 +485,15 @@ class Adapter
         }
 
         foreach ($attributeCollection as $code => $attribute) {
-            $bound = $code == 'discountedPrice' ? true : false;
-            list($label, $type, $order, $position) = array_values($attribute);
-            $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
-            if ($code == 'discountedPrice' && isset($selectedValues[$code])) {
-                $bxFacets->addPriceRangeFacet($selectedValues[$code]);
-            } else {
-                $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+            if($attribute['addToRequest'] || isset($selectedValues[$code])){
+                $bound = $code == 'discountedPrice' ? true : false;
+                list($label, $type, $order, $position) = array_values($attribute);
+                $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
+                if ($code == 'discountedPrice' && isset($selectedValues[$code])) {
+                    $bxFacets->addPriceRangeFacet($selectedValues[$code]);
+                } else {
+                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+                }
             }
         }
         return $bxFacets;
@@ -474,6 +515,21 @@ class Adapter
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    public function getBlogIds() {
+        $this->simpleSearch();
+        return $this->getClientResponse()->getHitIds($this->getSearchChoice('', true), true, 0, 10, $this->getEntityIdFieldName());
+
+    }
+
+    public function getHitVariable($id, $field, $is_blog=false) {
+        $this->simpleSearch();
+        $choice_id = $this->currentSearchChoice;
+        if($is_blog) {
+            $choice_id = $this->getSearchChoice('', true);
+        }
+        return $this->getClientResponse()->getHitVariable($choice_id, $id, $field, 0);
     }
 
     /**
@@ -501,7 +557,6 @@ class Adapter
      */
     public function getFacets()
     {
-
         $this->simpleSearch();
         $facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
         if (empty($facets)) {

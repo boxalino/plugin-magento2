@@ -218,4 +218,8 @@ class Result extends Mage_Result{
 
         return $this->fallback;
     }
+
+    public function isBlogSearchActive() {
+        return $this->bxHelperData->isBlogEnabled();
+    }
 }

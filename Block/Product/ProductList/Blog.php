@@ -64,18 +64,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
     }
 
     public function getReturnFields() {
-      $fields = array(
-        'title',
-        $this->getExcerptFieldName(),
-        $this->getLinkFieldName(),
-        $this->getMediaUrlFieldName(),
-        $this->getDateFieldName()
-
-      );
-
-      $extraFields = $this->getExtraFieldNames();
-
-      return array_merge($fields, $extraFields);
+      return $this->bxHelperData->getBlogReturnFields();
     }
 
     public function isActive(){

@@ -21,7 +21,18 @@
         }
         ?>
     <?php else: ?>
-        <?php echo $block->getProductListHtml(); ?>
+        <?php if(true ||$this->isBlogSearchActive()): ?>
+            <button id="bx-product-tab">Products</button>
+            <button id="bx-blog-tab">Blogs</button>
+            <div class="bx-product-result">
+                <?php echo $block->getProductListHtml(); ?>
+            </div>
+            <div class="bx-blog-result" style="display:none">
+<!--                --><?php //echo $this->getLayout()->createBlock('Boxalino\Intelligence\Block\BlogResult')->setBlockId('search.result.blog')->setTemplate("Boxalino_Intelligence::blog_result.phtml")->toHtml(); ?>
+            </div>
+        <?php else: ?>
+            <?php echo $block->getProductListHtml(); ?>
+        <?php endif; ?>
     <?php endif; ?>
     </div>
 <?php else: ?>
@@ -37,3 +48,25 @@
     </div>
 </div>
 <?php endif; ?>
+<script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+<script>
+    (function($){
+        var product = $('.bx-product-result');
+        var blog = $('.bx-blog-result');
+        $('#bx-product-tab').on('click', function(){
+            if(!product.is(":visible")) {
+                product.show();
+                blog.hide();
+            }
+        });
+        $('#bx-blog-tab').on('click', function(){
+            if(!blog.is(":visible")) {
+                blog.show();
+                product.hide();
+            }
+        })
+    })(jQuery);
+</script>

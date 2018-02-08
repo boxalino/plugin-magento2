@@ -195,6 +195,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Is Boxalino search active?</comment>
                 </field>
+                <field id="blog" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable blog search</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Should blogs also be displayed in the search and autocomplete?</comment>
+                </field>
             </group>
 
             <group id="navigation" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -237,7 +242,11 @@
                     <label>Navigation choice ID</label>
                     <comment>Optional: default value is "navigation" and should normally not be changed</comment>
                 </field>
-                <field id="search_sub_phrases_limit" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="blog_choice_id" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Blog choice ID</label>
+                    <comment>Optional: default value is "read" and should normally not be changed</comment>
+                </field>
+                <field id="search_sub_phrases_limit" translate="label" type="text" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Search limit for sub-phrases</label>
                     <comment>Optional: default value is 3 and should normally not be changed.</comment>
                 </field>
@@ -344,34 +353,6 @@
                     <label>Widget name</label>
                     <comment>Optional: default value is "read" and should normally not be changed</comment>
                 </field>
-                <field id="excerptFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
-                    <label>Excerpt Fieldname</label>
-                    <comment>Optional: default value is "products_blog_excerpt" and should normally not be changed</comment>
-                </field>
-                <field id="linkFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
-                    <label>Link Fieldname</label>
-                    <comment>Optional: default value is "products_blog_link" and should normally not be changed</comment>
-                </field>
-                <field id="mediaUrlFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
-                    <label>Custom Media URL Fieldname</label>
-                    <comment>Optional: default value is "products_blog_featured_media_url" and should normally not be changed</comment>
-                </field>
-                <field id="dateFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
-                    <label>Date Fieldname</label>
-                    <comment>Optional: default value is "products_blog_date" and should normally not be changed</comment>
-                </field>
-                <field id="extraFieldNames" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
-                    <label>Extra Fieldnames</label>
-                    <comment>Optional: If you want some extra Elements in your Blog Recommendations you can enter the required field names here. (separated by coma)</comment>
-                </field>
-                <field id="blogArticleImageWidth" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
-                    <label>Blog Article Image Width</label>
-                    <comment>Set the width of the image that accompanies the blog.</comment>
-                </field>
-                <field id="blogArticleImageHeight" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
-                    <label>Blog Article Image Height</label>
-                    <comment>Set the height of the image that accompanies the blog.</comment>
-                </field>
             </group>
 
             <!-- Upsell Configuration -->
@@ -416,6 +397,43 @@
                 </field>
             </group>
         </section>
+        <section id="bxBlog" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Blog</label>
+            <tab>boxalino</tab>
+            <resource>Boxalino_Intelligence::config</resource>
 
+            <group id="field" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="0">
+                <field id="excerptFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
+                    <label>Excerpt Fieldname</label>
+                    <comment>Optional: default value is "products_blog_excerpt" and should normally not be changed</comment>
+                </field>
+                <field id="linkFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="6">
+                    <label>Link Fieldname</label>
+                    <comment>Optional: default value is "products_blog_link" and should normally not be changed</comment>
+                </field>
+                <field id="mediaUrlFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="7">
+                    <label>Custom Media URL Fieldname</label>
+                    <comment>Optional: default value is "products_blog_featured_media_url" and should normally not be changed</comment>
+                </field>
+                <field id="dateFieldName" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="8">
+                    <label>Date Fieldname</label>
+                    <comment>Optional: default value is "products_blog_date" and should normally not be changed</comment>
+                </field>
+                <field id="extraFieldNames" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="9">
+                    <label>Extra Fieldnames</label>
+                    <comment>Optional: If you want some extra Elements in your Blog Recommendations you can enter the required field names here. (separated by coma)</comment>
+                </field>
+                <field id="blogArticleImageWidth" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="10">
+                    <label>Blog Article Image Width</label>
+                    <comment>Set the width of the image that accompanies the blog.</comment>
+                </field>
+                <field id="blogArticleImageHeight" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="11">
+                    <label>Blog Article Image Height</label>
+                    <comment>Set the height of the image that accompanies the blog.</comment>
+                </field>
+            </group>
+
+        </section>
     </system>
 </config>

@@ -382,8 +382,21 @@ class Data{
       return $recs;
     }
 
+    public function getBlogReturnFields() {
+        $fields = array(
+            'title',
+            $this->getExcerptFieldName(),
+            $this->getLinkFieldName(),
+            $this->getMediaUrlFieldName(),
+            $this->getDateFieldName()
+        );
+        $extraFields = $this->getExtraFieldNames();
+
+        return array_merge($fields, $extraFields);
+    }
+
     public function getExcerptFieldName() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
       if (isset($config['excerptFieldName'])) {
         return $config['excerptFieldName'];
       }
@@ -391,7 +404,7 @@ class Data{
     }
 
     public function getLinkFieldName() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
 
       if (isset($config['linkFieldName'])) {
         return $config['linkFieldName'];
@@ -400,7 +413,7 @@ class Data{
     }
 
     public function getMediaUrlFieldName() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
 
       if (isset($config['mediaUrlFieldName'])) {
         return $config['mediaUrlFieldName'];
@@ -409,7 +422,7 @@ class Data{
     }
 
     public function getDateFieldName() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
 
       if (isset($config['dateFieldName'])) {
         return $config['dateFieldName'];
@@ -418,7 +431,7 @@ class Data{
     }
 
     public function getExtraFieldNames() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
 
       if (isset($config['extraFieldNamesFieldName'])) {
         return explode(',', $config['extraFieldNamesFieldName']);
@@ -428,7 +441,7 @@ class Data{
     }
 
     public function getBlogArticleImageWidth() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
 
       if (isset($config['blogArticleImageHeight'])) {
         return explode(',', $config['blogArticleImageHeight']);
@@ -438,7 +451,7 @@ class Data{
     }
 
     public function getBlogArticleImageHeight() {
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+      $config = $this->config->getValue('bxRecommendations/field',$this->scopeStore);
 
       if (isset($config['getBlogArticleImageWidth'])) {
         return explode(',', $config['getBlogArticleImageWidth']);
@@ -467,6 +480,17 @@ class Data{
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
         return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['search']['enabled']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBlogEnabled(){
+
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['search']['blog']);
     }
 
     /**
@@ -596,14 +620,12 @@ class Data{
         return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
     }
 
-    public function getFilterProductAttributes(){
+    public function getFilterProductAttributes($context = 'search'){
 
         $attributes = [];
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeId = $objectManager->create('\Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
         $attributeCollection = $objectManager->create('\Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection')
-            ->addIsFilterableFilter()
-            ->addVisibleFilter()
             ->setOrder('position','ASC')->load();
 
         $allowedTypes = array('multiselect', 'price', 'select');
@@ -619,12 +641,18 @@ class Data{
             if ($code == 'price') {
                 $type = 'ranged';
             }
+            if($context == 'search') {
+                $addToRequest = (boolean) $data['is_filterable_in_search'];
+            } else {
+                $addToRequest = (boolean) $data['is_filterable'];
+            }
             $code = $code == 'price' ? 'discountedPrice' : $this->getProductAttributePrefix() . $code;
             $attributes[$code] = array(
                 'label' => $attribute->getStoreLabel($storeId),
                 'type' => $type,
                 'order' => 0,
-                'position' => $position
+                'position' => $position,
+                'addToRequest' => $addToRequest
             );
         }
         uasort($attributes, function($a, $b){

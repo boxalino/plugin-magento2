@@ -164,6 +164,34 @@ class BxChooseResponse
 		return $facets;
     }
 
+    public function getSearchResultHitVariable($searchResult, $hitId, $field) {
+
+        if($searchResult) {
+            if($searchResult->hits) {
+                foreach ($searchResult->hits as $item) {
+                    if(reset($item->values['id']) == $hitId) {
+                        return $item->values[$field];
+                    }
+                }
+            } else if(isset($searchResult->hitsGroups)) {
+                foreach($searchResult->hitsGroups as $hitGroup) {
+                    if($hitGroup->groupValue == $hitId) {
+                        if(isset($hitGroup->hits[0]->values[$field])){
+                            return $hitGroup->hits[0]->values[$field];
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getHitVariable($choice=null, $hitId = 0, $field='',  $count=0, $considerRelaxation=true, $maxDistance=10, $discardIfSubPhrases = true){
+        $variant = $this->getChoiceResponseVariant($choice, $count);
+        return $this->getSearchResultHitVariable($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $hitId, $field);
+    }
+
     public function getHitFieldValues($fields, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
 		$variant = $this->getChoiceResponseVariant($choice, $count);
 		return $this->getSearchHitFieldValues($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fields);

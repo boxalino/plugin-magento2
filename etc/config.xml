@@ -56,13 +56,6 @@
                     <enabled>0</enabled>
                     <min>3</min>
                     <max>3</max>
-                    <excerptFieldName></excerptFieldName>
-                    <linkFieldName></linkFieldName>
-                    <mediaUrlFieldName></mediaUrlFieldName>
-                    <dateFieldName></dateFieldName>
-                    <extraFieldNames></extraFieldNames>
-                    <blogArticleImageWidth></blogArticleImageWidth>
-                    <blogArticleImageHeight></blogArticleImageHeight>
                 </blog>
             </bxRecommendations>
             <bxBanner>

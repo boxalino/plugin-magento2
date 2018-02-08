@@ -1,0 +1,33 @@
+<h1>blog template</h1>
+<ul>
+    <?php $collection = $this->getBlogs();
+
+    foreach ($collection as $blog):?>
+        <li class="item product product-item blogArticlePost">
+
+            <figure>
+                <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
+                    <img
+                            width="<?php echo $this->getBlogArticleImageWidth() ?>"
+                            height="<?php echo $this->getBlogArticleImageHeight() ?>"
+                            src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
+                    >
+                </a>
+            </figure>
+
+            <div class="blogArticleTextArea">
+
+                <h4 class="blogArticleHeader">
+                    <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
+                        <?php echo $blog['title'] ?>
+                    </a>
+                </h4>
+
+                <div class="blogArticleExcerpt">
+                    <?php echo $blog[$this->getExcerptFieldName()] ?>
+                </div>
+
+            </div>
+        </li>
+    <?php endforeach; ?>
+</ul>
