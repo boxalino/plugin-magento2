@@ -201,7 +201,7 @@ class Adapter
         if($isBlog) {
             $choice = $this->scopeConfig->getValue('bxSearch/advanced/blog_choice_id', $this->scopeStore);
             if ($choice == null) {
-                $choice = "read";
+                $choice = "read_search";
             }
             return $choice;
         }
