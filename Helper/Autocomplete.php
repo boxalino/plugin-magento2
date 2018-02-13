@@ -124,4 +124,16 @@ class Autocomplete{
 		$template .= '</li></a>';
 		return $template;
 	}
+    /**
+     * @return string
+     */
+    public function getBlogACTemplate() {
+
+        $template = '<a href="<%- data.product.products_blog_link %>" >';
+        $template .= '<li class="blog" role="option">';
+        $template .= '<span class="product-image"><img src="<%- data.product.products_blog_featured_media_url %>"></span>';
+        $template .= '<span class="product-name"><%- data.product.title %></span>';
+        $template .= '</li></a>';
+        return $template;
+    }
 }

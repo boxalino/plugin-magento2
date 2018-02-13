@@ -1,33 +1,99 @@
-<h1>blog template</h1>
-<ul>
-    <?php $collection = $this->getBlogs();
+<?php $collection = $this->getBlogs(); ?>
+<?php if(!empty($collection)) { ?>
+    <p class="toolbar-amount" style="width:100%; display:block;">
+        <span class="toolbar-number">
+            <?php if ($this->getLastPageNum()>1): ?>
+                <?= /* @escapeNotVerified */ __('Items %1 to %2 of %3 total', $this->getFirstNum(), $this->getLastNum(), $this->getTotalHitCount()) ?>
+            <?php elseif ($this->getTotalHitCount() == 1): ?>
+                <?= /* @escapeNotVerified */ __('%1 Item', $this->getTotalHitCount()) ?>
+            <?php else: ?>
+                <?= /* @escapeNotVerified */ __('%1 Item(s)', $this->getTotalHitCount()) ?>
+            <?php endif; ?>
+        </span>
+    </p>
+    <br>
+     <ul style="padding:0">
+        <?php foreach ($collection as $blog):?>
+            <li class="item product product-item blogArticlePost" style="display:block;float:left;">
 
-    foreach ($collection as $blog):?>
-        <li class="item product product-item blogArticlePost">
-
-            <figure>
-                <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
-                    <img
-                            width="<?php echo $this->getBlogArticleImageWidth() ?>"
-                            height="<?php echo $this->getBlogArticleImageHeight() ?>"
-                            src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
-                    >
-                </a>
-            </figure>
-
-            <div class="blogArticleTextArea">
-
-                <h4 class="blogArticleHeader">
+                <figure>
                     <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
-                        <?php echo $blog['title'] ?>
+                        <img
+                                width="<?php echo $this->getBlogArticleImageWidth() ?>"
+                                height="<?php echo $this->getBlogArticleImageHeight() ?>"
+                                src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
+                        >
                     </a>
-                </h4>
+                </figure>
 
-                <div class="blogArticleExcerpt">
-                    <?php echo $blog[$this->getExcerptFieldName()] ?>
+                <div class="blogArticleTextArea">
+
+                    <h4 class="blogArticleHeader">
+                        <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
+                            <?php echo $blog['title'] ?>
+                        </a>
+                    </h4>
+
+                    <div class="blogArticleExcerpt">
+                        <?php echo $blog[$this->getExcerptFieldName()] ?>
+                    </div>
+
                 </div>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <div class="blog-pagination">
+        <?php if ($block->getLastPageNum()>1): ?>
+            <div class="pages">
+                <strong class="label pages-label" id="paging-label"><?= /* @escapeNotVerified */ __('Page') ?></strong>
+                <ul class="items pages-items" aria-labelledby="paging-label">
+                    <?php if (!$block->isFirstPage()): ?>
+                        <li class="item pages-item-previous">
+                            <?php $text = $block->getAnchorTextForPrevious() ? $block->getAnchorTextForPrevious() : '';?>
+                            <a class="<?= /* @escapeNotVerified */ $text ? 'link ' : 'action ' ?> previous" href="<?= /* @escapeNotVerified */ $block->getPreviousPageUrl() ?>" title="<?= /* @escapeNotVerified */ $text ? $text : __('Previous') ?>">
+                                <span class="label"><?= /* @escapeNotVerified */ __('Page') ?></span>
+                                <span><?= /* @escapeNotVerified */ $text ? $text : __('Previous') ?></span>
+                            </a>
+                        </li>
+                    <?php endif;?>
 
+                    <?php foreach ($block->getFramePages() as $_page): ?>
+                        <?php if ($block->isPageCurrent($_page)): ?>
+                            <li class="item current">
+                                <strong class="page">
+                                    <span class="label"><?= /* @escapeNotVerified */ __('You\'re currently reading page') ?></span>
+                                    <span><?= /* @escapeNotVerified */ $_page ?></span>
+                                </strong>
+                            </li>
+                        <?php else: ?>
+                            <li class="item">
+                                <a href="<?= /* @escapeNotVerified */ $block->getPageUrl($_page) ?>" class="page">
+                                    <span class="label"><?= /* @escapeNotVerified */ __('Page') ?></span>
+                                    <span><?= /* @escapeNotVerified */ $_page ?></span>
+                                </a>
+                            </li>
+                        <?php endif;?>
+                    <?php endforeach;?>
+
+                    <?php if ($block->canShowNextJump()): ?>
+                        <li class="item">
+                            <a class="page next jump" title="" href="<?= /* @escapeNotVerified */ $block->getNextJumpUrl() ?>">
+                                <span>...</span>
+                            </a>
+                        </li>
+                    <?php endif;?>
+
+                    <?php if (!$block->isLastPage()): ?>
+                        <li class="item pages-item-next">
+                            <?php $text = $block->getAnchorTextForNext() ? $block->getAnchorTextForNext() : '';?>
+                            <a class="<?= /* @escapeNotVerified */ $text ? 'link ' : 'action ' ?> next" href="<?= /* @escapeNotVerified */ $block->getNextPageUrl() ?>" title="<?= /* @escapeNotVerified */ $text ? $text : __('Next') ?>">
+                                <span class="label"><?= /* @escapeNotVerified */ __('Page') ?></span>
+                                <span><?= /* @escapeNotVerified */ $text ? $text : __('Next') ?></span>
+                            </a>
+                        </li>
+                    <?php endif;?>
+                </ul>
             </div>
-        </li>
-    <?php endforeach; ?>
-</ul>
+        <?php endif; ?>
+    </div>
+<?php } ?>

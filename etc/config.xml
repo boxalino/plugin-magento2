@@ -25,6 +25,7 @@
             <bxSearch>
                 <search>
                     <enabled>0</enabled>
+                    <blog>0</blog>
                 </search>
                 <autocomplete>
                     <enabled>1</enabled>

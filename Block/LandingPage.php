@@ -37,4 +37,12 @@ class LandingPage extends \Magento\Framework\View\Element\Template{
 
   }
 
+  public function getAssetUrl($asset){
+
+    $objectManager = \Magento\Framework\App\Asset\ObjectManager::getInstance();
+    $assetRepository = $objectManager ->get('Magento\Framework\View\Asset\Repository');
+    return $assetRepository->createAsset($asset)->getUrl();
+
+  }
+
 }

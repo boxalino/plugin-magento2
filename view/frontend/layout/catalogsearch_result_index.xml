@@ -9,6 +9,7 @@
     <head>
         <css src="Boxalino_Intelligence::css/filter.css"/>
         <css src="Boxalino_Intelligence::css/nouislider.css"/>
+        <css src="Boxalino_Intelligence::css/blog_recommentaions.css"/>
     </head>
     <body>
         <attribute name="class" value="page-products"/>

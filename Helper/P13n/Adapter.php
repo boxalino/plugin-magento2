@@ -156,18 +156,17 @@ class Adapter
     public function getSystemFilters($queryText = "", $type='product')
     {
         $filters = array();
-        if ($queryText == "") {
-            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
-        } else {
-            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+        if($type == 'product') {
+            if ($queryText == "") {
+                $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
+            } else {
+                $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG), true);
+            }
+            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
         }
-        $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_status', array(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED));
         if($type == 'blog'){
             $filters[] = new \com\boxalino\bxclient\v1\BxFilter('is_blog', array(1));
-        } else {
-            $filters[] = new \com\boxalino\bxclient\v1\BxFilter('is_blog', array(0));
         }
-
         return $filters;
     }
 
@@ -258,25 +257,25 @@ class Adapter
         if ($queryText) {
             $bxRequests = array();
             foreach ($searches as $search) {
+                $isBlog = $search == 'blog';
                 $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
                     $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(),
-                    $this->getSearchChoice($queryText)
+                    $this->getSearchChoice($queryText, $isBlog)
                 );
                 $searchRequest = $bxRequest->getBxSearchRequest();
-                $returnFields = $search == 'blog' ? $this->bxHelperData->getBlogReturnFields() : array('products_group_id');
+                $returnFields = $isBlog ? $this->bxHelperData->getBlogReturnFields() : array('products_group_id');
                 $searchRequest->setReturnFields($returnFields);
-                $id = $search == 'blog' ? 'id' : 'products_group_id';
+                $id = $isBlog ? 'id' : 'products_group_id';
                 $searchRequest->setGroupBy($id);
                 $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
                 $bxRequests[] = $bxRequest;
             }
             self::$bxClient->setAutocompleteRequests($bxRequests);
-
-
             self::$bxClient->autocomplete();
-            $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
+            $bxAutocompleteResponses = self::$bxClient->getAutocompleteResponses();
 
-            foreach ($searches as $search) {
+            foreach ($searches as $index => $search) {
+                $bxAutocompleteResponse = $bxAutocompleteResponses[$index];
                 if($search == 'product'){
                     $first = true;
                     $global = [];
@@ -324,7 +323,17 @@ class Adapter
                     $data = array_merge($suggestions, $global);
                     $data = array_merge($data, $suggestionProducts);
                 } else {
-                    //blog data
+                    $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds('read', true, 0, 10, $this->getEntityIdFieldName());
+                    $first = true;
+                    foreach ($searchChoiceIds as $id)  {
+                        $blog = array();
+                        foreach ($this->bxHelperData->getBlogReturnFields() as $field) {
+                            $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable('read', $id, $field, 0);
+                            $blog[$field] = is_array($value) ? reset($value) : $value;
+                        }
+                        $data[] = array('type' => 'blog','product' => $blog, 'first' => $first);
+                        if($first) $first = false;
+                    }
                 }
             }
         }
@@ -370,7 +379,9 @@ class Adapter
 
      private function addBlogResult($queryText, $hitCount) {
          $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
-
+         $requestParams =  $this->request->getParams();
+         $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+         $bxRequest->setOffset($pageOffset);
          $bxRequest->setGroupBy('id');
          $returnFields = $this->bxHelperData->getBlogReturnFields();
          $bxRequest->setReturnFields($returnFields);
@@ -409,7 +420,7 @@ class Adapter
     /**
      * @return mixed
      */
-    protected function getMagentoStoreConfigPageSize()
+    public function getMagentoStoreConfigPageSize()
     {
 
         $storeConfig = $this->getMagentoStoreConfig();
@@ -519,8 +530,15 @@ class Adapter
 
     public function getBlogIds() {
         $this->simpleSearch();
-        return $this->getClientResponse()->getHitIds($this->getSearchChoice('', true), true, 0, 10, $this->getEntityIdFieldName());
+        $choice_id = $this->getSearchChoice('', true);
+        return $this->getClientResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
 
+    }
+
+    public function getBlogTotalHitCount() {
+        $this->simpleSearch();
+        $choice_id = $this->getSearchChoice('', true);
+        return $this->getClientResponse()->getTotalHitCount($choice_id);
     }
 
     public function getHitVariable($id, $field, $is_blog=false) {

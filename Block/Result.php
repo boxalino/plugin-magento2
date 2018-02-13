@@ -222,4 +222,12 @@ class Result extends Mage_Result{
     public function isBlogSearchActive() {
         return $this->bxHelperData->isBlogEnabled();
     }
+
+    public function setTemplate($template) {
+        if($this->bxHelperData->isSearchEnabled()){
+          return parent::setTemplate('Boxalino_Intelligence::result.phtml');
+        }
+        return parent::setTemplate($template);
+    }
+
 }

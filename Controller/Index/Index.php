@@ -18,6 +18,9 @@ namespace Boxalino\Intelligence\Controller\Index;
       array $data = []
     )
     {
+      header("Access-Control-Allow-Origin: *");
+      header('Access-Control-Allow-Credentials: true');
+      header('Access-Control-Max-Age: 86400');
       $this->context = $context;
       $this->data = $data;
       $this->layoutFactory = $layoutFactory;

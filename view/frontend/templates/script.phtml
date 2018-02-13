@@ -76,13 +76,22 @@ $account = $this->getAccount();
                         if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
                             $("#search").data().mageQuickSearch.options.template =
                                 '<% if(data.type == "suggestion" ){ %>' +
-                                $("#search").data().mageQuickSearch.options.template +
+                                    $("#search").data().mageQuickSearch.options.template +
                                 '<% }else{ %>' +
-                                '<% if(data.first){ %>'+
-                                '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
-                                '<% }; %>'+
-                                '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
-                                '<% }; %>';
+
+                                    '<% if(data.type == "blog" ){ %>' +
+                                        '<% if(data.first){ %>'+
+                                            '<h4 class="product-title"><?php echo __("Blog-Beiträge"); ?></h4>'+
+                                        '<% }; %>'+
+                                        '<?php echo $_autocompleteHelper->getBlogACTemplate(); ?>'+
+                                    '<% } else { %>'+
+                                        '<% if(data.first){ %>'+
+                                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
+                                        '<% }; %>'+
+                                        '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
+                                    '<% }; %>'+
+                                '<% }; %>'
+                                ;
                         }
                     }
                 });

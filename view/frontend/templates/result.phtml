@@ -21,14 +21,14 @@
         }
         ?>
     <?php else: ?>
-        <?php if(true ||$this->isBlogSearchActive()): ?>
+        <?php if($this->isBlogSearchActive()): ?>
             <button id="bx-product-tab">Products</button>
             <button id="bx-blog-tab">Blogs</button>
             <div class="bx-product-result">
                 <?php echo $block->getProductListHtml(); ?>
             </div>
             <div class="bx-blog-result" style="display:none">
-<!--                --><?php //echo $this->getLayout()->createBlock('Boxalino\Intelligence\Block\BlogResult')->setBlockId('search.result.blog')->setTemplate("Boxalino_Intelligence::blog_result.phtml")->toHtml(); ?>
+                <?php echo $this->getLayout()->createBlock('Boxalino\Intelligence\Block\BlogResult')->setBlockId('search.result.blog')->setTemplate("Boxalino_Intelligence::blog_result.phtml")->toHtml(); ?>
             </div>
         <?php else: ?>
             <?php echo $block->getProductListHtml(); ?>
@@ -48,25 +48,53 @@
     </div>
 </div>
 <?php endif; ?>
-<script
-        src="https://code.jquery.com/jquery-3.3.1.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"></script>
 <script>
-    (function($){
+    require([
+        'jquery',
+        'mage/mage'
+    ], function ($) {
+        'use strict';
         var product = $('.bx-product-result');
         var blog = $('.bx-blog-result');
+        initTabs();
         $('#bx-product-tab').on('click', function(){
-            if(!product.is(":visible")) {
-                product.show();
-                blog.hide();
-            }
+            $('#bx-product-tab').css("background", "#009ee0");
+            $('#bx-product-tab').css("color", "#ffffff");
+            $('#bx-blog-tab').css("background", "#ffffff");
+            $('#bx-blog-tab').css("color", "#009ee0");
+            toggleTab('product');
         });
         $('#bx-blog-tab').on('click', function(){
-            if(!blog.is(":visible")) {
-                blog.show();
-                product.hide();
+            $('#bx-product-tab').css("background", "#ffffff");
+            $('#bx-product-tab').css("color", "#009ee0");
+            $('#bx-blog-tab').css("background", "#009ee0");
+            $('#bx-blog-tab').css("color", "#ffffff");
+            toggleTab('blog');
+        });
+
+        function toggleTab(type){
+            if(type === 'blog'){
+                if(!blog.is(":visible")) {
+                    blog.show();
+                    product.hide();
+                }
+            } else {
+                if(!product.is(":visible")) {
+                    product.show();
+                    blog.hide();
+                }
             }
-        })
-    })(jQuery);
+
+        }
+        function initTabs() {
+            var params = window.location.search.substr(1).split("&");
+            var l = params.length;
+            for(var x = 0; x < l; x++) {
+                if(params[x].indexOf("bx_active_tab") === 0) {
+                    var value = params[x].substring(params[x].lastIndexOf('=') + 1, params[x].length);
+                    toggleTab(value);
+                }
+            }
+        }
+    });
 </script>
