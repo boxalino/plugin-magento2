@@ -325,12 +325,12 @@ class Adapter
                     $data = array_merge($suggestions, $global);
                     $data = array_merge($data, $suggestionProducts);
                 } else {
-                    $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds('read', true, 0, 10, $this->getEntityIdFieldName());
+                    $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->getSearchChoice($queryText, true), true, 0, 10, $this->getEntityIdFieldName());
                     $first = true;
                     foreach ($searchChoiceIds as $id)  {
                         $blog = array();
                         foreach ($this->bxHelperData->getBlogReturnFields() as $field) {
-                            $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable('read', $id, $field, 0);
+                            $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable($this->getSearchChoice($queryText, true), $id, $field, 0);
                             $blog[$field] = is_array($value) ? reset($value) : $value;
                         }
                         $data[] = array('type' => 'blog','product' => $blog, 'first' => $first);

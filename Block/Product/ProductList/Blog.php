@@ -111,12 +111,15 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
 
     public function getBlogArticles() {
        $articles = array();
-       foreach($this->p13nHelper->getClientResponse()->getHitFieldValues($this->getReturnFields(), $this->getChoiceId()) as $article) {
-         $a = array();
-         foreach($article as $k => $v) {
-           $a[$k] = isset($v[0]) ? $v[0] : '';
+       $blog_result = $this->p13nHelper->getClientResponse()->getHitFieldValues($this->getReturnFields(), $this->getChoiceId());
+       if($blog_result) {
+         foreach($blog_result as $article) {
+           $a = array();
+           foreach($article as $k => $v) {
+             $a[$k] = isset($v[0]) ? $v[0] : '';
+           }
+           $articles[] = $a;
          }
-         $articles[] = $a;
        }
        return $articles;
     }
