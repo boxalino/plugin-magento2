@@ -22,8 +22,8 @@
         ?>
     <?php else: ?>
         <?php if($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
-            <button id="bx-product-tab">Products</button>
-            <button id="bx-blog-tab">Blogs</button>
+            <button id="bx-product-tab"><?php echo __('Products'); ?></button>
+            <button id="bx-blog-tab"><?php echo __('Blog-Articles'); ?></button>
             <div class="bx-product-result">
                 <?php echo $block->getProductListHtml(); ?>
             </div>
@@ -37,8 +37,8 @@
     </div>
 <?php else: ?>
   <?php if($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
-      <button id="bx-product-tab">Products</button>
-      <button id="bx-blog-tab">Blogs</button>
+      <button id="bx-product-tab"><?php echo __('Products'); ?></button>
+      <button id="bx-blog-tab"><?php echo __('Blog-Articles'); ?></button>
       <div class="bx-product-result">
         <div class="message notice">
             <div>

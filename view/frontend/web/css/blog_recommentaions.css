@@ -107,3 +107,8 @@
   line-height: 18px;
   margin-top:10px
 }
+
+.notice{
+  display: inline-block !important;
+  width: 100% !important;
+}
