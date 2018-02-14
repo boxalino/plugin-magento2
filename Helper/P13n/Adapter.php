@@ -267,7 +267,9 @@ class Adapter
                 $searchRequest->setReturnFields($returnFields);
                 $id = $isBlog ? 'id' : 'products_group_id';
                 $searchRequest->setGroupBy($id);
-                $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
+                if(!$isBlog) {
+                  $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
+                }
                 $bxRequests[] = $bxRequest;
             }
             self::$bxClient->setAutocompleteRequests($bxRequests);

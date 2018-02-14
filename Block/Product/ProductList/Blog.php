@@ -99,6 +99,10 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
       return $this->bxHelperData->getBlogArticleImageHeight();
     }
 
+    public function getChoiceId() {
+      return $this->bxHelperData->getBlogRecommendationChoiceId();
+    }
+
     public function getBlogArticleTitle(){
 
       return $this->p13nHelper->getClientResponse()->getResultTitle($this->getChoiceId());

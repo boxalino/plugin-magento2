@@ -382,6 +382,11 @@ class Data{
       return $recs;
     }
 
+    public function getBlogRecommendationChoiceId()  {
+        $choice_id = $this->config->getValue('bxRecommendations/blog/widget', $this->scopeStore);
+        return is_null($choice_id) ? 'read' : $choice_id;
+    }
+
     public function getBlogReturnFields() {
         $fields = array(
             'title',
