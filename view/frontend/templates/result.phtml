@@ -21,7 +21,7 @@
         }
         ?>
     <?php else: ?>
-        <?php if($this->isBlogSearchActive()): ?>
+        <?php if($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
             <button id="bx-product-tab">Products</button>
             <button id="bx-blog-tab">Blogs</button>
             <div class="bx-product-result">
@@ -36,17 +36,38 @@
     <?php endif; ?>
     </div>
 <?php else: ?>
-<div class="message notice">
-    <div>
-        <?php /* @escapeNotVerified */ echo($block->getNoResultText()) ? $block->getNoResultText() : __('Your search returned no results.') ?>
-        <?php echo $block->getAdditionalHtml() ?>
-        <?php if ($messages = $block->getNoteMessages()):?>
-            <?php foreach ($messages as $message):?>
-                <br /><?php /* @escapeNotVerified */ echo $message?>
-            <?php endforeach;?>
-        <?php endif; ?>
+  <?php if($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
+      <button id="bx-product-tab">Products</button>
+      <button id="bx-blog-tab">Blogs</button>
+      <div class="bx-product-result">
+        <div class="message notice">
+            <div>
+                <?php /* @escapeNotVerified */ echo($block->getNoResultText()) ? $block->getNoResultText() : __('Your search returned no results.') ?>
+                <?php echo $block->getAdditionalHtml() ?>
+                <?php if ($messages = $block->getNoteMessages()):?>
+                    <?php foreach ($messages as $message):?>
+                        <br /><?php /* @escapeNotVerified */ echo $message?>
+                    <?php endforeach;?>
+                <?php endif; ?>
+            </div>
+        </div>
+      </div>
+      <div class="bx-blog-result" style="display:none">
+          <?php echo $this->getLayout()->createBlock('Boxalino\Intelligence\Block\BlogResult')->setBlockId('search.result.blog')->setTemplate("Boxalino_Intelligence::blog_result.phtml")->toHtml(); ?>
+      </div>
+  <?php else: ?>
+    <div class="message notice">
+        <div>
+            <?php /* @escapeNotVerified */ echo($block->getNoResultText()) ? $block->getNoResultText() : __('Your search returned no results.') ?>
+            <?php echo $block->getAdditionalHtml() ?>
+            <?php if ($messages = $block->getNoteMessages()):?>
+                <?php foreach ($messages as $message):?>
+                    <br /><?php /* @escapeNotVerified */ echo $message?>
+                <?php endforeach;?>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
+  <?php endif; ?>
 <?php endif; ?>
 <script>
     require([

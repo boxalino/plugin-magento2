@@ -211,6 +211,10 @@ class Result extends Mage_Result{
         return $this->getData('result_count');
     }
 
+    public function getBlogTotalHitCount(){
+      return $this->p13nHelper->getBlogTotalHitCount();
+    }
+
     /**
      * @return bool
      */
