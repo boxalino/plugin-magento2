@@ -112,9 +112,11 @@ class BxChooseResponse
 			$hits = $searchResult->hits;
 			if($searchResult->hits == null){
 				$hits = array();
-				foreach ($searchResult->hitsGroups as $hitGroup){
-					$hits[] = $hitGroup->hits[0];
-				}
+				if(!is_null($searchResult->hitsGroups)) {
+                    foreach ($searchResult->hitsGroups as $hitGroup){
+                        $hits[] = $hitGroup->hits[0];
+                    }
+                }
 			}
 			foreach ($hits as $item) {
 				$finalFields = $fields;

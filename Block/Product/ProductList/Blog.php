@@ -67,6 +67,10 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
       return $this->bxHelperData->getBlogReturnFields();
     }
 
+    public function showBlock() {
+        return $this->p13nHelper->getClientResponse()->getTotalHitCount($this->getChoiceId());
+    }
+
     public function isActive(){
       return $this->bxHelperData->isBlogRecommendationEnabled();
     }
