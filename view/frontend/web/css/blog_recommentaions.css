@@ -31,6 +31,14 @@
     text-transform: uppercase;
     font-weight: 300 !important;
   }
+  .bx-blog-tab{
+    line-height: 1.8rem !important;
+    font-size: 1.5rem !important;
+  }
+  .bx-product-tab{
+    line-height: 1.8rem !important;
+    font-size: 1.5rem !important;
+  }
 }
 
 .blogArticlePost{
@@ -47,7 +55,7 @@
 
 .blogArticleTextArea{
 
-  padding:5px !important;
+  padding:5px 10px !important;
 
 }
 
