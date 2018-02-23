@@ -102,7 +102,7 @@
   border-right: 1px solid #cdcdcd;
   border-radius: 0;
   float: left;
-  clear:both;
+  clear:right;
 }
 
 #bx-blog-tab:after{

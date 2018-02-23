@@ -56,6 +56,9 @@ class Slider extends \Magento\Framework\View\Element\Template{
         $priceRange = $this->explodePrice($facets->getPriceRanges()[0]);
         $selectedPrice = $this->getRequest()->getParam('bx_discountedPrice') !== null ?
             $this->explodePrice($this->getRequest()->getParam('bx_discountedPrice')) : $priceRange;
+        if (!isset($priceRange[1])) {
+          $priceRange[1] == 0;
+        }
         if($priceRange[0] == $priceRange[1]){
             $priceRange[1]++;
         }
