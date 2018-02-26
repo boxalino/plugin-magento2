@@ -120,3 +120,75 @@
   display: inline-block !important;
   width: 100% !important;
 }
+
+/* blog articles on the product detail page */
+
+@media screen and (min-width: 640px) {
+  .blogArticlePostPDP{
+    width: 32% !important;
+    height: 300px !important;
+  }
+  .blogRecTitlePDP{
+    font-size: 3.6rem !important;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .blogArticlePostPDP{
+    width: 32.6% !important;
+    height: 320px !important;
+  }
+  .blogRecTitlePDP{
+    padding-top:45px !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .blogArticlePostPDP{
+    width: 100% !important;
+    max-height: 450px !important;
+  }
+  .blogRecTitlePDP{
+    font-size: 2.4rem !important;
+    line-height: 3rem !important;
+    text-align: center !important;
+    margin-top: 2.5rem !important;
+    text-transform: uppercase;
+    font-weight: 300 !important;
+  }
+}
+
+.blogArticlePostPDP{
+
+  border:1px solid #ddd;
+  border-radius: 4px;
+  box-shadow:0 0 8px 0 rgba(0,0,0,.1);
+  padding:0 !important;
+  padding-bottom:5px;
+  margin:2px !important;
+  overflow: hidden;
+
+}
+
+.blogArticleTextAreaPDP{
+
+  padding:5px 10px !important;
+
+}
+
+.blogArticleHeaderPDP{
+
+  margin-top:0 !important;
+
+}
+
+.blogArticleOrderedListPDP{
+
+  margin-left: 0 !important;
+  padding:0 !important;
+
+}
+
+.blogRecTitlePDP{
+  display: block !important;
+}
