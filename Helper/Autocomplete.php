@@ -132,7 +132,7 @@ class Autocomplete{
         $template = '<a href="<%- data.product.products_blog_link %>" >';
         $template .= '<li class="blog" role="option">';
         $template .= '<span class="product-image"><img src="<%- data.product.products_blog_featured_media_url %>"></span>';
-        $template .= '<span class="product-name"><%- data.product.title %></span>';
+        $template .= '<span class="product-name" style="width:310px;text-align:left;"><%- data.product.title %></span>';
         $template .= '</li></a>';
         return $template;
     }
