@@ -7,7 +7,9 @@
         <div class="products wrapper grid products-grid products-blog">
             <ol class="blogArticleOrderedList">
                 <?php foreach ($this->getBlogArticles() as $blogArticle) { ?>
-                    <?php include('blog_article.phtml'); ?>
+
+                    <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Product\ProductList\Blog")->setBlogArticle($blogArticle)->setTemplate("Boxalino_Intelligence::product/blog_article.phtml")->toHtml(); ?>
+
                 <?php } ?>
             </ol>
         </div>

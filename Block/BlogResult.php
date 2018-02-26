@@ -65,6 +65,10 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
             foreach ($this->bxHelperData->getBlogReturnFields() as $field) {
                 $value = $this->p13nHelper->getHitVariable($id, $field, true);
                 $blog[$field] = is_array($value) ? reset($value) : $value;
+
+                $excerpt = strip_tags($blog['products_blog_excerpt']);
+                $excerpt = str_replace('[&hellip;]', '', $excerpt);
+                $blog['products_blog_excerpt'] = $excerpt;
             }
             $blogs[$id] = $blog;
         }

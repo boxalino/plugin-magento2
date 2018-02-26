@@ -19,9 +19,9 @@
                 <figure>
                     <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
                         <img
-                                width="<?php echo $this->getBlogArticleImageWidth() ?>"
-                                height="<?php echo $this->getBlogArticleImageHeight() ?>"
-                                src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
+                          width="<?php echo $this->getBlogArticleImageWidth() ?>"
+                          height="<?php echo $this->getBlogArticleImageHeight() ?>"
+                          src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
                         >
                     </a>
                 </figure>
@@ -30,12 +30,15 @@
 
                     <h4 class="blogArticleHeader">
                         <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
-                            <?php echo $blog['title'] ?>
+                            <?php echo $this->escapeHtml($blog['title']); ?>
                         </a>
                     </h4>
 
                     <div class="blogArticleExcerpt">
-                        <?php echo $blog[$this->getExcerptFieldName()] ?>
+                      <p>
+                      <?php echo $this->escapeHtml($blog[$this->getExcerptFieldName()]); ?>
+                        <a href="<?php echo $blogArticle[$this->getLinkFieldName()]; ?>">[&hellip;]</a>
+                      </p>
                     </div>
 
                 </div>

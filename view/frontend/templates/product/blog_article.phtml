@@ -1,5 +1,7 @@
 <li class="item product product-item blogArticlePost">
 
+  <?php $blogArticle = $block->getBlogArticle();?>
+
   <figure>
     <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
       <img
@@ -14,13 +16,9 @@
 
   <h4 class="blogArticleHeader">
     <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
-      <?php echo $blogArticle['title'] ?>
+      <?php echo $this->escapeHtml($blogArticle['title']); ?>
     </a>
   </h4>
-
-  <div class="blogArticleExcerpt">
-    <?php echo $blogArticle[$this->getExcerptFieldName()] ?>
-  </div>
 
   </div>
 </li>

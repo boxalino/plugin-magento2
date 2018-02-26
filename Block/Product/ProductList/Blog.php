@@ -122,6 +122,9 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
            foreach($article as $k => $v) {
              $a[$k] = isset($v[0]) ? $v[0] : '';
            }
+           $excerpt = strip_tags($a['products_blog_excerpt']);
+           $excerpt = str_replace('[&hellip;]', '', $excerpt);
+           $a['products_blog_excerpt'] = $excerpt;
            $articles[] = $a;
          }
        }
