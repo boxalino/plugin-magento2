@@ -117,8 +117,15 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
             } else {
                 $this->getResponse()->setRedirect($this->_redirect->getRedirectUrl());
             }
-            if($this->p13Helper->getResponse()->getRedirectLink() != "") {
-                $this->getResponse()->setRedirect($this->p13Helper->getResponse()->getRedirectLink());
+            try{
+                if($this->bxHelperData->isSearchEnabled()) {
+                    if($this->p13Helper->getResponse()->getRedirectLink() != "") {
+                        $this->getResponse()->setRedirect($this->p13Helper->getResponse()->getRedirectLink());
+                    }
+                }
+            }catch(\Exception $e){
+                $this->bxHelperData->setFallback(true);
+                $this->_logger->critical($e);
             }
         } else {
             parent::execute();

@@ -382,7 +382,7 @@ class Adapter
 
          self::$bxClient->addRequest($bxRequest);
          if($this->bxHelperData->isBlogEnabled()) {
-//             $this->addBlogResult($queryText, $hitCount);
+             $this->addBlogResult($queryText, $hitCount);
          }
      }
 
