@@ -26,20 +26,14 @@ class LandingPage extends \Magento\Framework\View\Element\Template{
 
   public function isActive(){
 
-    $this->setLandingPageChoiceId();
+    $this->p13nHelper->setLandingPageChoiceId($this->_data['choiceID']);
     return $this->bxHelperData->isPluginEnabled();
-
-  }
-
-  public function setLandingPageChoiceId($choice = 'landingpage'){
-
-    $this->p13nHelper->setLandingPageChoiceId($choice);
 
   }
 
   public function getAssetUrl($asset){
 
-    $objectManager = \Magento\Framework\App\Asset\ObjectManager::getInstance();
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
     $assetRepository = $objectManager ->get('Magento\Framework\View\Asset\Repository');
     return $assetRepository->createAsset($asset)->getUrl();
 
