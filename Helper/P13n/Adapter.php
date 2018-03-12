@@ -88,7 +88,7 @@ class Adapter
     /**
      * @var String
      */
-    protected $landingPageChoice;
+    protected $landingPageChoice = null;
 
     /**
      * Adapter constructor.
@@ -363,7 +363,11 @@ class Adapter
          $returnFields = array_merge($returnFields, $additionalFields);
 
          self::$bxClient->forwardRequestMapAsContextParameters();
-         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+         if(!is_null($this->landingPageChoice)) {
+           $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->landingPageChoice, $hitCount);
+         }else {
+           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+         }
          //create search request
 
          $bxRequest->setGroupBy('products_group_id');
