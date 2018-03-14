@@ -12,4 +12,5 @@
     <preference for="Magento\Catalog\Model\Layer\State" type="Boxalino\Intelligence\Block\State" />
 
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Intelligence\Controller\Result\Index" />
+    <preference for="Magento\Catalog\Controller\Category\View" type="Boxalino\Intelligence\Controller\Category\View" />
 </config>
