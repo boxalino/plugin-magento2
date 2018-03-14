@@ -35,15 +35,29 @@ class View extends \Magento\Catalog\Controller\Category\View{
         try{
             if($this->bxHelperData->isNavigationEnabled()) {
                 $this->_initCategory();
+                $start = microtime(true);
+                $this->p13nHelper->addNotification('debug', "request start at " . $start);
+
                 if($this->p13nHelper->getResponse()->getRedirectLink() != "") {
                     $this->getResponse()->setRedirect($this->p13nHelper->getResponse()->getRedirectLink());
                 }
+
+                $this->p13nHelper->addNotification('debug',
+                    "request end, time: " . (microtime(true) - $start) * 1000 . "ms" .
+                    ", memory: " . memory_get_usage(true));
                 $this->_coreRegistry->unregister('current_category');
+
+                $start = microtime(true);
+                $parent_return = parent::execute();
+                $this->p13nHelper->addNotification('debug',
+                    "Page rendering end, time: " . (microtime(true) - $start) * 1000 . "ms" .
+                    ", memory: " . memory_get_usage(true));
             }
         } catch (\Exception $e) {
             $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
         }
-        return parent::execute();
+        $parent_return = isset($parent_return) ? $parent_return : parent::execute();
+        return $parent_return;
     }
 }

@@ -857,6 +857,11 @@ class Adapter
         self::$bxClient->notifyWarning($warning);
     }
 
+
+    public function addNotification($type, $notification) {
+        self::$bxClient->addNotification($type, $notification);
+    }
+
     /**
      * @param bool $force
      * @param string $requestMapKey
