@@ -43,6 +43,11 @@ class State extends \Magento\Catalog\Model\Layer\State{
     private $_categoryViewBlock;
 
     /**
+     * @var \Boxalino\Intelligence\Model\Facet
+     */
+    protected $bxFacetModel;
+
+    /**
      * State constructor.
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
@@ -50,6 +55,8 @@ class State extends \Magento\Catalog\Model\Layer\State{
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Boxalino\Intelligence\Model\Facet $facet
      * @param array $data
      */
 	public function __construct(
@@ -60,6 +67,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
         \Magento\Framework\Registry $registry,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
         \Psr\Log\LoggerInterface $logger,
+        \Boxalino\Intelligence\Model\Facet $facet,
 		array $data = []
     )
     {
@@ -70,6 +78,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
         $this->_data = $data;
         $this->p13nHelper = $p13nHelper;
         $this->objectManager = $objectManager;
+        $this->bxFacetModel = $facet;
         parent::__construct($data);
     }
 
@@ -86,27 +95,42 @@ class State extends \Magento\Catalog\Model\Layer\State{
                 if($category != null && $category->getDisplayMode() == \Magento\Catalog\Model\Category::DM_PAGE){
                     return parent::getFilters();
                 }
-                $filters = array();
+
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
-                    foreach ($facets->getLeftFacets() as $fieldName) {
-
-                        if ($facets->isSelected($fieldName)) {
-                            $filter = $this->objectManager->create(
-                                "Boxalino\Intelligence\Model\LayerFilterItem"
-                            );
-
-                            $filter->setFacets($facets);
-                            $filter->setFieldName($fieldName);
-                            $filters[] = $filter;
-                            $filter = null;
+                    $filters = array();
+                    foreach ($this->bxFacetModel->getFacets() as $filter) {
+                        $fieldName = $filter->getFieldName();
+                        if($facets->isSelected($fieldName)){
+                            $items = $filter->getItems();
+                            $selectedValues = $facets->getSelectedValues($fieldName);
+                            if(!empty($selectedValues)) {
+                                foreach ($selectedValues as $i => $v){
+                                    $value = $facets->getSelectedValueLabel($fieldName, $i);
+                                    if($fieldName == 'discountedPrice' && substr($value, -3) == '- 0') {
+                                        $values = explode(' - ', $value);
+                                        $values[1] = '*';
+                                        $value = implode(' - ', $values);
+                                    }
+                                    if(isset($items[$value])){
+                                        $item =  $items[$value];
+                                        $filters[] = $item;
+                                    }
+                                }
+                            } else {
+                                $selectedValue = $facets->getSelectedValueLabel($fieldName);
+                                if($selectedValue != '' && isset($items[$selectedValue])) {
+                                    $item = $items[$selectedValue];
+                                    $filters[] = $item;
+                                }
+                            }
                         }
                     }
+                    return $filters;
                 } else {
                     $this->p13nHelper->notifyWarning(["message"=>"BxFacets is not defined in " . get_class($this),
                         "stacktrace"=>$this->bxHelperData->notificationTrace()]);
                 }
-                return $filters;
             }
             return parent::getFilters();
         }catch(\Exception $e){

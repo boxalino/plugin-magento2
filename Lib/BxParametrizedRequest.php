@@ -16,6 +16,8 @@ class BxParametrizedRequest extends BxRequest
 	private $requestReturnFieldsName = "bxrf";
 	private $requestContextItemFieldName = "bxcif";
 	private $requestContextItemFieldValues = "bxciv";
+
+	protected $requestParameterExclusionPatterns = array();
 	
 	public function __construct($language, $choiceId, $max=10, $min=0, $bxReturnFields=null, $getItemFieldsCB=null) {
 		parent::__construct($language, $choiceId, $max, $min);
@@ -150,8 +152,16 @@ class BxParametrizedRequest extends BxRequest
 		}
 		return parent::getContextItems();
 	}
-	
-	public function getRequestContextParameters() {
+
+    public function getRequestParameterExclusionPatterns() {
+        return $this->requestParameterExclusionPatterns;
+    }
+
+    public function addRequestParameterExclusionPatterns($pattern) {
+        $this->requestParameterExclusionPatterns[] = $pattern;
+    }
+
+    public function getRequestContextParameters() {
 		$params = array();
 		foreach($this->getPrefixedParameters($this->requestWeightedParametersPrefix) as $name => $values) {
 			$params[$name] = $values;
@@ -174,6 +184,7 @@ class BxParametrizedRequest extends BxRequest
 			}
 			$params[$name] = $values;
 		}
+		unset($params['bxi_data_owner_expert']);
 		return $params;
 	}
 	

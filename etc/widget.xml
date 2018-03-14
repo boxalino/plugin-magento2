@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="boxalino_product_finder" class="Boxalino\Intelligence\Block\Widget\ProductFinder">
+        <label translate="true">Boxalino CPO Finder</label>
+        <description>Boxalino CPO Finder</description>
+        <parameters>
+            <parameter name="finder_url" xsi:type="text" visible="true" required="true">
+                <label translate="true">Finder URL</label>
+            </parameter>
+            <parameter name="bx_template" xsi:type="text" visible="true" required="true">
+                <label translate="true">Template path</label>
+                <description translate="true">Path to the template</description>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

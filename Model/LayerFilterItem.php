@@ -8,11 +8,6 @@ namespace Boxalino\Intelligence\Model;
 class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     
     /**
-     * @var
-     */
-    private $filter;
-    
-    /**
      * @var \Magento\Framework\ObjectManagerInterface
      */
 	protected $objectManager;
@@ -32,33 +27,33 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
      */
     private $fieldName = array();
 
+
     /**
-     * @var \Magento\Framework\App\Request\Http
+     * @var \Magento\Catalog\Model\Layer
      */
-    private $_request;
+    protected $_layer;
+
 
     /**
      * LayerFilterItem constructor.
      * @param \Magento\Framework\UrlInterface $url
      * @param \Magento\Theme\Block\Html\Pager $htmlPagerBlock
      * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param \Magento\Framework\App\Request\Http $request
+     * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param array $data
      */
 	public function __construct(
         \Magento\Framework\UrlInterface $url,
         \Magento\Theme\Block\Html\Pager $htmlPagerBlock,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Magento\Framework\App\Request\Http $request,
+        \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         array $data = []
     )
     {
-        $this->_request = $request;
-		$this->objectManager = $objectManager;
+        $this->_layer = $layerResolver->get();
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
+
     }
 
     /**
@@ -77,41 +72,53 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         $this->fieldName = $fieldName;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getName(){
-        
-        return $this->bxFacets->getFacetLabel($this->fieldName);
-    }
 
-    /**
-     * Get filter instance
-     *
-     * @return \Magento\Catalog\Model\Layer\Filter\AbstractFilter
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function getFilter(){
-
-		if($this->filter == null) {
-			$this->filter = $this->objectManager->create(
-                "Boxalino\Intelligence\Model\LayerFilterFilter"
-            );
-            $parameterVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
-			$this->filter->setRequestVar($parameterVar);
-			$this->filter->setCleanValue(null);
-		}
-		return $this->filter;
-    }
-
-    /**
-     * @return mixed
-     */
-	public function getLabel() {
-
-        if($this->fieldName == 'discountedPrice'){
-            return str_replace("-", " - ", $this->_request->getParam('bx_discountedPrice'));
+	public function getRemoveUrl()
+    {
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
+            $removeParams = $this->bxDataHelper->getRemoveParams();
+            $addParams = $this->bxDataHelper->getSystemParams();
+            $requestVar = $this->getFilter()->getRequestVar();
+            $query = array($requestVar => $this->getValue());
+            foreach ($removeParams as $remove) {
+                $query[$remove] = null;
+            }
+            foreach ($addParams as $param => $add) {
+                if($requestVar != $param){
+                    $query = array_merge($query, [$param => implode($this->bxDataHelper->getSeparator(), $add)]);
+                }
+            }
+            $params['_current']     = true;
+            $params['_use_rewrite'] = true;
+            $params['_query']       = $query;
+            $params['_escape']      = true;
+            return $this->_url->getUrl('*/*/*', $params);
         }
-		return $this->bxFacets->getSelectedValueLabel($this->fieldName);
-	}
+        return parent::getRemoveUrl();
+    }
+
+    public function getUrl()
+    {
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
+
+            $removeParams = $this->bxDataHelper->getRemoveParams();
+            $addParams = $this->bxDataHelper->getSystemParams();
+            $requestVar = $this->getFilter()->getRequestVar();
+            $query = array(
+                $requestVar=>$this->getValue(),
+                'p' => null // exclude current page from urls
+            );
+            foreach ($addParams as $param => $values) {
+                if($requestVar != $param) {
+                    $add = [$param => implode($this->bxDataHelper->getSeparator(), $values)];
+                    $query = array_merge($query, $add);
+                }
+            }
+            foreach ($removeParams as $remove) {
+                $query[$remove] = null;
+            }
+            return$this->_url->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true, '_query' => $query]);
+        }
+        return parent::getUrl();
+    }
 }

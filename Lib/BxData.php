@@ -143,7 +143,7 @@ class BxData
             if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
                 $count = 1;
                 $this->sources[$container][$sourceId]['rows'] = array();
-                while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                while (($data = fgetcsv($handle, 2000, ",")) !== FALSE) {
                     $this->sources[$container][$sourceId]['rows'][] = $data;
                     if($count++>=$maxRow) {
                         break;
