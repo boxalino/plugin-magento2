@@ -936,6 +936,9 @@ class BxIndexer {
             $transactions = null;
 
             if ($header) {
+              if(count($data) < 1) {
+                return; 
+              }
                 $data = array_merge(array(array_keys(end($data))), $data);
                 $header = false;
             }
