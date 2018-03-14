@@ -401,6 +401,16 @@ class Adapter
          self::$bxClient->addRequest($bxRequest);
      }
 
+     public function getLandingpageContextParameters($extraParams = null){
+
+       foreach ($extraParams as $key => $value) {
+
+         self::$bxClient->addRequestContextParameter($key, $value);
+
+       }
+
+     }
+
     /**
      *
      */

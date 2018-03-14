@@ -26,8 +26,29 @@ class LandingPage extends \Magento\Framework\View\Element\Template{
 
   public function isActive(){
 
+    $this->getOtherParams();
     $this->p13nHelper->setLandingPageChoiceId($this->_data['choiceID']);
     return $this->bxHelperData->isPluginEnabled();
+
+  }
+
+  public function getOtherParams(){
+
+    if (!empty($this->_data['bxOtherParams'])) {
+
+      $params = explode(',', $this->_data['bxOtherParams']);
+
+      foreach ($params as $param) {
+
+        $kv = explode('=', $param);
+
+        $extraParams[$kv[0]] = $kv[1];
+
+      }
+
+    $this->p13nHelper->getLandingpageContextParameters($extraParams);
+
+    }
 
   }
 
