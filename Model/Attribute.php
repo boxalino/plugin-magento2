@@ -14,9 +14,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     private $bxFacets = null;
 
     /**
-     * @var array
+     * @var string
      */
-    private $fieldName = array();
+    private $fieldName = '';
 
     /**
      * @var \Boxalino\Intelligence\Helper\Data
@@ -49,14 +49,14 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     protected $_logger;
 
     /**
-     * @var
-     */
-    private $is_bx_attribute;
-
-    /**
      * @var string
      */
     private $_locale;
+
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
+    protected $objectManager;
 
     /**
      * Attribute constructor.
@@ -65,6 +65,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param \Magento\Catalog\Model\Layer $layer
      * @param \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder $itemDataBuilder
      * @param \Magento\Catalog\Model\ResourceModel\Layer\Filter\AttributeFactory $filterAttributeFactory
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\Stdlib\StringUtils $string
      * @param \Magento\Framework\Filter\StripTags $tagFilter
      * @param \Boxalino\Intelligence\Helper\Data $bxDataHelper
@@ -72,6 +73,9 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      * @param \Magento\Catalog\Helper\Category $categoryHelper
      * @param \Magento\Eav\Model\Config $config
      * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Framework\Locale\Resolver $locale
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param array $data
      */
     public function __construct(
@@ -80,6 +84,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Magento\Catalog\Model\Layer $layer,
         \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder $itemDataBuilder,
         \Magento\Catalog\Model\ResourceModel\Layer\Filter\AttributeFactory $filterAttributeFactory,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Stdlib\StringUtils $string,
         \Magento\Framework\Filter\StripTags $tagFilter,
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
@@ -89,9 +94,11 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\Locale\Resolver $locale,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data=[]
     )
     {
+        $this->objectManager = $objectManager;
         $this->_locale = substr($locale->getLocale(), 0, 2);
         $this->_logger = $logger;
         $this->_config = $config;
@@ -138,7 +145,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     }
 
     /**
-     * @return array
+     * @return string
      */
     public function getFieldName(){
         
@@ -155,10 +162,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 $data = $this->_getItemsData();
                 $items = [];
                 foreach ($data as $itemData) {
+                    if($this->fieldName == 'discountedPrice' && substr($itemData['label'], -3) == '- 0') {
+                        $values = explode(' - ', $itemData['label']);
+                        $values[1] = '*';
+                        $itemData['label'] = implode(' - ', $values);
+                    }
                     $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
                     $type = isset($itemData['type']) ? $itemData['type'] : null;
                     $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
-                    $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden);
+                    $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden);
                 }
                 $this->_items = $items;
                 return $this;
@@ -181,8 +193,10 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
 
+
         if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
-            return $this->_filterItemFactory->create()
+            $filter = $this->objectManager->create("Boxalino\Intelligence\Model\LayerFilterItem");
+             $filter
                 ->setFilter($this)
                 ->setLabel($label)
                 ->setValue($value)
@@ -190,8 +204,25 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 ->setSelected($selected)
                 ->setType($type)
                 ->setHidden($hidden);
+            return $filter;
         }
         return parent::_createItem($label, $value, $count);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function _getAttributeModel() {
+        return $this->_config->getAttribute('catalog_product', substr($this->fieldName, 9))->getSource();
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isSystemFilter() {
+        $source = $this->_getAttributeModel();
+        return sizeof($source->getAllOptions()) > 1;
     }
 
     /**
@@ -199,6 +230,15 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
      */
     protected function _getItemsData(){
         $bxFacets = $this->getBxFacets();
+        $isSystemFilter = $this->isSystemFilter();
+        $facetOptions = $this->bxDataHelper->getFacetOptions();
+        $isMultiValued = isset($facetOptions[$this->fieldName]) ? true : false;
+        if($isSystemFilter) {
+            $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($this->fieldName));
+        } else {
+            $this->_requestVar = $bxFacets->getFacetParameterName($this->fieldName);
+        }
+
         $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($this->fieldName));
         $order = $bxFacets->getFacetExtraInfo($this->fieldName, 'valueorderEnums');
         
@@ -212,8 +252,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $count++;
                     $homeLabel = __("All Categories");
                     $this->itemDataBuilder->addItemData(
-                        $this->tagFilter->filter($homeLabel),
-                        2,
+                        $this->_storeManager->getStore()->getRootCategoryId(),
                         $bxFacets->getParentCategoriesHitCount($key),
                         $value,
                         'home parent',
@@ -234,7 +273,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 );
             }
             $facetValues = null;
-            if($order == 'custom'){
+            if($order == 2){
                 $facetLabels = $bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];
                 $childParentId = $this->categoryFactory->create()->load($childId)->getParentId();
@@ -268,21 +307,20 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
             }
             
         } else {
-
-            $attributeModel = $this->_config->getAttribute('catalog_product', substr($this->fieldName,9))->getSource();
-            if ($order == 'custom') {
-                $responseValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($this->fieldName));
+            $attributeModel = $this->_getAttributeModel();
+            if ($order == 2) {
                 $values = $attributeModel->getAllOptions();
-
+                $responseValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($this->fieldName));
+                $selectedValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($this->fieldName));
                 foreach($values as $value){
                     $label = is_array($value) ? $value['label'] : $value;
                     if(isset($responseValues[$label])){
                         $facetValue = $responseValues[$label];
-                        $selected = $bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
-                        $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
+                        $selected = isset($selectedValues[$facetValue]) ? true : false;
+                        $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $this->fieldName, $facetValue, $attributeModel, $selectedValues, $selected, $isMultiValued);
                         $this->itemDataBuilder->addItemData(
                             $this->tagFilter->filter($bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                            $selected ? 0 : $paramValue,
+                            $paramValue,
                             $bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                             $selected,
                             'flat',
@@ -291,14 +329,14 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     }
                 }
             } else {
-                foreach ($bxFacets->getFacetValues($this->fieldName) as $facetValue) {
+                $selectedValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($this->fieldName));
+                $responseValues = $bxFacets->getFacetValues($this->fieldName);
+                foreach ($responseValues as $facetValue) {
                     $selected = $bxFacets->isFacetValueSelected($this->fieldName, $facetValue);
-                    $paramValue = false ? $bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue):
-                        $attributeModel->getOptionId($bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
-
+                    $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $this->fieldName, $facetValue, $attributeModel, $selectedValues, $selected, $isMultiValued);
                     $this->itemDataBuilder->addItemData(
                         $this->tagFilter->filter($bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        $selected ? 0 : $paramValue,
+                        $paramValue,
                         $bxFacets->getFacetValueCount($this->fieldName, $facetValue),
                         $selected,
                         'flat',
@@ -309,5 +347,27 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
            
         }
         return $this->itemDataBuilder->build();
+    }
+
+    public function getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, $selected, $setCurrentSelection=false) {
+        $paramValue = ($selected ? null : ($isSystemFilter ? $attributeModel->getOptionId($facetValue) : $bxFacets->getFacetValueParameterValue($fieldName, $facetValue)));
+
+        if($selected && isset($selectedValues[$facetValue]))unset($selectedValues[$facetValue]);
+        if($setCurrentSelection && sizeof($selectedValues)>0) {
+            $separator = $this->bxDataHelper->getSeparator();
+            if(!is_null($paramValue)) $paramValue .= $separator;
+            if(!$isSystemFilter) {
+                $paramValue .= implode($separator, $selectedValues);
+                return $paramValue;
+            }else {
+
+                $changedSelection = array();
+                foreach($selectedValues as $selected) {
+                    $changedSelection[] = $attributeModel->getOptionId($selected);
+                }
+                $paramValue .= implode($separator, $changedSelection);
+            }
+        }
+        return $paramValue;
     }
 }

@@ -26,7 +26,8 @@ class BxAutocompleteResponse
 	public function getTextualSuggestions() {
 		$suggestions = array();
 		foreach ($this->getResponse()->hits as $hit) {
-			$suggestions[] = $hit->suggestion;
+		    if(isset($suggestions[$hit->suggestion])) continue;
+			$suggestions[$hit->suggestion] = $hit->suggestion;
         }
 		return $this->reOrderSuggestions($suggestions);
 	}

@@ -91,6 +91,11 @@ class Adapter
     protected $landingPageChoice;
 
     /**
+     * @var string
+     */
+    protected $prefixContextParameter = '';
+
+    /**
      * Adapter constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -349,31 +354,40 @@ class Adapter
         return $data;
     }
 
-    /***
+    /**
      * @param $queryText
      * @param int $pageOffset
      * @param $hitCount
      * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
      * @param null $categoryId
+     * @param bool $addFinder
      */
-     public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null)
+     public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null, $addFinder = false)
      {
          $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
          $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
          $returnFields = array_merge($returnFields, $additionalFields);
 
          self::$bxClient->forwardRequestMapAsContextParameters();
-         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-         //create search request
+         if($addFinder) {
+             $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getFinderChoice());
+             $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+             $this->setPrefixContextParameter($this->prefixContextParameter);
+             $bxRequest->setHitsGroupsAsHits(true);
+             $bxRequest->addRequestParameterExclusionPatterns('bxi_data_owner');
+         } else {
+             $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
 
+         }
          $bxRequest->setGroupBy('products_group_id');
          $bxRequest->setReturnFields($returnFields);
          $bxRequest->setOffset($pageOffset);
          $bxRequest->setSortFields($bxSortFields);
          $bxRequest->setFacets($this->prepareFacets());
          $bxRequest->setFilters($this->getSystemFilters($queryText));
+         $bxRequest->setGroupFacets(true);
 
-         if ($categoryId != null) {
+         if ($categoryId != null && !$addFinder) {
              $filterField = "category_id";
              $filterValues = array($categoryId);
              $filterNegative = false;
@@ -398,17 +412,47 @@ class Adapter
      }
 
     /**
+     * @return string
+     */
+    public function getFinderChoice() {
+
+        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/finder_choice_id', $this->scopeStore);
+        if(is_null($choice_id) || $choice_id == '') {
+            $choice_id = 'productfinder';
+        }
+        $this->currentSearchChoice = $choice_id;
+        return $choice_id;
+    }
+
+    /**
+     * @param $prefix
+     */
+    protected function setPrefixContextParameter($prefix){
+        $requestParams = $this->request->getParams();
+        foreach ($requestParams as $key => $value) {
+            if(strpos($key, $prefix) == 0) {
+                self::$bxClient->addRequestContextParameter($key, $value);
+            }
+        }
+    }
+
+    /**
      *
      */
-    public function simpleSearch()
+    public function simpleSearch($addFinder = false)
     {
+        $isFinder = $this->bxHelperData->getIsFinder();
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
 
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null) {
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
+            $this->currentSearchChoice = $this->getSearchChoice($queryText);
             return;
         }
-
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getFinderChoice()) != null && ($addFinder || $isFinder)) {
+            $this->currentSearchChoice = $this->getFinderChoice();
+            return;
+        }
         $requestParams = $this->request->getParams();
         $field = '';
         $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
@@ -423,7 +467,7 @@ class Adapter
         $categoryId = $this->registry->registry('current_category') != null ? $this->registry->registry('current_category')->getId() : null;
         $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
-        $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
+        $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
     /**
@@ -464,7 +508,14 @@ class Adapter
     /**
      * @return string
      */
-    private function getUrlParameterPrefix()
+    public function getPrefixContextParameter() {
+        return $this->prefixContextParameter;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrlParameterPrefix()
     {
 
         return 'bx_';
@@ -482,39 +533,92 @@ class Adapter
 
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
+        $bxSelectedValues = array();
+        $systemParamValues = array();
         $requestParams = $this->request->getParams();
         $context = $this->navigation ? 'navigation' : 'search';
         $attributeCollection = $this->bxHelperData->getFilterProductAttributes($context);
+        $facetOptions = $this->bxHelperData->getFacetOptions();
+        $separator = $this->bxHelperData->getSeparator();
         foreach ($requestParams as $key => $values) {
-            if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
+            $additionalChecks = false;
+            if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
                 $selectedValues[$fieldName] = $values;
+                if (isset($attributeCollection['products_' . $key]) || $key == 'bx_discountedPrice') {
+                    $bxSelectedValues[$fieldName] = explode($separator, $values);
+
+                } else {
+                    $key = substr($fieldName, strlen('products_'), strlen($fieldName));
+                    $additionalChecks = true;
+                }
             }
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = $this->_modelConfig->getAttribute('catalog_product', $key)->getSource();
-                foreach ($paramValues as $paramValue) {
-                    $selectedValues['products_' . $key][] = $attributeModel->getOptionText($paramValue);
+
+                foreach ($paramValues as $paramValue){
+                    $value = $attributeModel->getOptionText($paramValue);
+                    if($additionalChecks && !$value) {
+                        $systemParamValues[$key]['additional'] = $additionalChecks;
+                        $paramValue = explode($separator, $paramValue);
+                        $optionValues = $attributeModel->getAllOptions(false);
+                        foreach ($optionValues as $optionValue) {
+                            if(in_array($optionValue['label'], $paramValue)){
+                                $selectedValues['products_' . $key][] = $optionValue['label'];
+                                $this->bxHelperData->setRemoveParams('bx_products_' . $key);
+                                $systemParamValues[$key]['values'][] = $optionValue['value'];
+                            }
+                        }
+                    }
+                    if($value) {
+                        $optionParamsValues = explode($separator, $paramValue);
+                        foreach ($optionParamsValues as $optionParamsValue) {
+                            $systemParamValues[$key]['values'][] = $optionParamsValue;
+                        }
+                        $value = is_array($value) ? $value : [$value];
+                        foreach ($value as $v) {
+                            $selectedValues['products_' . $key][] = $v;
+                        }
+                    }
+                }
+            }
+
+        }
+        if(sizeof($systemParamValues) > 0) {
+            foreach ($systemParamValues as $key => $systemParam) {
+                if(isset($systemParam['additional'])){
+                    $this->bxHelperData->setSystemParams($key, $systemParam['values']);
                 }
             }
         }
 
         if (!$this->navigation) {
-            $catId = isset($selectedValues['category_id']) ? $selectedValues['category_id'] : 2;
-            $bxFacets->addCategoryFacet($catId);
+            $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : $this->storeManager->getStore()->getRootCategoryId();
+            $values = explode($separator, $values);
+            $andSelectedValues = isset($facetOptions['category_id']) ? $facetOptions['category_id']['andSelectedValues']: false;
+            $bxFacets->addCategoryFacet($values, 2, -1, $andSelectedValues);
         }
 
         foreach ($attributeCollection as $code => $attribute) {
             if($attribute['addToRequest'] || isset($selectedValues[$code])){
                 $bound = $code == 'discountedPrice' ? true : false;
                 list($label, $type, $order, $position) = array_values($attribute);
-                $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
-                if ($code == 'discountedPrice' && isset($selectedValues[$code])) {
-                    $bxFacets->addPriceRangeFacet($selectedValues[$code]);
+
+                $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code] : null;
+
+                if ($code == 'discountedPrice' && isset($bxSelectedValues[$code])) {
+                    $bxFacets->addPriceRangeFacet($bxSelectedValues[$code]);
                 } else {
-                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
+                    $andSelectedValues = isset($facetOptions[$code]) ? $facetOptions[$code]['andSelectedValues']: false;
+                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound, -1, $andSelectedValues);
                 }
             }
+        }
+        foreach($bxSelectedValues as $field => $values) {
+            if($field == 'discountedPrice') continue;
+            $andSelectedValues = isset($facetOptions[$field]) ? $facetOptions[$field]['andSelectedValues']: false;
+            $bxFacets->addFacet($field, $values, 'string', null, 2, false, -1, $andSelectedValues);
         }
         return $bxFacets;
     }
@@ -580,11 +684,12 @@ class Adapter
     }
 
     /**
+     * @param bool $getFinder
      * @return null
      */
-    public function getFacets()
+    public function getFacets($getFinder = false)
     {
-        $this->simpleSearch();
+        $this->simpleSearch($getFinder);
         $facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
         if (empty($facets)) {
             return null;

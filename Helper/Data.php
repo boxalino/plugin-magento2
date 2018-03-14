@@ -92,6 +92,21 @@ class Data{
     protected $bx_filter = array();
 
     /**
+     * @var bool
+     */
+    protected $isFinder = false;
+
+    /**
+     * @var array
+     */
+    protected $removeParams = array();
+
+    /**
+     * @var array
+     */
+    protected $systemParams = array();
+
+    /**
      * Data constructor.
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
      * @param \Magento\Checkout\Model\Session $checkoutSession
@@ -725,6 +740,42 @@ class Data{
         return $this->cmsBlock;
     }
 
+    public function setRemoveParams($key) {
+        $this->removeParams[] = $key;
+    }
+
+    public function getRemoveParams() {
+        return $this->removeParams;
+    }
+
+    public function setSystemParams($key, $values) {
+        $this->systemParams[$key] = $values;
+    }
+
+    public function getSystemParams() {
+        return $this->systemParams;
+    }
+
+    public function getSeparator() {
+        $separator = $this->config->getValue('bxSearch/advanced/parameter_separator', $this->scopeStore);
+        if($separator == '') {
+            $separator = ',';
+        }
+        return $separator;
+    }
+
+    public function getFacetOptions() {
+        $fields = explode(',',$this->config->getValue('bxSearch/advanced/multiselect_fields', $this->scopeStore));
+        $facetOptions = array();
+        foreach ($fields as $field) {
+            $values = explode(';', $field);
+            $fieldName = $values[0];
+            $andSelectedValues = sizeof($values) > 1 ? (bool)$values[1] : false;
+            $facetOptions[$fieldName] = array('andSelectedValues' => $andSelectedValues);
+        }
+        return $facetOptions;
+    }
+
     /**
      * @param $array
      * @return array
@@ -741,5 +792,13 @@ class Data{
         $e = new \Exception();
         $trace = $e->getTraceAsString();
         return $trace;
+    }
+
+    public function getIsFinder() {
+        return $this->isFinder;
+    }
+
+    public function setIsFinder($isFinder) {
+        $this->isFinder = $isFinder;
     }
 }

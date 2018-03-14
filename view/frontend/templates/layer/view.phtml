@@ -22,9 +22,11 @@
                     $wrapOptions = false;
                     $filters = $block->getFilters();
                     $expanded = array();
-                    foreach($filters as $index => $filter){
+                    $index = 0;
+                    foreach($filters as $filter){
                         $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();
                         if (!is_null($bxFacets) && $bxFacets->isFacetExpanded($filter->getFieldName(), false)) $expanded[] = $index;
+                        $index++;
                     }
                 ?>
                 <?php foreach ($filters as $filter): ?>

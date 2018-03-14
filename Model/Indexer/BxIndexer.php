@@ -559,15 +559,17 @@ class BxIndexer {
                 $selects[] = $select3;
             }
 
-            $select = $db->select()
-                ->union(
-                    $selects,
-                    \Magento\Framework\DB\Select::SQL_UNION_ALL
-                );
+            if(count($selects)) {
+                $select = $db->select()
+                    ->union(
+                        $selects,
+                        \Magento\Framework\DB\Select::SQL_UNION_ALL
+                    );
 
-            $this->logger->info('bxLog: Customers - retrieve data for side queries page $page for account: ' . $account);
-            foreach ($db->fetchAll($select) as $r) {
-                $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
+                $this->logger->info('bxLog: Customers - retrieve data for side queries page $page for account: ' . $account);
+                foreach ($db->fetchAll($select) as $r) {
+                    $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
+                }
             }
 
             $select = null;

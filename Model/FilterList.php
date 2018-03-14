@@ -32,23 +32,27 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      */
     protected $categoryViewBlock;
 
+    protected $bxFacetModel;
+
     /**
      * FilterList constructor.
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
-     * @param \BOxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
+     * @param Facet $facet
      * @param array $filters
      */
     public function __construct(
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        \BOxalino\Intelligence\Helper\Data $bxHelperData,
+        \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
+        \Boxalino\Intelligence\Model\Facet $facet,
         array $filters = []
     )
     {
@@ -57,6 +61,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         $this->categoryViewBlock = $categoryViewBlock;
         $this->bxHelperData = $bxHelperData;
         $this->p13nHelper = $p13nHelper;
+        $this->bxFacetModel = $facet;
     }
 
     /**
@@ -88,13 +93,14 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
 
                         $filter->setFacets($facets);
                         $filter->setFieldName($fieldName);
-                        $filters[] = $filter;
+                        $filters[$fieldName] = $filter;
                         $filter = null;
                     }
                 } else {
                     $this->p13nHelper->notifyWarning(["message"=>"BxFacets is not defined in " . get_class($this),
                         "stacktrace"=>$this->bxHelperData->notificationTrace()]);
                 }
+                $this->bxFacetModel->setFacets($filters);
                 return $filters;
             }else{
                 return parent::getFilters($layer);

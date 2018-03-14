@@ -250,6 +250,19 @@
                     <label>Search limit for sub-phrases</label>
                     <comment>Optional: default value is 3 and should normally not be changed.</comment>
                 </field>
+                <field id="multiselect_fields" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Multi-select Fields</label>
+                    <comment> <![CDATA[Optional: If you have fields which should behave as multi-select, you should define it
+                                here (separated by coma). As an option, you can also set if the field should
+                                use the AND condition (default OR condition), by appending a semicolon
+                                followed by a 1.
+                                E.g.: category_id,products_color;1,products_manufacturer]]>
+                    </comment>
+                </field>
+                <field id="parameter_separator" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Separator for URL Parameter</label>
+                    <comment>Optional: default separator is ',' and should normally not be changed.</comment>
+                </field>
             </group>
         </section>
 
