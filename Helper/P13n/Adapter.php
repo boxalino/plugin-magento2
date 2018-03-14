@@ -88,7 +88,7 @@ class Adapter
     /**
      * @var String
      */
-    protected $landingPageChoice;
+    protected $landingPageChoice = null;
 
     /**
      * @var string
@@ -376,8 +376,11 @@ class Adapter
              $bxRequest->setHitsGroupsAsHits(true);
              $bxRequest->addRequestParameterExclusionPatterns('bxi_data_owner');
          } else {
-             $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-
+             if(!is_null($this->landingPageChoice)) {
+                 $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->landingPageChoice, $hitCount);
+             }else {
+                 $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+             }
          }
          $bxRequest->setGroupBy('products_group_id');
          $bxRequest->setReturnFields($returnFields);
