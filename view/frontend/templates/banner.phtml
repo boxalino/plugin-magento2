@@ -16,6 +16,7 @@ if ($this->isActive() && $this->check()) {
         $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
+        $jssorLayout = $this->getBannerLayout();
 
         $jssorOptions = $this->getBannerJssorOptions();
 
@@ -34,15 +35,15 @@ if ($this->isActive() && $this->check()) {
 
         var <?php echo $jssorId ?>_slider_init = function() {
 
-            var jssor_1_options = <?php echo $jssorOptions ?>;
+            var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
 
-            var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+            var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
 
-            var jssor_1_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+            var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
 
-            var jssor_1_SlideoControls = <?php echo $jssorSlideControls ?>;
+            var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
 
-            var jssor_1_slider = new $JssorSlider$(<?php echo $jssorId ?>, jssor_1_options);
+            var <?php echo $jssorId ?>_slider = new $JssorSlider$("<?php echo $jssorId ?>", <?php echo $jssorId ?>_options);
 
             var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
 
@@ -67,34 +68,58 @@ if ($this->isActive() && $this->check()) {
 
     </style>
 
-    <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+    <?php if ($jssorLayout == 'large_banner'){ ?>
 
-    <?php echo $jssorLoadingScreen ?>
+      <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
 
-        <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
+      <?php echo $jssorLoadingScreen ?>
 
-            <?php
+          <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
 
-                foreach($jssorSlides as $bannerSlideId => $values ) {
+              <?php
 
-                    echo $values['div'];
-                }
+                  foreach($jssorSlides as $bannerSlideId => $values ) {
 
-            ?>
+                      echo $values['div'];
 
-        </div>
+                  }
 
-        <?php if ($hitCount > 1){
+              ?>
 
-          echo $jssorBulletNavigator;
-          echo $jssorArrowNavigator;
+          </div>
 
-        }; ?>
+          <?php if ($hitCount > 1){
 
-    </div>
+            echo $jssorBulletNavigator;
+            echo $jssorArrowNavigator;
 
-<?php
+          }; ?>
 
-}
+      </div>
 
-?>
+    <?php } elseif($jssorLayout == 'small_banner'){ ?>
+
+      <!-- <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>"> -->
+      <div   style="display: initial;">
+
+      <h2 class="title"><?php echo $this->getBannerTitle() ?></h2>
+
+        <?php foreach($jssorSlides as $bannerSlideId => $values){ ?>
+
+            <div class="<?php echo $jssorId ?>_slide" data-u="slides" style="<?php echo $jssorSlidesStyle ?>  ">
+
+              <?php echo $values['div']; ?>
+
+            </div>
+
+        <?php } ?>
+
+      </div>
+
+    <?php } else {
+
+      echo "wrong format";
+
+    }?>
+
+<?php } ?>
