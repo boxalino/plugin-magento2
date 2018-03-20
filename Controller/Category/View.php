@@ -8,6 +8,24 @@ class View extends \Magento\Catalog\Controller\Category\View{
 
     protected $bxHelperData;
 
+    protected $_logger;
+
+    /**
+     * View constructor.
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Catalog\Model\Design $catalogDesign
+     * @param \Magento\Catalog\Model\Session $catalogSession
+     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator $categoryUrlPathGenerator
+     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory
+     * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
+     * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Psr\Log\LoggerInterface $logger
+     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Catalog\Model\Design $catalogDesign,
@@ -20,14 +38,15 @@ class View extends \Magento\Catalog\Controller\Category\View{
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        \Boxalino\Intelligence\Helper\Data $bxHelperData
-
+        \Boxalino\Intelligence\Helper\Data $bxHelperData,
+        \Psr\Log\LoggerInterface $logger
     ) {
         parent::__construct($context, $catalogDesign, $catalogSession, $coreRegistry,
             $storeManager, $categoryUrlPathGenerator, $resultPageFactory, $resultForwardFactory,
             $layerResolver, $categoryRepository);
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
+        $this->_logger = $logger;
     }
 
     public function execute()
@@ -54,6 +73,7 @@ class View extends \Magento\Catalog\Controller\Category\View{
                     ", memory: " . memory_get_usage(true));
             }
         } catch (\Exception $e) {
+            $this->_coreRegistry->unregister('current_category');
             $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
         }

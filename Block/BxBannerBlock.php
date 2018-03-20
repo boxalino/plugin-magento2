@@ -55,55 +55,59 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function check(){
 
-        $values = array(
+        try{
+            $values = array(
 
-        0 => $this->getBannerSlides(),
-        1 => $this->getBannerJssorId(),
-        2 => $this->getBannerJssorSlideTransitions(),
-        3 => $this->getBannerJssorSlideBreaks(),
-        4 => $this->getBannerJssorSlideControls(),
-        5 => $this->getBannerJssorOptions(),
-        6 => $this->getBannerJssorMaxWidth(),
-        7 => $this->getBannerJssorCSS(),
-        8 => $this->getBannerJssorStyle(),
-        9 => $this->getBannerJssorLoadingScreen(),
-        10 => $this->getBannerJssorSlidesStyle(),
-        11 => $this->getBannerJssorBulletNavigator(),
-        12 => $this->getBannerJssorArrowNavigator(),
-        13 => $this->getBannerFunction(),
-        14 => $this->getBannerLayout()
+                0 => $this->getBannerSlides(),
+                1 => $this->getBannerJssorId(),
+                2 => $this->getBannerJssorSlideTransitions(),
+                3 => $this->getBannerJssorSlideBreaks(),
+                4 => $this->getBannerJssorSlideControls(),
+                5 => $this->getBannerJssorOptions(),
+                6 => $this->getBannerJssorMaxWidth(),
+                7 => $this->getBannerJssorCSS(),
+                8 => $this->getBannerJssorStyle(),
+                9 => $this->getBannerJssorLoadingScreen(),
+                10 => $this->getBannerJssorSlidesStyle(),
+                11 => $this->getBannerJssorBulletNavigator(),
+                12 => $this->getBannerJssorArrowNavigator(),
+                13 => $this->getBannerFunction(),
+                14 => $this->getBannerLayout()
 
-        );
+            );
 
-        if (!in_array('', $values)) {
-            
-            return true;
-        
-        }else{
+            if (!in_array('', $values)) {
 
-            foreach ($values as $key => $value) {
-                
-                try{
+                return true;
 
-                    if($value == '') {
-                
-                    throw new \Exception("Function $key returned empty.");
+            }else{
 
+                foreach ($values as $key => $value) {
+
+                    try{
+
+                        if($value == '') {
+
+                            throw new \Exception("Function $key returned empty.");
+
+                        }
+
+                    } catch(\Exception $e){
+
+                        $this->setFallback(true);
+
+                        $this->_logger->critical($e);
                     }
 
-                } catch(\Exception $e){
-
-                    $this->setFallback(true);
-
-                    $this->_logger->critical($e);
                 }
 
+                return false;
+
             }
-
-            return false;
-
+        } catch (\Exception $e) {
+            $this->setFallback(true);
+            $this->_logger->critical($e);
         }
-
     }
 
     public function getBannerSlides() {

@@ -849,7 +849,7 @@ class BxFacets
         if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
             $fv = reset($keyValues);
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive;
+            $to = $this->selectedPriceValues[0]->rangeToExclusive - 0.01;
             if($this->priceRangeMargin) {
                 $to -= 0.01;
             }
@@ -908,7 +908,7 @@ class BxFacets
         $valueLabel = null;
         if($this->selectedPriceValues !== null && ($this->selectedPriceValues != null)){
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive;
+            $to = $this->selectedPriceValues[0]->rangeToExclusive - 0.01;
             if($this->priceRangeMargin) {
                 $to -= 0.01;
             }
@@ -1019,7 +1019,7 @@ class BxFacets
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
                     if ($rangedValue[1] != '*') {
-                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1];
+                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1] + 0.01;
                         if($rangedValue[0] == $rangedValue[1]) {
                             $this->priceRangeMargin = true;
                             $selectedFacet->rangeToExclusive += 0.01;

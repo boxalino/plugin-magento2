@@ -11,7 +11,17 @@ class P13nTCurlClient extends TCurlClient {
 
     protected $authorizationString;
 
-  /**
+    protected $curl_timeout;
+
+    public function __construct(
+        $host, $port=80, $uri='', $scheme = 'http', $curl_timeout = 1000
+    )
+    {
+        $this->curl_timeout = $curl_timeout;
+        parent::__construct($host, $port, $uri, $scheme);
+    }
+
+    /**
    * Opens and sends the actual request over the HTTP connection
    *
    * @throws TTransportException if a writing error occurs
@@ -28,6 +38,7 @@ class P13nTCurlClient extends TCurlClient {
 			curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
             // FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set
             @curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
         }
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');

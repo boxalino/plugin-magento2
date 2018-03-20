@@ -251,6 +251,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                     $count++;
                     $homeLabel = __("All Categories");
                     $this->itemDataBuilder->addItemData(
+                        $this->tagFilter->filter($homeLabel),
                         $this->_storeManager->getStore()->getRootCategoryId(),
                         $bxFacets->getParentCategoriesHitCount($key),
                         $value,
@@ -264,7 +265,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 }
                 $this->itemDataBuilder->addItemData(
                     $this->tagFilter->filter($parentCategory),
-                    $key,
+                    $value ? null : $key,
                     $bxFacets->getParentCategoriesHitCount($key),
                     $value,
                     'parent',
@@ -272,7 +273,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 );
             }
             $facetValues = null;
-            if($order == 2){
+            if($order == 'custom'){
                 $facetLabels = $bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];
                 $childParentId = $this->categoryFactory->create()->load($childId)->getParentId();

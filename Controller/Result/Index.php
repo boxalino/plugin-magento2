@@ -100,11 +100,11 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
                     $correctedQuery = $this->p13Helper->getCorrectedQuery();
                     $query->setQueryText($correctedQuery);
                 }
-                parent::execute();
             }catch(\Exception $e){
                 $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
             }
+            parent::execute();
         } else {
             parent::execute();
         }

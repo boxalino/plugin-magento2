@@ -87,6 +87,10 @@
                     <label>Timeout limit to our server</label>
                     <comment>Optional: default value is 2 seconds and should normally not be changed.</comment>
                 </field>
+                <field id="curl_connection_timeout" translate="label" type="text" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>CURL Connection Timeout</label>
+                    <comment>Optional: default value is 1000 (1 second) and should normally not be changed. Please provide the value is in millisecond.</comment>
+                </field>
             </group>
         </section>
 

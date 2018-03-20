@@ -29,6 +29,7 @@ class BxClient
 	const VISITOR_COOKIE_TIME = 31536000;
 
 	private $_timeout = 2;
+	private $curl_timeout = 1000;
 	private $requestContextParameters = array();
 
 	private $sessionId = null;
@@ -213,6 +214,10 @@ class BxClient
 		return $userRecord;
 	}
 
+	public function setCurlTimeout($timeout) {
+	    $this->curl_timeout = $timeout;
+    }
+
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
 
 		if($this->socketHost != null) {
@@ -225,7 +230,7 @@ class BxClient
 		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
-			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
+			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
 		} else {
 			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
 		}
