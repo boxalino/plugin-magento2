@@ -201,56 +201,56 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getBannerJssorOptions() {
 
-        $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options');
+        $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $this->_data['widget']);
 
         return $bannerJssorOptions;
     }
 
     public function getBannerJssorId() {
 
-        $bannerJssorId = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id');
+        $bannerJssorId = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $this->_data['widget']);
 
         return $bannerJssorId;
     }
 
     public function getBannerJssorStyle() {
 
-        $bannerJssorStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style');
+        $bannerJssorStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $this->_data['widget']);
 
         return $bannerJssorStyle;
     }
 
     public function getBannerJssorSlidesStyle() {
 
-        $bannerJssorrSlidesStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style');
+        $bannerJssorrSlidesStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style', '', $this->_data['widget']);
 
         return $bannerJssorrSlidesStyle;
     }
 
     public function getBannerJssorMaxWidth() {
 
-        $bannerJssorMaxWidth = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width');
+        $bannerJssorMaxWidth = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $this->_data['widget']);
 
         return $bannerJssorMaxWidth;
     }
 
     public function getBannerJssorCSS() {
 
-        $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css');
+        $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $this->_data['widget']);
 
         return str_replace("JSSORID", $this->getBannerJssorId(), $bannerJssorCss);
     }
 
     public function getBannerJssorLoadingScreen() {
 
-        $bannerJssorLoadingScreen = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen');
+        $bannerJssorLoadingScreen = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $this->_data['widget']);
 
         return $bannerJssorLoadingScreen;
     }
 
     public function getBannerJssorBulletNavigator() {
 
-        $bannerJssorBulletNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator');
+        $bannerJssorBulletNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $this->_data['widget']);
 
         return $bannerJssorBulletNavigator;
 
@@ -258,7 +258,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getBannerJssorArrowNavigator() {
 
-        $bannerJssorArrowNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator');
+        $bannerJssorArrowNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $this->_data['widget']);
 
         return $bannerJssorArrowNavigator;
 
@@ -266,7 +266,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getBannerFunction() {
 
-        $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function');
+        $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $this->_data['widget']);
 
         return $bannerFunction;
 
@@ -274,7 +274,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getBannerLayout() {
 
-        $bannerLayout = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout');
+        $bannerLayout = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $this->_data['widget']);
 
         return $bannerLayout;
 

@@ -402,7 +402,7 @@ class Adapter
          }
 
          self::$bxClient->addRequest($bxRequest);
-         if($this->bxHelperData->isBlogEnabled()) {
+         if($this->bxHelperData->isBlogEnabled() && is_null($categoryId)) {
              $this->addBlogResult($queryText, $hitCount);
          }
      }
