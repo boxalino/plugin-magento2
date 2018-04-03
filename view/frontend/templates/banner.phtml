@@ -4,7 +4,9 @@ if ($this->isActive() && $this->check()) {
 
         $hitCount = $this->getHitCount();
         $jssorSlides = $this->getBannerSlides();
-        $jssorId = $this->getBannerJssorId();
+        $jssorId = $this->getIdFromConfig();
+        $jssorIndex = $this->getIndex();
+        $jssorConfigId = $this->getBannerJssorId();
         $jssorSlideTransitions = $this->getBannerJssorSlideTransitions();
         $jssorSlideBreaks = $this->getBannerJssorSlideBreaks();
         $jssorSlideControls = $this->getBannerJssorSlideControls();
@@ -17,10 +19,11 @@ if ($this->isActive() && $this->check()) {
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
         $jssorLayout = $this->getBannerLayout();
-
         $jssorOptions = $this->getBannerJssorOptions();
 
-        if ($hitCount < 2) {
+        // if there is only one banner or it is using the 'small' layout, don't be draggable
+
+        if ($hitCount < 2 || $jssorLayout != 'large') {
          $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
         }
 
@@ -68,58 +71,33 @@ if ($this->isActive() && $this->check()) {
 
     </style>
 
-    <?php if ($jssorLayout == 'large_banner'){ ?>
+    <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
 
-      <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+    <?php echo $jssorLoadingScreen ?>
 
-      <?php echo $jssorLoadingScreen ?>
+        <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
 
-          <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
+            <?php
 
-              <?php
+                foreach($jssorSlides as $bannerSlideId => $values ) {
 
-                  foreach($jssorSlides as $bannerSlideId => $values ) {
+                    echo $values['div'];
 
-                      echo $values['div'];
+                }
 
-                  }
+            ?>
 
-              ?>
+        </div>
 
-          </div>
+        <?php if ($hitCount > 1 && $jssorLayout == 'large'){
 
-          <?php if ($hitCount > 1){
+          // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
 
-            echo $jssorBulletNavigator;
-            echo $jssorArrowNavigator;
+          echo $jssorBulletNavigator;
+          echo $jssorArrowNavigator;
 
-          }; ?>
+        }; ?>
 
-      </div>
-
-    <?php } elseif($jssorLayout == 'small_banner'){ ?>
-
-      <!-- <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>"> -->
-      <div   style="display: initial;">
-
-      <h2 class="title"><?php echo $this->getBannerTitle() ?></h2>
-
-        <?php foreach($jssorSlides as $bannerSlideId => $values){ ?>
-
-            <div class="<?php echo $jssorId ?>_slide" data-u="slides" style="<?php echo $jssorSlidesStyle ?>  ">
-
-              <?php echo $values['div']; ?>
-
-            </div>
-
-        <?php } ?>
-
-      </div>
-
-    <?php } else {
-
-      echo "wrong format";
-
-    }?>
+    </div>
 
 <?php } ?>

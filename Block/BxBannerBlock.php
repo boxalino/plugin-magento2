@@ -117,6 +117,18 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         foreach($slides as $id => $vals) {
             $slides[$id]['div'] = $this->getBannerSlide($id, $vals, $counters);
         }
+
+        // if the small banner is used, use the first banner for the first block & the second for the second
+
+        if ($this->getBannerLayout() != 'large') {
+          if ($this->getIndex() == '1') {
+            return array(reset($slides));
+          }
+          if ($this->getIndex() == '2') {
+            return array(end($slides));
+          }
+        }
+
         return $slides;
     }
 
@@ -128,6 +140,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
             $slide = json_decode($json, true);
             if(isset($slide[$language])) {
                 $json = $slide[$language];
+
+                  // add configId as prefix for the classes
+
+                $json = $this->addPrefixToClasses($json);
 
                 for($i=1; $i<10; $i++) {
 
@@ -181,6 +197,25 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         return '[' . implode(',', $jsArray) . ']';
     }
 
+    public function addPrefixToClasses($json){
+
+      $idFromConfig = $this->getIdFromConfig();
+
+      $elems = explode(' ' ,$json);
+
+        foreach ($elems as $i => $value) {
+          if (preg_match('/bxBanner/', $value)) {
+            $value = str_replace('bxBanner', $idFromConfig . '_bxBanner', $value);
+            $elems[$i] = $value;
+          }
+        }
+
+      $json = implode(' ', $elems);
+
+      return $json;
+
+    }
+
     public function getBannerJssorSlideTransitions() {
 
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition');
@@ -202,6 +237,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     public function getBannerJssorOptions() {
 
         $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $this->_data['widget']);
+
+        // replace id from Intelligence with id from block configuration
+
+        $bannerJssorOptions = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerJssorOptions);
 
         return $bannerJssorOptions;
     }
@@ -238,6 +277,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
         $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $this->_data['widget']);
 
+        // replace id from Intelligence with id from block configuration
+
+        $bannerJssorCss = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerJssorCss);
+
         return str_replace("JSSORID", $this->getBannerJssorId(), $bannerJssorCss);
     }
 
@@ -268,6 +311,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
         $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $this->_data['widget']);
 
+        // replace id from Intelligence with id from block configuration
+
+        $bannerFunction = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerFunction);
+
         return $bannerFunction;
 
     }
@@ -293,6 +340,22 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
       $hitCount = sizeof($this->p13nHelper->getClientResponse()->getHitIds($this->_data['widget']));
 
       return $hitCount;
+
+    }
+
+    public function getIdFromConfig(){
+
+      $jssorConfigId = $this->getData('jssorID');
+
+      return $jssorConfigId;
+
+    }
+
+    public function getIndex(){
+
+      $jssorIndex = $this->getData('jssorIndex');
+
+      return $jssorIndex;
 
     }
 

@@ -839,7 +839,7 @@ class Adapter
                         $filterValues = is_array($context) ? $context : array($context);
                         $filterNegative = false;
                         $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-                    } elseif ($widgetType === 'banner') {
+                    } elseif ($widgetType === 'banner' || $widgetType === 'banner_small') {
                         $bxRequest->setGroupBy('id');
                         $bxRequest->setFilters(array());
                         $contextValues = is_array($context) ? $context : array($context);
