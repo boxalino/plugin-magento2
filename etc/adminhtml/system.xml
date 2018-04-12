@@ -39,6 +39,14 @@
                     <label>Domain</label>
                     <comment>What is your domain (e.g.: www.myshop.com)? Used to store cookie information about session id and visitor id.</comment>
                 </field>
+                <field id="apiKey" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>ApiKey</label>
+                    <comment>Optional: value for new set-up</comment>
+                </field>
+                <field id="apiSecret" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>ApiSecret</label>
+                    <comment>Optional: value for new set-up</comment>
+                </field>
             </group>
 
             <group id="tracker" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">

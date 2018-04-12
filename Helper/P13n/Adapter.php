@@ -148,8 +148,10 @@ class Adapter
             $host = $this->scopeConfig->getValue('bxGeneral/advanced/host', $this->scopeStore);
             $p13n_username = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_username', $this->scopeStore);
             $p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password', $this->scopeStore);
+            $apiKey = $this->scopeConfig->getValue('bxGeneral/general/apiKey', $this->scopeStore);
+            $apiSecret = $this->scopeConfig->getValue('bxGeneral/general/apiSecret', $this->scopeStore);
             $domain = $this->scopeConfig->getValue('bxGeneral/general/domain', $this->scopeStore);
-            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $this->request->getParams());
+            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $this->request->getParams(), $apiKey, $apiSecret);
             self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout', $this->scopeStore));
             $curl_timeout = $this->scopeConfig->getValue('bxGeneral/advanced/curl_connection_timeout', $this->scopeStore);
             if($curl_timeout != '') {
