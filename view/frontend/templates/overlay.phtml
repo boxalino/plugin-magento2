@@ -1,0 +1,39 @@
+<script type="text/javascript">
+require([
+    'jquery'
+], function ($) {
+    'use strict';
+
+    $(document).ready(function() {
+        window.setTimeout(showOverlay, 5000);
+    });
+
+    function showOverlay() {
+        $(".bxOverlay").fadeIn("slow");
+    }
+
+    $('#bxOverlayButton').on('click', function(){
+      $('.bxOverlay').hide();
+    })
+
+  }
+);
+
+
+</script>
+
+<button type="button" id="bxOverlayButton" class="bxOverlay" style="display: none; position: fixed; z-index: 7; left: 0; right: -13%; top: -15%; bottom: 0; margin: auto; height: 4%; width: 2%; line-height: 1.5; padding: 4px 8px; float: right; border-radius: 50%; box-shadow: none; background: rgb(255, 255, 255); font-size: 12px !important;">&#x2715;</button>
+
+<img src="<?php echo $this->getOverlayBackground(); ?>" class="bxOverlay" style="display: none; width:15%; position: fixed; left: 0; right: 0; top:0; bottom: 0; margin: auto;z-index: 6;">
+
+<img src="<?php echo $this->getOverlayTitle(); ?>" class="bxOverlay" style="display: none; width:10%; position: fixed; left: 0; right: 0; top:0; bottom: 15%; margin: auto;z-index: 6;">
+
+<div class="bxOverlay" style="display: none; position: fixed; right: 0; left: 0; margin: auto; top: 0; bottom: 0; width: 15%; height: 5%; text-align: center;z-index: 6; color: white;">
+
+  <?php echo $this->getOverlayText(); ?>
+
+</div>
+
+<img src="<?php echo $this->getOverlayButton(); ?>" class="bxOverlay" style="display: none; width:7%; position: fixed; left: 0; right: 0; top:0; bottom: -20%; margin: auto;z-index: 6;">
+
+<div class="bxOverlay" style="display: none; position: fixed;background: rgba(0,0,0,.4);top: 0;right: 0;bottom: 0;left: 0;z-index: 5;"></div>

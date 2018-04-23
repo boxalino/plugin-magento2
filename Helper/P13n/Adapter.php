@@ -444,6 +444,19 @@ class Adapter
     }
 
     /**
+     * @return string
+     */
+    public function getOverlayChoice() {
+
+        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/overlay_choice_id', $this->scopeStore);
+        if(is_null($choice_id) || $choice_id == '') {
+            $choice_id = 'extend';
+        }
+        $this->currentSearchChoice = $choice_id;
+        return $choice_id;
+    }
+
+    /**
      * @param $prefix
      */
     protected function setPrefixContextParameter($prefix){
@@ -458,11 +471,16 @@ class Adapter
     /**
      *
      */
-    public function simpleSearch($addFinder = false)
+    public function simpleSearch($addFinder = false, $isOverlay = false)
     {
         $isFinder = $this->bxHelperData->getIsFinder();
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
+
+        if ($isOverlay == true) {
+            $this->currentSearchChoice = $this->getOverlayChoice();
+            return;
+        }
 
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
@@ -700,6 +718,23 @@ class Adapter
 
         $this->simpleSearch();
         return $this->getClientResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOverlayValues($widget)
+    {
+      $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $widget, 0, 0);
+      self::$bxClient->addRequest($bxRequest);
+
+      $values['bx_extend_title'] = $this->getResponse()->getExtraInfo('bx_extend_title', '', $widget);
+      $values['bx_extend_background'] = $this->getResponse()->getExtraInfo('bx_extend_background', '', $widget);
+      $values['bx_extend_text'] = $this->getResponse()->getExtraInfo('bx_extend_text', '', $widget);
+      $values['bx_extend_button'] = $this->getResponse()->getExtraInfo('bx_extend_button', '', $widget);
+
+      return $values;
+
     }
 
     /**
