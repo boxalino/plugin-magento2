@@ -723,18 +723,12 @@ class Adapter
     /**
      * @return mixed
      */
-    public function getOverlayValues($widget)
+    public function getOverlayValues($key, $widget)
     {
       $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $widget, 0, 0);
       self::$bxClient->addRequest($bxRequest);
 
-      $values['bx_extend_title'] = $this->getResponse()->getExtraInfo('bx_extend_title', '', $widget);
-      $values['bx_extend_background'] = $this->getResponse()->getExtraInfo('bx_extend_background', '', $widget);
-      $values['bx_extend_text'] = $this->getResponse()->getExtraInfo('bx_extend_text', '', $widget);
-      $values['bx_extend_button'] = $this->getResponse()->getExtraInfo('bx_extend_button', '', $widget);
-
-      return $values;
-
+      return $this->getResponse()->getExtraInfo($key, '', $widget);
     }
 
     /**

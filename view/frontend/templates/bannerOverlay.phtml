@@ -60,7 +60,17 @@ if ($this->isActive() && $this->check()) {
         };
         <?php echo $jssorId ?>_slider_init();
 
+        $(document).ready(function() {
+            window.setTimeout(showOverlay, <?php echo $this->getOverlayTimeout(); ?>);
+        });
 
+        function showOverlay() {
+            $(".bxBannerOverlay").fadeIn("slow");
+        }
+
+        $('#bxBannerOverlayExitButton').on('click', function(){
+          $('.bxBannerOverlay').hide();
+        })
 
       }
     );
@@ -74,9 +84,9 @@ if ($this->isActive() && $this->check()) {
 
     </style>
 
-    <button type="button" id="bxBannerOverlayButton" class="bxBannerOverlay" style="display: none; top: -10px;z-index: 11;position: relative;right: -10px;line-height: 1.5;font-size: 12px!important;padding: 4px 8px;float: right;border-radius: 50%;box-shadow:none;background: #ffffff;">&#x2715;</button>
-
     <div id="<?php echo $jssorId ?>" class="bxBannerOverlay"  style="<?php echo $jssorStyle ?>">
+
+      <button type="button" id="bxBannerOverlayExitButton" class="bxBannerOverlay" style="display: none; top: -10px;z-index: 11;position: relative;right: -10px;line-height: 1.5;font-size: 12px!important;padding: 4px 8px;float: right;border-radius: 50%;box-shadow:none;background: #ffffff;">&#x2715;</button>
 
     <?php echo $jssorLoadingScreen ?>
 

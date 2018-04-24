@@ -49,33 +49,52 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     }
 
-    public function getOverlayValues(){
+    public function getOverlayValues($key){
 
-      return $this->p13nHelper->getOverlayValues($this->_data['widget']);
+      return $this->p13nHelper->getOverlayValues($key, $this->_data['widget']);
 
     }
 
     public function getOverlayTitle(){
 
-      return $this->getOverlayValues()['bx_extend_title'];
+      return $this->getOverlayValues('bx_extend_title');
 
     }
 
     public function getOverlayBackground(){
 
-      return $this->getOverlayValues()['bx_extend_background'];
+      return $this->getOverlayValues('bx_extend_background');
 
     }
 
     public function getOverlayText(){
 
-      return $this->getOverlayValues()['bx_extend_text'];
+      return $this->getOverlayValues('bx_extend_text');
 
     }
 
     public function getOverlayButton(){
 
-      return $this->getOverlayValues()['bx_extend_button'];
+      return $this->getOverlayValues('bx_extend_button');
+
+    }
+
+    public function getOverlayUrl(){
+
+      return $this->getOverlayValues('bx_extend_url');
+
+    }
+
+    public function getOverlayTimeout(){
+
+      //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
+      $timeout = $this->getOverlayValues('bx_extend_timeout');
+
+      if (!empty($timeout)) {
+        return ($timeout * 1000);
+      }else{
+        return 5000;
+      }
 
     }
 
