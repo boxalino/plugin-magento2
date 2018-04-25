@@ -90,11 +90,23 @@ class Overlay extends \Magento\Framework\View\Element\Template{
       //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
       $timeout = $this->getOverlayValues('bx_extend_timeout');
 
-      if (!empty($timeout)) {
+      if ($timeout) {
         return ($timeout * 1000);
       }else{
         return 5000;
       }
+
+    }
+
+    public function getOverlayPosition(){
+
+      return $this->getOverlayValues('bx_extend_position');
+
+    }
+
+    public function withLightboxEffect(){
+
+      return $this->getOverlayValues('bx_extend_lightbox');
 
     }
 

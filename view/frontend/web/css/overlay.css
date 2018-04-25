@@ -74,3 +74,230 @@
   left: 0;
   z-index: 5;
 }
+
+/* Styling for the left overlay */
+
+#bxOverlayExitButtonCentre{
+  display: none;
+  position: fixed;
+  z-index: 7;
+  left: 0;
+  right: -13%;
+  top: -15%;
+  bottom: 0;
+  margin: auto;
+  height: 4%;
+  width: 2%;
+  line-height: 1.5;
+  padding: 4px 8px;
+  float: right;
+  border-radius: 50%;
+  box-shadow: none;
+  background: rgb(255, 255, 255);
+  font-size: 12px !important;
+}
+#bxOverlayBackgroundImageCentre{
+  display: none;
+  width:15%;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top:0;
+  bottom: 0;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTitleImageCentre{
+  display: none;
+  width:10%;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top:0;
+  bottom: 15%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTextCentre{
+  display: none;
+  position: fixed;
+  right: 0;
+  left: 0;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  width: 15%;
+  height: 5%;
+  text-align:
+  center;
+  z-index: 6;
+}
+#bxOverlayButtonCentre{
+  display: none;
+  width:7%;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top:0;
+  bottom: -20%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayShadowCentre{
+  display: none;
+  position: fixed;
+  background: rgba(0,0,0,.4);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+}
+
+/* Styling for the left overlay */
+
+#bxOverlayExitButtonLeft{
+  display: none;
+  position: fixed;
+  z-index: 7;
+  left: 14%;
+  top: -30%;
+  bottom: 0;
+  margin: auto;
+  height: 4%;
+  width: 2%;
+  line-height: 1.5;
+  padding: 4px 8px;
+  float: right;
+  border-radius: 50%;
+  box-shadow: none;
+  background: rgb(255, 255, 255);
+  font-size: 12px !important;
+}
+#bxOverlayBackgroundImageLeft{
+  display: none;
+  width:15%;
+  position: fixed;
+  left: 0;
+  top:0;
+  bottom: 0;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTitleImageLeft{
+  display: none;
+  width:10%;
+  position: fixed;
+  left: 2%;
+  top:0;
+  bottom: 15%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTextLeft{
+  display: none;
+  position: fixed;
+  left: 0;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  width: 15%;
+  height: 5%;
+  text-align:
+  center;
+  z-index: 6;
+}
+#bxOverlayButtonLeft{
+  display: none;
+  width:7%;
+  position: fixed;
+  left: 4%;
+  top:0;
+  bottom: -20%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayShadowLeft{
+  display: none;
+  position: fixed;
+  background: rgba(0,0,0,.4);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+}
+
+/* Styling for the right overlay */
+
+#bxOverlayExitButtonRight{
+  display: none;
+  position: fixed;
+  z-index: 7;
+  right: 14%;
+  top: -30%;
+  bottom: 0;
+  margin: auto;
+  height: 4%;
+  width: 2%;
+  line-height: 1.5;
+  padding: 4px 8px;
+  float: right;
+  border-radius: 50%;
+  box-shadow: none;
+  background: rgb(255, 255, 255);
+  font-size: 12px !important;
+}
+#bxOverlayBackgroundImageRight{
+  display: none;
+  width:15%;
+  position: fixed;
+  right: 0;
+  top:0;
+  bottom: 0;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTitleImageRight{
+  display: none;
+  width:10%;
+  position: fixed;
+  right: 2%;
+  top:0;
+  bottom: 15%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayTextRight{
+  display: none;
+  position: fixed;
+  right: 0;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  width: 15%;
+  height: 5%;
+  text-align:
+  center;
+  z-index: 6;
+}
+#bxOverlayButtonRight{
+  display: none;
+  width:7%;
+  position: fixed;
+  right: 4%;
+  top:0;
+  bottom: -20%;
+  margin: auto;
+  z-index: 6;
+}
+#bxOverlayShadowRight{
+  display: none;
+  position: fixed;
+  background: rgba(0,0,0,.4);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+}

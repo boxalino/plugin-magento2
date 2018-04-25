@@ -12,9 +12,11 @@ require([
         $(".bxOverlay").fadeIn("slow");
     }
 
-    $('#bxOverlayExitButton').on('click', function(){
+    $('#bxOverlayExitButton<?php echo $this->getOverlayPosition(); ?>').on('click', function(){
       $('.bxOverlay').hide();
     })
+
+    document.addEventListener('mouseleave', showOverlay)
 
   }
 );
@@ -22,18 +24,22 @@ require([
 
 </script>
 
-<button class="bxOverlay" id="bxOverlayExitButton" type="button">&#x2715;</button>
+<button class="bxOverlay" id="bxOverlayExitButton<?php echo $this->getOverlayPosition(); ?>" type="button">&#x2715;</button>
 
 <a class="bxOverlay" id="bxOverlayUrl" href="<?php echo $this->getOverlayUrl(); ?>">
 
-  <img class="bxOverlay" id="bxOverlayBackgroundImage" src="<?php echo $this->getOverlayBackground(); ?>">
+  <img class="bxOverlay" id="bxOverlayBackgroundImage<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayBackground(); ?>">
 
-  <img class="bxOverlay" id="bxOverlayTitleImage" src="<?php echo $this->getOverlayTitle(); ?>">
+  <img class="bxOverlay" id="bxOverlayTitleImage<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayTitle(); ?>">
 
-  <div class="bxOverlay" id="bxOverlayText"><?php echo $this->getOverlayText(); ?></div>
+  <div class="bxOverlay" id="bxOverlayText<?php echo $this->getOverlayPosition(); ?>"><?php echo $this->getOverlayText(); ?></div>
 
-  <img class="bxOverlay" id="bxOverlayButton" src="<?php echo $this->getOverlayButton(); ?>">
+  <img class="bxOverlay" id="bxOverlayButton<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayButton(); ?>">
 
 </a>
 
-<div class="bxOverlay" id="bxOverlayShadow"></div>
+<?php if ($this->withLightboxEffect() == 'true') { ?>
+
+  <div class="bxOverlay" id="bxOverlayShadow<?php echo $this->getOverlayPosition(); ?>" style="display: none;position: fixed;background: rgba(0,0,0,.4);top: 0;right: 0;bottom: 0;left: 0;z-index: 5;"></div>
+
+<?php } ?>
