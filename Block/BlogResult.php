@@ -69,7 +69,7 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
 
             if ($blog['products_blog_excerpt']) {
               $excerpt = strip_tags($blog['products_blog_excerpt']);
-              $excerpt = str_replace('[&hellip;]', '', $excerpt);
+              $excerpt = str_replace('[&hellip;]', '...', $excerpt);
               $blog['products_blog_excerpt'] = $excerpt;
             }
             

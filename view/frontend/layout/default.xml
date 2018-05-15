@@ -3,6 +3,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Boxalino_Intelligence::css/autocomplete.css"/>
+        <css src="Boxalino_Intelligence::css/overlay.css"/>
     </head>
     <body>
         <referenceContainer name="after.body.start">
