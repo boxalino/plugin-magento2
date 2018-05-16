@@ -3,12 +3,12 @@
   position: fixed;
   z-index: 7;
   left: 0;
-  right: -13%;
-  top: -15%;
+  right: -200px;
+  top: -200px;
   bottom: 0;
   margin: auto;
   height: 4%;
-  width: 2%;
+  width: 40px;
   line-height: 1.5;
   padding: 4px 8px;
   float: right;
@@ -19,7 +19,7 @@
 }
 #bxOverlayBackgroundImage{
   display: none;
-  width:15%;
+  width:200px;
   position: fixed;
   left: 0;
   right: 0;
@@ -30,7 +30,7 @@
 }
 #bxOverlayTitleImage{
   display: none;
-  width:10%;
+  width: 180px;
   position: fixed;
   left: 0;
   right: 0;
@@ -47,15 +47,16 @@
   margin: auto;
   top: 0;
   bottom: 0;
-  width: 15%;
+  width: 190px;
   height: 5%;
   text-align:
   center;
   z-index: 6;
 }
 #bxOverlayButton{
+
   display: none;
-  width:7%;
+  width: 160px;
   position: fixed;
   left: 0;
   right: 0;
@@ -82,12 +83,12 @@
   position: fixed;
   z-index: 7;
   left: 0;
-  right: -13%;
-  top: -15%;
+  right: -200px;
+  top: -200px;
   bottom: 0;
   margin: auto;
   height: 4%;
-  width: 2%;
+  width: 40px;
   line-height: 1.5;
   padding: 4px 8px;
   float: right;
@@ -98,7 +99,7 @@
 }
 #bxOverlayBackgroundImageCentre{
   display: none;
-  width:15%;
+  width:200px;
   position: fixed;
   left: 0;
   right: 0;
@@ -109,12 +110,12 @@
 }
 #bxOverlayTitleImageCentre{
   display: none;
-  width:10%;
+  width: 180px;
   position: fixed;
   left: 0;
   right: 0;
   top:0;
-  bottom: 15%;
+  bottom: 120px;
   margin: auto;
   z-index: 6;
 }
@@ -126,7 +127,7 @@
   margin: auto;
   top: 0;
   bottom: 0;
-  width: 15%;
+  width: 190px;
   height: 5%;
   text-align:
   center;
@@ -134,12 +135,12 @@
 }
 #bxOverlayButtonCentre{
   display: none;
-  width:7%;
+  width: 160px;
   position: fixed;
   left: 0;
   right: 0;
   top:0;
-  bottom: -20%;
+  bottom: -15%;
   margin: auto;
   z-index: 6;
 }
@@ -160,12 +161,12 @@
   display: none;
   position: fixed;
   z-index: 7;
-  left: 14%;
-  top: -30%;
+  left: 180px;
+  top: -200px;
   bottom: 0;
   margin: auto;
-  height: 4%;
-  width: 2%;
+  height: 40px;
+  width: 40px;
   line-height: 1.5;
   padding: 4px 8px;
   float: right;
@@ -176,7 +177,7 @@
 }
 #bxOverlayBackgroundImageLeft{
   display: none;
-  width:15%;
+  width:200px;
   position: fixed;
   left: 0;
   top:0;
@@ -186,10 +187,10 @@
 }
 #bxOverlayTitleImageLeft{
   display: none;
-  width:10%;
+  width:180px;
   position: fixed;
-  left: 2%;
-  top:0;
+  left: 20px;
+  top: 20px;
   bottom: 15%;
   margin: auto;
   z-index: 6;
@@ -197,11 +198,11 @@
 #bxOverlayTextLeft{
   display: none;
   position: fixed;
-  left: 0;
+  left: 5px;
   margin: auto;
   top: 0;
   bottom: 0;
-  width: 15%;
+  width: 190px;
   height: 5%;
   text-align:
   center;
@@ -209,10 +210,10 @@
 }
 #bxOverlayButtonLeft{
   display: none;
-  width:7%;
+  width: 160px;
   position: fixed;
-  left: 4%;
-  top:0;
+  left: 20px;
+  top: -80px;
   bottom: -20%;
   margin: auto;
   z-index: 6;
@@ -234,12 +235,12 @@
   display: none;
   position: fixed;
   z-index: 7;
-  right: 14%;
-  top: -30%;
+  right: 180px;
+  top: -200px;
   bottom: 0;
   margin: auto;
-  height: 4%;
-  width: 2%;
+  height: 40px;
+  width: 40px;
   line-height: 1.5;
   padding: 4px 8px;
   float: right;
@@ -250,7 +251,7 @@
 }
 #bxOverlayBackgroundImageRight{
   display: none;
-  width:15%;
+  width:200px;
   position: fixed;
   right: 0;
   top:0;
@@ -260,10 +261,10 @@
 }
 #bxOverlayTitleImageRight{
   display: none;
-  width:10%;
+  width:180px;
   position: fixed;
-  right: 2%;
-  top:0;
+  right: 0;
+  top: 20px;
   bottom: 15%;
   margin: auto;
   z-index: 6;
@@ -275,18 +276,17 @@
   margin: auto;
   top: 0;
   bottom: 0;
-  width: 15%;
+  width: 190px;
   height: 5%;
-  text-align:
-  center;
+  text-align: center;
   z-index: 6;
 }
 #bxOverlayButtonRight{
   display: none;
-  width:7%;
+  width: 160px;
   position: fixed;
-  right: 4%;
-  top:0;
+  right: 20px;
+  top: -80px;
   bottom: -20%;
   margin: auto;
   z-index: 6;
