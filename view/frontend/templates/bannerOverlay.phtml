@@ -70,10 +70,11 @@ if ($this->isActive() && $this->check()) {
 
         $('#bxBannerOverlayExitButton').on('click', function(){
           $('.bxBannerOverlay').hide();
-        })
+        });
 
-      }
-    );
+        document.addEventListener('mouseleave', showOverlay);
+
+      });
 
 
     </script>
@@ -86,7 +87,7 @@ if ($this->isActive() && $this->check()) {
 
     <div id="<?php echo $jssorId ?>" class="bxBannerOverlay"  style="<?php echo $jssorStyle ?>">
 
-      <button type="button" id="bxBannerOverlayExitButton" class="bxBannerOverlay" style="height: 40px; width: 40px; display: none; top: -10px;z-index: 11;position: relative;right: -10px;line-height: 1.5;font-size: 12px!important;padding: 4px 8px;float: right;border-radius: 50%;box-shadow:none;background: #ffffff;"></button>
+      <button type="button" id="bxBannerOverlayExitButton" class="bxBannerOverlay">&#x2715;</button>
 
     <?php echo $jssorLoadingScreen ?>
 
@@ -115,6 +116,10 @@ if ($this->isActive() && $this->check()) {
 
       </div>
 
-      <div class="bxBannerOverlay" style="display: none; position: fixed;background: rgba(0,0,0,.4);top: 0;right: 0;bottom: 0;left: 0;z-index: 5;"></div>
+      <?php if ($this->withLightboxEffect() == 'true') { ?>
+
+        <div class="bxBannerOverlay" id="bxOverlayShadow"></div>
+
+      <?php } ?>
 
 <?php } ?>
