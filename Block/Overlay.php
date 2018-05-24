@@ -69,7 +69,12 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayText(){
 
-      return $this->getOverlayValues('bx_extend_text');
+      $overlayTextObject = $this->getOverlayValues('extend_localized_text');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayText = json_decode($overlayTextObject, true)[0][$this->getLanguage()];
+
+      return $overlayText;
 
     }
 
@@ -98,6 +103,19 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     }
 
+    public function getOverlayExitIntendTimeout(){
+
+      //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
+      $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
+
+      if ($timeout) {
+        return ($timeout * 1000);
+      }else{
+        return 5000;
+      }
+
+    }
+
     public function getOverlayPosition(){
 
       return $this->getOverlayValues('bx_extend_position');
@@ -107,6 +125,12 @@ class Overlay extends \Magento\Framework\View\Element\Template{
     public function withLightboxEffect(){
 
       return $this->getOverlayValues('bx_extend_lightbox');
+
+    }
+
+    public function getLanguage(){
+
+      return $this->bxHelperData->getLanguage();
 
     }
 

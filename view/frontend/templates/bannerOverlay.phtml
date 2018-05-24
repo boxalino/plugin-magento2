@@ -72,7 +72,11 @@ if ($this->isActive() && $this->check()) {
           $('.bxBannerOverlay').hide();
         });
 
-        document.addEventListener('mouseleave', showOverlay);
+        document.addEventListener('mouseleave', function(){
+
+          window.setTimeout(showOverlay, <?php echo $this->getOverlayExitIntendTimeout(); ?>);
+
+        });
 
       });
 
