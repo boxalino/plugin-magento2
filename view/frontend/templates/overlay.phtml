@@ -4,26 +4,71 @@ require([
 ], function ($) {
     'use strict';
 
+    // show overlay initially after set timeout
     $(document).ready(function() {
         window.setTimeout(showOverlay, <?php echo $this->getOverlayTimeout(); ?>);
     });
 
+    // overlay fades in
     function showOverlay() {
         $(".bxOverlay").fadeIn("slow");
     }
 
+    // hides the overlay when the exit button is clicked
     $('#bxOverlayExitButton<?php echo $this->getOverlayPosition(); ?>').on('click', function(){
       $('.bxOverlay').hide();
     })
 
+    var idleTime = 0;
+    var frequency = 0;
+    var mouseLocation = 'in';
+
+    // Increase the idle time counter every second.
+    setInterval(timerIncrement, 1000); // 1 second
+
+    // Start action when the mouse leaves the window
     document.addEventListener('mouseleave', function(){
 
-      window.setTimeout(showOverlay, <?php echo $this->getOverlayExitIntendTimeout(); ?>);
+      // set state of mouse to out
+      mouseLocation = 'out';
+
+      // Increase the frequency counter everytime the mouse leaves the window
+      frequencyIncrement();
+
+      //Zero the idle timer on mouse movement.
+      $(this).mousemove(function (e) {
+          idleTime = 0;
+      });
+      $(this).click(function (e) {
+          idleTime = 0;
+      });
 
     });
 
-  }
-);
+    // When Mouse enters window, reset the counter and set state of mouse on 'in'
+    document.addEventListener('mouseenter', function(){
+      idleTime = 0;
+      mouseLocation = 'in';
+    });
+
+    // Increase the timer and display the overlay after x seconds
+    function timerIncrement() {
+      console.log('idleTime', idleTime);
+      // check if the mouse is out of the window
+      if (mouseLocation === 'out') {
+      idleTime++;
+        // check if the idleTime is below the defined time
+        if (idleTime > <?php echo $this->getOverlayExitIntendTimeout(); ?>) { //idleTime before showOverlay
+          showOverlay();
+        }
+      }
+    }
+
+    // Increase the frequency counter when the mouse leaves the window
+    function frequencyIncrement(){
+      frequency++;
+    }
+});
 
 
 </script>

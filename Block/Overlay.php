@@ -108,10 +108,10 @@ class Overlay extends \Magento\Framework\View\Element\Template{
       //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
       $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
 
-      if ($timeout) {
-        return ($timeout * 1000);
+      if (!empty($timeout)) {
+        return $timeout;
       }else{
-        return 5000;
+        return 5;
       }
 
     }
@@ -119,6 +119,26 @@ class Overlay extends \Magento\Framework\View\Element\Template{
     public function getOverlayPosition(){
 
       return $this->getOverlayValues('bx_extend_position');
+
+    }
+
+    public function getOverlayFrequency(){
+
+      $frequency = $this->getOverlayValues('bx_extend_frequency');
+
+      if (!empty($frequency)) {
+        return $frequency;
+      }else{
+        return 0;
+      }
+
+    }
+
+    public function getOverlayEvent(){
+
+      return 'mouseleave';
+
+      return $this->getOverlayValues('bx_extend_event');
 
     }
 
