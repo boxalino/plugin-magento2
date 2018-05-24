@@ -29,11 +29,11 @@ require([
     // Start action when the mouse leaves the window
     document.addEventListener('mouseleave', function(){
 
+      // Increase the frequency counter when the mouse leaves the window
+      frequency++;
+
       // set state of mouse to out
       mouseLocation = 'out';
-
-      // Increase the frequency counter everytime the mouse leaves the window
-      frequencyIncrement();
 
       //Zero the idle timer on mouse movement.
       $(this).mousemove(function (e) {
@@ -53,20 +53,19 @@ require([
 
     // Increase the timer and display the overlay after x seconds
     function timerIncrement() {
-      console.log('idleTime', idleTime);
       // check if the mouse is out of the window
       if (mouseLocation === 'out') {
       idleTime++;
+
         // check if the idleTime is below the defined time
         if (idleTime > <?php echo $this->getOverlayExitIntendTimeout(); ?>) { //idleTime before showOverlay
-          showOverlay();
+
+          // check how many times the overlay can appear when the mous leaves the screen (0 means never)
+          if (<?php echo $this->getOverlayFrequency(); ?> !== 0 && frequency <= <?php echo $this->getOverlayFrequency(); ?>) {
+            showOverlay();
+          }
         }
       }
-    }
-
-    // Increase the frequency counter when the mouse leaves the window
-    function frequencyIncrement(){
-      frequency++;
     }
 });
 

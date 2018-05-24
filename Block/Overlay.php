@@ -105,7 +105,6 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayExitIntendTimeout(){
 
-      //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
       $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
 
       if (!empty($timeout)) {
@@ -135,8 +134,6 @@ class Overlay extends \Magento\Framework\View\Element\Template{
     }
 
     public function getOverlayEvent(){
-
-      return 'mouseleave';
 
       return $this->getOverlayValues('bx_extend_event');
 
