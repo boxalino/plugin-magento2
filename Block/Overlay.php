@@ -57,7 +57,12 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayTitle(){
 
-      return $this->getOverlayValues('bx_extend_title');
+      $overlayTitleObject = $this->getOverlayValues('extend_localized_title');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayTitle = json_decode($overlayTitleObject, true)[0][$this->getLanguage()];
+
+      return $overlayTitle;
 
     }
 
@@ -80,13 +85,23 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayButton(){
 
-      return $this->getOverlayValues('bx_extend_button');
+      $overlayButtonObject = $this->getOverlayValues('extend_localized_button');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayButton = json_decode($overlayButtonObject, true)[0][$this->getLanguage()];
+
+      return $overlayButton;
 
     }
 
     public function getOverlayUrl(){
 
-      return $this->getOverlayValues('bx_extend_url');
+      $overlayUrlObject = $this->getOverlayValues('extend_localized_url');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayUrl = json_decode($overlayUrlObject, true)[0][$this->getLanguage()];
+
+      return $overlayUrl;
 
     }
 
