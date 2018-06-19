@@ -157,6 +157,10 @@ class Adapter
             if($curl_timeout != '') {
                 self::$bxClient->setCurlTimeout($curl_timeout);
             }
+
+            if($this->request->getControllerName() == 'page') {
+                self::$bxClient->addToRequestMap('bx_cms_id', \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Cms\Model\Page')->getIdentifier());
+            }
         }
     }
 
@@ -404,7 +408,7 @@ class Adapter
          }
 
          self::$bxClient->addRequest($bxRequest);
-         if($this->bxHelperData->isBlogEnabled() && is_null($categoryId)) {
+         if($this->bxHelperData->isBlogEnabled() && (is_null($categoryId) || !$this->navigation)) {
              $this->addBlogResult($queryText, $hitCount);
          }
      }
@@ -505,6 +509,25 @@ class Adapter
         $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
         $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
+    }
+
+    protected function addNarrativeRequest($choice_id = 'narrative') {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($this->getLanguage(), $choice_id, 20);
+        $facets = $this->prepareFacets();
+        $bxRequest->setFacets($facets);
+        self::$bxClient->addRequest($bxRequest);
+        $requestParams = $this->request->getParams();
+        foreach ($requestParams as $key => $value) {
+            self::$bxClient->addRequestContextParameter($key, $value);
+        }
+    }
+
+    public function getNarratives($choice_id = 'narrative') {
+        if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
+            $this->addNarrativeRequest($choice_id);
+        }
+        $narrative = $this->getResponse()->getNarratives($choice_id);
+        return $narrative;
     }
 
     /**
@@ -703,21 +726,21 @@ class Adapter
     /**
      * @return mixed
      */
-    public function getTotalHitCount()
-    {
+    public function getTotalHitCount(){
 
         $this->simpleSearch();
         return $this->getClientResponse()->getTotalHitCount($this->currentSearchChoice);
     }
 
     /**
+     * @param null $choiceId
      * @return mixed
      */
-    public function getEntitiesIds()
-    {
+    public function getEntitiesIds($choiceId = null){
 
         $this->simpleSearch();
-        return $this->getClientResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+        $choiceId = is_null($choiceId) ? $this->currentSearchChoice : $choiceId;
+        return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
 
     /**
@@ -912,14 +935,43 @@ class Adapter
 
     public function getResponse()
     {
-
-       $this->simpleSearch();
+        $this->simpleSearch();
         $response = $this->getClientResponse();
-            
-        if (empty($response)) {
-            return "nothing";
-        }
-
         return $response;
+    }
+
+    public function getSEOPageTitle(){
+        if ($this->bxHelperData->isPluginEnabled()) {
+            $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title');
+            return $seoPageTitle;
+        }
+        return;
+    }
+
+    public function getSEOMetaTitle(){
+        if ($this->bxHelperData->isPluginEnabled()) {
+            $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title');
+            return $seoMetaTitle;
+        }
+        return;
+    }
+
+    public function getSEOMetaDescription(){
+        if ($this->bxHelperData->isPluginEnabled()) {
+            $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description');
+            return $seoMetaDescription;
+        }
+        return;
+    }
+
+    public function getExtraInfoWithKey($key){
+        if ($this->bxHelperData->isPluginEnabled() && !empty($key)) {
+            $query = $this->queryFactory->get();
+            $queryText = $query->getQueryText();
+            $choice = $this->getSearchChoice($queryText);
+            $extraInfo = $this->getResponse()->getExtraInfo($key, '', $choice);
+            return $extraInfo;
+        }
+        return;
     }
 }
