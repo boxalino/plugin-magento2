@@ -1,0 +1,114 @@
+<?php $config = $this->getData('bx_config');
+?>
+
+<?php
+if(isset($config['search_message_display_type'])) : ?>
+
+<style>
+    <?php echo isset($config['search_message_general_css']) ? $config['search_message_general_css'] : ''; ?>
+</style>
+<?php
+    switch ($config['search_message_display_type']) {
+        case 'main-image': ?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <span>
+                    <strong class="bx-search-message-title"  style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                        <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                    </strong>
+                </span>
+                <span class="bx-search-message-main-image" style="<?php echo isset($config['search_message_main_imageStyle']) ? $config['search_message_main_imageStyle'] : ''; ?>">
+                    <img src="<?php echo isset($config['search_message_main_image']) ? $config['search_message_main_image'] : ''; ?>" alt="" style ="width: 100%;"/>
+                </span>
+            </div>
+            <?php break;
+
+        case 'main-image-link': ?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <a href="<?php echo isset($config['search_message_link']) ? $config['search_message_link'] : ''; ?>" class="bx-search-message-link" style="<?php echo isset($config['search_message_link_style']) ? $config['search_message_link_style'] : ''; ?>">
+                    <span>
+                        <strong class="bx-search-message-title"  style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                            <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                        </strong>
+                    </span>
+                    <span class="bx-search-message-main-image" style="<?php echo isset($config['search_message_main_imageStyle']) ? $config['search_message_main_imageStyle'] : ''; ?>">
+                    <img src="<?php echo isset($config['search_message_main_image']) ? $config['search_message_main_image'] : ''; ?>" alt="" style ="width: 100%;"/>
+                </span>
+                </a>
+            </div>
+            <?php break;
+
+        case 'side-image':?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <div class="bx-search-message-container-left" style="width:60%;float:left;">
+                    <p class="bx-search-message-title" style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                        <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                    </p>
+                    <p class="info bx-search-message-description" style="<?php echo isset($config['search_message_description_style']) ? $config['search_message_description_style'] : ''; ?>">
+                        <?php echo isset($config['search_message_description']) ? $config['search_message_description'] : ''; ?>
+                    </p>
+                </div>
+                <div class="bx-search-message-container-right" style="width:40%; float:right;">
+                    <div class="bx-search-message-side-image">
+                        <img src="<?php echo isset($config['search_message_side_image']) ? $config['search_message_side_image'] : ''; ?>" style="<?php echo isset($config['search_message_side_imageStyle']) ? $config['search_message_side_imageStyle'] : ''; ?>"/>
+                    </div>
+                </div>
+            </div>
+            <?php break;
+
+        case 'side-image-link': ?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <div class="bx-search-message-container-left" style="width:60%;float:left;">
+                    <p class="bx-search-message-title" style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                        <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                    </p>
+                    <a href="<?php echo isset($config['search_message_link']) ? $config['search_message_link'] : ''; ?>" class="bx-search-message-link" style="<?php echo isset($config['search_message_link_style']) ? $config['search_message_link_style'] : ''; ?>">
+                        <p class="info bx-search-message-description" style="<?php echo isset($config['search_message_description_style']) ? $config['search_message_description_style'] : ''; ?>">
+                            <?php echo isset($config['search_message_description']) ? $config['search_message_description'] : ''; ?>
+                        </p>
+                    </a>
+                </div>
+                <div class="bx-search-message-container-right" style="width:40%; float:right;">
+                    <div class="bx-search-message-side-image">
+                        <div class="bx-search-message-side-image">
+                            <img src="<?php echo isset($config['search_message_side_image']) ? $config['search_message_side_image'] : ''; ?>" style="<?php echo isset($config['search_message_side_imageStyle']) ? $config['search_message_side_imageStyle'] : ''; ?>"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <?php break;
+
+        case 'no-image': ?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <p class="bx-search-message-title" style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                    <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                </p>
+                <p class="info bx-search-message-description" style="<?php echo isset($config['search_message_description_style']) ? $config['search_message_description_style'] : ''; ?>">
+                    <?php echo isset($config['search_message_description']) ? $config['search_message_description'] : ''; ?>
+                </p>
+            </div>
+            <?php break;
+
+        case 'no-image-link': ?>
+            <div class="bx-search-message" style="<?php echo isset($config['search_message_container_style']) ? $config['search_message_container_style'] : ''; ?>">
+                <p class="bx-search-message-title" style="<?php echo isset($config['search_message_title_style']) ? $config['search_message_title_style'] : ''; ?>">
+                    <?php echo isset($config['search_message_title']) ? $config['search_message_title'] : '';?>
+                </p>
+                <a href="<?php echo isset($config['search_message_link']) ? $config['search_message_link'] : ''; ?>" class="bx-search-message-link" style="<?php echo isset($config['search_message_link_style']) ? $config['search_message_link_style'] : ''; ?>">
+                    <p class="info bx-search-message-description" style="<?php echo isset($config['search_message_description_style']) ? $config['search_message_description_style'] : ''; ?>">
+                        <?php echo isset($config['search_message_description']) ? $config['search_message_description'] : ''; ?>
+                    </p>
+                </a>
+            </div>
+            <?php break;
+        default:
+            break;
+    }
+endif;
+?>
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering):
+    echo $this->renderVisualElement($subRendering['visualElement']); ?>
+<?php endforeach ?>

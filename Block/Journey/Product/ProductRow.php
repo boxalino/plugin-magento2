@@ -26,8 +26,10 @@ class ProductRow extends \Magento\Framework\View\Element\Template implements CPO
     protected $p13nHelper;
 
     /**
-     * Text constructor.
+     * ProductRow constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Boxalino\Intelligence\Block\BxJourney $journey
+     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
      * @param array $data
      */
     public function __construct(

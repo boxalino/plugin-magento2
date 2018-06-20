@@ -29,7 +29,7 @@ class BxClient
 	const VISITOR_COOKIE_TIME = 31536000;
 
 	private $_timeout = 2;
-	private $curl_timeout = 1000;
+	private $curl_timeout = 2000;
 	private $requestContextParameters = array();
 
 	private $sessionId = null;
@@ -387,7 +387,19 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-                $this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+                $debug = true;
+                if (isset($this->requestMap['dev_bx_choice'])) {
+                    $debug = false;
+                    foreach ($choiceRequest->inquiries as $inquiry) {
+                        if ($inquiry->choiceId == $this->requestMap['dev_bx_choice']) {
+                            $debug = true;
+                            break;
+                        }
+                    }
+                }
+                if ($debug) {
+                    $this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+                }
             }
             if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true') {
                 $this->addNotification('bxRequest', $choiceRequest);

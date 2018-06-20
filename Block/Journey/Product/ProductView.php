@@ -33,7 +33,17 @@ class ProductView extends ListProduct implements CPOJourney{
     protected $p13nHelper;
 
     /**
-     * View constructor.
+     * @var \Boxalino\Intelligence\Helper\ResourceManager
+     */
+    protected $bxResourceManager;
+
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
+    protected $objectManager;
+
+    /**
+     * ProductView constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
@@ -41,6 +51,8 @@ class ProductView extends ListProduct implements CPOJourney{
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
      * @param \Boxalino\Intelligence\Block\BxJourney $journey
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param array $data
      */
     public function __construct(
@@ -51,6 +63,8 @@ class ProductView extends ListProduct implements CPOJourney{
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Block\BxJourney $journey,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []
     )
     {
@@ -58,6 +72,8 @@ class ProductView extends ListProduct implements CPOJourney{
         $this->p13nHelper = $p13nHelper;
         $this->bxJourney = $journey;
         $this->_logger = $context->getLogger();
+        $this->bxResourceManager = $bxResourceManager;
+        $this->objectManager = $objectManager;
     }
 
     public function getSubRenderings()
@@ -76,8 +92,7 @@ class ProductView extends ListProduct implements CPOJourney{
     }
 
     protected function loadProduct($product_id) {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $product = $objectManager->create('Magento\Catalog\Model\Product')->load($product_id);
+        $product = $this->objectManager->create('Magento\Catalog\Model\Product')->load($product_id);
         return $product;
     }
 
@@ -85,27 +100,53 @@ class ProductView extends ListProduct implements CPOJourney{
         return $this->getData('bx_index');
     }
 
-    protected function getProductIdForElement() {
+    protected function bxGetProduct() {
         $visualElement = $this->getData('bxVisualElement');
-
-        $choice_id = null;
-        foreach ($visualElement['widgets'] as $widget) {
-            $choice_id = $widget['widget'];
-            break;
+        $product = false;
+        $variant_index = 0;
+        $index = $this->getElementIndex();
+        foreach ($visualElement['parameters'] as $parameter) {
+            if($parameter['name'] == 'variant') {
+                $variant_index = reset($parameter['values']);
+            } else if($parameter['name'] == 'index') {
+                $index = reset($parameter['values']);
+            }
         }
-        $ids = $this->p13nHelper->getEntitiesIds($choice_id);
-        $index = isset($config['index']) ? $config['index'] : $this->getElementIndex();
-        return isset($ids[$index]) ? $ids[$index] : null;
+
+        $ids = $this->p13nHelper->getEntitiesIds(null, $variant_index);
+        $entity_id = isset($ids[$index]) ? $ids[$index] : null;
+        if($entity_id) {
+            $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
+            if(!is_null($collection)) {
+                foreach ($collection as $product) {
+                    if($product->getId() == $entity_id){
+                        return $product;
+                    }
+                }
+            }
+
+            $product = $this->bxResourceManager->getResource($entity_id, 'product');
+            if(is_null($product)) {
+                $product = $this->loadProduct($entity_id);
+                $this->bxResourceManager->setResource($product, $entity_id, 'product');
+            }
+        }
+        return $product;
     }
 
     public function bxProduct() {
-        if(is_null($this->_product) && $product_id = $this->getProductIdForElement()) {
-            $this->_product = $this->loadProduct($product_id);
+        if(is_null($this->_product)) {
+            $this->_product = $this->bxGetProduct();
         }
         return $this->_product;
     }
 
     public function getLocalizedValue($values) {
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
+    }
+
+    protected function _beforeToHtml()
+    {
+        return $this;
     }
 }

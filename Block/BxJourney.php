@@ -150,27 +150,58 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
         return false;
     }
 
+    protected function getAssetUrl($asset){
+        return $this->_assetRepo->createAsset($asset)->getUrl();
+    }
+
+    protected function getDependencyElement($url, $type) {
+        $element = '';
+        if($type == 'css'){
+            $element = "<link href=\"{$url}\" type=\"text/css\" rel=\"stylesheet\" />";
+        } else if($type == 'js') {
+            $element = "<script src=\"{$url}\" type=\"text/javascript\"></script>";
+        }
+        return $element;
+    }
+
+    public function renderDependencies() {
+        $html = '';
+        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'));
+        if(isset($dependencies['js'])) {
+            foreach ($dependencies['js'] as $js) {
+                $url = $js;
+                if(strpos($url, '::') !== false) {
+                    $url = $this->getAssetUrl($url);
+                }
+                $html .= $this->getDependencyElement($url, 'js');
+            }
+        }
+        if(isset($dependencies['css'])) {
+            foreach ($dependencies['css'] as $css) {
+                $url = $css;
+                if(strpos($url, '::') !== false) {
+                    $url = $this->getAssetUrl($url);
+                }
+                $html .= $this->getDependencyElement($url, 'css');
+            }
+        }
+        return $html;
+    }
+
     public function renderElements() {
 
         $html = '';
         $position = $this->getData('position');
-        $narratives = $this->p13nHelper->getNarratives();
-        if(is_array($narratives)) {
-            foreach ($narratives['acts'] as $i => $act) {
-                foreach ($act['chapter']['renderings'] as $rendering) {
-                    foreach ($rendering['rendering']['visualElements'] as $visualElement) {
-                        if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
-                            try {
-
-                                $block = $this->createVisualElement($visualElement['visualElement']);
-                                if ($block) {
-                                    $html .= $block->toHtml();
-                                }
-                            } catch (\Exception $e) {
-                                $this->_logger->critical($e);
-                            }
-                        }
+        $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'));
+        foreach ($narratives as $visualElement) {
+            if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
+                try {
+                    $block = $this->createVisualElement($visualElement['visualElement']);
+                    if ($block) {
+                        $html .= $block->toHtml();
                     }
+                } catch (\Exception $e) {
+                    $this->_logger->critical($e);
                 }
             }
         }

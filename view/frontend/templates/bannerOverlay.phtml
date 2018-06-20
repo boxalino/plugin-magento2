@@ -70,10 +70,58 @@ if ($this->isActive() && $this->check()) {
 
         $('#bxBannerOverlayExitButton').on('click', function(){
           $('.bxBannerOverlay').hide();
-        })
+        });
 
-      }
-    );
+        var idleTime = 0;
+        var frequency = 0;
+        var mouseLocation = 'in';
+
+        // Increase the idle time counter every second.
+        setInterval(timerIncrement, 1000); // 1 second
+
+        // Start action when the mouse leaves the window
+        document.addEventListener('mouseleave', function(){
+
+          // Increase the frequency counter when the mouse leaves the window
+          frequency++;
+
+          // set state of mouse to out
+          mouseLocation = 'out';
+
+          //Zero the idle timer on mouse movement.
+          $(this).mousemove(function (e) {
+              idleTime = 0;
+          });
+          $(this).click(function (e) {
+              idleTime = 0;
+          });
+
+        });
+
+        // When Mouse enters window, reset the counter and set state of mouse on 'in'
+        document.addEventListener('mouseenter', function(){
+          idleTime = 0;
+          mouseLocation = 'in';
+        });
+
+        // Increase the timer and display the overlay after x seconds
+        function timerIncrement() {
+          // check if the mouse is out of the window
+          if (mouseLocation === 'out') {
+          idleTime++;
+
+            // check if the idleTime is below the defined time
+            if (idleTime > <?php echo $this->getOverlayExitIntendTimeout(); ?>) { //idleTime before showOverlay
+
+              // check how many times the overlay can appear when the mous leaves the screen (0 means never)
+              if (<?php echo $this->getOverlayFrequency(); ?> !== 0 && frequency <= <?php echo $this->getOverlayFrequency(); ?>) {
+                showOverlay();
+              }
+            }
+          }
+        }
+
+      });
 
 
     </script>
@@ -86,7 +134,7 @@ if ($this->isActive() && $this->check()) {
 
     <div id="<?php echo $jssorId ?>" class="bxBannerOverlay"  style="<?php echo $jssorStyle ?>">
 
-      <button type="button" id="bxBannerOverlayExitButton" class="bxBannerOverlay" style="display: none; top: -10px;z-index: 11;position: relative;right: -10px;line-height: 1.5;font-size: 12px!important;padding: 4px 8px;float: right;border-radius: 50%;box-shadow:none;background: #ffffff;">&#x2715;</button>
+      <button type="button" id="bxBannerOverlayExitButton" class="bxBannerOverlay">&#x2715;</button>
 
     <?php echo $jssorLoadingScreen ?>
 
@@ -115,6 +163,10 @@ if ($this->isActive() && $this->check()) {
 
       </div>
 
-      <div class="bxBannerOverlay" style="display: none; position: fixed;background: rgba(0,0,0,.4);top: 0;right: 0;bottom: 0;left: 0;z-index: 5;"></div>
+      <?php if ($this->withLightboxEffect() == 'true') { ?>
+
+        <div class="bxBannerOverlay" id="bxOverlayShadow"></div>
+
+      <?php } ?>
 
 <?php } ?>

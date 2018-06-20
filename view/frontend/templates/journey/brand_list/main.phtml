@@ -1,0 +1,22 @@
+<?php
+$brands = $this->getData('brands');
+if(!is_null($brands)): ?>
+    <div>
+    <?php foreach ($brands as $brand): ?>
+        <a href="<?php echo $this->getLocalizedValue($brand['link'])?>">
+            <div>
+                <span><?php echo $this->getLocalizedValue($brand['name'])?></span>
+                <img src="<?php echo $this->getLocalizedValue($brand['image'])?>"/>
+            </div>
+        </a>
+    <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering) {
+    echo $this->renderVisualElement($subRendering['visualElement']);
+}
+?>

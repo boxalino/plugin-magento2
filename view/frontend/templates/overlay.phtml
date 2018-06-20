@@ -4,36 +4,90 @@ require([
 ], function ($) {
     'use strict';
 
+    // show overlay initially after set timeout
     $(document).ready(function() {
         window.setTimeout(showOverlay, <?php echo $this->getOverlayTimeout(); ?>);
     });
 
+    // overlay fades in
     function showOverlay() {
         $(".bxOverlay").fadeIn("slow");
     }
 
-    $('#bxOverlayExitButton').on('click', function(){
+    // hides the overlay when the exit button is clicked
+    $('#bxOverlayExitButton<?php echo $this->getOverlayPosition(); ?>').on('click', function(){
       $('.bxOverlay').hide();
     })
 
-  }
-);
+    var idleTime = 0;
+    var frequency = 0;
+    var mouseLocation = 'in';
+
+    // Increase the idle time counter every second.
+    setInterval(timerIncrement, 1000); // 1 second
+
+    // Start action when the mouse leaves the window
+    document.addEventListener('mouseleave', function(){
+
+      // Increase the frequency counter when the mouse leaves the window
+      frequency++;
+
+      // set state of mouse to out
+      mouseLocation = 'out';
+
+      //Zero the idle timer on mouse movement.
+      $(this).mousemove(function (e) {
+          idleTime = 0;
+      });
+      $(this).click(function (e) {
+          idleTime = 0;
+      });
+
+    });
+
+    // When Mouse enters window, reset the counter and set state of mouse on 'in'
+    document.addEventListener('mouseenter', function(){
+      idleTime = 0;
+      mouseLocation = 'in';
+    });
+
+    // Increase the timer and display the overlay after x seconds
+    function timerIncrement() {
+      // check if the mouse is out of the window
+      if (mouseLocation === 'out') {
+      idleTime++;
+
+        // check if the idleTime is below the defined time
+        if (idleTime > <?php echo $this->getOverlayExitIntendTimeout(); ?>) { //idleTime before showOverlay
+
+          // check how many times the overlay can appear when the mous leaves the screen (0 means never)
+          if (<?php echo $this->getOverlayFrequency(); ?> !== 0 && frequency <= <?php echo $this->getOverlayFrequency(); ?>) {
+            showOverlay();
+          }
+        }
+      }
+    }
+});
 
 
 </script>
 
-<button class="bxOverlay" id="bxOverlayExitButton" type="button">&#x2715;</button>
+<button class="bxOverlay" id="bxOverlayExitButton<?php echo $this->getOverlayPosition(); ?>" type="button">&#x2715;</button>
 
 <a class="bxOverlay" id="bxOverlayUrl" href="<?php echo $this->getOverlayUrl(); ?>">
 
-  <img class="bxOverlay" id="bxOverlayBackgroundImage" src="<?php echo $this->getOverlayBackground(); ?>">
+  <img class="bxOverlay" id="bxOverlayBackgroundImage<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayBackground(); ?>">
 
-  <img class="bxOverlay" id="bxOverlayTitleImage" src="<?php echo $this->getOverlayTitle(); ?>">
+  <img class="bxOverlay" id="bxOverlayTitleImage<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayTitle(); ?>">
 
-  <div class="bxOverlay" id="bxOverlayText"><?php echo $this->getOverlayText(); ?></div>
+  <div class="bxOverlay" id="bxOverlayText<?php echo $this->getOverlayPosition(); ?>"><?php echo $this->getOverlayText(); ?></div>
 
-  <img class="bxOverlay" id="bxOverlayButton" src="<?php echo $this->getOverlayButton(); ?>">
+  <img class="bxOverlay" id="bxOverlayButton<?php echo $this->getOverlayPosition(); ?>" src="<?php echo $this->getOverlayButton(); ?>">
 
 </a>
 
-<div class="bxOverlay" id="bxOverlayShadow"></div>
+<?php if ($this->withLightboxEffect() == 'true') { ?>
+
+  <div class="bxOverlay" id="bxOverlayShadow"></div>
+
+<?php } ?>

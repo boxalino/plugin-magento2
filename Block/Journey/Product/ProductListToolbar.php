@@ -3,12 +3,13 @@
 namespace Boxalino\Intelligence\Block\Journey\Product;
 
 use \Boxalino\Intelligence\Block\Journey\CPOJourney as CPOJourney;
+use Magento\Catalog\Model\Product\ProductList\Toolbar as ToolbarModel;
 
 /**
- * Class ProductList
+ * Class ProductListToolbar
  * @package Boxalino\Intelligence\Block\Journey\Product
  */
-class ProductList extends \Magento\Framework\View\Element\Template implements CPOJourney{
+class ProductListToolbar extends \Magento\Catalog\Block\Product\ProductList\Toolbar implements CPOJourney{
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -41,8 +42,14 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
     protected $objectManager;
 
     /**
-     * ProductList constructor.
+     * ProductListToolbar constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Magento\Catalog\Model\Session $catalogSession
+     * @param \Magento\Catalog\Model\Config $catalogConfig
+     * @param ToolbarModel $toolbarModel
+     * @param \Magento\Framework\Url\EncoderInterface $urlEncoder
+     * @param \Magento\Catalog\Helper\Product\ProductList $productListHelper
+     * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
      * @param \Boxalino\Intelligence\Block\BxJourney $journey
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
@@ -52,15 +59,20 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
+        \Magento\Catalog\Model\Session $catalogSession,
+        \Magento\Catalog\Model\Config $catalogConfig,
+        ToolbarModel $toolbarModel,
+        \Magento\Framework\Url\EncoderInterface $urlEncoder,
+        \Magento\Catalog\Helper\Product\ProductList $productListHelper,
+        \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
         \Boxalino\Intelligence\Block\BxJourney $journey,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        array $data = []
-    )
+        array $data = [])
     {
-        parent::__construct($context, $data);
+        parent::__construct($context, $catalogSession, $catalogConfig, $toolbarModel, $urlEncoder, $productListHelper, $postDataHelper, $data);
         $this->_logger = $context->getLogger();
         $this->bxJourney = $journey;
         $this->p13nHelper = $p13nHelper;
@@ -81,9 +93,10 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         }
         $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
         if(is_null($collection)) {
-           $collection = $this->createCollection($variant_index);
-           $this->bxResourceManager->setResource($collection, $variant_index, 'collection');
+            $collection = $this->createCollection($variant_index);
+            $this->bxResourceManager->setResource($collection, $variant_index, 'collection');
         }
+        $this->setCollection($collection);
     }
 
     protected function createCollection($variant_index) {
@@ -104,8 +117,7 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         return $collection;
     }
 
-    public function getSubRenderings()
-    {
+    public function getSubRenderings(){
         $elements = array();
         $element = $this->getData('bxVisualElement');
         if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
@@ -114,24 +126,11 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         return $elements;
     }
 
-    public function renderVisualElement($element, $additional_parameter = null)
-    {
+    public function renderVisualElement($element, $additional_parameter = null){
         return $this->bxJourney->createVisualElement($element, $additional_parameter)->toHtml();
     }
 
     public function getLocalizedValue($values) {
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
-    }
-
-    public function checkVisualElementParam($visualElement, $key, $value) {
-        $parameters = $visualElement['parameters'];
-        foreach ($parameters as $parameter) {
-            if($parameter['name'] == $key){
-                if(in_array($value, $parameter['values'])) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

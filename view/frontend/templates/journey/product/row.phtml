@@ -1,0 +1,6 @@
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering):
+    echo $this->renderVisualElement($subRendering['visualElement']); ?>
+<?php endforeach ?>

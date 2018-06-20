@@ -359,4 +359,70 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     }
 
+    public function getOverlayValues($key){
+
+      return $this->p13nHelper->getOverlayValues($key, $this->_data['widget']);
+
+    }
+
+    public function getOverlayTimeout(){
+
+      //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
+      $timeout = $this->getOverlayValues('bx_extend_timeout');
+
+      if ($timeout) {
+        return ($timeout * 1000);
+      }else{
+        return 5000;
+      }
+
+    }
+
+    public function getOverlayExitIntendTimeout(){
+
+      $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
+
+      if (!empty($timeout)) {
+        return $timeout;
+      }else{
+        return 5;
+      }
+
+    }
+
+    public function getOverlayFrequency(){
+
+      $frequency = $this->getOverlayValues('bx_extend_frequency');
+
+      if (!empty($frequency)) {
+        return $frequency;
+      }else{
+        return 0;
+      }
+
+    }
+
+    public function getOverlayPosition(){
+
+      $position = $this->getOverlayValues('bx_extend_position');
+
+      if ($position) {
+        return $position;
+      }
+
+      return 'Centre';
+
+    }
+
+    public function withLightboxEffect(){
+
+      $withLightbox = $this->getOverlayValues('bx_extend_lightbox');
+
+      if (!empty($withLightbox)) {
+      }
+
+      return true;
+
+    }
+
 }

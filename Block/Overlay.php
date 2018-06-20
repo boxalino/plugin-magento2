@@ -57,7 +57,12 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayTitle(){
 
-      return $this->getOverlayValues('bx_extend_title');
+      $overlayTitleObject = $this->getOverlayValues('extend_localized_title');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayTitle = json_decode($overlayTitleObject, true)[0][$this->getLanguage()];
+
+      return $overlayTitle;
 
     }
 
@@ -69,19 +74,34 @@ class Overlay extends \Magento\Framework\View\Element\Template{
 
     public function getOverlayText(){
 
-      return $this->getOverlayValues('bx_extend_text');
+      $overlayTextObject = $this->getOverlayValues('extend_localized_text');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayText = json_decode($overlayTextObject, true)[0][$this->getLanguage()];
+
+      return $overlayText;
 
     }
 
     public function getOverlayButton(){
 
-      return $this->getOverlayValues('bx_extend_button');
+      $overlayButtonObject = $this->getOverlayValues('extend_localized_button');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayButton = json_decode($overlayButtonObject, true)[0][$this->getLanguage()];
+
+      return $overlayButton;
 
     }
 
     public function getOverlayUrl(){
 
-      return $this->getOverlayValues('bx_extend_url');
+      $overlayUrlObject = $this->getOverlayValues('extend_localized_url');
+
+      // decodes the object, converts it to an array and then uses the language as the key
+      $overlayUrl = json_decode($overlayUrlObject, true)[0][$this->getLanguage()];
+
+      return $overlayUrl;
 
     }
 
@@ -90,11 +110,59 @@ class Overlay extends \Magento\Framework\View\Element\Template{
       //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
       $timeout = $this->getOverlayValues('bx_extend_timeout');
 
-      if (!empty($timeout)) {
+      if ($timeout) {
         return ($timeout * 1000);
       }else{
         return 5000;
       }
+
+    }
+
+    public function getOverlayExitIntendTimeout(){
+
+      $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
+
+      if (!empty($timeout)) {
+        return $timeout;
+      }else{
+        return 5;
+      }
+
+    }
+
+    public function getOverlayPosition(){
+
+      return $this->getOverlayValues('bx_extend_position');
+
+    }
+
+    public function getOverlayFrequency(){
+
+      $frequency = $this->getOverlayValues('bx_extend_frequency');
+
+      if (!empty($frequency)) {
+        return $frequency;
+      }else{
+        return 0;
+      }
+
+    }
+
+    public function getOverlayEvent(){
+
+      return $this->getOverlayValues('bx_extend_event');
+
+    }
+
+    public function withLightboxEffect(){
+
+      return $this->getOverlayValues('bx_extend_lightbox');
+
+    }
+
+    public function getLanguage(){
+
+      return $this->bxHelperData->getLanguage();
 
     }
 

@@ -1,0 +1,15 @@
+<?php
+$subRenderings = $this->getSubRenderings();
+$index = 0;
+$viewMode = $this->getData('list_grid');
+?>
+<div class="products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?> products-<?php /* @escapeNotVerified */ echo $viewMode; ?>">
+    <ol class="products list items product-items">
+        <?php foreach ($subRenderings as  $subRendering): ?>
+            <?php
+            $additional_parameter = $this->checkVisualElementParam($subRendering['visualElement'], 'format', 'product') ? ['bx_index' => $index++] : null;
+            echo $this->renderVisualElement($subRendering['visualElement'], $additional_parameter);
+            ?>
+        <?php endforeach ?>
+    </ol>
+</div>
