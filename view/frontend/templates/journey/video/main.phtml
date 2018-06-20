@@ -1,0 +1,14 @@
+<?php
+$video_url = $this->getData('video_url');
+if(!is_null($video_url)): ?>
+    <iframe width="420" height="315" src="<?php echo $this->getLocalizedValue($video_url)?>">
+    </iframe>
+<?php endif; ?>
+
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering) {
+    echo $this->renderVisualElement($subRendering['visualElement']);
+}
+?>

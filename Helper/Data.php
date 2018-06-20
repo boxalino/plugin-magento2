@@ -367,16 +367,18 @@ class Data{
         if(!isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
-
-        $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
-        $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
-        $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
-        $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
-        $index =  array_search($widgetName, $widgetNames);
         $widgetConfig = array();
-        if($index !== false){
-            $widgetConfig = array('widget' => $widgetNames[$index], 'scenario' => $widgetScenarios[$index],
-                'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
+        if(isset($this->bxConfig['bxRecommendations']['others'])) {
+            $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
+            $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
+            $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
+            $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
+            $index =  array_search($widgetName, $widgetNames);
+
+            if($index !== false){
+                $widgetConfig = array('widget' => $widgetNames[$index], 'scenario' => $widgetScenarios[$index],
+                    'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
+            }
         }
         return $widgetConfig;
     }

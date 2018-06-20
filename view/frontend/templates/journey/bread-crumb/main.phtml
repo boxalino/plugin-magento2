@@ -1,0 +1,20 @@
+<?php $bread_crumbs = $this->getData('bread-crumbs');
+$size = sizeof($bread_crumbs);
+if($size): ?>
+    <div class="breadcrumbs">
+        <ul class="items">
+    <?php $count = 1; foreach ($bread_crumbs as $bread_crumb): ?>
+            <?php $name = $this->getLocalizedValue($bread_crumb['name']);
+                $link = $this->getLocalizedValue($bread_crumb['link']);
+            ?>
+                <li class="item">
+                    <?php if($size == $count++): ?>
+                        <strong><?php echo $name ?></strong>
+                    <?php else: ?>
+                        <a href="<?php echo $link ?>"><strong><?php echo $name ?></strong></a>
+                    <?php endif; ?>
+                </li>
+    <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>

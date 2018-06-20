@@ -438,6 +438,32 @@ class BxChooseResponse
         return [];
     }
 
+    protected function getParameterValuesForVisualElement($element, $paramName) {
+
+        if(isset($element['parameters']) && is_array($element['parameters'])) {
+            foreach ($element['parameters'] as $parameter) {
+                if($parameter['name'] == $paramName) {
+                    return $parameter['values'];
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getNarrativeDependencies($choice_id = 'narrative') {
+        $dependencies = array();
+        $narratives = $this->getNarratives($choice_id);
+        foreach ($narratives as $visualElement) {
+            $values = $this->getParameterValuesForVisualElement($visualElement, 'dependencies');
+            if($values) {
+                $value = reset($values);
+                $dependency = json_decode($value, true);
+                $dependencies = array_merge($dependencies, $dependency);
+            }
+        }
+        return $dependencies;
+    }
+
     public function getNarratives($choice_id = 'narrative') {
         $storyLine = $this->getStoryLine($choice_id);
         $params = $storyLine['parameters'];
@@ -447,9 +473,21 @@ class BxChooseResponse
             $params = $this->mergeJourneyParams($params, $narratives['narrative']['parameters']);
             $acts = $narratives['narrative']['acts'];
             $narratives['narrative']['acts'] = $this->propagateParams($acts , $params);
-            return $narratives['narrative'];
+            return $narratives['narrative']['acts'][0]['chapter']['renderings'][0]['rendering']['visualElements'];
         }
         return array();
+    }
+
+    protected function getOverwriteParams($parameters) {
+        $overwriteParameters = array();
+        foreach ($parameters as $parameter) {
+            if(strpos($parameter['name'], '!') === 0) {
+                $overwrite = $parameter;
+                $overwrite['name'] = ltrim($overwrite['name'], '!');
+                $overwriteParameters[] = $overwrite;
+            }
+        }
+        return $overwriteParameters;
     }
 
     protected function prepareVisualElement($render, $overwriteParams) {
@@ -457,7 +495,8 @@ class BxChooseResponse
         $visualElement = $render['visualElement'];
         $visualElementParams = $this->mergeJourneyParams($render['parameters'], $visualElement['parameters']);
         $visualElement['parameters'] = $this->mergeJourneyParams($overwriteParams, $visualElementParams);
-        if(sizeof($visualElement['subRenderings'])) {
+        $overwriteParams = array_merge($overwriteParams, $this->getOverwriteParams($visualElement['parameters']));
+        if(isset($visualElement['subRenderings']) && sizeof($visualElement['subRenderings'])) {
             foreach ($visualElement['subRenderings'] as $index => $subRendering) {
                 foreach ($subRendering['rendering']['visualElements'] as $index2 => $subElement) {
                     $subRendering['rendering']['visualElements'][$index2] = $this->prepareVisualElement($subElement, $overwriteParams);
@@ -605,11 +644,18 @@ class BxChooseResponse
         return $this->getExtraInfo('search_message_display_type', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
     }
 
-    public function getLocalizedValue($values) {
+    public function getLocalizedValue($values, $key = null) {
         if(is_array($values)) {
             $language = $this->getLanguage();
-            if(isset($values[$language])) {
+            if(is_null($key) && isset($values[$language])) {
                 return $values[$language];
+            }
+            if(isset($values[$key])) {
+                foreach ($values[$key] as $lang => $val) {
+                    if($lang == $language) {
+                        return $val;
+                    }
+                }
             }
         }
         return $values;

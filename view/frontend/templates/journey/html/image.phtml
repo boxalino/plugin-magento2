@@ -1,0 +1,21 @@
+<?php $html = $this->getData('html'); ?>
+<div>
+    <div class="bx-html-content">
+        <?php echo $this->getLocalizedValue($html); ?>
+    </div>
+    <div class="bx-html-image">
+        <?php $href = $this->getData('image_redirect'); ?>
+        <a class="bx-html-image-link" href="<?php echo $this->getLocalizedValue($href); ?>">
+            <?php $imageSrc = $this->getData('image_src'); $imageAlt = $this->getData('image_alt'); ?>
+            <img class="bx-html-image-img" src="<?php echo $this->getLocalizedValue($imageSrc); ?>" alt="<?php echo $this->getLocalizedValue($imageAlt); ?>" />
+        </a>
+    </div>
+</div>
+
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering) {
+    echo $this->renderVisualElement($subRendering['visualElement']);
+}
+?>

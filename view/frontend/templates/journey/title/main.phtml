@@ -1,0 +1,13 @@
+<?php
+$title = $this->getData('title');
+if(!is_null($title)): ?>
+    <h2><?php echo $this->getLocalizedValue($title)?></h2>
+<?php endif; ?>
+
+<?php
+//get sub-renderings of this view element
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering) {
+    echo $this->renderVisualElement($subRendering['visualElement']);
+}
+?>
