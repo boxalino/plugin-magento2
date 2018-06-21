@@ -453,6 +453,7 @@ class BxClient
 		$request->setDefaultIndexId($this->getAccount());
 		$request->setDefaultRequestMap($this->requestMap);
 		$this->chooseRequests[] = $request;
+		return sizeof($this->chooseRequests)-1;
 	}
 
 	public function addBundleRequest($requests) {

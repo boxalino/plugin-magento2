@@ -1,0 +1,42 @@
+<div style="display: inline-table;position: fixed;left: 0;right: 0;top: 0;bottom: 0;margin: auto;background-color: white;z-index: 6;width: 50%;">
+   <div class="bxOverlay bxOverlayProducts" style="display: none">
+      <?php
+         $variant_id = $this->getVariantIndex();
+
+         $product_collection = $this->bxResourceManager->getResource($variant_id, 'collection');
+
+         //why do we need these 3 lines to lo load the collection like this? get getresource returns a collection, but then it doesn't work
+         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+         $productCollection = $objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
+         $product_collection = $productCollection->addAttributeToSelect('*')->load();
+
+         $this->bxResourceManager->setResource($product_collection, $variant_id, 'collection');
+
+         $template_path = 'Boxalino_Intelligence::journey/product/view.phtml';
+         $parameter = ['name' => 'variant', 'values' => [$variant_id]];
+
+         ?>
+      <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="display: block;position: fixed;z-index: 7;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%;background: rgb(255, 255, 255);margin-left: -20px;margin-top: -20px;top: unset; bottom: unset; left: unset; right: unset;">
+      &#x2715;
+      </button>
+      <a class="bxOverlay" style="display: block;position: absolute;z-index: 7;height: unset;width: 180px;line-height: 1.5;padding: 4px 8px;top: unset; bottom: 0; left: unset; right: 0; margin-right: 20px; margin-bottom: 20px; background-color: black; color: white; font-size: x-large;">
+      link
+      </a>
+      <div class="block">
+         <div class="block-content content">
+            <div class="products wrapper grid products-grid products" style="padding:20px; margin: 0">
+               <ol class="products list items product-items" style="margin: 0">
+                  <?php
+                     foreach ($product_collection as $index => $product) {
+                       $block = $this->getLayout()->createBlock('Boxalino\Intelligence\Block\Journey\Product\ProductView', 'product_view'.$index,
+                           ['data' => ['bx_index' => $index, 'bxVisualElement' => ['parameters' => [$parameter]]]]
+                       )->setTemplate($template_path);
+                       echo $block->toHtml();
+                     }
+                   ?>
+               </ol>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
