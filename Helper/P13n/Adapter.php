@@ -672,7 +672,7 @@ class Adapter
                 $attributeModel = $this->_modelConfig->getAttribute('catalog_product', $key)->getSource();
 
                 foreach ($paramValues as $paramValue){
-                    $value = $attributeModel->getOptionText($paramValue);
+                    $value = html_entity_decode($attributeModel->getOptionText($paramValue), ENT_QUOTES);
                     if($additionalChecks && !$value) {
                         $systemParamValues[$key]['additional'] = $additionalChecks;
                         $paramValue = explode($separator, $paramValue);
