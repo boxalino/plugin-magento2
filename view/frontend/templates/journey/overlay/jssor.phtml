@@ -1,0 +1,73 @@
+<?php
+
+$bannerData = $this->bxGetBanner();
+$hitCount = $bannerData['hitCount'];
+$jssorSlides = $bannerData['bannerSlides'];
+$jssorId = $bannerData['bannerId'];
+$jssorSlideTransitions = $bannerData['bannerTransitions'];
+$jssorSlideBreaks = $bannerData['bannerBreaks'];
+$jssorSlideControls = $bannerData['bannerControls'];
+$jssorMaxWidth = $bannerData['bannerMaxWidth'];
+$jssorCSS = $bannerData['bannerCSS'];
+$jssorStyle = $bannerData['bannerStyle'];
+$jssorLoadingScreen = $bannerData['bannerLoadingScreen'];
+$jssorSlidesStyle = $bannerData['bannerSlidesStyle'];
+$jssorBulletNavigator = $bannerData['bannerBulletNavigator'];
+$jssorArrowNavigator = $bannerData['bannerArrowNavigator'];
+$jssorFunction = $bannerData['bannerFunction'];
+$jssorLayout = $bannerData['bannerLayout'];
+
+$jssorOptions = $bannerData['bannerOptions'];
+
+// if there is only one banner or it is using the 'small' layout, don't be draggable
+
+if ($hitCount < 2 || $jssorLayout != 'large') {
+    $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
+}
+?>
+<script type="text/javascript">
+    require([
+            'jquery',
+            'jssor'
+        ], function ($, jssor) {
+            'use strict';
+            var <?php echo $jssorId ?>_slider_init = function() {
+                var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
+                var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+                var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+                var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
+                var <?php echo $jssorId ?>_slider = new $JssorSlider$("<?php echo $jssorId ?>", <?php echo $jssorId ?>_options);
+                var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
+                function ScaleSlider() { <?php echo $jssorFunction ?> }
+                ScaleSlider();
+                $Jssor$.$AddEvent(window, "load", ScaleSlider);
+                $Jssor$.$AddEvent(window, "resize", ScaleSlider);
+                $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
+            };
+            <?php echo $jssorId ?>_slider_init();
+        }
+    );
+</script>
+
+<style>
+    <?php echo $jssorCSS ?>
+</style>
+
+
+<div id="<?php echo $jssorId ?>" class="bxOverlay" style="<?php echo $jssorStyle ?>">
+  <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="display: block;position: fixed;z-index: 11;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%;background: rgb(255, 255, 255);margin-left: -20px;margin-top: -20px;top: unset; bottom: unset; left: unset; right: unset;">
+  &#x2715;
+  </button>
+    <?php echo $jssorLoadingScreen ?>
+    <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
+        <?php
+        foreach($jssorSlides as $bannerSlideId => $values ) {
+            echo $values['div'];
+        }
+        ?>
+    </div>
+    <?php if ($hitCount > 1 && $jssorLayout == 'large'){
+        echo $jssorBulletNavigator;
+        echo $jssorArrowNavigator;
+    }; ?>
+</div>

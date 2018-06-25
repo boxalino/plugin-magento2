@@ -59,4 +59,8 @@ class General extends \Magento\Framework\View\Element\Template implements CPOJou
     public function getLocalizedValue($values) {
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
     }
+
+    public function getp13nHelper(){
+      return $this->p13nHelper;
+    }
 }

@@ -39,6 +39,14 @@
                     <label>Domain</label>
                     <comment>What is your domain (e.g.: www.myshop.com)? Used to store cookie information about session id and visitor id.</comment>
                 </field>
+                <field id="apiKey" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>ApiKey</label>
+                    <comment>Optional: value for new set-up</comment>
+                </field>
+                <field id="apiSecret" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>ApiSecret</label>
+                    <comment>Optional: value for new set-up</comment>
+                </field>
             </group>
 
             <group id="tracker" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -418,6 +426,35 @@
                 </field>
             </group>
         </section>
+
+        <section id="bxOverlay" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Overlay</label>
+            <tab>boxalino</tab>
+            <resource>Boxalino_Intelligence::config</resource>
+
+            <!-- Overlay Configuration -->
+            <group id="overlay" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="0">
+                <label>Overlay options</label>
+                <comment><![CDATA[ Widget configuration for the overlay. ]]></comment>
+
+                <!-- Fields -->
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Overlay</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino Overlay active?</comment>
+                </field>
+                <field id="choice_id" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Overlay ChoiceID</label>
+                    <comment>Optional: default value is "extend".</comment>
+                </field>
+                <field id="banner_choice_id" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Banner Overlay ChoiceID</label>
+                    <comment>Optional: default value is "banner_overlay".</comment>
+                </field>
+            </group>
+        </section>
+
         <section id="bxBlog" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Blog</label>

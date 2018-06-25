@@ -31,6 +31,12 @@
             </block>
         </referenceContainer>
 
+        <referenceContainer name="page.wrapper">
+            <block class="Boxalino\Intelligence\Block\OverlayBlock" name="bxOverlay" after="-"
+                   template="Boxalino_Intelligence::overlay.phtml">
+            </block>
+        </referenceContainer>
+
         <referenceBlock name="catalogsearch.leftnav">
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/view.phtml</argument>

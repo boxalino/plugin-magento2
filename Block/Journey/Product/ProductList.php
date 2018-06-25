@@ -33,7 +33,7 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
     /**
      * @var \Boxalino\Intelligence\Helper\ResourceManager
      */
-    protected $bxResourceManager;
+    public $bxResourceManager;
 
     /**
      * @var \Magento\Framework\ObjectManagerInterface
@@ -70,15 +70,20 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         $this->prepareCollection();
     }
 
-    protected function prepareCollection() {
-        $visualElement = $this->getData('bxVisualElement');
-        $variant_index = 0;
-        foreach ($visualElement['parameters'] as $parameter) {
-            if($parameter['name'] == 'variant') {
-                $variant_index = reset($parameter['values']);
-                break;
-            }
-        }
+    public function getVariantIndex() {
+      $visualElement = $this->getData('bxVisualElement');
+      $variant_index = 0;
+      foreach ($visualElement['parameters'] as $parameter) {
+          if($parameter['name'] == 'variant') {
+              $variant_index = reset($parameter['values']);
+              break;
+          }
+      }
+      return $variant_index;
+    }
+
+    public function prepareCollection() {
+        $variant_index = $this->getVariantIndex();
         $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
         if(is_null($collection)) {
            $collection = $this->createCollection($variant_index);
@@ -86,7 +91,7 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         }
     }
 
-    protected function createCollection($variant_index) {
+    public function createCollection($variant_index) {
         $entity_ids = $this->p13nHelper->getEntitiesIds(null, $variant_index);
 
         $collection = $this->objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');

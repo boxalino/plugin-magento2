@@ -148,8 +148,10 @@ class Adapter
             $host = $this->scopeConfig->getValue('bxGeneral/advanced/host', $this->scopeStore);
             $p13n_username = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_username', $this->scopeStore);
             $p13n_password = $this->scopeConfig->getValue('bxGeneral/advanced/p13n_password', $this->scopeStore);
+            $apiKey = $this->scopeConfig->getValue('bxGeneral/general/apiKey', $this->scopeStore);
+            $apiSecret = $this->scopeConfig->getValue('bxGeneral/general/apiSecret', $this->scopeStore);
             $domain = $this->scopeConfig->getValue('bxGeneral/general/domain', $this->scopeStore);
-            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $this->request->getParams());
+            self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $this->request->getParams(), $apiKey, $apiSecret);
             self::$bxClient->setTimeout($this->scopeConfig->getValue('bxGeneral/advanced/thrift_timeout', $this->scopeStore));
             $curl_timeout = $this->scopeConfig->getValue('bxGeneral/advanced/curl_connection_timeout', $this->scopeStore);
             if($curl_timeout != '') {
@@ -450,9 +452,35 @@ class Adapter
      */
     public function getOverlayChoice() {
 
-        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/overlay_choice_id', $this->scopeStore);
+        $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
-            $choice_id = 'extend';
+          $choice_id = 'extend';
+        }
+        $this->currentSearchChoice = $choice_id;
+        return $choice_id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOverlayBannerChoice() {
+
+        $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/banner_choice_id', $this->scopeStore);
+        if(is_null($choice_id) || $choice_id == '') {
+          $choice_id = 'banner_overlay';
+        }
+        $this->currentSearchChoice = $choice_id;
+        return $choice_id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProfileChoice() {
+
+        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/profile_choice_id', $this->scopeStore);
+        if(is_null($choice_id) || $choice_id == '') {
+            $choice_id = 'profile';
         }
         $this->currentSearchChoice = $choice_id;
         return $choice_id;
@@ -801,12 +829,15 @@ class Adapter
     /**
      * @return mixed
      */
-    public function getOverlayValues($key, $widget)
-    {
-      $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $widget, 0, 0);
-      self::$bxClient->addRequest($bxRequest);
+    public function addOverlayRequests(){
+      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice());
+    }
 
-      return $this->getResponse()->getExtraInfo($key, '', $widget);
+    public function sendOverlayRequestWithParams(){
+      $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
+      $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+      $this->setPrefixContextParameter($this->prefixContextParameter);
+      self::$bxClient->addRequest($bxRequest);
     }
 
     /**

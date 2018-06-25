@@ -84,6 +84,7 @@ if ($this->isActive() && $this->check()) {
 
           // Increase the frequency counter when the mouse leaves the window
           frequency++;
+          console.log('frequency', frequency);
 
           // set state of mouse to out
           mouseLocation = 'out';
@@ -109,6 +110,7 @@ if ($this->isActive() && $this->check()) {
           // check if the mouse is out of the window
           if (mouseLocation === 'out') {
           idleTime++;
+          console.log('idleTime', idleTime);
 
             // check if the idleTime is below the defined time
             if (idleTime > <?php echo $this->getOverlayExitIntendTimeout(); ?>) { //idleTime before showOverlay

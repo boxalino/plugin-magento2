@@ -15,5 +15,11 @@
                  template="Boxalino_Intelligence::product/recommendation_blog.phtml">
           </block>
         </referenceContainer>
+
+        <referenceContainer name="page.wrapper">
+            <block class="Boxalino\Intelligence\Block\OverlayBlock" name="bxOverlay" after="-"
+                   template="Boxalino_Intelligence::overlay.phtml">
+            </block>
+        </referenceContainer>
     </body>
 </page>
