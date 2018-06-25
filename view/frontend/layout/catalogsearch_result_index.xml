@@ -32,7 +32,7 @@
         </referenceContainer>
 
         <referenceContainer name="page.wrapper">
-            <block class="Boxalino\Intelligence\Block\OverlayBlock" name="bxOverlay"
+            <block class="Boxalino\Intelligence\Block\OverlayBlock" name="bxOverlay" after="-"
                    template="Boxalino_Intelligence::overlay.phtml">
             </block>
         </referenceContainer>

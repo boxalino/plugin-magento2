@@ -64,7 +64,7 @@ class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObjec
     }
 
     public function isActive(){
-      if ($this->bxHelperData->isPluginEnabled()) {
+      if ($this->bxHelperData->isOverlayEnabled()) {
           return true;
       }
     }
@@ -90,7 +90,21 @@ class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObjec
 
     }
 
-    // javascript config from extra info
+    // get template parameters from response
+
+    public function getVariantIndexFromResponse(){
+      return $this->getOverlayValues('bx-variant-index');
+    }
+
+    public function getTemplatePathFromResponse(){
+      return $this->getOverlayValues('bx-template-path');
+    }
+
+    public function getBlockPathFromResponse(){
+      return $this->getOverlayValues('bx-block-path');
+    }
+
+    // javascript config from response
 
     public function getOverlayJsParameters(){
       return $this->getOverlayValues('bx-extend-parameters');
@@ -109,71 +123,13 @@ class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObjec
       }
     }
 
-    // get values from extra info
-
     public function addOverlayRequests(){
       $this->p13nHelper->addOverlayRequests();
     }
 
     public function getOverlayValues($key){
       $overlayWidget = $this->p13nHelper->getOverlayChoice();
-      return $this->p13nHelper->getResponse()->getExtraInfo($key, '', $overlayWidget);
-    }
-
-    public function getOverlayTitle(){
-
-      $overlayTitleObject = $this->getOverlayValues('extend_localized_title');
-
-      // decodes the object, converts it to an array and then uses the language as the key
-      $overlayTitle = json_decode($overlayTitleObject, true)[0][$this->getLanguage()];
-
-      return $overlayTitle;
-
-    }
-
-    public function getOverlayBackground(){
-
-      return $this->getOverlayValues('bx_extend_background');
-
-    }
-
-    public function getOverlayText(){
-
-      $overlayTextObject = $this->getOverlayValues('extend_localized_text');
-
-      // decodes the object, converts it to an array and then uses the language as the key
-      $overlayText = json_decode($overlayTextObject, true)[0][$this->getLanguage()];
-
-      return $overlayText;
-
-    }
-
-    public function getOverlayButton(){
-
-      $overlayButtonObject = $this->getOverlayValues('extend_localized_button');
-
-      // decodes the object, converts it to an array and then uses the language as the key
-      $overlayButton = json_decode($overlayButtonObject, true)[0][$this->getLanguage()];
-
-      return $overlayButton;
-
-    }
-
-    public function getOverlayUrl(){
-
-      $overlayUrlObject = $this->getOverlayValues('extend_localized_url');
-
-      // decodes the object, converts it to an array and then uses the language as the key
-      $overlayUrl = json_decode($overlayUrlObject, true)[0][$this->getLanguage()];
-
-      return $overlayUrl;
-
-    }
-
-    public function getOverlayPosition(){
-
-      return $this->getOverlayValues('bx_extend_position');
-
+      return $this->p13nHelper->getClientResponse()->getExtraInfo($key, '', $overlayWidget);
     }
 
     public function getLanguage(){

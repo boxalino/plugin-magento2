@@ -3,9 +3,7 @@
 $bannerData = $this->bxGetBanner();
 $hitCount = $bannerData['hitCount'];
 $jssorSlides = $bannerData['bannerSlides'];
-$jssorId = $this->getData('jssorID');
-$jssorIndex = $this->getData('jssorIndex');
-$jssorConfigId = $bannerData['bannerId'];
+$jssorId = $bannerData['bannerId'];
 $jssorSlideTransitions = $bannerData['bannerTransitions'];
 $jssorSlideBreaks = $bannerData['bannerBreaks'];
 $jssorSlideControls = $bannerData['bannerControls'];
@@ -54,7 +52,12 @@ if ($hitCount < 2 || $jssorLayout != 'large') {
 <style>
     <?php echo $jssorCSS ?>
 </style>
-<div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+
+
+<div id="<?php echo $jssorId ?>" class="bxOverlay" style="<?php echo $jssorStyle ?>">
+  <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="display: block;position: fixed;z-index: 11;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%;background: rgb(255, 255, 255);margin-left: -20px;margin-top: -20px;top: unset; bottom: unset; left: unset; right: unset;">
+  &#x2715;
+  </button>
     <?php echo $jssorLoadingScreen ?>
     <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
         <?php

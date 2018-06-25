@@ -452,7 +452,7 @@ class Adapter
      */
     public function getOverlayChoice() {
 
-        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/overlay_choice_id', $this->scopeStore);
+        $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
           $choice_id = 'extend';
         }
@@ -465,22 +465,9 @@ class Adapter
      */
     public function getOverlayBannerChoice() {
 
-        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/overlay_banner_choice_id', $this->scopeStore);
+        $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/banner_choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
           $choice_id = 'banner_overlay';
-        }
-        $this->currentSearchChoice = $choice_id;
-        return $choice_id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOverlayProductChoice() {
-
-        $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/overlay_product_choice_id', $this->scopeStore);
-        if(is_null($choice_id) || $choice_id == '') {
-          $choice_id = 'recommendation_overlay';
         }
         $this->currentSearchChoice = $choice_id;
         return $choice_id;
@@ -834,30 +821,11 @@ class Adapter
         return $this->getClientResponse()->getHitIds($choiceId, true, $index, 10, $this->getEntityIdFieldName());
     }
 
-    private $variantIndexOverlay = 0;
-    private $variantIndexOverlayBanner = 0;
-    private $variantIndexOverlayProducts = 0;
-
     /**
      * @return mixed
      */
     public function addOverlayRequests(){
-
-      $productHitCount = $this->scopeConfig->getValue('bxSearch/advanced/overlay_product_choice_id', $this->scopeStore);
-      if (empty($productHitCount)) {
-        $productHitCount = 3;
-      }
-
-      $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice(), 10, 0);
-      $this->variantIndexOverlay = self::$bxClient->addRequest($bxRequest);
-
-      $bxBannerRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $this->getOverlayBannerChoice(), 1, 0);
-      $bxRequest->setReturnFields(array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
-      $this->variantIndexOverlayBanner = self::$bxClient->addRequest($bxBannerRequest);
-
-      $bxProductRequest = new \com\boxalino\bxclient\v1\BxRequest($this->bxHelperData->getLanguage(), $this->getOverlayProductChoice(), $productHitCount, 0);
-      $this->variantIndexOverlayProducts = self::$bxClient->addRequest($bxProductRequest);
-
+      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice());
     }
 
     public function sendOverlayRequestWithParams(){

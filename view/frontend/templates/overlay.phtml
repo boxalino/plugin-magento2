@@ -8,44 +8,9 @@ require([
 
     var basketTotal = <?php echo $this->getGrandTotal(); ?>;
     var parameters = <?php echo $this->getOverlayJsParameters(); ?>;
+    var lang = "<?php echo $this->getLanguage(); ?>";
 
     <?php echo $this->getOverlayBehaviorJs(); ?>
-
-    // send request via controller
-    function callController(){
-
-      //get base url to the controller and the extra params which should be passed
-      var controllerUrl = "<?php echo $this->getControllerUrl(); ?>";
-      var extraParams = <?php echo $this->getOverlayExtraParams() ?>;
-
-      if(extraParams == 0){
-        //loop through the params and build the paramstring
-        var params = "";
-        for (var key in extraParams){
-          if (extraParams.hasOwnProperty(key)) {
-            var param = key + "=" + extraParams[key];
-            params = params + param + "&";
-          }
-        }
-      }
-
-      // add the parameters to the url
-      var controllerurlwithparams = controllerUrl + "?" + params;
-
-      // make the ajax call
-      $.ajax({
-        url: controllerurlwithparams
-      });
-
-    }
-
-    // hides the overlay when the exit button or outside of the overlay is clicked
-    $('#bxOverlayExitButton').on('click', function(){
-      $('.bxOverlay').hide();
-    })
-    $('#bxOverlayShadow').on('click', function(){
-      $('.bxOverlay').hide();
-    })
 
 });
 
@@ -55,37 +20,19 @@ require([
 <div class="bxOverlay">
 
     <?php
-      //simple overlay example
-      //include($block->getTemplateFile("Boxalino_Intelligence::journey/overlay/simple.phtml"));
-    ?>
 
-    <?php
-      //product recommendations overlay
-      // $variant_index = 0;
-      // $template_path = 'Boxalino_Intelligence::journey/overlay/products.phtml';
-      // $block_path = 'Boxalino\Intelligence\Block\Journey\Product\ProductList';
-      //
-      // $parameter = ['name' => 'variant', 'values' => [$variant_index]];
-      // $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]  )->setTemplate($template_path);
-      //   echo $block->toHtml();
-    ?>
+      $variant_index = 0;
+      $template_path = $this->getTemplatePathFromResponse();
+      $block_path = $this->getBlockPathFromResponse();
 
-    <?php
-      //banner overlay
-      // $variant_index = 0;
-      // $template_path = 'Boxalino_Intelligence::journey/banner/jssor.phtml';
-      // $block_path = 'Boxalino\Intelligence\Block\Journey\Banner\JssorBanner';
-      //
-      // $parameter = ['name' => 'variant', 'values' => [$variant_index]];
-      // $block = $this->getLayout()->createBlock($block_path, 'bxoverlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]
-      // )->setTemplate($template_path);
-      // echo $block->toHtml();
+      $parameter = ['name' => 'variant', 'values' => [$variant_index]];
+      $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]  )->setTemplate($template_path);
+      echo $block->toHtml();
     ?>
 
 </div>
 
-<!-- set to false for testing -->
-<?php if ($this->withLightboxEffect() != 'true') { ?>
+<?php if ($this->withLightboxEffect() == 'true') { ?>
 
   <div class="bxOverlay" id="bxOverlayShadow"></div>
 

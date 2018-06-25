@@ -604,6 +604,17 @@ class Data{
     }
 
     /**
+     * @return bool
+     */
+    public function isOverlayEnabled(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxOverlay']['overlay']['enabled']);
+    }
+
+    /**
      * @param $layer
      * @return bool
      */
