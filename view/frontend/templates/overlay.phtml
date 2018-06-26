@@ -1,4 +1,4 @@
-<?php if ($this->isActive()) { ?>
+<?php if ($this->isActive() && $this->getBlockPathFromResponse() != null && $this->getTemplatePathFromResponse() != null) { ?>
 
 <script type="text/javascript">
 require([
