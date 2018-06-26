@@ -431,12 +431,18 @@ class BxChooseResponse
 
     public function getStoryLine($choice_id = 'narrative') {
         $journey = $this->getCPOJourney($choice_id);
-        $params = $journey['parameters'];
-        foreach ($journey['storyLines'] as $gi => $groupedStoryLine) {
-            $params = $this->mergeJourneyParams($params, $groupedStoryLine['parameters']);
-            $storyLine = $groupedStoryLine['storyLine'];
-            $storyLine['parameters'] = $this->mergeJourneyParams($params, $storyLine['parameters']);
-            return $storyLine;
+        if(isset($journey['storyLines'])) {
+            $params = isset($journey['parameters']) ? $journey['parameters'] : [];
+            foreach ($journey['storyLines'] as $gi => $groupedStoryLine) {
+                if(isset($groupedStoryLine['storyLine'])) {
+                    $groupedStoryLineParameters =  isset($groupedStoryLine['parameters']) ? $groupedStoryLine['parameters'] : [];
+                    $params = $this->mergeJourneyParams($params, $groupedStoryLineParameters);
+                    $storyLine = $groupedStoryLine['storyLine'];
+                    $storyLineParameters =  isset($storyLine['parameters']) ? $storyLine['parameters'] : [];
+                    $storyLine['parameters'] = $this->mergeJourneyParams($params, $storyLineParameters);
+                    return $storyLine;
+                }
+            }
         }
         return [];
     }
@@ -457,11 +463,14 @@ class BxChooseResponse
         $dependencies = array();
         $narratives = $this->getNarratives($choice_id);
         foreach ($narratives as $visualElement) {
-            $values = $this->getParameterValuesForVisualElement($visualElement, 'dependencies');
+            $values = $this->getParameterValuesForVisualElement($visualElement['visualElement'], 'dependencies');
             if($values) {
                 $value = reset($values);
+                $value = str_replace("\\", '', $value);
                 $dependency = json_decode($value, true);
-                $dependencies = array_merge($dependencies, $dependency);
+                if($dependency) {
+                    $dependencies = array_merge($dependencies, $dependency);
+                }
             }
         }
         return $dependencies;
@@ -469,14 +478,22 @@ class BxChooseResponse
 
     public function getNarratives($choice_id = 'narrative') {
         $storyLine = $this->getStoryLine($choice_id);
-        $params = $storyLine['parameters'];
-        foreach ($storyLine['groupedNarratives'] as $groupedNarrative) {
-            $narratives = reset($groupedNarrative['narratives']);
-            $params = $this->mergeJourneyParams($params, $narratives['parameters']);
-            $params = $this->mergeJourneyParams($params, $narratives['narrative']['parameters']);
-            $acts = $narratives['narrative']['acts'];
-            $narratives['narrative']['acts'] = $this->propagateParams($acts , $params);
-            return $narratives['narrative']['acts'][0]['chapter']['renderings'][0]['rendering']['visualElements'];
+        $params = isset($storyLine['parameters']) ? $storyLine['parameters'] : [];
+        if(isset($storyLine['groupedNarratives'])) {
+            foreach ($storyLine['groupedNarratives'] as $groupedNarrative) {
+                if(isset($groupedNarrative['narratives'])) {
+                    $narratives = reset($groupedNarrative['narratives']);
+                    if(isset($narratives['narrative']) && isset($narratives['narrative']['acts'])) {
+                        $narrativesParameters = isset($narratives['parameters']) ? $narratives['parameters'] : [];
+                        $narrativeParameters = isset($narratives['narrative']['parameters']) ? $narratives['narrative']['parameters'] : [];
+                        $params = $this->mergeJourneyParams($params, $narrativesParameters);
+                        $params = $this->mergeJourneyParams($params, $narrativeParameters);
+                        $acts = $narratives['narrative']['acts'];
+                        $narratives['narrative']['acts'] = $this->propagateParams($acts, $params);
+                        return $narratives['narrative']['acts'][0]['chapter']['renderings'][0]['rendering']['visualElements'];
+                    }
+                }
+            }
         }
         return array();
     }
@@ -513,24 +530,34 @@ class BxChooseResponse
 
     protected function propagateParams($acts, $params) {
         foreach ($acts as $index => $act) {
-            $params = $this->mergeJourneyParams($params, $act['parameters']);
-            $act['parameters'] = $params;
-            $chapter = $act['chapter'];
-            $params = $this->mergeJourneyParams($params, $chapter['parameters']);
-            $chapter['parameters'] = $params;
-            foreach ($chapter['renderings'] as $index1 => $rendering) {
-                $params = $this->mergeJourneyParams($params, $rendering['parameters']);
-                $rendering['parameters'] = $params;
-                $params = $this->mergeJourneyParams($params, $rendering['rendering']['parameters']);
-                $rendering['rendering']['parameters'] = $params;
-                foreach ($rendering['rendering']['visualElements'] as $index2 => $render) {
-                    $render = $this->prepareVisualElement($render, $params);
-                    $rendering['rendering']['visualElements'][$index2] = $render;
+            if(isset($act['chapter'])) {
+                $actParameters = isset($act['parameters']) ? $act['parameters'] : [];
+                $params = $this->mergeJourneyParams($params, $actParameters);
+                $act['parameters'] = $params;
+                $chapter = $act['chapter'];
+                if(isset($chapter['renderings'])) {
+                    $chapterParameters = isset($chapter['parameters']) ? $chapter['parameters'] : [];
+                    $params = $this->mergeJourneyParams($params, $chapterParameters);
+                    $chapter['parameters'] = $params;
+                    foreach ($chapter['renderings'] as $index1 => $rendering) {
+                        if(isset($rendering['rendering']['visualElements']) && is_array($rendering['rendering']['visualElements'])) {
+                            $renderingParameters = isset($rendering['parameters']) ? $rendering['parameters'] : [];
+                            $params = $this->mergeJourneyParams($params, $renderingParameters);
+                            $rendering['parameters'] = $params;
+                            $renderParameters = isset( $rendering['rendering']['parameters']) ?  $rendering['rendering']['parameters'] : [];
+                            $params = $this->mergeJourneyParams($params, $renderParameters);
+                            $rendering['rendering']['parameters'] = $params;
+                            foreach ($rendering['rendering']['visualElements'] as $index2 => $render) {
+                                $render = $this->prepareVisualElement($render, $params);
+                                $rendering['rendering']['visualElements'][$index2] = $render;
+                            }
+                            $chapter['renderings'][$index1] = $rendering;
+                        }
+                    }
+                    $act['chapter'] = $chapter;
+                    $acts[$index] = $act;
                 }
-                $chapter['renderings'][$index1] = $rendering;
             }
-            $act['chapter'] = $chapter;
-            $acts[$index] = $act;
         }
         return $acts;
     }

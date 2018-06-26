@@ -24,31 +24,35 @@
                     $expanded = array();
                     $index = 0;
                     foreach($filters as $filter){
-                        $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();
-                        if (!is_null($bxFacets) && $bxFacets->isFacetExpanded($filter->getFieldName(), false)) $expanded[] = $index;
-                        $index++;
+                        if(get_class($filter) === 'Boxalino\Intelligence\Model\Attribute') {
+                            $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();
+                            if (!is_null($bxFacets) && $bxFacets->isFacetExpanded($filter->getFieldName(), false)) $expanded[] = $index;
+                            $index++;
+                        }
                     }
                 ?>
                 <?php foreach ($filters as $filter): ?>
-                    <?php $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();?>
-                    <?php if ($filter->getItemsCount()): ?>
-                        <?php if (!$wrapOptions): ?>
-                            <strong role="heading" aria-level="2" class="block-subtitle filter-subtitle"><?php /* @escapeNotVerified */ echo __('Shopping Options') ?></strong>
-                            <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active", "collapsible": true, "active": <?php echo json_encode($expanded); ?>, "multipleCollapsible": true}}'>
-                        <?php  $wrapOptions = true; endif; ?>
-                        <div data-role="collapsible" class="filter-options-item">
-                            <div data-role="title" class="filter-options-title"><?php /* @escapeNotVerified */ echo __($filter->getName()) ?></div>
-                            <div data-role="content" class="filter-options-content">
-                            <?php if($filter->getFieldName() == 'discountedPrice'): ?>
-                                <div id="bxslider"></div>
-                                <span id="slider-snap-value-lower"></span>
-                                <span id="slider-snap-value-upper"></span>
-                                <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Slider")->setTemplate("Boxalino_Intelligence::slider.phtml")->toHtml();?>
-                            <?php else: ?>
-                                <?php /* @escapeNotVerified */ echo $block->getChildBlock('renderer')->render($filter); ?>
-                            <?php endif; ?>
+                    <?php if(get_class($filter) === 'Boxalino\Intelligence\Model\Attribute'): ?>
+                        <?php $bxFacets = isset($bxFacets) ? $bxFacets : $filter->getBxFacets();?>
+                        <?php if ($filter->getItemsCount()): ?>
+                            <?php if (!$wrapOptions): ?>
+                                <strong role="heading" aria-level="2" class="block-subtitle filter-subtitle"><?php /* @escapeNotVerified */ echo __('Shopping Options') ?></strong>
+                                <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active", "collapsible": true, "active": <?php echo json_encode($expanded); ?>, "multipleCollapsible": true}}'>
+                            <?php  $wrapOptions = true; endif; ?>
+                            <div data-role="collapsible" class="filter-options-item">
+                                <div data-role="title" class="filter-options-title"><?php /* @escapeNotVerified */ echo __($filter->getName()) ?></div>
+                                <div data-role="content" class="filter-options-content">
+                                <?php if($filter->getFieldName() == 'discountedPrice'): ?>
+                                    <div id="bxslider"></div>
+                                    <span id="slider-snap-value-lower"></span>
+                                    <span id="slider-snap-value-upper"></span>
+                                    <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Slider")->setTemplate("Boxalino_Intelligence::slider.phtml")->toHtml();?>
+                                <?php else: ?>
+                                    <?php /* @escapeNotVerified */ echo $block->getChildBlock('renderer')->render($filter); ?>
+                                <?php endif; ?>
+                                </div>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php endforeach; ?>
                 <?php if ($wrapOptions): ?>
