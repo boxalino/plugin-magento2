@@ -97,6 +97,9 @@ class BxChooseResponse
 
     public function getVariantSearchResult($variant, $considerRelaxation=true, $maxDistance=10, $discardIfSubPhrases = true) {
 
+        if($variant == null) {
+          return null;
+        }
         $searchResult = $variant->searchResult;
         if($considerRelaxation && $variant->searchResult->totalHitCount == 0 && !($discardIfSubPhrases && $this->areThereSubPhrases())) {
             $correctedResult = $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);

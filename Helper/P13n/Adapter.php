@@ -996,12 +996,12 @@ class Adapter
                     self::$bxClient->addRequest($bxRequest);
                 }
             }
+            if($this->isOverlyActive()) {
+              $this->addOverlayRequests();
+            }
             return array();
         }
         $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
-        if($this->isOverlyActive()) {
-          $this->addOverlayRequests();
-        }
         return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
     }
 
