@@ -113,7 +113,7 @@ class ProductView extends ListProduct implements CPOJourney{
             }
         }
 
-        $ids = $this->p13nHelper->getEntitiesIds(null, $variant_index);
+        $ids = $this->p13nHelper->getEntitiesIds($variant_index);
         $entity_id = isset($ids[$index]) ? $ids[$index] : null;
         if($entity_id) {
             $collection = $this->bxResourceManager->getResource($variant_index, 'collection');

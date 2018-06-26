@@ -62,7 +62,8 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
         return $this->p13nHelper->getClientResponse()->getLocalizedValue($values);
     }
 
-    public function bxGetBanner($choiceId=null) {
+    public function bxGetBanner($choiceId = null) {
+
         $visualElement = $this->getData('bxVisualElement');
         $bannerData = array();
         $variant_index = null;
@@ -72,13 +73,15 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
                 break;
             }
         }
+        if($choiceId != null) { $variant_index++; $choiceId = null; }
         if(!is_null($variant_index)) {
-            $bannerData['hitCount'] = sizeof($this->p13nHelper->getClientResponse()->getHitIds($choiceId, $variant_index));
-            $bannerData['bannerLayout'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $choiceId, true, $variant_index);
-            $bannerData['bannerTitle'] = $this->p13nHelper->getClientResponse()->getResultTitle($choiceId, $variant_index);
-            $bannerData['bannerId'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $choiceId, true, $variant_index);
+            $choiceId = $this->p13nHelper->getClientResponse()->getChoiceIdFromVariantIndex($variant_index) ;
+            $bannerData['hitCount'] = sizeof($this->p13nHelper->getClientResponse()->getHitIds($choiceId, true, 0));
+            $bannerData['bannerLayout'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $choiceId, true, 0);
+            $bannerData['bannerTitle'] = $this->p13nHelper->getClientResponse()->getResultTitle($choiceId, 0);
+            $bannerData['bannerId'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $choiceId, true, 0);
 
-            $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $choiceId, true, $variant_index);
+            $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $choiceId, true, 0);
             $counters = array();
             foreach($slides as $id => $val) {
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters);
@@ -93,24 +96,24 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
             }
             $bannerData['bannerSlides'] = $slides;
 
-            $bannerData['bannerTransitions'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition', $variant_index, $choiceId);
-            $bannerData['bannerBreaks'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break', $variant_index, $choiceId);
-            $bannerData['bannerControls'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control', $variant_index, $choiceId);
-            $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, $variant_index);
+            $bannerData['bannerTransitions'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition', 0, $choiceId);
+            $bannerData['bannerBreaks'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break', 0, $choiceId);
+            $bannerData['bannerControls'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control', 0, $choiceId);
+            $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
             // replace id from Intelligence with id from block configuration
             $bannerData['bannerOptions'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorOptions) : $bannerJssorOptions;
-            $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, $variant_index);
-            $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $choiceId, true, $variant_index);
+            $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
+            $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $choiceId, true, 0);
             // replace id from Intelligence with id from block configuration
             $bannerJssorCss = str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorCss);
             $bannerData['bannerCSS'] = str_replace("JSSORID", $bannerData['bannerId'], $bannerJssorCss);
 
-            $bannerData['bannerStyle'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $choiceId, true, $variant_index);
-            $bannerData['bannerSlidesStyle'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style', '', $choiceId, true, $variant_index);
-            $bannerData['bannerLoadingScreen'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $choiceId, true, $variant_index);
-            $bannerData['bannerBulletNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $choiceId, true, $variant_index);
-            $bannerData['bannerArrowNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $choiceId, true, $variant_index);
-            $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $choiceId, true, $variant_index);
+            $bannerData['bannerStyle'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $choiceId, true, 0);
+            $bannerData['bannerSlidesStyle'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style', '', $choiceId, true, 0);
+            $bannerData['bannerLoadingScreen'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $choiceId, true, 0);
+            $bannerData['bannerBulletNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $choiceId, true, 0);
+            $bannerData['bannerArrowNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $choiceId, true, 0);
+            $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $choiceId, true, 0);
             $bannerData['bannerFunction'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerFunction) : $bannerFunction;
         }
         return $bannerData;
@@ -118,7 +121,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
 
     protected function getBannerJssorSlideGenericJS($key, $variant_id, $choiceId=null) {
         $language = $this->p13nHelper->getLanguage();
-        $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array($key), $choiceId, true, $variant_id);
+        $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array($key), $choiceId, true, 0);
         $jsArray = array();
         foreach($slides as $id => $vals) {
             if(isset($vals[$key]) && sizeof($vals[$key]) > 0) {

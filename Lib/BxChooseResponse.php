@@ -63,6 +63,10 @@ class BxChooseResponse
         }
     }
 
+    public function getChoiceIdFromVariantIndex($variant_index) {
+        return isset($bxRequest[$variant_index]) ? $bxRequest[$variant_index]->getChoiceId() : null;
+    }
+
     protected function getChoiceIdResponseVariant($id=0) {
         $response = $this->getResponse();
         if (!empty($response->variants) && isset($response->variants[$id])) {

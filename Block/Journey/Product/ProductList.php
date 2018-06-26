@@ -92,7 +92,7 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
     }
 
     public function createCollection($variant_index) {
-        $entity_ids = $this->p13nHelper->getEntitiesIds(null, $variant_index);
+        $entity_ids = $this->p13nHelper->getEntitiesIds($variant_index);
 
         $collection = $this->objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
         $collection = $this->bxHelperData->prepareProductCollection($collection, $entity_ids);
@@ -102,7 +102,7 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         $page = is_null($this->getRequest()->getParam('p')) ? 1 : $this->getRequest()->getParam('p');
         $collection->setCurBxPage($page);
         $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->p13nHelper->getMagentoStoreConfigPageSize();
-        $totalHitCount = $this->p13nHelper->getTotalHitCount(null, $variant_index);
+        $totalHitCount = $this->p13nHelper->getTotalHitCount($variant_index);
         $lastPage = ceil($totalHitCount /$limit);
         $collection->setLastBxPage($lastPage);
         $collection->setBxTotal($totalHitCount);

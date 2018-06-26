@@ -601,7 +601,7 @@ class Adapter
                 }
             }
         }
-		return $variantId;
+        return $variantId;
     }
 
     protected $isNarrative = false;
@@ -817,33 +817,34 @@ class Adapter
     /**
      * @return mixed
      */
-    public function getTotalHitCount($choiceId = '', $index = 0){
+    public function getTotalHitCount($variant_index = null){
 
         $this->simpleSearch();
-        $choiceId = $choiceId == '' ? $this->currentSearchChoice : $choiceId;
-        return $this->getClientResponse()->getTotalHitCount($choiceId, true, $index);
+        $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
+        return $this->getClientResponse()->getTotalHitCount($choiceId, true, 0);
     }
 
     /**
      * @param null $choiceId
      * @return mixed
      */
-    public function getEntitiesIds($choiceId = '', $index = 0){
+    public function getEntitiesIds($variant_index = null){
 
         $this->simpleSearch();
-        $choiceId = $choiceId == '' ? $this->currentSearchChoice : $choiceId;
-        return $this->getClientResponse()->getHitIds($choiceId, true, $index, 10, $this->getEntityIdFieldName());
+        $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
+        return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
-	
-	private $overlayVariantId = 0;
 
+    private $overlayVariantId = null;
     public function addOverlayRequests(){
-      $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
+        if(is_null($this->overlayVariantId)) {
+            $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
+        }
     }
-	
-	public function getOverlayVariantId() {
-		return $this->overlayVariantId;
-	}
+
+    public function getOverlayVariantId() {
+        return $this->overlayVariantId;
+    }
 
     public function sendOverlayRequestWithParams(){
       $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
