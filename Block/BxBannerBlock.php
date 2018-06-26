@@ -346,6 +346,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     public function getIdFromConfig(){
 
       $jssorConfigId = $this->getData('jssorID');
+	  
+	  if($jssorConfigId == "") {
+		  return $this->getBannerJssorId();
+	  }
 
       return $jssorConfigId;
 
