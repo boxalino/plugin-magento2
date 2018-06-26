@@ -837,14 +837,11 @@ class Adapter
 	
 	private $overlayVariantId = 0;
 
-    /**
-     * @return mixed
-     */
     public function addOverlayRequests(){
       $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
     }
 	
-	public getOverlayVariantId() {
+	public function getOverlayVariantId() {
 		return $this->overlayVariantId;
 	}
 
