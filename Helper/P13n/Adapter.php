@@ -411,6 +411,17 @@ class Adapter
          if($this->bxHelperData->isBlogEnabled() && (is_null($categoryId) || !$this->navigation)) {
              $this->addBlogResult($queryText, $hitCount);
          }
+
+         if($this->isOverlyActive()) {
+           $this->addOverlayRequests();
+         }
+     }
+
+     public function isOverlyActive(){
+       if ($this->bxHelperData->isOverlayEnabled()) {
+           return true;
+       }
+       return false;
      }
 
      private function addBlogResult($queryText, $hitCount) {
@@ -501,7 +512,7 @@ class Adapter
     /**
      *
      */
-    public function simpleSearch($addFinder = false, $isOverlay = false)
+    public function simpleSearch($addFinder = false)
     {
         if($this->isNarrative) {
             return;
@@ -509,11 +520,6 @@ class Adapter
         $isFinder = $this->bxHelperData->getIsFinder();
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
-
-        if ($isOverlay == true) {
-            $this->currentSearchChoice = $this->getOverlayChoice();
-            return;
-        }
 
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
@@ -540,9 +546,11 @@ class Adapter
         $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null) {
-        $this->currentSearchChoice = $choice_id;
-        $this->isNarrative = true;
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+        if($replaceMain) {
+          $this->currentSearchChoice = $choice_id;
+          $this->isNarrative = true;
+        }
         $requestParams = $this->request->getParams();
         $field = '';
         $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
@@ -830,7 +838,7 @@ class Adapter
      * @return mixed
      */
     public function addOverlayRequests(){
-      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice());
+      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
     }
 
     public function sendOverlayRequestWithParams(){
@@ -991,6 +999,9 @@ class Adapter
             return array();
         }
         $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
+        if($this->isOverlyActive()) {
+          $this->addOverlayRequests();
+        }
         return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());
     }
 

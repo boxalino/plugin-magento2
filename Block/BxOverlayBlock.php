@@ -6,7 +6,7 @@ namespace Boxalino\Intelligence\Block;
  * Class OverlayBlock
  * @package Boxalino\Intelligence\Block
  */
-class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObject\IdentityInterface {
+class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
 
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
@@ -31,35 +31,20 @@ class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObjec
     /**
      */
     public function __construct(
-        \Magento\Catalog\Block\Product\Context $context,
+        \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
-        \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
-        \Magento\Framework\App\Request\Http $request,
-        array $data,
-        \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager
+        \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
+        array $data = []
         )
 
         {
 
         $this->_logger = $context->getLogger();
-        parent::__construct($context,
-                            $p13nHelper,
-                            $bxHelperData,
-                            $checkoutSession,
-                            $catalogProductVisibility,
-                            $factory,
-                            $request,
-                            $data,
-                            $bxResourceManager
-                            );
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
         $this->bxResourceManager = $bxResourceManager;
-
-        $this->addOverlayRequests();
+        parent::__construct($context, $data);
 
     }
 
@@ -67,6 +52,7 @@ class OverlayBlock extends BxBannerBlock implements \Magento\Framework\DataObjec
       if ($this->bxHelperData->isOverlayEnabled()) {
           return true;
       }
+      return false;
     }
 
     public function getControllerUrl(){

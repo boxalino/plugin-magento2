@@ -17,5 +17,11 @@
                    template="Boxalino_Intelligence::notification.phtml">
             </block>
         </referenceContainer>
+
+        <referenceContainer name="footer">
+            <block class="Boxalino\Intelligence\Block\BxOverlayBlock" name="bxOverlay"
+                   template="Boxalino_Intelligence::overlay.phtml">
+            </block>
+        </referenceContainer>
     </body>
 </page>
