@@ -78,8 +78,8 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
 
     // get template parameters from response
 
-    public function getVariantIndexFromResponse(){
-      return $this->getOverlayValues('bx-variant-index');
+    public function getVariantIndex(){
+      return $this->p13nHelper->getOverlayVariantId();
     }
 
     public function getTemplatePathFromResponse(){

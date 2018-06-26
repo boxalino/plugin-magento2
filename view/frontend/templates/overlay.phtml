@@ -21,7 +21,7 @@ require([
 
     <?php
 
-      $variant_index = 0;
+      $variant_index = $this->getVariantIndex();
       $template_path = $this->getTemplatePathFromResponse();
       $block_path = $this->getBlockPathFromResponse();
 

@@ -570,7 +570,7 @@ class Adapter
         $facets = $this->prepareFacets();
         $bxRequest->setFacets($facets);
         $bxRequest->setGroupFacets(true);
-        self::$bxClient->addRequest($bxRequest);
+        $variantId = self::$bxClient->addRequest($bxRequest);
         $requestParams = $this->request->getParams();
         foreach ($requestParams as $key => $value) {
             self::$bxClient->addRequestContextParameter($key, $value);
@@ -601,6 +601,7 @@ class Adapter
                 }
             }
         }
+		return $variantId;
     }
 
     protected $isNarrative = false;
@@ -833,13 +834,19 @@ class Adapter
         $choiceId = $choiceId == '' ? $this->currentSearchChoice : $choiceId;
         return $this->getClientResponse()->getHitIds($choiceId, true, $index, 10, $this->getEntityIdFieldName());
     }
+	
+	private $overlayVariantId = 0;
 
     /**
      * @return mixed
      */
     public function addOverlayRequests(){
-      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
+      $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false);
     }
+	
+	public getOverlayVariantId() {
+		return $this->overlayVariantId;
+	}
 
     public function sendOverlayRequestWithParams(){
       $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
