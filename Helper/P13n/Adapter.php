@@ -605,17 +605,17 @@ class Adapter
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null) {
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true) {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
-            $this->addNarrativeRequest($choice_id, $choices);
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
         $narrative = $this->getResponse()->getNarratives($choice_id);
         return $narrative;
     }
 
-    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null) {
+    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true) {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
-            $this->addNarrativeRequest($choice_id, $choices);
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
         $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
         return $dependencies;
