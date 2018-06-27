@@ -614,6 +614,46 @@ class Data{
         return (bool)($this->isPluginEnabled() && $this->bxConfig['bxOverlay']['overlay']['enabled']);
     }
 
+    public function getOverlayHitcount(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return $this->bxConfig['bxOverlay']['overlay']['hitcount'];
+    }
+
+    public function getOverlayBannerChoiceHitCount(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return $this->bxConfig['bxOverlay']['overlay']['bannerHitcount'];
+    }
+
+    public function getOverlayOrder(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return $this->bxConfig['bxOverlay']['overlay']['order'];
+    }
+
+    public function getOverlayDir(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return $this->bxConfig['bxOverlay']['overlay']['dir'];
+    }
+
+    public function getOverlayPageOffset(){
+
+        if(!isset($this->bxConfig['bxOverlay'])){
+            $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
+        }
+        return $this->bxConfig['bxOverlay']['overlay']['pageoffset'];
+    }
+
     /**
      * @param $layer
      * @return bool

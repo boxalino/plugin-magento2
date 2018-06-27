@@ -452,6 +452,26 @@
                     <label>Banner Overlay ChoiceID</label>
                     <comment>Optional: default value is "banner_overlay".</comment>
                 </field>
+                <field id="hitcount" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Product Overlay Hitcount</label>
+                    <comment>Optional: default value is "3".</comment>
+                </field>
+                <field id="bannerHitcount" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Banner Overlay Hitcount</label>
+                    <comment>Optional: default value is "1".</comment>
+                </field>
+                <field id="order" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Product Overlay Order By</label>
+                    <comment>Optional.</comment>
+                </field>
+                <field id="dir" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Product Overlay Direction</label>
+                    <comment>Optional.</comment>
+                </field>
+                <field id="pageoffset" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="1">
+                    <label>Product Overlay Page Offset</label>
+                    <comment>Optional.</comment>
+                </field>
             </group>
         </section>
 
