@@ -47,8 +47,10 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
 
-        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
-        $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain, false);
+        if(!is_null($this->getData('choice'))) {
+            $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+            $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain, false);
+        }
     }
 
     protected function createBlock($type, $name, $data, $arguments, $children)
