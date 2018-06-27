@@ -614,20 +614,24 @@ class Adapter
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
-        $narrative = $this->getResponse()->getNarratives($choice_id);
-        return $narrative;
+        if($execute) {
+            $dependencies = $this->getResponse()->getNarratives($choice_id);
+            return $dependencies;
+        }
     }
 
-    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
-        $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
-        return $dependencies;
+        if($execute) {
+            $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
+            return $dependencies;
+        }
     }
 
     /**
@@ -845,7 +849,7 @@ class Adapter
     }
 
     public function getOverlayVariantId(){
-      return $this->$overlayVariantId;
+        return $this->overlayVariantId;
     }
 
     /**
@@ -853,13 +857,13 @@ class Adapter
      */
     private $overlayVariantId = null;
     public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null) {
-      $choicesHitCounts = null;
-      if (is_null($overlayVariantId)) {
-        if($overlayBannerChoiceHitCount != null) {
-          $choicesHitCounts[$this->getOverlayBannerChoice()] = $overlayBannerChoiceHitCount;
+        $choicesHitCounts = null;
+        if (is_null($this->overlayVariantId)) {
+            if($overlayBannerChoiceHitCount != null) {
+                $choicesHitCounts[$this->getOverlayBannerChoice()] = $overlayBannerChoiceHitCount;
+            }
+            $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset);
         }
-        $overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset);
-      }
     }
 
     public function sendOverlayRequestWithParams(){
