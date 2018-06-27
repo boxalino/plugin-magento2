@@ -844,16 +844,22 @@ class Adapter
         return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
 
+    public function getOverlayVariantId(){
+      return $this->$overlayVariantId;
+    }
 
     /**
      * @return mixed
      */
+    private $overlayVariantId = null;
     public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null) {
       $choicesHitCounts = null;
-      if($overlayBannerChoiceHitCount != null) {
-        $choicesHitCounts[$this->getOverlayBannerChoice()] = $overlayBannerChoiceHitCount;
+      if (is_null($overlayVariantId)) {
+        if($overlayBannerChoiceHitCount != null) {
+          $choicesHitCounts[$this->getOverlayBannerChoice()] = $overlayBannerChoiceHitCount;
+        }
+        $overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset);
       }
-      $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset);
     }
 
     public function sendOverlayRequestWithParams(){
