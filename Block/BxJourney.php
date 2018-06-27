@@ -165,8 +165,10 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     }
 
     public function renderDependencies() {
+
         $html = '';
-        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'));
+        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
         if(isset($dependencies['js'])) {
             foreach ($dependencies['js'] as $js) {
                 $url = $js;
@@ -192,7 +194,8 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
 
         $html = '';
         $position = $this->getData('position');
-        $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'));
+        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+        $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
         foreach ($narratives as $visualElement) {
             if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
                 try {
