@@ -84,7 +84,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
             $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $choiceId, true, 0);
             $counters = array();
             foreach($slides as $id => $val) {
-                $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters);
+                $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
             if ($bannerData['bannerLayout'] != 'large' || $this->getData('jssorIndex') != null) {
                 if ($this->getData('jssorIndex') == '1') {
@@ -105,7 +105,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
             $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
             $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $choiceId, true, 0);
             // replace id from Intelligence with id from block configuration
-            $bannerJssorCss = str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorCss);
+            $bannerJssorCss = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorCss) : $bannerJssorCss;
             $bannerData['bannerCSS'] = str_replace("JSSORID", $bannerData['bannerId'], $bannerJssorCss);
 
             $bannerData['bannerStyle'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $choiceId, true, 0);
@@ -143,8 +143,11 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
         return '[' . implode(',', $jsArray) . ']';
     }
 
-    protected function addPrefixToClasses($json){
+    protected function addPrefixToClasses($json, $choiceId = null){
         $idFromConfig = $this->getData('jssorID');
+        if ($idFromConfig == null) {
+            $idFromConfig = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $choiceId, true, 0);
+        }
         $elems = explode(' ' ,$json);
         foreach ($elems as $i => $value) {
             if (preg_match('/bxBanner/', $value)) {
@@ -156,7 +159,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
         return $json;
     }
 
-    protected function getBannerSlide($id, $vals, &$counters) {
+    protected function getBannerSlide($id, $vals, &$counters, $choiceId=null) {
         $language = $this->p13nHelper->getLanguage();
         if(isset($vals['products_bxi_bxi_jssor_slide']) && sizeof($vals['products_bxi_bxi_jssor_slide']) > 0) {
             $json = $vals['products_bxi_bxi_jssor_slide'][0];
@@ -167,7 +170,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
 
                 // add configId as prefix for the classes
 
-                $json = $this->addPrefixToClasses($json);
+                $json = $this->addPrefixToClasses($json, $choiceId);
 
                 for($i=1; $i<10; $i++) {
 
