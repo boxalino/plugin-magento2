@@ -46,6 +46,10 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
         $this->bxResourceManager = $bxResourceManager;
         parent::__construct($context, $data);
 
+        if ($this->isActive() == true) {
+          $this->addOverlayRequests();
+        }
+
     }
 
     public function isActive(){

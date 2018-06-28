@@ -64,5 +64,15 @@
                     <status>1</status>
                 </banner>
             </bxBanner>
+            <bxOverlay>
+                <overlay>
+                    <enabled>1</enabled>
+                    <hitcount>3</hitcount>
+                    <bannerHitcount>1</bannerHitcount>
+                    <order>0</order>
+                    <dir>0</dir>
+                    <pageoffset>0</pageoffset>
+                </overlay>
+            </bxOverlay>
         </default>
     </config>

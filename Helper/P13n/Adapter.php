@@ -546,7 +546,7 @@ class Adapter
         $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitcount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null) {
         if($replaceMain) {
           $this->currentSearchChoice = $choice_id;
           $this->isNarrative = true;
@@ -564,7 +564,7 @@ class Adapter
         if($dir == null) {
           $dir = isset($requestParams['product_list_dir']) ? true : false;
         }
-        if($hitcount == null) {
+        if($hitCount == null) {
           $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         }
         if($pageOffset == null) {

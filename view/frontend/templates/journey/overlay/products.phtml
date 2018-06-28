@@ -1,5 +1,5 @@
 <div style="display: inline-table;position: fixed;left: 0;right: 0;top: 0;bottom: 0;margin: auto;background-color: white;z-index: 6;width: 50%;">
-   <div class="bxOverlay bxOverlayProducts" style="display: none">
+   <div class="bxOverlay bxOverlayProducts" style="display: none; width: 100%; height: 100%">
       <?php
          $variant_id = $this->getVariantIndex();
 
@@ -11,10 +11,10 @@
          $parameter = ['name' => 'variant', 'values' => [$variant_id]];
 
          ?>
-      <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="display: block;position: fixed;z-index: 7;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%;background: rgb(255, 255, 255);margin-left: -20px;margin-top: -20px;top: unset; bottom: unset; left: unset; right: unset;">
+      <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="top:0; right:0; left: unset; bottom: unset; position: absolute; margin-right: -20px; margin-top: -20px;">
       &#x2715;
       </button>
-      <div class="block">
+      <div class="block" style="width: 100%;float: left;">
          <div class="block-content content">
             <div class="products wrapper grid products-grid products" style="padding:20px; margin: 0">
                <ol class="products list items product-items" style="margin: 0">
@@ -32,7 +32,7 @@
             </div>
          </div>
       </div>
-      <a class="bxOverlay" id="bxOverlayLink" style="display: block;position: absolute;z-index: 7;height: unset;width: 180px;line-height: 1.5;padding: 4px 8px;top: unset; bottom: 0; left: unset; right: 0; margin-right: 20px; margin-bottom: 20px; background-color: black; color: white; font-size: x-large;">
+      <a class="bxOverlay" id="bxOverlayUrl" style="display: block;position: absolute;z-index: 7;height: unset;width: 180px;line-height: 1.5;padding: 4px 8px;top: unset; bottom: 0; left: unset; right: 0; margin-right: 20px; margin-bottom: 20px; background-color: black; color: white; font-size: x-large;">
       link
       </a>
    </div>

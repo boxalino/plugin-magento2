@@ -17,6 +17,17 @@
   background: rgb(255, 255, 255);
   font-size: 12px !important;
 }
+
+#bxOverlayExitButton::after{
+  content: none;
+}
+
+@media screen and (max-width: 768px){
+  width: 80px;
+  height: 80px;
+  font-size: 30px;
+}
+
 #bxOverlayBackgroundImage{
   display: none;
   width:200px;

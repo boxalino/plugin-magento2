@@ -8,6 +8,7 @@ require([
 
     var basketTotal = <?php echo $this->getGrandTotal(); ?>;
     var parameters = <?php echo $this->getOverlayJsParameters(); ?>;
+    var controllerUrl = <?php echo $this->getControllerUrl(); ?>;
     var lang = "<?php echo $this->getLanguage(); ?>";
 
     <?php echo $this->getOverlayBehaviorJs(); ?>
