@@ -851,12 +851,73 @@ class Adapter
     public function getOverlayVariantId(){
         return $this->overlayVariantId;
     }
+	
+	public function getOverlayHitcount(){
+      $hitcount = $this->bxHelperData->getOverlayHitcount();
+      if (!empty($hitcount)) {
+        return $hitcount;
+      }
+      return 3;
+    }
+	
+    public function getOverlayBannerChoiceHitCount(){
+      $bannerHitcount = $this->bxHelperData->getOverlayBannerChoiceHitcount();
+      if (!empty($bannerHitcount)) {
+        return $bannerHitcount;
+      }
+      return 1;
+    }
+	
+    public function getOverlayOrder(){
+      $order = $this->bxHelperData->getOverlayOrder();
+      if (!empty($order)) {
+        return $order;
+      }
+      return null;
+    }
+	
+    public function getOverlayDir(){
+      $dir = $this->bxHelperData->getOverlayDir();
+      if (!empty($dir)) {
+        return $dir;
+      }
+      return null;
+    }
+	
+    public function getOverlayPageOffset(){
+      $pageoffset = $this->bxHelperData->getOverlayPageOffset();
+      if (!empty($pageoffset)) {
+        return $pageoffset;
+      }
+      return null;
+    }
 
     /**
      * @return mixed
      */
     private $overlayVariantId = null;
     public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null) {
+		
+		if($hitcount == null) {
+			$hitcount = $this->getOverlayHitcount();
+		}
+		
+		if($overlayBannerChoiceHitCount == null) {
+			$overlayBannerChoiceHitCount = $this->getOverlayBannerChoiceHitCount();
+		}
+		
+		if($order == null) {
+			$order = $this->getOverlayOrder();
+		}
+		
+		if($dir == null) {
+			$dir = $this->getOverlayDir();
+		}
+		
+		if($pageOffset == null) {
+			$pageOffset = $this->getOverlayPageOffset();
+		}
+		
         $choicesHitCounts = null;
         if (is_null($this->overlayVariantId)) {
             if($overlayBannerChoiceHitCount != null) {

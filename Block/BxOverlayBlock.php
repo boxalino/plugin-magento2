@@ -46,10 +46,6 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
         $this->bxResourceManager = $bxResourceManager;
         parent::__construct($context, $data);
 
-        if ($this->isActive() == true) {
-          $this->addOverlayRequests();
-        }
-
     }
 
     public function isActive(){
@@ -111,51 +107,6 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
       }else{
         return 0;
       }
-    }
-
-    public function addOverlayRequests(){
-      $hitcount = $this->getOverlayHitcount();
-      $overlayBannerChoiceHitCount = $this->getOverlayBannerChoiceHitCount();
-      $order = $this->getOverlayOrder();
-      $dir = $this->getOverlayDir();
-      $pageOffset = $this->getOverlayPageOffset();
-      $this->p13nHelper->addOverlayRequests($hitcount, $overlayBannerChoiceHitCount, $order, $dir, $pageOffset);
-    }
-
-    public function getOverlayHitcount(){
-      $hitcount = $this->bxHelperData->getOverlayHitcount();
-      if (!empty($hitcount)) {
-        return $hitcount;
-      }
-      return 3;
-    }
-    public function getOverlayBannerChoiceHitCount(){
-      $bannerHitcount = $this->bxHelperData->getOverlayBannerChoiceHitcount();
-      if (!empty($bannerHitcount)) {
-        return $bannerHitcount;
-      }
-      return 1;
-    }
-    public function getOverlayOrder(){
-      $order = $this->bxHelperData->getOverlayOrder();
-      if (!empty($order)) {
-        return $order;
-      }
-      return null;
-    }
-    public function getOverlayDir(){
-      $dir = $this->bxHelperData->getOverlayDir();
-      if (!empty($dir)) {
-        return $dir;
-      }
-      return null;
-    }
-    public function getOverlayPageOffset(){
-      $pageoffset = $this->bxHelperData->getOverlayPageOffset();
-      if (!empty($pageoffset)) {
-        return $pageoffset;
-      }
-      return null;
     }
 
     public function getOverlayValues($key){
