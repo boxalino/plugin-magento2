@@ -600,7 +600,7 @@ class Adapter
             $choice_ids = explode(',', $choices);
             if(is_array($choice_ids)) {
                 foreach ($choice_ids as $choice) {
-                    $choiceHitCount = $choicesHitCounts == null || !isset($choicesHitCounts[$choice]) ? $hitcount : $choicesHitCounts[$choice];
+                    $choiceHitCount = $choicesHitCounts == null || !isset($choicesHitCounts[$choice]) ? $hitCount : $choicesHitCounts[$choice];
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice, $choiceHitCount);
                     if(strpos($choice, 'banner') !== FALSE) {
                         self::$bxClient->addRequestContextParameter('banner_context', [1]);
@@ -1062,35 +1062,33 @@ class Adapter
         return $response;
     }
 
-    public function getSEOPageTitle(){
+    public function getSEOPageTitle($choice = null){
         if ($this->bxHelperData->isPluginEnabled()) {
-            $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title');
+            $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title', $choice);
             return $seoPageTitle;
         }
         return;
     }
 
-    public function getSEOMetaTitle(){
+    public function getSEOMetaTitle($choice = null){
         if ($this->bxHelperData->isPluginEnabled()) {
-            $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title');
+            $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title', $choice);
             return $seoMetaTitle;
         }
         return;
     }
 
-    public function getSEOMetaDescription(){
+    public function getSEOMetaDescription($choice = null){
         if ($this->bxHelperData->isPluginEnabled()) {
-            $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description');
+            $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description', $choice);
             return $seoMetaDescription;
         }
         return;
     }
 
-    public function getExtraInfoWithKey($key){
+    public function getExtraInfoWithKey($key, $choice = null){
         if ($this->bxHelperData->isPluginEnabled() && !empty($key)) {
-            $query = $this->queryFactory->get();
-            $queryText = $query->getQueryText();
-            $choice = $this->getSearchChoice($queryText);
+            $choice = is_null($choice) ? $this->currentSearchChoice : $choice;
             $extraInfo = $this->getResponse()->getExtraInfo($key, '', $choice);
             return $extraInfo;
         }
