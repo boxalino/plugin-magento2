@@ -546,7 +546,7 @@ class Adapter
         $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null, $withFacets = true) {
         if($replaceMain) {
           $this->currentSearchChoice = $choice_id;
           $this->isNarrative = true;
@@ -575,8 +575,12 @@ class Adapter
         $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setSortFields(new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
-        $facets = $this->prepareFacets();
-        $bxRequest->setFacets($facets);
+        $bxRequest->setGroupBy('products_group_id');
+        $bxRequest->setFilters($this->getSystemFilters());
+        if($withFacets) {
+            $facets = $this->prepareFacets();
+            $bxRequest->setFacets($facets);
+        }
         $bxRequest->setGroupFacets(true);
         $variantId = self::$bxClient->addRequest($bxRequest);
         $requestParams = $this->request->getParams();
@@ -923,7 +927,7 @@ class Adapter
             if($overlayBannerChoiceHitCount != null) {
                 $choicesHitCounts[$this->getOverlayBannerChoice()] = $overlayBannerChoiceHitCount;
             }
-            $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset);
+            $this->overlayVariantId = $this->addNarrativeRequest($this->getOverlayChoice(), $this->getOverlayBannerChoice(), false, $hitcount, $choicesHitCounts, $order, $dir, $pageOffset, false);
         }
     }
 

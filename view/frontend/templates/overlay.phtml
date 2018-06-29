@@ -1,42 +1,42 @@
 <?php if ($this->isActive() && $this->getBlockPathFromResponse() != null && $this->getTemplatePathFromResponse() != null) { ?>
 
-<script type="text/javascript">
-require([
-    'jquery'
-], function ($) {
-    'use strict';
+    <script type="text/javascript">
+        require([
+            'jquery'
+        ], function ($) {
+            'use strict';
 
-    var basketTotal = <?php echo $this->getGrandTotal(); ?>;
-    var parameters = <?php echo $this->getOverlayJsParameters(); ?>;
-    var controllerUrl = <?php echo $this->getControllerUrl(); ?>;
-    var lang = "<?php echo $this->getLanguage(); ?>";
+            var basketTotal = <?php echo $this->getGrandTotal(); ?>;
+            var parameters = <?php echo $this->getOverlayJsParameters(); ?>;
+            var controllerUrl = "<?php echo $this->getControllerUrl(); ?>";
+            var lang = "<?php echo $this->getLanguage(); ?>";
 
-    <?php echo $this->getOverlayBehaviorJs(); ?>
+            <?php echo $this->getOverlayBehaviorJs(); ?>
 
-});
+        });
 
 
-</script>
+    </script>
 
-<div class="bxOverlay">
+    <div class="bxOverlay">
 
-    <?php
+        <?php
 
-      $variant_index = $this->getVariantIndex();
-      $template_path = $this->getTemplatePathFromResponse();
-      $block_path = $this->getBlockPathFromResponse();
+        $variant_index = $this->getVariantIndex();
+        $template_path = $this->getTemplatePathFromResponse();
+        $block_path = $this->getBlockPathFromResponse();
 
-      $parameter = ['name' => 'variant', 'values' => [$variant_index]];
-      $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]  )->setTemplate($template_path);
-      echo $block->toHtml();
-    ?>
+        $parameter = ['name' => 'variant', 'values' => [$variant_index]];
+        $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]  )->setTemplate($template_path);
+        echo $block->toHtml();
+        ?>
 
-</div>
+    </div>
 
-<?php if ($this->withLightboxEffect() == 'true') { ?>
+    <?php if ($this->withLightboxEffect() == 'true') { ?>
 
-  <div class="bxOverlay" id="bxOverlayShadow"></div>
+        <div class="bxOverlay" id="bxOverlayShadow"></div>
 
-<?php } ?>
+    <?php } ?>
 
 <?php } ?>

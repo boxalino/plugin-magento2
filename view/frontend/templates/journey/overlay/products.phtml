@@ -19,10 +19,11 @@
             <div class="products wrapper grid products-grid products" style="padding:20px; margin: 0">
                <ol class="products list items product-items" style="margin: 0">
                   <?php
-                     foreach ($product_collection as $index => $product) { ?>
+                     $index = 0;
+                     foreach ($product_collection as $product) { ?>
                        <span style="margin-right: 25px;">
                          <?php $block = $this->getLayout()->createBlock('Boxalino\Intelligence\Block\Journey\Product\ProductView', 'product_view'.$index,
-                             ['data' => ['bx_index' => $index, 'bxVisualElement' => ['parameters' => [$parameter]]]]
+                             ['data' => ['bx_index' => $index++, 'bxVisualElement' => ['parameters' => [$parameter]]]]
                          )->setTemplate($template_path);
                          echo $block->toHtml(); ?>
                        </span>
