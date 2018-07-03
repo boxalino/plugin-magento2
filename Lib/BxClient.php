@@ -20,6 +20,7 @@ class BxClient
 	private $isTest = null;
 
 	private $debugOutput = '';
+	private $debugOutputActive = true;
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
 
@@ -414,7 +415,11 @@ class BxClient
 	private function p13nchoose($choiceRequest) {
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
-			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+            if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true'){
+                $this->addNotification('bxRequest', $choiceRequest);
+                $this->addNotification('bxResponse', $choiceResponse);
+            }
+            if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
                 $debug = true;
                 if (isset($this->requestMap['dev_bx_choice'])) {
                     $debug = false;
@@ -426,7 +431,10 @@ class BxClient
                     }
                 }
                 if ($debug) {
-                    $this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+                    ini_set('xdebug.var_display_max_children', -1);
+	                ini_set('xdebug.var_display_max_data', -1);
+	                ini_set('xdebug.var_display_max_depth', -1);
+					$this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
                 }
             }
             if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true') {
@@ -443,7 +451,10 @@ class BxClient
         try {
             $bundleChoiceResponse = $this->getP13n($this->_timeout)->chooseAll($choiceRequestBundle);
             if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-                $this->debugOutput = "<pre><h1>Bundle Choice Request</h1>" . var_export($choiceRequestBundle, true) . "<br><h1>Bundle Choice Response</h1>" . var_export($bundleChoiceResponse, true) . "</pre>";
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
+				$this->debugOutput = "<pre><h1>Bundle Choice Request</h1>" . var_export($choiceRequestBundle, true) . "<br><h1>Bundle Choice Response</h1>" . var_export($bundleChoiceResponse, true) . "</pre>";
             }
             if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true') {
                 $this->addNotification('bxRequest', $choiceRequestBundle);
@@ -631,7 +642,10 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-                $this->debugOutput = "<pre><h1>Autocomplete Request</h1>" . var_export($autocompleteRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
+				$this->debugOutput = "<pre><h1>Autocomplete Request</h1>" . var_export($autocompleteRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
             }
             if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true') {
                 $this->addNotification('bxRequest', $autocompleteRequest);
@@ -672,7 +686,10 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-                $this->debugOutput = "<pre><h1>Request bundle</h1>" . var_export($requestBundle, true) .  "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
+				ini_set('xdebug.var_display_max_children', -1);
+				ini_set('xdebug.var_display_max_data', -1);
+				ini_set('xdebug.var_display_max_depth', -1);
+				$this->debugOutput = "<pre><h1>Request bundle</h1>" . var_export($requestBundle, true) .  "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
             }
             if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true') {
                 $this->addNotification('bxRequest', $requestBundle);
@@ -698,6 +715,10 @@ class BxClient
 
 	public function getDebugOutput(){
 		return $this->debugOutput;
+	}
+
+	public function setDebugOutputActive($debugOutputActive) {
+		$this->debugOutputActive = $debugOutputActive;
 	}
 
     public function notifyWarning($warning) {
