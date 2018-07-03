@@ -77,7 +77,13 @@ class BxClient
 		}
 		$this->domain = $domain;
 		$this->apiKey = $apiKey;
+		if (empty($apiKey)) {
+			$this->apiKey = null;
+		}
 		$this->apiSecret = $apiSecret;
+		if (empty($apiSecret)) {
+			$this->apiSecret = null;
+		}
 	}
 
 	public function setHost($host) {
@@ -175,12 +181,12 @@ class BxClient
 	}
 
 	public function getApiKey() {
-	    return $this->apiKey;
-  }
+		return $this->apiKey;
+	}
 
 	public function getApiSecret() {
-	    return $this->apiSecret;
-  }
+		return $this->apiSecret;
+	}
 
 	public function setSessionAndProfile($sessionId, $profileId) {
 		$this->sessionId = $sessionId;
@@ -717,4 +723,5 @@ class BxClient
             return "<pre><h1>Notifications</h1>" .  var_export($this->notifications, true) . "</pre>";
         }
     }
+
 }

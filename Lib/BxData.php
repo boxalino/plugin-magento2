@@ -16,6 +16,7 @@ class BxData
     private $isDev;
     private $isDelta;
 
+    private $delimiter = ',';
     private $sources = array();
 
     private $host = 'http://di1.bx-cloud.com';
@@ -36,6 +37,11 @@ class BxData
     public function getLanguages() {
         return $this->languages;
     }
+
+    public function setDelimiter($delimiter) {
+        $this->delimiter = $delimiter;
+    }
+
     public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
         $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
@@ -143,7 +149,7 @@ class BxData
             if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
                 $count = 1;
                 $this->sources[$container][$sourceId]['rows'] = array();
-                while (($data = fgetcsv($handle, 2000, ",")) !== FALSE) {
+                while (($data = fgetcsv($handle, 2000, $this->delimiter)) !== FALSE) {
                     $this->sources[$container][$sourceId]['rows'][] = $data;
                     if($count++>=$maxRow) {
                         break;
@@ -157,8 +163,16 @@ class BxData
         }
         return null;
     }
+	
+	private $globalValidate = true;
+	public function setGlobalValidate($globalValidate) {
+		$this->globalValidate = $globalValidate;
+	}
 
     public function validateSource($container, $sourceId) {
+		if(!$this->globalValidate) {
+			return;
+		}
         $source = $this->sources[$container][$sourceId];
         if($source['format'] == 'CSV') {
             if(isset($source['itemIdColumn'])) {
@@ -168,6 +182,9 @@ class BxData
     }
 
     public function validateColumnExistance($container, $sourceId, $col) {
+		if(!$this->globalValidate) {
+			return;
+		}
         $row = $this->getSourceCSVRow($container, $sourceId, 0);
         if($row !== null && !in_array($col, $row)) {
             throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
@@ -306,6 +323,26 @@ class BxData
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         $this->ftpSources[$sourceId] = $params;
     }
+	
+    private $httpSources = array();
+    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0') {
+
+        if($user===null){
+            $user = $this->bxClient->getAccount(false);
+        }
+
+        if($password===null){
+            $password = $this->bxClient->getPassword();
+        }
+
+        $params = array();
+        $params['WebDirectory'] = $webDirectory;
+        $params['User'] = $user;
+        $params['Pass'] = $password;
+        $params['Header'] = $header;
+        list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+        $this->httpSources[$sourceId] = $params;
+    }
 
     public function getXML() {
 
@@ -344,7 +381,7 @@ class BxData
                         'file'=>false,
                         'format'=>'CSV',
                         'encoding'=>'UTF-8',
-                        'delimiter'=>',',
+                        'delimiter'=> $this->delimiter,
                         'enclosure'=>'"',
                         'escape'=>'\\\\',
                         'lineSeparator'=>"\\n"
@@ -426,6 +463,17 @@ class BxData
 
                     foreach($this->ftpSources[$sourceId] as $ftpPn => $ftpPv) {
                         $ftp->$ftpPn = $ftpPv;
+                    }
+                }
+
+                if(isset($this->httpSources[$sourceId])) {
+                    $param = $source->addChild('location');
+                    $param->addAttribute('type', 'http');
+
+                    $http = $source->addChild('http');
+
+                    foreach($this->httpSources[$sourceId] as $httpPn => $httpPv) {
+                        $http->$httpPn = $httpPv;
                     }
                 }
 
@@ -644,6 +692,9 @@ class BxData
                 if(isset($this->ftpSources[$sourceId])) {
                     continue;
                 }
+                if(isset($this->httpSources[$sourceId])) {
+                    continue;
+                }
                 if(!isset($sourceValues['file'])) {
                     $sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
                 }
@@ -653,7 +704,7 @@ class BxData
         return $files;
     }
 
-    public function createZip($temporaryFilePath=null, $name='bxdata.zip')
+    public function createZip($temporaryFilePath=null, $name='bxdata.zip', $clearFiles = true)
     {
         if($temporaryFilePath === null) {
             $temporaryFilePath = sys_get_temp_dir() . '/bxclient';
@@ -704,13 +755,18 @@ class BxData
                 $name . '" for writing. Please check the permissions and try again.'
             );
         }
+        if($clearFiles) {
+            foreach ($files as $file) {
+                unlink($file);
+            }
+        }
 
         return $zipFilePath;
     }
 
-    public function pushData($temporaryFilePath=null, $timeout=60) {
+    public function pushData($temporaryFilePath=null, $timeout=60, $clearFiles=true) {
 
-        $zipFile = $this->createZip($temporaryFilePath);
+        $zipFile = $this->createZip($temporaryFilePath, 'bxdata.zip', $clearFiles);
 
         $fields = array(
             'username' => $this->bxClient->getUsername(),

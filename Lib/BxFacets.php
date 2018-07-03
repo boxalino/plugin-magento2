@@ -37,6 +37,7 @@ class BxFacets
         return $this->notificationLog;
     }
 
+    protected $forceIncludedFacets = null;
 
     public function setSearchResults($searchResult) {
         $this->searchResult = $searchResult;
@@ -92,10 +93,53 @@ class BxFacets
         return $this->parameterPrefix . $parameterName;
     }
 
+    public function getForceIncludedFieldNames($onlySelected=false) {
+
+        $fieldNames = array();
+        if(is_null($this->forceIncludedFacets)) {
+            $this->getFieldNames();
+        }
+        if(is_array($this->forceIncludedFacets)) {
+            if($onlySelected) {
+                foreach($this->searchResult->facetResponses as $facetResponse) {
+                    if(isset($this->forceIncludedFacets[$facetResponse->fieldName])) {
+                        foreach ($facetResponse->values as $value) {
+                            if($value->selected) {
+                                $fieldNames[$facetResponse->fieldName] = $facetResponse->fieldName;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                $fieldNames = $this->forceIncludedFacets;
+            }
+        }
+        return $fieldNames;
+    }
+
+    public function getSelectedSemanticFilterValues($field) {
+        $selectedValues = array();
+        $fieldNames = $this->getFieldNames();
+
+        foreach ($fieldNames as $fieldName) {
+            if($fieldName == $field) {
+                foreach ($this->getFacetResponse($fieldName)->values as $value) {
+                    if($value->selected && !in_array($value->stringValue, $this->facets[$fieldName]['selectedValues'])) {
+                        $selectedValues[] = $value->stringValue;
+                    }
+                }
+                break;
+            }
+        }
+        return $selectedValues;
+    }
+
     public function getFieldNames() {
         $fieldNames = array();
 
         if($this->searchResult && (sizeof($this->facets) !== sizeof($this->searchResult->facetResponses))) {
+            $this->forceIncludedFacets = array();
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
                     $this->facets[$facetResponse->fieldName] = [
@@ -106,6 +150,7 @@ class BxFacets
                         'boundsOnly' => $facetResponse->range,
                         'maxCount' => -1
                     ];
+                    $this->forceIncludedFacets[$facetResponse->fieldName] = $facetResponse->fieldName;
                 }
             }
         }
@@ -141,7 +186,7 @@ class BxFacets
         return $selectedFacets;
     }
 
-    public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false, $returnHidden=false) {
+    public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false, $returnHidden=false, $withSoftFacets=false) {
         $selectedFacets = array();
         foreach($this->getFieldNames() as $fieldName) {
             if(!$returnHidden && $this->isFacetHidden($fieldName)) {
@@ -152,6 +197,9 @@ class BxFacets
                 continue;
             }
             if ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
+                if(!$withSoftFacets && $this->getFacetExtraInfo($fieldName, 'isSoftFacet') == 'true'){
+                    continue;
+                }
                 $selectedFacets[] = $fieldName;
             }
         }
@@ -174,6 +222,10 @@ class BxFacets
 
     public function getRightFacets($returnHidden=false) {
         return $this->getFacetExtraInfoFacets('position', 'right', false, $returnHidden);
+    }
+
+    public function getCPOFinderFacets($returnHidden=false){
+      return $this->getFacetExtraInfoFacets('finderFacet', 'true', false, $returnHidden, true);
     }
 
     public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
@@ -849,7 +901,7 @@ class BxFacets
         if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
             $fv = reset($keyValues);
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive - 0.01;
+            $to = $this->selectedPriceValues[0]->rangeToExclusive;
             if($this->priceRangeMargin) {
                 $to -= 0.01;
             }
@@ -908,7 +960,7 @@ class BxFacets
         $valueLabel = null;
         if($this->selectedPriceValues !== null && ($this->selectedPriceValues != null)){
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive - 0.01;
+            $to = $this->selectedPriceValues[0]->rangeToExclusive;
             if($this->priceRangeMargin) {
                 $to -= 0.01;
             }
@@ -1019,7 +1071,7 @@ class BxFacets
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
                     if ($rangedValue[1] != '*') {
-                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1] + 0.01;
+                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1];
                         if($rangedValue[0] == $rangedValue[1]) {
                             $this->priceRangeMargin = true;
                             $selectedFacet->rangeToExclusive += 0.01;
