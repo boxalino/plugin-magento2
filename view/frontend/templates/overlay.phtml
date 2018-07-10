@@ -26,8 +26,9 @@
         $template_path = $this->getTemplatePathFromResponse();
         $block_path = $this->getBlockPathFromResponse();
 
-        $parameter = ['name' => 'variant', 'values' => [$variant_index]];
-        $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => [$parameter]]]]  )->setTemplate($template_path);
+        $parameters = [['name' => 'variant', 'values' => [$variant_index]]];
+        $parameters[] = ['name' => 'jsParams', 'values' => [$this->getOverlayJsParameters()]];
+        $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => $parameters]]]  )->setTemplate($template_path);
         echo $block->toHtml();
         ?>
 

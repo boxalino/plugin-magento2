@@ -1,0 +1,46 @@
+<?php
+  $bxVisualElement = $this->getData('bxVisualElement');
+  foreach ($bxVisualElement['parameters'] as $parameter) {
+    if ($parameter['name'] == 'jsParams') {
+      $jsonParams = json_decode($parameter['values'][0], true);
+    }
+  }
+  $bxNewsletterBackgroundImage = $this->getLocalizedValue($jsonParams['newsletterBackgroundImage']);
+  $bxNewsletterTitle = $this->getLocalizedValue($jsonParams['newsletterTitle']);
+  $bxNewsletterText = $this->getLocalizedValue($jsonParams['newsletterText']);
+
+  if (empty($bxNewsletterBackgroundImage)) {
+    $bxNewsletterBackgroundImage = 'Not defined';
+  }
+  if (empty($bxNewsletterTitle)) {
+    $bxNewsletterTitle = 'Not defined';
+  }
+  if (empty($bxNewsletterText)) {
+    $bxNewsletterText = 'Not defined';
+  }
+?>
+
+<div class="bxOverlay" style="height: 200px; width: fit-content;top: 0;left: 0;right: 0;bottom: 0;position: fixed;margin: auto; z-index: 10;">
+  <form class="bxOverlay" action="#" method="get" style="position: relative">
+
+    <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="position: absolute;z-index: 7;left: 0;right: unset;top: 0;bottom: unset;margin-top: -15px; margin-left: -15px;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%; box-shadow: none; background: rgb(255, 255, 255);font-size: 12px">
+      &#x2715;
+    </button>
+
+    <img class="bxOverlay" id="bxNewsletterBackgroundImage" src="<?php echo $bxNewsletterBackgroundImage; ?>"/>
+
+    <div class="bxOverlay" id="bxNewsletterTitle" style="position: absolute; width: 40%; height: auto; top: 20%; left: 10%;">
+      <?php echo $bxNewsletterTitle; ?>
+    </div>
+
+    <div class="bxOverlay" id="bxNewsletterText" style="position: absolute; width: 40%; height: auto; top: 30%; left: 10%;">
+      <?php echo $bxNewsletterText; ?>
+    </div>
+
+    <input class="bxOverlay" type="text" id="bxNewsletterInput" name="email" style="width: 30%;top: 50%;position:  absolute;left: 10%"/>
+
+    <input class="bxOverlay" type="submit" style="position:  absolute;top: 65%;left:  10%;" placeholder="Ihre E-Mail Adresse" id="bxNewsletterButton"/>
+
+    <div class="bxOverlay" id="bxNewsletterImage"></div>
+  </form>
+</div>
