@@ -575,7 +575,8 @@ class Adapter
         $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setSortFields(new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
-        //$bxRequest->setGroupBy('products_group_id');
+        $bxRequest->setGroupBy('products_group_id');
+		$bxRequest->setHitsGroupsAsHits(true);
         $bxRequest->setFilters($this->getSystemFilters());
         if($withFacets) {
             $facets = $this->prepareFacets();
