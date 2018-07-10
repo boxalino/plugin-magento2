@@ -249,6 +249,10 @@ class BxClient
 
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
 
+		if (isset($this->requestMap['dev_bx_socket'])) {
+			$this->setSocket($this->requestMap['dev_bx_socket']);
+		}
+
 		if($this->socketHost != null) {
 			$transport = new \Thrift\Transport\TSocket($this->socketHost, $this->socketPort);
 			$transport->setSendTimeout($this->socketSendTimeout);
