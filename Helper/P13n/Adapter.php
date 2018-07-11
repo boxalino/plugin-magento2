@@ -348,12 +348,14 @@ class Adapter
                             $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable($this->getSearchChoice($queryText, true), $id, $field, 0);
                             $blog[$field] = is_array($value) ? reset($value) : $value;
                             if($field == 'title'){
-                              $parts = explode('&#', $blog[$field]);
-                              // fix for encoding problem
-                              if (sizeof($parts)>1) {
-                                $blog[$field] = mb_convert_encoding($blog[$field], "UTF-8", "HTML-ENTITIES");
-                              }
-                            }
+								$parts = explode(' ', $blog[$field]);
+								foreach($parts as $pi => $pv) {
+									if(strpos($pv, '&#') !== false) {
+									  $parts[$pi] = mb_convert_encoding($pv, "UTF-8", "HTML-ENTITIES");
+									}
+								}
+								$blog[$field] = implode(' ', $parts);
+							}
                         }
                         $data[] = array('type' => 'blog','product' => $blog, 'first' => $first);
                         if($first) $first = false;
