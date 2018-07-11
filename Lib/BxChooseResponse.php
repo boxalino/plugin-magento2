@@ -191,7 +191,13 @@ class BxChooseResponse
     public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id', $discardIfSubPhrases = true) {
 
         $variant = $this->getChoiceResponseVariant($choice, $count);
-        return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fieldId);
+		$ids = $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fieldId);
+		foreach($ids as $k => $v){
+			if(strpos($v, 'duplicate') !== false){
+				$ids[$k] = str_replace('duplicate', '', $v);
+			}
+		}
+        return $ids;
     }
 
     public function retrieveHitFieldValues($item, $field, $fields, $hits) {
