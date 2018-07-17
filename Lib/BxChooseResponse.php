@@ -526,7 +526,9 @@ class BxChooseResponse
     protected function prepareVisualElement($render, $overwriteParams) {
 
         $visualElement = $render['visualElement'];
-        $visualElementParams = $this->mergeJourneyParams($render['parameters'], $visualElement['parameters']);
+		$renderParameters = isset($render['parameters']) ? $render['parameters'] : array();
+		$visualElementParameters = isset($visualElement['parameters']) ? $visualElement['parameters'] : array();
+        $visualElementParams = $this->mergeJourneyParams($renderParameters, $visualElementParameters);
         $visualElement['parameters'] = $this->mergeJourneyParams($overwriteParams, $visualElementParams);
         $overwriteParams = array_merge($overwriteParams, $this->getOverwriteParams($visualElement['parameters']));
         if(isset($visualElement['subRenderings']) && sizeof($visualElement['subRenderings'])) {
