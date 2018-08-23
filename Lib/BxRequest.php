@@ -236,7 +236,7 @@ class BxRequest
 		$this->addRelatedProducts($relatedProducts, $relatedProductField);
 	}
 
-	public function setBasketProductWithPrices($fieldName, $basketContent, $role = 'mainProduct', $subRole = 'mainProduct', $relatedProducts = array(), $relatedProductField='id') {
+	public function setBasketProductWithPrices($fieldName, $basketContent, $role = 'mainProduct', $subRole = 'subProduct', $relatedProducts = array(), $relatedProductField='id') {
 		if ($basketContent !== false && count($basketContent)) {
 			
 			// Sort basket content by price
