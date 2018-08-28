@@ -6,6 +6,7 @@
 $_helper = $this->getBxHelperData();
 $_autocompleteHelper = $this->getAutocompleteHelper();
 $account = $this->getAccount();
+$script = $this->getBaScriptServerPath();
 ?>
 <script>
     require([
@@ -111,7 +112,7 @@ $account = $this->getAccount();
     (function () {
         var s = document.createElement('script');
         s.async = 1;
-        s.src = '//cdn.bx-cloud.com/frontend/rc/js/ba.min.js';
+        s.src = <?php echo $script;?>;
         document.getElementsByTagName('head')[0].appendChild(s);
     })();
 <?php endif; ?>

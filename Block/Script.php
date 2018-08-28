@@ -5,8 +5,13 @@ namespace Boxalino\Intelligence\Block;
  * Class Script
  * @package Boxalino\Intelligence\Block
  */
-class Script extends \Magento\Framework\View\Element\Template{
-    
+class Script extends \Magento\Framework\View\Element\Template
+{
+
+    CONST BXL_INTELLIGENCE_STAGE_SCRIPT="//r-st.bx-cloud.com/static/ba.min.js";
+    CONST BXL_INTELLIGENCE_PROD_SCRIPT="//track.bx-cloud.com/static/ba.min.js";
+    CONST BXL_INTELLIGENCE_SCRIPT = "//cdn.bx-cloud.com/frontend/rc/js/ba.min.js";
+
     /**
      * @var string
      */
@@ -94,7 +99,29 @@ class Script extends \Magento\Framework\View\Element\Template{
      */
     public function getAccount(){
         
-        return $this->_scopeConfig->getValue('bxGeneral/general/account_name',$this->scopeStore);
+        return $this->_scopeConfig->getValue('bxGeneral/general/account_name', $this->scopeStore);
     }
+
+    /**
+     * getting the upgraded script
+     * @return string
+     */
+    public function getBaScriptServerPath()
+    {
+        $apiKey = $this->_scopeConfig->getValue('bxGeneral/general/apiKey', $this->scopeStore);
+        $apiSecret = $this->_scopeConfig->getValue('bxGeneral/general/apiSecret', $this->scopeStore);
+        if(empty($apiKey) || empty($apiSecret))
+        {
+            return self::BXL_INTELLIGENCE_SCRIPT;
+        }
+        $isDev = $this->_scopeConfig->getValue('bxGeneral/general/dev', $this->scopeStore);
+        if($isDev)
+        {
+            return self::BXL_INTELLIGENCE_STAGE_SCRIPT;
+        }
+
+        return self::BXL_INTELLIGENCE_PROD_SCRIPT;
+    }
+
 }
 

@@ -41,13 +41,11 @@
                 </field>
                 <field id="apiKey" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>ApiKey</label>
-                    <comment>Value for new set-up</comment>
-                    <validate>validate-no-empty</validate>
+                    <comment>Set a value for new set-up</comment>
                 </field>
                 <field id="apiSecret" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>ApiSecret</label>
-                    <comment>Value for new set-up</comment>
-                    <validate>validate-no-empty</validate>
+                    <comment>Set a value for new set-up</comment>
                 </field>
             </group>
 
@@ -66,7 +64,7 @@
                 <!-- create text type field -->
                 <field id="host" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>Host</label>
-                    <comment>Optional: uses default value "main.bx-cloud.com" if left empty</comment>
+                    <comment>Optional: uses default value "cdn.bx-cloud.com" if left empty; Set to "main.bx-cloud.com" for the new set-up.</comment>
                 </field>
                 <field id="p13n_username" translate="label" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>P13n Username</label>
