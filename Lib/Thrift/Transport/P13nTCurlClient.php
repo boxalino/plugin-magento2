@@ -35,12 +35,13 @@ class P13nTCurlClient extends TCurlClient {
             curl_setopt(self::$curlHandle, CURLOPT_BINARYTRANSFER, true);
             curl_setopt(self::$curlHandle, CURLOPT_USERAGENT, 'PHP/TCurlClient');
             curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'POST');
-			curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
             // FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set
             @curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
             @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
+            curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, array("X-BX-PROFILEID: {$this->profileId}"));
         }
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
         $fullUrl = $this->scheme_."://".$host.$this->uri_;
@@ -49,6 +50,7 @@ class P13nTCurlClient extends TCurlClient {
             'Accept: application/x-thrift',
             'User-Agent: PHP/THttpClient',
             'Content-Type: application/x-thrift',
+            'X-BX-PROFILEID : '. $this->profileId,
             'Content-Length: '.TStringFuncFactory::create()->strlen($this->request_),
             'Authorization: Basic '.$this->authorizationString);
 
@@ -84,6 +86,6 @@ class P13nTCurlClient extends TCurlClient {
     }
 
     public function setAuthorization($username, $password) {
-    $this->authorizationString = base64_encode($username.':'.$password);
-  }
+        $this->authorizationString = base64_encode($username.':'.$password);
+    }
 }

@@ -249,6 +249,8 @@ class BxClient
 
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
 
+        list($sessionid, $profileid) = $this->getSessionAndProfile();
+
 		if (isset($this->requestMap['dev_bx_socket'])) {
 			$this->setSocket($this->requestMap['dev_bx_socket']);
 		}
@@ -263,9 +265,9 @@ class BxClient
 		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
-			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
+			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $profileId, $this->uri, $this->schema, $this->curl_timeout);
 		} else {
-			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
+			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $profileId, $this->uri, $this->schema);
 		}
 
 		$transport->setAuthorization($this->p13n_username, $this->p13n_password);
