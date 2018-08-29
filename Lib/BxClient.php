@@ -249,7 +249,7 @@ class BxClient
 
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
 
-        list($sessionid, $profileid) = $this->getSessionAndProfile();
+        list($sessionid, $profileId) = $this->getSessionAndProfile();
 
 		if (isset($this->requestMap['dev_bx_socket'])) {
 			$this->setSocket($this->requestMap['dev_bx_socket']);
