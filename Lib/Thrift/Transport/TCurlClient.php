@@ -85,18 +85,13 @@ class TCurlClient extends TTransport {
     protected $timeout_;
 
     /**
-     * @var string
-     */
-    protected $profileId;
-
-    /**
      * Make a new HTTP client.
      *
      * @param string $host
      * @param int    $port
      * @param string $uri
      */
-    public function __construct($host, $port=80, $profileId. $uri='', $scheme = 'http') {
+    public function __construct($host, $port=80, $uri='', $scheme = 'http') {
         if ((TStringFuncFactory::create()->strlen($uri) > 0) && ($uri{0} != '/')) {
     $uri = '/'.$uri;
 }
@@ -107,7 +102,6 @@ class TCurlClient extends TTransport {
         $this->request_ = '';
         $this->response_ = null;
         $this->timeout_ = null;
-        $this->profileId = $profileId;
     }
 
     /**
@@ -186,7 +180,6 @@ class TCurlClient extends TTransport {
         curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
-        curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, array("X-BX-PROFILEID: {$this->profileId}"));
     }
     // God, PHP really has some esoteric ways of doing simple things.
     $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
@@ -194,7 +187,6 @@ class TCurlClient extends TTransport {
 
     $headers = array('Accept: application/x-thrift',
         'Content-Type: application/x-thrift',
-        'X-BX-PROFILEID : '. $this->profileId,
         'Content-Length: '.TStringFuncFactory::create()->strlen($this->request_));
     curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, $headers);
 
