@@ -199,11 +199,11 @@ class Adapter
 
     public function setLandingPageChoiceId($choice = ''){
 
-      if (!empty($choice)) {
-        return $this->landingPageChoice = $choice;
-      }
+        if (!empty($choice)) {
+            return $this->landingPageChoice = $choice;
+        }
 
-      return $choice;
+        return $choice;
 
     }
 
@@ -223,8 +223,8 @@ class Adapter
         $landingPageChoiceId = $this->landingPageChoice;
 
         if (!empty($landingPageChoiceId)) {
-          $this->currentSearchChoice = $landingPageChoiceId;
-          return $landingPageChoiceId;
+            $this->currentSearchChoice = $landingPageChoiceId;
+            return $landingPageChoiceId;
         }
 
         if ($queryText == null) {
@@ -283,7 +283,7 @@ class Adapter
                 $id = $isBlog ? 'id' : 'products_group_id';
                 $searchRequest->setGroupBy($id);
                 if(!$isBlog) {
-                  $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
+                    $searchRequest->setFilters($this->getSystemFilters($queryText, $search));
                 }
                 $bxRequests[] = $bxRequest;
             }
@@ -348,14 +348,14 @@ class Adapter
                             $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable($this->getSearchChoice($queryText, true), $id, $field, 0);
                             $blog[$field] = is_array($value) ? reset($value) : $value;
                             if($field == 'title'){
-								$parts = explode(' ', $blog[$field]);
-								foreach($parts as $pi => $pv) {
-									if(strpos($pv, '&#') !== false) {
-									  $parts[$pi] = mb_convert_encoding($pv, "UTF-8", "HTML-ENTITIES");
-									}
-								}
-								$blog[$field] = implode(' ', $parts);
-							}
+                                $parts = explode(' ', $blog[$field]);
+                                foreach($parts as $pi => $pv) {
+                                    if(strpos($pv, '&#') !== false) {
+                                        $parts[$pi] = mb_convert_encoding($pv, "UTF-8", "HTML-ENTITIES");
+                                    }
+                                }
+                                $blog[$field] = implode(' ', $parts);
+                            }
                         }
                         $data[] = array('type' => 'blog','product' => $blog, 'first' => $first);
                         if($first) $first = false;
@@ -374,78 +374,78 @@ class Adapter
      * @param null $categoryId
      * @param bool $addFinder
      */
-     public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null, $addFinder = false)
-     {
-         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
-         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
-         $returnFields = array_merge($returnFields, $additionalFields);
+    public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null, $addFinder = false)
+    {
+        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+        $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
+        $returnFields = array_merge($returnFields, $additionalFields);
 
-         self::$bxClient->forwardRequestMapAsContextParameters();
-         if($addFinder) {
-             $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getFinderChoice());
-             $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
-             $this->setPrefixContextParameter($this->prefixContextParameter);
-             $bxRequest->setHitsGroupsAsHits(true);
-             $bxRequest->addRequestParameterExclusionPatterns('bxi_data_owner');
-         } else {
-             if(!is_null($this->landingPageChoice)) {
-                 $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->landingPageChoice, $hitCount);
-             }else {
-                 $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-             }
-         }
-         $bxRequest->setGroupBy('products_group_id');
-         $bxRequest->setReturnFields($returnFields);
-         $bxRequest->setOffset($pageOffset);
-         $bxRequest->setSortFields($bxSortFields);
-         $bxRequest->setFacets($this->prepareFacets());
-         $bxRequest->setFilters($this->getSystemFilters($queryText));
-         $bxRequest->setGroupFacets(true);
+        self::$bxClient->forwardRequestMapAsContextParameters();
+        if($addFinder) {
+            $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getFinderChoice());
+            $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+            $this->setPrefixContextParameter($this->prefixContextParameter);
+            $bxRequest->setHitsGroupsAsHits(true);
+            $bxRequest->addRequestParameterExclusionPatterns('bxi_data_owner');
+        } else {
+            if(!is_null($this->landingPageChoice)) {
+                $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->landingPageChoice, $hitCount);
+            }else {
+                $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+            }
+        }
+        $bxRequest->setGroupBy('products_group_id');
+        $bxRequest->setReturnFields($returnFields);
+        $bxRequest->setOffset($pageOffset);
+        $bxRequest->setSortFields($bxSortFields);
+        $bxRequest->setFacets($this->prepareFacets());
+        $bxRequest->setFilters($this->getSystemFilters($queryText));
+        $bxRequest->setGroupFacets(true);
 
-         if ($categoryId != null && !$addFinder) {
-             $filterField = "category_id";
-             $filterValues = array($categoryId);
-             $filterNegative = false;
-             $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
-         }
+        if ($categoryId != null && !$addFinder) {
+            $filterField = "category_id";
+            $filterValues = array($categoryId);
+            $filterNegative = false;
+            $bxRequest->addFilter(new BxFilter($filterField, $filterValues, $filterNegative));
+        }
 
-         self::$bxClient->addRequest($bxRequest);
-         if($this->bxHelperData->isBlogEnabled() && (is_null($categoryId) || !$this->navigation)) {
-             $this->addBlogResult($queryText, $hitCount);
-         }
+        self::$bxClient->addRequest($bxRequest);
+        if($this->bxHelperData->isBlogEnabled() && (is_null($categoryId) || !$this->navigation)) {
+            $this->addBlogResult($queryText, $hitCount);
+        }
 
-         if($this->isOverlyActive()) {
-           $this->addOverlayRequests();
-         }
-     }
+        if($this->isOverlyActive()) {
+            $this->addOverlayRequests();
+        }
+    }
 
-     public function isOverlyActive(){
-       if ($this->bxHelperData->isOverlayEnabled()) {
-           return true;
-       }
-       return false;
-     }
+    public function isOverlyActive(){
+        if ($this->bxHelperData->isOverlayEnabled()) {
+            return true;
+        }
+        return false;
+    }
 
-     private function addBlogResult($queryText, $hitCount) {
-         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
-         $requestParams =  $this->request->getParams();
-         $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
-         $bxRequest->setOffset($pageOffset);
-         $bxRequest->setGroupBy('id');
-         $returnFields = $this->bxHelperData->getBlogReturnFields();
-         $bxRequest->setReturnFields($returnFields);
-         self::$bxClient->addRequest($bxRequest);
-     }
+    private function addBlogResult($queryText, $hitCount) {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
+        $requestParams =  $this->request->getParams();
+        $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+        $bxRequest->setOffset($pageOffset);
+        $bxRequest->setGroupBy('id');
+        $returnFields = $this->bxHelperData->getBlogReturnFields();
+        $bxRequest->setReturnFields($returnFields);
+        self::$bxClient->addRequest($bxRequest);
+    }
 
-     public function getLandingpageContextParameters($extraParams = null){
+    public function getLandingpageContextParameters($extraParams = null){
 
-       foreach ($extraParams as $key => $value) {
+        foreach ($extraParams as $key => $value) {
 
-         self::$bxClient->addRequestContextParameter($key, $value);
+            self::$bxClient->addRequestContextParameter($key, $value);
 
-       }
+        }
 
-     }
+    }
 
     /**
      * @return string
@@ -467,7 +467,7 @@ class Adapter
 
         $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
-          $choice_id = 'extend';
+            $choice_id = 'extend';
         }
         $this->currentSearchChoice = $choice_id;
         return $choice_id;
@@ -480,7 +480,7 @@ class Adapter
 
         $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/banner_choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
-          $choice_id = 'banner_overlay';
+            $choice_id = 'banner_overlay';
         }
         $this->currentSearchChoice = $choice_id;
         return $choice_id;
@@ -550,13 +550,13 @@ class Adapter
 
     protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null, $withFacets = true) {
         if($replaceMain) {
-          $this->currentSearchChoice = $choice_id;
-          $this->isNarrative = true;
+            $this->currentSearchChoice = $choice_id;
+            $this->isNarrative = true;
         }
         $requestParams = $this->request->getParams();
         $field = '';
         if($order == null) {
-          $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
+            $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
         }
         if (($order == 'title') || ($order == 'name')) {
             $field = 'products_bx_parent_title';
@@ -564,13 +564,13 @@ class Adapter
             $field = 'products_bx_grouped_price';
         }
         if($dir == null) {
-          $dir = isset($requestParams['product_list_dir']) ? true : false;
+            $dir = isset($requestParams['product_list_dir']) ? true : false;
         }
         if($hitCount == null) {
-          $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+            $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         }
         if($pageOffset == null) {
-          $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+            $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
         }
 
         $language = $this->getLanguage();
@@ -578,7 +578,7 @@ class Adapter
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setSortFields(new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
         $bxRequest->setGroupBy('products_group_id');
-		$bxRequest->setHitsGroupsAsHits(true);
+        $bxRequest->setHitsGroupsAsHits(true);
         $bxRequest->setFilters($this->getSystemFilters());
         if($withFacets) {
             $facets = $this->prepareFacets();
@@ -646,7 +646,6 @@ class Adapter
      */
     public function getMagentoStoreConfigPageSize()
     {
-
         $storeConfig = $this->getMagentoStoreConfig();
         $storeDisplayMode = $storeConfig['list_mode'];
 
@@ -858,45 +857,45 @@ class Adapter
     public function getOverlayVariantId(){
         return $this->overlayVariantId;
     }
-	
-	public function getOverlayHitcount(){
-      $hitcount = $this->bxHelperData->getOverlayHitcount();
-      if (!empty($hitcount)) {
-        return $hitcount;
-      }
-      return 3;
+
+    public function getOverlayHitcount(){
+        $hitcount = $this->bxHelperData->getOverlayHitcount();
+        if (!empty($hitcount)) {
+            return $hitcount;
+        }
+        return 3;
     }
-	
+
     public function getOverlayBannerChoiceHitCount(){
-      $bannerHitcount = $this->bxHelperData->getOverlayBannerChoiceHitcount();
-      if (!empty($bannerHitcount)) {
-        return $bannerHitcount;
-      }
-      return 1;
+        $bannerHitcount = $this->bxHelperData->getOverlayBannerChoiceHitcount();
+        if (!empty($bannerHitcount)) {
+            return $bannerHitcount;
+        }
+        return 1;
     }
-	
+
     public function getOverlayOrder(){
-      $order = $this->bxHelperData->getOverlayOrder();
-      if (!empty($order)) {
-        return $order;
-      }
-      return null;
+        $order = $this->bxHelperData->getOverlayOrder();
+        if (!empty($order)) {
+            return $order;
+        }
+        return null;
     }
-	
+
     public function getOverlayDir(){
-      $dir = $this->bxHelperData->getOverlayDir();
-      if (!empty($dir)) {
-        return $dir;
-      }
-      return null;
+        $dir = $this->bxHelperData->getOverlayDir();
+        if (!empty($dir)) {
+            return $dir;
+        }
+        return null;
     }
-	
+
     public function getOverlayPageOffset(){
-      $pageoffset = $this->bxHelperData->getOverlayPageOffset();
-      if (!empty($pageoffset)) {
-        return $pageoffset;
-      }
-      return null;
+        $pageoffset = $this->bxHelperData->getOverlayPageOffset();
+        if (!empty($pageoffset)) {
+            return $pageoffset;
+        }
+        return null;
     }
 
     /**
@@ -904,27 +903,27 @@ class Adapter
      */
     private $overlayVariantId = null;
     public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null) {
-		
-		if($hitcount == null) {
-			$hitcount = $this->getOverlayHitcount();
-		}
-		
-		if($overlayBannerChoiceHitCount == null) {
-			$overlayBannerChoiceHitCount = $this->getOverlayBannerChoiceHitCount();
-		}
-		
-		if($order == null) {
-			$order = $this->getOverlayOrder();
-		}
-		
-		if($dir == null) {
-			$dir = $this->getOverlayDir();
-		}
-		
-		if($pageOffset == null) {
-			$pageOffset = $this->getOverlayPageOffset();
-		}
-		
+
+        if($hitcount == null) {
+            $hitcount = $this->getOverlayHitcount();
+        }
+
+        if($overlayBannerChoiceHitCount == null) {
+            $overlayBannerChoiceHitCount = $this->getOverlayBannerChoiceHitCount();
+        }
+
+        if($order == null) {
+            $order = $this->getOverlayOrder();
+        }
+
+        if($dir == null) {
+            $dir = $this->getOverlayDir();
+        }
+
+        if($pageOffset == null) {
+            $pageOffset = $this->getOverlayPageOffset();
+        }
+
         $choicesHitCounts = null;
         if (is_null($this->overlayVariantId)) {
             if($overlayBannerChoiceHitCount != null) {
@@ -935,10 +934,10 @@ class Adapter
     }
 
     public function sendOverlayRequestWithParams(){
-      $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
-      $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
-      $this->setPrefixContextParameter($this->prefixContextParameter);
-      self::$bxClient->addRequest($bxRequest);
+        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
+        $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+        $this->setPrefixContextParameter($this->prefixContextParameter);
+        self::$bxClient->addRequest($bxRequest);
     }
 
     /**
@@ -1052,14 +1051,14 @@ class Adapter
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     $bxRequest = null;
                     if($widgetType == 'parametrized') {
-                      $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+                        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     } else {
-                      $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+                        $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     }
 
                     if ($widgetType != 'blog') {
-                      $bxRequest->setGroupBy('products_group_id');
-                      $bxRequest->setFilters($this->getSystemFilters());
+                        $bxRequest->setGroupBy('products_group_id');
+                        $bxRequest->setFilters($this->getSystemFilters());
                     }
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
 
@@ -1090,7 +1089,7 @@ class Adapter
                 }
             }
             if($this->isOverlyActive()) {
-              $this->addOverlayRequests();
+                $this->addOverlayRequests();
             }
             return array();
         }
