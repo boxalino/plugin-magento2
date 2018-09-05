@@ -29,7 +29,7 @@ class P13nTHttpClient extends THttpClient {
             'Accept: application/x-thrift',
             'User-Agent: PHP/THttpClient',
             'Content-Type: application/x-thrift',
-            'X-BX-PROFILEID : '. $this->profileId,
+            'X-BX-PROFILEID: '. $this->profileId,
             'Content-Length: '.TStringFuncFactory::create()->strlen($this->buf_),
             'Authorization: Basic '.$this->authorizationString);
 
