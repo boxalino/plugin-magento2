@@ -548,11 +548,13 @@ class Adapter
         $this->search($queryText, $pageOffset, $hitCount, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null, $withFacets = true) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $hitCount=null, $choicesHitCounts=null, $order=null, $dir=null, $pageOffset=null, $withFacets = true)
+    {
         if($replaceMain) {
             $this->currentSearchChoice = $choice_id;
             $this->isNarrative = true;
         }
+
         $requestParams = $this->request->getParams();
         $field = '';
         if($order == null) {
@@ -580,12 +582,13 @@ class Adapter
         $bxRequest->setGroupBy('products_group_id');
         $bxRequest->setHitsGroupsAsHits(true);
         $bxRequest->setFilters($this->getSystemFilters());
-        if($withFacets) {
+        if($withFacets && $replaceMain) {
             $facets = $this->prepareFacets();
             $bxRequest->setFacets($facets);
         }
         $bxRequest->setGroupFacets(true);
         $variantId = self::$bxClient->addRequest($bxRequest);
+
         $requestParams = $this->request->getParams();
         foreach ($requestParams as $key => $value) {
             self::$bxClient->addRequestContextParameter($key, $value);
@@ -621,7 +624,8 @@ class Adapter
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true)
+    {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
@@ -631,7 +635,8 @@ class Adapter
         }
     }
 
-    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
+    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true)
+    {
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
@@ -700,7 +705,6 @@ class Adapter
      */
     private function prepareFacets()
     {
-
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
         $bxSelectedValues = array();
@@ -811,14 +815,16 @@ class Adapter
         }
     }
 
-    public function getBlogIds() {
+    public function getBlogIds()
+    {
         $this->simpleSearch();
         $choice_id = $this->getSearchChoice('', true);
         return $this->getClientResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
 
     }
 
-    public function getBlogTotalHitCount() {
+    public function getBlogTotalHitCount()
+    {
         $this->simpleSearch();
         $choice_id = $this->getSearchChoice('', true);
         return $this->getClientResponse()->getTotalHitCount($choice_id);
@@ -836,8 +842,8 @@ class Adapter
     /**
      * @return mixed
      */
-    public function getTotalHitCount($variant_index = null){
-
+    public function getTotalHitCount($variant_index = null)
+    {
         $this->simpleSearch();
         $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
         return $this->getClientResponse()->getTotalHitCount($choiceId, true, 0);
@@ -847,18 +853,20 @@ class Adapter
      * @param null $choiceId
      * @return mixed
      */
-    public function getEntitiesIds($variant_index = null){
-
+    public function getEntitiesIds($variant_index = null)
+    {
         $this->simpleSearch();
         $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
         return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
 
-    public function getOverlayVariantId(){
+    public function getOverlayVariantId()
+    {
         return $this->overlayVariantId;
     }
 
-    public function getOverlayHitcount(){
+    public function getOverlayHitcount()
+    {
         $hitcount = $this->bxHelperData->getOverlayHitcount();
         if (!empty($hitcount)) {
             return $hitcount;
@@ -866,7 +874,8 @@ class Adapter
         return 3;
     }
 
-    public function getOverlayBannerChoiceHitCount(){
+    public function getOverlayBannerChoiceHitCount()
+    {
         $bannerHitcount = $this->bxHelperData->getOverlayBannerChoiceHitcount();
         if (!empty($bannerHitcount)) {
             return $bannerHitcount;
@@ -874,7 +883,8 @@ class Adapter
         return 1;
     }
 
-    public function getOverlayOrder(){
+    public function getOverlayOrder()
+    {
         $order = $this->bxHelperData->getOverlayOrder();
         if (!empty($order)) {
             return $order;
@@ -882,7 +892,8 @@ class Adapter
         return null;
     }
 
-    public function getOverlayDir(){
+    public function getOverlayDir()
+    {
         $dir = $this->bxHelperData->getOverlayDir();
         if (!empty($dir)) {
             return $dir;
@@ -890,7 +901,8 @@ class Adapter
         return null;
     }
 
-    public function getOverlayPageOffset(){
+    public function getOverlayPageOffset()
+    {
         $pageoffset = $this->bxHelperData->getOverlayPageOffset();
         if (!empty($pageoffset)) {
             return $pageoffset;
@@ -902,8 +914,8 @@ class Adapter
      * @return mixed
      */
     private $overlayVariantId = null;
-    public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null) {
-
+    public function addOverlayRequests($hitcount=null, $overlayBannerChoiceHitCount=null, $order=null, $dir=null, $pageOffset=null)
+    {
         if($hitcount == null) {
             $hitcount = $this->getOverlayHitcount();
         }
@@ -933,7 +945,8 @@ class Adapter
         }
     }
 
-    public function sendOverlayRequestWithParams(){
+    public function sendOverlayRequestWithParams()
+    {
         $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
         $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
         $this->setPrefixContextParameter($this->prefixContextParameter);
@@ -961,7 +974,6 @@ class Adapter
      */
     public function getCorrectedQuery()
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->getCorrectedQuery($this->currentSearchChoice);
     }
@@ -971,7 +983,6 @@ class Adapter
      */
     public function areResultsCorrected()
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->areResultsCorrected($this->currentSearchChoice);
     }
@@ -981,7 +992,6 @@ class Adapter
      */
     public function areThereSubPhrases()
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->areThereSubPhrases($this->currentSearchChoice);
     }
@@ -991,7 +1001,6 @@ class Adapter
      */
     public function getSubPhrasesQueries()
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->getSubPhrasesQueries($this->currentSearchChoice);
     }
@@ -1002,7 +1011,6 @@ class Adapter
      */
     public function getSubPhraseTotalHitCount($queryText)
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->getSubPhraseTotalHitCount($queryText, $this->currentSearchChoice);
     }
@@ -1013,7 +1021,6 @@ class Adapter
      */
     public function getSubPhraseEntitiesIds($queryText)
     {
-
         $this->simpleSearch();
         return $this->getClientResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
     }
