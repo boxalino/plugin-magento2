@@ -80,11 +80,11 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
             $bannerData['bannerLayout'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $choiceId, true, 0);
             $bannerData['bannerTitle'] = $this->p13nHelper->getClientResponse()->getResultTitle($choiceId, 0);
             $bannerData['bannerId'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $choiceId, true, 0);
-            if(is_null($this->getData("jssorID")))
+            $jssorId = $this->getData("jssorID");
+            if(is_null($jssorId) || empty($jssorId))
             {
                 $this->setData("jssorID", $bannerData['bannerId']);
             }
-
 
             $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $choiceId, true, 0);
             $counters = array();
