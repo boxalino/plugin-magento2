@@ -24,7 +24,7 @@ $jssorOptions = $bannerData['bannerOptions'];
 // if there is only one banner or it is using the 'small' layout, don't be draggable
 
 if ($hitCount < 2 || $jssorLayout != 'large') {
-    $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
+    $jssorOptions = substr_replace(preg_replace("/\s+/","",$jssorOptions), '$DragOrientation:0, ', 1, 0);
 }
 ?>
 <script type="text/javascript">
