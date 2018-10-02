@@ -46,7 +46,7 @@ class P13nTCurlClient extends TCurlClient
             // FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set
             @curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
             @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
+            curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
         }
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
