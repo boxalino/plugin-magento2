@@ -18,53 +18,53 @@ $jssorBulletNavigator = $bannerData['bannerBulletNavigator'];
 $jssorArrowNavigator = $bannerData['bannerArrowNavigator'];
 $jssorFunction = $bannerData['bannerFunction'];
 $jssorLayout = $bannerData['bannerLayout'];
-
 $jssorOptions = $bannerData['bannerOptions'];
 
 // if there is only one banner or it is using the 'small' layout, don't be draggable
-
-if ($hitCount < 2 || $jssorLayout != 'large') {
+if ($hitCount<2 || (!empty($jssorLayout) && $jssorLayout != 'large')) {
     $jssorOptions = substr_replace(preg_replace("/\s+/","",$jssorOptions), '$DragOrientation:0, ', 1, 0);
 }
 ?>
-<script type="text/javascript">
-    require([
-            'jquery',
-            'jssor'
-        ], function ($, jssor) {
-            'use strict';
-            var <?php echo $jssorId ?>_slider_init = function() {
-                var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
-                var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
-                var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
-                var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
-                var <?php echo $jssorId ?>_slider = new $JssorSlider$("<?php echo $jssorId ?>", <?php echo $jssorId ?>_options);
-                var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
-                function ScaleSlider() { <?php echo $jssorFunction ?> }
-                ScaleSlider();
-                $Jssor$.$AddEvent(window, "load", ScaleSlider);
-                $Jssor$.$AddEvent(window, "resize", ScaleSlider);
-                $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
-            };
-            <?php echo $jssorId ?>_slider_init();
-        }
-    );
-</script>
+<?php if(!empty($jssorSlides)) :?>
+    <script type="text/javascript">
+        require([
+                'jquery',
+                'jssor'
+            ], function ($, jssor) {
+                'use strict';
+                var <?php echo $jssorId ?>_slider_init = function() {
+                    var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
+                    var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+                    var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+                    var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
+                    var <?php echo $jssorId ?>_slider = new $JssorSlider$("<?php echo $jssorId ?>", <?php echo $jssorId ?>_options);
+                    var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
+                    function ScaleSlider() { <?php echo $jssorFunction ?> }
+                    ScaleSlider();
+                    $Jssor$.$AddEvent(window, "load", ScaleSlider);
+                    $Jssor$.$AddEvent(window, "resize", ScaleSlider);
+                    $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
+                };
+                <?php echo $jssorId ?>_slider_init();
+            }
+        );
+    </script>
 
-<style>
-    <?php echo $jssorCSS ?>
-</style>
-<div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
-    <?php echo $jssorLoadingScreen ?>
-    <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
-        <?php
-        foreach($jssorSlides as $bannerSlideId => $values ) {
-            echo $values['div'];
-        }
-        ?>
+    <style>
+        <?php echo $jssorCSS ?>
+    </style>
+    <div id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+        <?php echo $jssorLoadingScreen ?>
+        <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
+            <?php
+            foreach($jssorSlides as $bannerSlideId => $values ) {
+                echo $values['div'];
+            }
+            ?>
+        </div>
+        <?php if ($hitCount > 1 && $jssorLayout == 'large'){
+            echo $jssorBulletNavigator;
+            echo $jssorArrowNavigator;
+        }; ?>
     </div>
-    <?php if ($hitCount > 1 && $jssorLayout == 'large'){
-        echo $jssorBulletNavigator;
-        echo $jssorArrowNavigator;
-    }; ?>
-</div>
+<?php endif;?>

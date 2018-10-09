@@ -54,7 +54,7 @@ class BxClient
 		$this->isDev = $isDev;
 		$this->host = $host;
 		if($this->host == null) {
-			$this->host = "main.bx-cloud.com";
+			$this->host = "cdn.bx-cloud.com";
 		}
 		$this->port = $port;
 		if($this->port == null) {
