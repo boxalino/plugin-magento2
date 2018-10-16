@@ -1,6 +1,7 @@
 <?php
-
 namespace com\boxalino\bxclient\v1;
+
+use Magento\Framework\Exception\LocalizedException;
 
 class BxData
 {
@@ -42,20 +43,24 @@ class BxData
         $this->delimiter = $delimiter;
     }
 
-    public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
+    public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true)
+    {
         $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
-    public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true) {
+
+    public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true)
+    {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
 
-    public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true) {
+    public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true)
+    {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_customer_id", $itemIdColumn, null, $validate) ;
@@ -98,10 +103,8 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params, $validate);
     }
 
-
-
-    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
-
+    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true)
+    {
         $params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 
         $params['file'] = $this->getFileNameFromPath($filePath);
@@ -116,6 +119,21 @@ class BxData
         $params['orderReceptionDateColumn'] = $orderDateIdColumn;
 
         return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
+    }
+
+    /**
+     * Adding an additional table file with the content as it has it
+     *
+     * @param $filePath
+     * @return string
+     * @throws \Exception
+     */
+    public function addExtraTableToEntity($filePath, $container, $column, $columns, $maxLength = 23)
+    {
+        $params = ['referenceIdColumn'=>$column, 'labelColumns'=>$columns, 'encoding' => 'UTF-8', 'delimiter'=>',', 'enclosure'=>'"', 'escape'=>"\\\\", 'lineSeparator'=>"\\n"];
+        $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
+
+        return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params);
     }
 
     public function addSourceFile($filePath, $sourceId, $container, $type, $format='CSV', $params=array(), $validate=true) {
@@ -163,16 +181,16 @@ class BxData
         }
         return null;
     }
-	
-	private $globalValidate = true;
-	public function setGlobalValidate($globalValidate) {
-		$this->globalValidate = $globalValidate;
-	}
+
+    private $globalValidate = true;
+    public function setGlobalValidate($globalValidate) {
+        $this->globalValidate = $globalValidate;
+    }
 
     public function validateSource($container, $sourceId) {
-		if(!$this->globalValidate) {
-			return;
-		}
+        if(!$this->globalValidate) {
+            return;
+        }
         $source = $this->sources[$container][$sourceId];
         if($source['format'] == 'CSV') {
             if(isset($source['itemIdColumn'])) {
@@ -182,9 +200,9 @@ class BxData
     }
 
     public function validateColumnExistance($container, $sourceId, $col) {
-		if(!$this->globalValidate) {
-			return;
-		}
+        if(!$this->globalValidate) {
+            return;
+        }
         $row = $this->getSourceCSVRow($container, $sourceId, 0);
         if($row !== null && !in_array($col, $row)) {
             throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
@@ -294,7 +312,8 @@ class BxData
 
     private $ftpSources = array();
     public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null, $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
-                                 $timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0, $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0) {
+                                 $timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0, $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0)
+    {
 
         if($user==null){
             $user = $this->bxClient->getAccount(false);
@@ -323,7 +342,7 @@ class BxData
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         $this->ftpSources[$sourceId] = $params;
     }
-	
+
     private $httpSources = array();
     public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0') {
 
@@ -344,8 +363,8 @@ class BxData
         $this->httpSources[$sourceId] = $params;
     }
 
-    public function getXML() {
-
+    public function getXML()
+    {
         $xml = new \SimpleXMLElement('<root/>');
 
         //languages
@@ -550,14 +569,19 @@ class BxData
 
         if($responseBody === false)
         {
+            if(strpos(curl_error($s), 'Operation timed out after') !== false)
+            {
+                throw new LocalizedException(__("The connection closed due to the timeout reach. Contact us at support@boxalino.com if you want updates on the exporter status. You can update the reponse wait time in your Magento admin."));
+            }
+
             if(strpos(curl_error($s), "couldn't open file") !== false) {
                 if($temporaryFilePath !== null) {
-                    throw new \Exception('There seems to be a problem with the folder BxData uses to temporarily store a zip file with all your files before sending it. As you are currently provided a path, this is most likely the problem. Please make sure it is a valid path, or leave it to null (default value), then BxData will use sys_get_temp_dir() + "/bxclient" which typically works fine.');
+                    throw new \Exception(__('There seems to be a problem with the folder BxData uses to temporarily store a zip file with all your files before sending it. As you are currently provided a path, this is most likely the problem. Please make sure it is a valid path, or leave it to null (default value), then BxData will use sys_get_temp_dir() + "/bxclient" which typically works fine.'));
                 } else {
-                    throw new \Exception('There seems to be a problem with the folder BxData uses to temporarily store a zip file with all your files before sending it. This means that the default path BxData uses sys_get_temp_dir() + "/bxclient" is not supported and you need to path a working path to the pushData function.');
+                    throw new \Exception(__('There seems to be a problem with the folder BxData uses to temporarily store a zip file with all your files before sending it. This means that the default path BxData uses sys_get_temp_dir() + "/bxclient" is not supported and you need to path a working path to the pushData function.'));
                 }
             }
-            throw new \Exception('Curl error: ' . curl_error($s));
+            throw new \Exception(__('Curl error: ' . curl_error($s) . ' '));
         }
 
         curl_close($s);
@@ -660,15 +684,9 @@ class BxData
         $shortened = false;
         if(strlen($sourceId) > $maxLength) {
             $sourceId = substr($sourceId, 0, $maxLength);
-            $shortened = true;
         }
+
         if($this->alreadyExistingSourceId($sourceId, $container)) {
-            if(!$shortened) {
-                throw new \Exception(
-                    'Synchronization failure: Same source id requested twice "' .
-                    $filePath . '". Please correct that only created once.'
-                );
-            }
             $postFix = $this->getUnusedSourceIdPostFix($sourceId, $container);
             $sourceId .= $postFix;
         }
@@ -767,7 +785,6 @@ class BxData
     public function pushData($temporaryFilePath=null, $timeout=60, $clearFiles=true) {
 
         $zipFile = $this->createZip($temporaryFilePath, 'bxdata.zip', $clearFiles);
-
         $fields = array(
             'username' => $this->bxClient->getUsername(),
             'password' => $this->bxClient->getPassword(),

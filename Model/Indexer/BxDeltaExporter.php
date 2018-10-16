@@ -6,12 +6,12 @@ namespace Boxalino\Intelligence\Model\Indexer;
  * @package Boxalino\Intelligence\Model\Indexer
  */
 class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface{
-    
+
     /**
      * @var BxIndexer
      */
     protected $bxIndexer;
-    
+
     /**
      * BxDeltaExporter constructor.
      * @param BxIndexer $bxIndexer

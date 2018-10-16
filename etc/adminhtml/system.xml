@@ -117,24 +117,32 @@
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
+                <field id="timeout" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Boxalino Response Wait Time</label>
+                    <comment>Optional: Keeping connection open to DI server in order to wait for processing the archive for any errors. Default set to 3000(sec).</comment>
+                </field>
             </group>
             <group id="products" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Products</label>
                 <!-- create text type field -->
-                <field id="include_properties" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="extra_tables" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Extra Tables</label>
+                    <comment>Optional: list of additional tables related to the products entity, separated by ','; the tables are to be exported as they are.</comment>
+                </field>
+                <field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of product properties to include in export</label>
                     <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-                <field id="exclude_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of product properties to exclude from export</label>
                     <comment>Optional: list of product properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of product properties to include is not empty.</comment>
                 </field>
-                <field id="export_images" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_images" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export product images</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Optional: Export image and thumbnail image urls (not required if standard usage of search and recommendations in Magento, as Magento renders the images itself). If activated, makes export slower.</comment>
                 </field>
-                <field id="export_url" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_url" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable export product urls</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Optional: Export product urls (not required if standard usage of search and recommendations  in Magento, as Magento renders the url itself).. If activated, makes export slower.</comment>
@@ -147,11 +155,15 @@
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-                <field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="extra_tables" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Extra Tables</label>
+                    <comment>Optional: list of additional tables related to the customers entity, separated by ','; the tables are to be exported as they are.</comment>
+                </field>
+                <field id="include_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of customer properties to include in export</label>
                     <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-                <field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of customer properties to exclude from export</label>
                     <comment>Optional: list of customer properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of customer properties to include is not empty.</comment>
                 </field>
@@ -163,15 +175,19 @@
                     <label>Enable export</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
-                <field id="include_properties" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="extra_tables" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Extra Tables</label>
+                    <comment>Optional: list of additional tables related to the transactions entity, separated by ','; the tables are to be exported as they are.</comment>
+                </field>
+                <field id="include_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of transaction properties to include in export</label>
                     <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported except the ones defined as excluded properties (next parameter)</comment>
                 </field>
-                <field id="exclude_properties" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="exclude_properties" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>List of transaction properties to exclude from export</label>
                     <comment>Optional: list of transaction properties separated by ','; if left empty, then all properties will be exported, this field is ignored if the list of transaction properties to include is not empty.</comment>
                 </field>
-                <field id="export_mode" translate="label comment" sortOrder="4" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="export_mode" translate="label comment" sortOrder="5" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Export mode</label>
                     <source_model>Boxalino\Intelligence\Model\Config\Source\TransactionMode</source_model>
                     <comment>Choose how the transactions should be exported. For Incremental, the exporter will only export the last month.</comment>
