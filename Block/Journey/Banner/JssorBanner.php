@@ -1,70 +1,20 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey\Banner;
 
 use \Boxalino\Intelligence\Block\Journey\CPOJourney as CPOJourney;
+use Boxalino\Intelligence\Block\Journey\General;
 
 /**
  * Class JssorBanner
  * @package Boxalino\Intelligence\Block\Journey\Banner
  */
-class JssorBanner extends \Magento\Framework\View\Element\Template implements CPOJourney{
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
-     * @var \Boxalino\Intelligence\Block\BxJourney
-     */
-    protected $bxJourney;
-
-    /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
-     */
-    protected $p13nHelper;
-
-    /**
-     * Text constructor.
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param array $data
-     */
-    public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Block\BxJourney $journey,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
-        array $data = []
-    )
-    {
-        parent::__construct($context, $data);
-        $this->_logger = $context->getLogger();
-        $this->bxJourney = $journey;
-        $this->p13nHelper = $p13nHelper;
-    }
-
-    public function getSubRenderings()
-    {
-        $elements = array();
-        $element = $this->getData('bxVisualElement');
-        if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
-            $elements = $element['subRenderings'][0]['rendering']['visualElements'];
-        }
-        return $elements;
-    }
-
-    public function renderVisualElement($element, $additional_parameter = null)
-    {
-        return $this->bxJourney->createVisualElement($element, $additional_parameter)->toHtml();
-    }
-
-    public function getLocalizedValue($values) {
-        return $this->p13nHelper->getClientResponse()->getLocalizedValue($values);
-    }
+class JssorBanner extends General implements CPOJourney
+{
 
     public function bxGetBanner($choiceId = null) {
 
         $visualElement = $this->getData('bxVisualElement');
+
         $bannerData = array();
         $variant_index = null;
         foreach ($visualElement['parameters'] as $parameter) {
@@ -91,6 +41,7 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
             foreach($slides as $id => $val) {
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
+
             if ($bannerData['bannerLayout'] != 'large' || $this->getData('jssorIndex') != null) {
                 if ($this->getData('jssorIndex') == '1') {
                     return array(reset($slides));
@@ -174,11 +125,9 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
                 $json = $slide[$language];
 
                 // add configId as prefix for the classes
-
                 $json = $this->addPrefixToClasses($json, $choiceId);
 
                 for($i=1; $i<10; $i++) {
-
                     if(!isset($counters[$i])) {
                         $counters[$i] = 0;
                     }
@@ -200,6 +149,6 @@ class JssorBanner extends \Magento\Framework\View\Element\Template implements CP
     }
 
     public function getP13nHelper(){
-      return $this->p13nHelper;
+        return $this->p13nHelper;
     }
 }

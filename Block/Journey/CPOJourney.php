@@ -1,12 +1,11 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey;
 
 /**
  * Interface CPOJourney
  * @package Boxalino\Intelligence\Block\Journey
  */
-interface CPOJourney{
+interface CPOJourney {
 
     public function getSubRenderings();
 

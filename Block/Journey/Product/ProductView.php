@@ -1,5 +1,4 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey\Product;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
@@ -8,6 +7,7 @@ use \Boxalino\Intelligence\Block\Journey\CPOJourney as CPOJourney;
 
 /**
  * Class ProductView
+ * Linked to GENERAL class for interface functions
  * @package Boxalino\Intelligence\Block\Journey\Product
  */
 class ProductView extends ListProduct implements CPOJourney{

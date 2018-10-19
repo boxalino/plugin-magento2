@@ -1,15 +1,16 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey\Product;
 
 use \Boxalino\Intelligence\Block\Journey\CPOJourney as CPOJourney;
 use Magento\Catalog\Model\Product\ProductList\Toolbar as ToolbarModel;
 
 /**
+ * Linked to GENERAL class for interface functions
  * Class ProductListToolbar
  * @package Boxalino\Intelligence\Block\Journey\Product
  */
-class ProductListToolbar extends \Magento\Catalog\Block\Product\ProductList\Toolbar implements CPOJourney{
+class ProductListToolbar extends \Magento\Catalog\Block\Product\ProductList\Toolbar implements CPOJourney
+{
 
     /**
      * @var \Psr\Log\LoggerInterface

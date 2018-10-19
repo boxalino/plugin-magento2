@@ -1,12 +1,15 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey;
 
 /**
  * Class General
+ * Defines default desired structure/behavior for CPOJourney interface
+ * To be extended by child classes requiring the behavior
+ *
  * @package Boxalino\Intelligence\Block\Journey
  */
-class General extends \Magento\Framework\View\Element\Template implements CPOJourney{
+class General extends \Magento\Framework\View\Element\Template
+{
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -61,6 +64,6 @@ class General extends \Magento\Framework\View\Element\Template implements CPOJou
     }
 
     public function getp13nHelper(){
-      return $this->p13nHelper;
+        return $this->p13nHelper;
     }
 }

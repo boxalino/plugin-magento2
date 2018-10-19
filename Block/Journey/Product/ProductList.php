@@ -1,29 +1,15 @@
 <?php
-
 namespace Boxalino\Intelligence\Block\Journey\Product;
 
 use \Boxalino\Intelligence\Block\Journey\CPOJourney as CPOJourney;
+use Boxalino\Intelligence\Block\Journey\General;
 
 /**
  * Class ProductList
  * @package Boxalino\Intelligence\Block\Journey\Product
  */
-class ProductList extends \Magento\Framework\View\Element\Template implements CPOJourney{
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $_logger;
-
-    /**
-     * @var \Boxalino\Intelligence\Block\BxJourney
-     */
-    protected $bxJourney;
-
-    /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
-     */
-    protected $p13nHelper;
+class ProductList extends General implements CPOJourney
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\Data
@@ -60,38 +46,38 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         array $data = []
     )
     {
-        parent::__construct($context, $data);
-        $this->_logger = $context->getLogger();
-        $this->bxJourney = $journey;
-        $this->p13nHelper = $p13nHelper;
+        parent::__construct($context, $journey, $p13nHelper,$data);
         $this->bxHelperData = $bxHelperData;
         $this->bxResourceManager = $bxResourceManager;
         $this->objectManager = $objectManager;
         $this->prepareCollection();
     }
 
-    public function getVariantIndex() {
-      $visualElement = $this->getData('bxVisualElement');
-      $variant_index = 0;
-      foreach ($visualElement['parameters'] as $parameter) {
-          if($parameter['name'] == 'variant') {
-              $variant_index = reset($parameter['values']);
-              break;
-          }
-      }
-      return $variant_index;
+    public function getVariantIndex()
+    {
+        $visualElement = $this->getData('bxVisualElement');
+        $variant_index = 0;
+        foreach ($visualElement['parameters'] as $parameter) {
+            if($parameter['name'] == 'variant') {
+                $variant_index = reset($parameter['values']);
+                break;
+            }
+        }
+        return $variant_index;
     }
 
-    public function prepareCollection() {
+    public function prepareCollection()
+    {
         $variant_index = $this->getVariantIndex();
         $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
         if(is_null($collection)) {
-           $collection = $this->createCollection($variant_index);
-           $this->bxResourceManager->setResource($collection, $variant_index, 'collection');
+            $collection = $this->createCollection($variant_index);
+            $this->bxResourceManager->setResource($collection, $variant_index, 'collection');
         }
     }
 
-    public function createCollection($variant_index) {
+    public function createCollection($variant_index)
+    {
         $entity_ids = $this->p13nHelper->getEntitiesIds($variant_index);
 
         $collection = $this->objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
@@ -109,26 +95,8 @@ class ProductList extends \Magento\Framework\View\Element\Template implements CP
         return $collection;
     }
 
-    public function getSubRenderings()
+    public function checkVisualElementParam($visualElement, $key, $value)
     {
-        $elements = array();
-        $element = $this->getData('bxVisualElement');
-        if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
-            $elements = $element['subRenderings'][0]['rendering']['visualElements'];
-        }
-        return $elements;
-    }
-
-    public function renderVisualElement($element, $additional_parameter = null)
-    {
-        return $this->bxJourney->createVisualElement($element, $additional_parameter)->toHtml();
-    }
-
-    public function getLocalizedValue($values) {
-        return $this->p13nHelper->getResponse()->getLocalizedValue($values);
-    }
-
-    public function checkVisualElementParam($visualElement, $key, $value) {
         $parameters = $visualElement['parameters'];
         foreach ($parameters as $parameter) {
             if($parameter['name'] == $key){
