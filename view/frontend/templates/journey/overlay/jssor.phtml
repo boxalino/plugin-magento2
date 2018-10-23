@@ -19,7 +19,6 @@ $jssorLayout = $bannerData['bannerLayout'];
 $jssorOptions = $bannerData['bannerOptions'];
 
 // if there is only one banner or it is using the 'small' layout, don't be draggable
-
 if ($hitCount < 2 || $jssorLayout != 'large') {
     $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
 }
@@ -52,21 +51,24 @@ if ($hitCount < 2 || $jssorLayout != 'large') {
     <?php echo $jssorCSS ?>
 </style>
 
-
-<div id="<?php echo $jssorId ?>" class="bxOverlay" style="<?php echo $jssorStyle ?>">
-  <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="display: block;position: absolute;z-index: 11;height: 40px;width: 40px;line-height: 1.5;padding: 4px 8px;float: right;border-radius: 50%;background: rgb(255, 255, 255);margin-left: -20px;margin-top: -20px;top: 0; bottom: unset; left: 0; right: unset;">
-  &#x2715;
-  </button>
-    <?php echo $jssorLoadingScreen ?>
-    <div data-u="slides" style="<?php echo $jssorSlidesStyle ?>">
-        <?php
-        foreach($jssorSlides as $bannerSlideId => $values ) {
-            echo $values['div'];
-        }
-        ?>
+<div class="bxOverlay" style="display: none;">
+    <div class="bxOverlayJssorWrapper">
+        <div class="bxOverlayJssor" id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
+            <button  id="bxOverlayExitButton" type="button">
+                &#x2715;
+            </button>
+            <?php echo $jssorLoadingScreen ?>
+            <div data-u="slides" class="bxOverlayJssorSlides" style="<?php echo $jssorSlidesStyle ?>">
+                <?php
+                foreach($jssorSlides as $bannerSlideId => $values ) {
+                    echo $values['div'];
+                }
+                ?>
+            </div>
+            <?php if ($hitCount > 1 && $jssorLayout == 'large'){
+                echo $jssorBulletNavigator;
+                echo $jssorArrowNavigator;
+            }; ?>
+        </div>
     </div>
-    <?php if ($hitCount > 1 && $jssorLayout == 'large'){
-        echo $jssorBulletNavigator;
-        echo $jssorArrowNavigator;
-    }; ?>
 </div>

@@ -1,51 +1,51 @@
-<div style="display: inline-table;position: fixed;left: 0;right: 0;top: 0;bottom: 0;margin: auto;background-color: white;z-index: 6;width: fit-content;">
-   <div class="bxOverlay bxOverlayProducts" style="display: none; width: 100%; height: 100%">
-      <?php
+<div class="bxOverlay" style="display: none;">
+    <div class="bxOverlayProductsMain">
+        <div class="bxOverlayProducts">
+            <?php
+            $bxVisualElement = $this->getData('bxVisualElement');
+            foreach ($bxVisualElement['parameters'] as $parameter) {
+                if ($parameter['name'] == 'jsParams') {
+                    $jsonParams = json_decode($parameter['values'][0], true);
+                }
+            }
+            $template_path = $jsonParams['bx-extend-products-template'];
+            $productTitle = $this->getLocalizedValue($jsonParams['bx-extend-products-title']);
+            $variant_id = $this->getVariantIndex();
+            $product_collection = $this->bxResourceManager->getResource($variant_id, 'collection');
+            $this->bxResourceManager->setResource($product_collection, $variant_id, 'collection');
 
-         $bxVisualElement = $this->getData('bxVisualElement');
-         foreach ($bxVisualElement['parameters'] as $parameter) {
-           if ($parameter['name'] == 'jsParams') {
-             $jsonParams = json_decode($parameter['values'][0], true);
-           }
-         }
-         $template_path = $jsonParams['bx-extend-products-template'];
-         $productTitle = $this->getLocalizedValue($jsonParams['bx-extend-products-title']);
-         $variant_id = $this->getVariantIndex();
-         $product_collection = $this->bxResourceManager->getResource($variant_id, 'collection');
-         $this->bxResourceManager->setResource($product_collection, $variant_id, 'collection');
-
-         $parameter = ['name' => 'variant', 'values' => [$variant_id]];
-
-         ?>
-      <button class="bxOverlay" id="bxOverlayExitButton" type="button" style="top:0; right:0; left: unset; bottom: unset; position: absolute; margin-right: -20px; margin-top: -20px;">
-      &#x2715;
-      </button>
-      <div class="bxOverlay block" style="width: 100%;float: left;">
-        <div class="block-title title">
-          <strong id="block-overlay-heading"><?php echo $block->escapeHtml($productTitle); ?></strong>
-        </div>
-         <div class="block-content content">
-            <div class="products wrapper grid products-grid products" style="padding:20px; margin: 0">
-               <ol class="products list items product-items" style="margin: 0">
-                  <?php
-                     $index = 0;
-                     foreach ($product_collection as $product) { ?>
-                       <span style="margin-right: 25px;">
-                         <?php $block = $this->getLayout()->createBlock('Boxalino\Intelligence\Block\Journey\Product\ProductView', 'product_view'.$index,
-                             ['data' => ['bx_index' => $index++, 'bxVisualElement' => ['parameters' => [$parameter]]]]
-                         )->setTemplate($template_path);
-                         echo $block->toHtml(); ?>
-                       </span>
-                     <?php }
-                   ?>
-               </ol>
+            $parameter = ['name' => 'variant', 'values' => [$variant_id]];
+            ?>
+            <button id="bxOverlayExitButton" type="button">
+                &#x2715;
+            </button>
+            <div class="bxProductsBlock">
+                <div class="block-title title">
+                    <strong id="block-overlay-heading"><?php echo $block->escapeHtml($productTitle); ?></strong>
+                </div>
+                <div class="block-content content">
+                    <div class="products wrapper grid products-grid products">
+                        <ol class="products list items product-items">
+                            <?php
+                            $index = 0;
+                            foreach ($product_collection as $product) { ?>
+                                <span>
+                                 <?php $block = $this->getLayout()->createBlock(
+                                     'Boxalino\Intelligence\Block\Journey\Product\ProductView',
+                                     'product_view'. $index,
+                                     ['data' => ['bx_index' => $index++, 'bxVisualElement' => ['parameters' => [$parameter]]]]
+                                 )->setTemplate($template_path);
+                                 echo $block->toHtml(); ?>
+                                </span>
+                            <?php }
+                            ?>
+                        </ol>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
-      <div class="bxOverlayLink" style="display: inline-block; margin-top: 40px;">
-        <a class="bxOverlay action primary tocart" id="bxOverlayUrl" style="display: block; position: absolute; z-index: 7; height: unset; line-height: 1.5; padding: 4px 8px; top: unset; bottom: 0; left: unset; right: 0; margin-right: 20px; margin-bottom: 20px; font-size: x-large;">
-        link
-        </a>
-      </div>
-   </div>
+            <div class="bxOverlayLink">
+                <a class="action primary tocart" id="bxOverlayUrl">link</a>
+            </div>
+        </div>
+    </div>
 </div>

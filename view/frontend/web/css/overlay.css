@@ -1,12 +1,28 @@
-#bxOverlayExitButton{
-  display: none;
+.bxOverlayNewsletter{
+  height: 200px;
+  width: fit-content;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   position: fixed;
+  margin: auto;
+  z-index: 10;
+}
+
+.bxOverlayNewsletter #bxOverlayNewlsetterForm{
+  position: relative
+}
+
+.bxOverlayNewsletter #bxOverlayExitButton{
+  position: absolute;
   z-index: 7;
   left: 0;
-  right: -200px;
-  top: -200px;
-  bottom: 0;
-  margin: auto;
+  right: unset;
+  top: 0;
+  bottom: unset;
+  margin-top: -15px;
+  margin-left: -15px;
   height: 40px;
   width: 40px;
   line-height: 1.5;
@@ -15,10 +31,39 @@
   border-radius: 50%;
   box-shadow: none;
   background: rgb(255, 255, 255);
-  font-size: 12px !important;
+  font-size: 12px
 }
 
-#bxOverlayExitButton::after{
+.bxOverlayNewsletter #bxOverlayNewsletterTitle{
+  position: absolute;
+  width: 40%;
+  height: auto;
+  top: 20%;
+  left: 10%;
+}
+
+.bxOverlayNewsletter #bxOverlayNewsletterText{
+  position: absolute;
+  width: 40%;
+  height: auto;
+  top: 30%;
+  left: 10%;
+}
+
+.bxOverlayNewsletter #bxOverlayNewsletterInput{
+  width: 30%;
+  top: 50%;
+  position:  absolute;
+  left: 10%
+}
+
+.bxOverlayNewsletter #bxOverlayNewsletterSubmit{
+  position: absolute;
+  top: 65%;
+  left: 10%;
+}
+
+.bxOverlayNewsletter #bxOverlayExitButton::after{
   content: none;
 }
 
@@ -28,6 +73,121 @@
   font-size: 30px;
 }
 
+/* Styling products template */
+.bxOverlayProductsMain{
+  display: inline-table;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  background-color: white;
+  z-index: 6;
+  width: fit-content;
+}
+
+.bxOverlayProductsMain .bxOverlayProducts{
+  width: 100%;
+  height: 100%;
+}
+
+.bxOverlayProducts .bxProductsBlock {
+  width: 100%;
+  float: left;
+}
+
+.bxOverlayProducts .products-grid {
+  padding:20px;
+  margin: 0;
+}
+
+.bxOverlayProducts .product-items {
+  margin: 0;
+}
+
+.bxOverlayProducts .product-items span {
+  margin-right: 25px;
+}
+
+.bxOverlayProducts .bxOverlayLink{
+  display: inline-block;
+  margin-top: 40px;
+}
+
+.bxOverlayProducts .bxOverlayLink #bxOverlayUrl{
+  display: block;
+  position: absolute;
+  z-index: 7;
+  height: unset;
+  line-height: 1.5;
+  padding: 4px 8px;
+  top: unset;
+  bottom: 0;
+  left: unset;
+  right: 0;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  font-size: x-large;
+}
+
+.bxOverlayProducts #bxOverlayExitButton{
+  top:0;
+  right:0;
+  left: unset;
+  bottom: unset;
+  position: absolute;
+  margin-right: -20px;
+  margin-top: -20px;
+}
+
+
+/* JSSOR */
+.bxOverlayJssor{
+  display: none;
+  position:fixed;
+  margin:auto;
+  width:1238px;
+  height:355px;
+  overflow:visible;
+  visibility: visible;
+  z-index:10;
+  top:0;
+  right:0;
+  left: 0;
+  bottom:0;
+}
+
+.bxOverlayJssor #bxOverlayExitButton{
+  display: block;
+  position: absolute;
+  z-index: 11;
+  height: 40px;
+  width: 40px;
+  line-height: 1.5;
+  padding: 4px 8px;
+  float: right;
+  border-radius: 50%;
+  background: rgb(255, 255, 255);
+  margin-left: -20px;
+  margin-top: -20px;
+  top: 0;
+  bottom: unset;
+  left: 0;
+  right: unset;
+}
+
+.bxOverlayJssorSlides{
+  cursor:default;
+  position:relative;
+  top:0px;
+  left:0px;
+  width:1238px;
+  height:355px;
+  overflow:hidden;
+}
+
+/* Styling for the simple overlay */
 #bxOverlayBackgroundImage{
   display: none;
   width:200px;
@@ -61,221 +221,22 @@
   width: 190px;
   height: 5%;
   text-align:
-  center;
+          center;
   z-index: 6;
 }
 #bxOverlayButton{
-
   display: none;
   width: 160px;
   position: fixed;
   left: 0;
   right: 0;
   top:0;
-  bottom: -20%;
-  margin: auto;
-  z-index: 6;
-}
-
-/* Styling for the left overlay */
-
-#bxOverlayExitButtonCentre{
-  display: none;
-  position: fixed;
-  z-index: 7;
-  left: 0;
-  right: -200px;
-  top: -200px;
-  bottom: 0;
-  margin: auto;
-  height: 40px;
-  width: 40px;
-  line-height: 1.5;
-  padding: 4px 8px;
-  float: right;
-  border-radius: 50%;
-  box-shadow: none;
-  background: rgb(255, 255, 255);
-  font-size: 12px !important;
-}
-#bxOverlayBackgroundImageCentre{
-  display: none;
-  width:200px;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top:0;
-  bottom: 0;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTitleImageCentre{
-  display: none;
-  width: 180px;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top:0;
-  bottom: 120px;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTextCentre{
-  display: none;
-  position: fixed;
-  right: 0;
-  left: 0;
-  margin: auto;
-  top: 0;
-  bottom: 0;
-  width: 190px;
-  height: 5%;
-  text-align:
-  center;
-  z-index: 6;
-}
-#bxOverlayButtonCentre{
-  display: none;
-  width: 160px;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top:0;
-  bottom: -15%;
-  margin: auto;
-  z-index: 6;
-}
-
-/* Styling for the left overlay */
-
-#bxOverlayExitButtonLeft{
-  display: none;
-  position: fixed;
-  z-index: 7;
-  left: 180px;
-  top: -200px;
-  bottom: 0;
-  margin: auto;
-  height: 40px;
-  width: 40px;
-  line-height: 1.5;
-  padding: 4px 8px;
-  float: right;
-  border-radius: 50%;
-  box-shadow: none;
-  background: rgb(255, 255, 255);
-  font-size: 12px !important;
-}
-#bxOverlayBackgroundImageLeft{
-  display: none;
-  width:200px;
-  position: fixed;
-  left: 0;
-  top:0;
-  bottom: 0;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTitleImageLeft{
-  display: none;
-  width:180px;
-  position: fixed;
-  left: 20px;
-  top: 20px;
-  bottom: 15%;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTextLeft{
-  display: none;
-  position: fixed;
-  left: 5px;
-  margin: auto;
-  top: 0;
-  bottom: 0;
-  width: 190px;
-  height: 5%;
-  text-align:
-  center;
-  z-index: 6;
-}
-#bxOverlayButtonLeft{
-  display: none;
-  width: 160px;
-  position: fixed;
-  left: 20px;
-  top: -80px;
-  bottom: -20%;
-  margin: auto;
-  z-index: 6;
-
-}
-
-/* Styling for the right overlay */
-
-#bxOverlayExitButtonRight{
-  display: none;
-  position: fixed;
-  z-index: 7;
-  right: 180px;
-  top: -200px;
-  bottom: 0;
-  margin: auto;
-  height: 40px;
-  width: 40px;
-  line-height: 1.5;
-  padding: 4px 8px;
-  float: right;
-  border-radius: 50%;
-  box-shadow: none;
-  background: rgb(255, 255, 255);
-  font-size: 12px !important;
-}
-#bxOverlayBackgroundImageRight{
-  display: none;
-  width:200px;
-  position: fixed;
-  right: 0;
-  top:0;
-  bottom: 0;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTitleImageRight{
-  display: none;
-  width:180px;
-  position: fixed;
-  right: 0;
-  top: 20px;
-  bottom: 15%;
-  margin: auto;
-  z-index: 6;
-}
-#bxOverlayTextRight{
-  display: none;
-  position: fixed;
-  right: 0;
-  margin: auto;
-  top: 0;
-  bottom: 0;
-  width: 190px;
-  height: 5%;
-  text-align: center;
-  z-index: 6;
-}
-#bxOverlayButtonRight{
-  display: none;
-  width: 160px;
-  position: fixed;
-  right: 20px;
-  top: -80px;
   bottom: -20%;
   margin: auto;
   z-index: 6;
 }
 
 /* Shadow */
-
 #bxOverlayShadow{
   display: none;
   position: fixed;
@@ -285,25 +246,4 @@
   bottom: 0;
   left: 0;
   z-index: 5;
-}
-
-/* Banner Exit Button */
-
-#bxBannerOverlayExitButton{
-
-  height: 40px;
-  width: 40px;
-  display: none;
-  top: -10px;
-  z-index: 11;
-  position: relative;
-  right: -10px;
-  line-height: 1.5;
-  font-size: 12px!important;
-  padding: 4px 8px;
-  float: right;
-  border-radius: 50%;
-  box-shadow:none;
-  background: #ffffff
-
 }
