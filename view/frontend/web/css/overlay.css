@@ -67,12 +67,6 @@
   content: none;
 }
 
-@media screen and (max-width: 768px){
-  width: 80px;
-  height: 80px;
-  font-size: 30px;
-}
-
 /* Styling products template */
 .bxOverlayProductsMain{
   display: inline-table;
@@ -144,7 +138,6 @@
 
 /* JSSOR */
 .bxOverlayJssor{
-  display: none;
   position:fixed;
   margin:auto;
   width:1238px;
@@ -158,7 +151,7 @@
   bottom:0;
 }
 
-.bxOverlayJssor #bxOverlayExitButton{
+.bxOverlayJssorExitButton{
   display: block;
   position: absolute;
   z-index: 11;
@@ -180,11 +173,257 @@
 .bxOverlayJssorSlides{
   cursor:default;
   position:relative;
-  top:0px;
-  left:0px;
+  top:0;
+  left:0;
   width:1238px;
   height:355px;
   overflow:hidden;
+
+}
+
+@media screen and (max-width:768px){
+  #bannerOverlay{
+    border-radius: 4px !important;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1) !important;
+    height: 87% !important;
+    background-color: white;
+  }
+  #bannerOverlay div:nth-child(2) div{
+    overflow:visible !important;
+  }
+  .bxOverlayExitButton{
+    height: 80px !important;
+    width: 80px !important;
+    font-size: 40px !important;
+  }
+  .bannerOverlay_bxBannerBackgroundImage{
+    top:auto !important;
+    left:auto !important;
+    display: none !important;
+    pointer-events: none !important;
+    cursor: default !important;
+  }
+  .bannerOverlay_bxBannerBackgroundImage img{
+    display: none !important
+  }
+  .bannerOverlay_bxBannerLink{
+    z-index: 1000 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+  .bannerOverlay_bxBannerTitle{
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    top: 0 !important;
+    width: 95% !important;
+    height: auto !important;
+    z-index: auto !important;
+    color: black !important;
+    text-align: left !important;
+    padding-top: 50px !important;
+    margin-bottom: 15px !important;
+    font-weight: 400 !important;
+    display: block !important;
+    font-size: 8rem !important;
+  }
+  .bannerOverlay_bxBannerDescription{
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 95% !important;
+    height: auto !important;
+    z-index: auto !important;
+    color: #009ee0 !important;
+    text-align: left !important;
+    display:block !important;
+    font-style: normal;
+    font-weight: 400 !important;
+    line-height: 1.333 !important;
+    font-size: 5rem !important;
+    margin: 40px auto !important;
+  }
+  .bannerOverlay_bxBannerSmallImage{
+    position: relative !important;
+    top: auto !important;
+    right: 0 !important;
+    left: 15% !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+    width: 70% !important;
+    height: auto !important;
+    z-index: auto !important;
+  }
+  .bannerOverlay_bxBannerButton{
+    position: absolute !important;
+    right: 0 !important;
+    left: 0 !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
+    height: 30% !important;
+    width: auto !important;
+    top: 1220px !important;
+  }
+  .jssora051 .a {
+    stroke:none !important;
+  }
+}
+
+#bxOverlayExitButton::after{
+  content: none;
+}
+
+@media screen and (max-width: 425px) {
+  #bannerOverlay{
+    height: 50% !important;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  #bannerOverlay{
+    border-radius: 4px !important;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .bannerOverlay_bxBannerTitle{
+    font-family:true !important;
+    line-height:1 !important;
+  }
+  .bannerOverlay_bxBannerDescription{
+    font-family:true !important;
+  }
+  .bannerOverlay_bxBannerLink{
+    z-index: 100 !important;
+    position: absolute !important;
+    display: block !important;
+    width: 100% !important;
+    height: 500% !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+}
+
+/*JSSOR Specific Style*/
+
+.jssorl-004-double-tail-spin img {
+  animation-name: jssorl-004-double-tail-spin;
+  animation-duration: 1.2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes jssorl-004-double-tail-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.i {
+  position:absolute;
+  cursor:pointer;
+}
+.i .b {
+  fill:#000;
+  fill-opacity:0.5;
+  stroke:#fff;
+  stroke-width:1200;
+  stroke-miterlimit:10;
+  stroke-opacity:0.3;
+}
+.i:hover .b {
+  fill:#fff;
+  fill-opacity: .7;
+  stroke:#000;
+  stroke-opacity:.5;
+}
+.iav .b {
+  fill:#fff;
+  stroke:#000;
+  fill-opacity:1;
+}
+.jssorb031 .i .idn {
+  opacity: .3;
+}
+.jssora051 {
+  display:block;
+  position:absolute;
+  cursor:pointer;
+}
+.jssora051 .a {
+  fill:none;
+  stroke:#fff;
+  stroke-width:360;
+  stroke-miterlimit:10;
+}
+.jssora051:hover {
+  opacity: .8;
+}
+.jssora051 .jssora051dn {
+  opacity: .5;
+}
+.jssora051 .jssora051ds {
+  opacity: .3;
+  pointer-events:none;
+}
+
+.jssorb032{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+}
+
+.jssorb32 .i{
+  width:16px;
+  height:16px;
+}
+
+.i viewbox{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+}
+
+.bxOverlayJssorArrowLeft{
+  width:65px;
+  height:65px;
+  top:0px;
+  left:25px;
+}
+
+.bxOverlayJssorArrowRight{
+  width:65px;
+  height:65px;
+  top:0px;
+  right:25px;
+}
+
+.jssora051 svg{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+}
+.jssorl-009-spin{
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  text-align:center;
+  background-color:rgba(0,0,0,0.7);
 }
 
 /* Styling for the simple overlay */

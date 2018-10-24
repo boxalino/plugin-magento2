@@ -7,12 +7,6 @@ $jssorSlideTransitions = $bannerData['bannerTransitions'];
 $jssorSlideBreaks = $bannerData['bannerBreaks'];
 $jssorSlideControls = $bannerData['bannerControls'];
 $jssorMaxWidth = $bannerData['bannerMaxWidth'];
-$jssorCSS = $bannerData['bannerCSS'];
-$jssorStyle = $bannerData['bannerStyle'];
-$jssorLoadingScreen = $bannerData['bannerLoadingScreen'];
-$jssorSlidesStyle = $bannerData['bannerSlidesStyle'];
-$jssorBulletNavigator = $bannerData['bannerBulletNavigator'];
-$jssorArrowNavigator = $bannerData['bannerArrowNavigator'];
 $jssorFunction = $bannerData['bannerFunction'];
 $jssorLayout = $bannerData['bannerLayout'];
 
@@ -29,12 +23,12 @@ if ($hitCount < 2 || $jssorLayout != 'large') {
             'jssor'
         ], function ($, jssor) {
             'use strict';
-            var <?php echo $jssorId ?>_slider_init = function() {
-                var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
-                var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
-                var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
-                var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
-                var <?php echo $jssorId ?>_slider = new $JssorSlider$("<?php echo $jssorId ?>", <?php echo $jssorId ?>_options);
+            var bannerOverlay_slider_init = function() {
+                var bannerOverlay_options = <?php echo $jssorOptions ?>;
+                var bannerOverlay_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+                var bannerOverlay_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+                var bannerOverlay_SlideoControls = <?php echo $jssorSlideControls ?>;
+                var bannerOverlay_slider = new $JssorSlider$("bannerOverlay", bannerOverlay_options);
                 var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
                 function ScaleSlider() { <?php echo $jssorFunction ?> }
                 ScaleSlider();
@@ -42,33 +36,45 @@ if ($hitCount < 2 || $jssorLayout != 'large') {
                 $Jssor$.$AddEvent(window, "resize", ScaleSlider);
                 $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
             };
-            <?php echo $jssorId ?>_slider_init();
+            bannerOverlay_slider_init();
         }
     );
 </script>
 
-<style>
-    <?php echo $jssorCSS ?>
-</style>
-
 <div class="bxOverlay" style="display: none;">
-    <div class="bxOverlayJssorWrapper">
-        <div class="bxOverlayJssor" id="<?php echo $jssorId ?>" style="<?php echo $jssorStyle ?>">
-            <button  id="bxOverlayExitButton" type="button">
-                &#x2715;
-            </button>
-            <?php echo $jssorLoadingScreen ?>
-            <div data-u="slides" class="bxOverlayJssorSlides" style="<?php echo $jssorSlidesStyle ?>">
-                <?php
-                foreach($jssorSlides as $bannerSlideId => $values ) {
-                    echo $values['div'];
-                }
-                ?>
-            </div>
-            <?php if ($hitCount > 1 && $jssorLayout == 'large'){
-                echo $jssorBulletNavigator;
-                echo $jssorArrowNavigator;
-            }; ?>
+    <div class="bxOverlayJssor" id="bannerOverlay">
+        <button  class="bxOverlayJssorExitButton" type="button">
+            &#x2715;
+        </button>
+        <div data-u="loading" class="jssorl-009-spin"></div>
+        <div data-u="slides" class="bxOverlayJssorSlides">
+            <?php
+            foreach($jssorSlides as $bannerSlideId => $values ) {
+                echo $values['div'];
+            }
+            ?>
         </div>
+        <?php if ($hitCount > 1 && $jssorLayout == 'large'){
+            ?>
+            <div data-u="navigator" class="jssorb032" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
+                <div data-u="prototype" class="i">
+                    <svg viewbox="0 0 16000 16000">
+                        <circle class="b" cx="8000" cy="8000" r="5800"></circle>
+                    </svg>
+                </div>
+            </div>
+            <div data-u="arrowleft" class="jssora051 bxOverlayJssorArrowLeft" data-autocenter="2" data-scale="0.75" data-scale-left="0.75">
+                <svg viewbox="0 0 16000 16000">
+                    <polyline class="a" points="11040,1920 4960,8000 11040,14080 "></polyline>
+                </svg>
+            </div>
+            <div data-u="arrowright" class="jssora051 bxOverlayJssorArrowRight" data-autocenter="2" data-scale="0.75" data-scale-right="0.75">
+                <svg viewbox="0 0 16000 16000">
+                    <polyline class="a" points="4960,1920 11040,8000 4960,14080 "></polyline>
+                </svg>
+            </div>
+        <?php
+        };
+        ?>
     </div>
 </div>
