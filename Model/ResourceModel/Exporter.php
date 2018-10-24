@@ -357,6 +357,160 @@ class Exporter
         return $select;
     }
 
+    /**
+     * Get child product attribute value based on the parent product attribute value
+     *
+     * @param $attributeCode string
+     * @param $storeId int
+     * @param string $indexerType
+     * @param array $deltaIds
+     * @return \Zend_Db_Select
+     * @throws \Zend_Db_Select_Exception
+     */
+    public function getProductAttributeParentUnionSqlByIndexerDelta($attributeCode, $type, $storeId, $indexerType = 'full', $deltaIds = [])
+    {
+        $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType($attributeCode, \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
+        $select1 = $this->adapter->select()
+            ->from(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e.entity_id']
+            )
+            ->joinLeft(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                'c_p_e.entity_id = c_p_r.child_id',
+                ['parent_id']
+            );
+
+        $select1->where('t_d.attribute_id = ?', $attributeId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+        if($indexerType== 'delta') $select1->where('c_p_e.entity_id IN(?)', $deltaIds);
+
+        $select2 = clone $select1;
+        $select2->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+            't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+            [
+                't_d.attribute_id',
+                't_d.value',
+                't_d.store_id'
+            ]
+        );
+        $select1->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+            't_d.entity_id = c_p_r.parent_id',
+            [
+                't_d.attribute_id',
+                't_d.value',
+                't_d.store_id'
+            ]
+        );
+
+        return $this->adapter->select()->union(
+            array($select1, $select2),
+            \Zend_Db_Select::SQL_UNION
+        );
+    }
+
+    /**
+     * Query for setting the product status value based on the parent properties and product visibility
+     * Fixes the issue when parent product is enabled but child product is disabled.
+     *
+     * @param $storeId
+     * @param string $indexerType
+     * @param array $deltaIds
+     * @return mixed
+     */
+    public function getProductStatusParentDependabilityByIndexerDelta($storeId, $indexerType = 'full', $deltaIds = [])
+    {
+        $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
+        $visibilityId = $this->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
+        $parentsCountSql = $this->getProductAttributeParentCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
+        $this->logger->info($parentsCountSql->__toString());
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e.entity_id']
+            )
+            ->joinLeft(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                'c_p_e.entity_id = c_p_r.child_id',
+                ['parent_id']
+            )
+            ->join(
+                ['c_p_e_s' => $this->adapter->getTableName('catalog_product_entity_int')],
+                "c_p_e.entity_id = c_p_e_s.entity_id AND c_p_e_s.attribute_id = {$statusId} AND c_p_e_s.store_id IN (0, {$storeId})",
+                ['c_p_e_s.attribute_id', 'c_p_e_s.store_id','entity_status'=>'c_p_e_s.value']
+            )
+            ->join(
+                ['c_p_e_v' => $this->adapter->getTableName('catalog_product_entity_int')],
+                "c_p_e.entity_id = c_p_e_v.entity_id AND c_p_e_v.attribute_id = {$visibilityId} AND c_p_e_v.store_id IN (0, {$storeId})",
+                ['entity_visibility'=>'c_p_e_v.value']
+            );
+
+        if($indexerType== 'delta') $select->where('c_p_e.entity_id IN(?)', $deltaIds);
+        $visibilityOptions = implode(',', [\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH]);
+        $finalSelect = $this->adapter->select()
+            ->from(
+                ["entity_select" => new \Zend_Db_Expr("( ". $select->__toString() . " )")],
+                [
+                    "entity_select.entity_id",
+                    "entity_select.parent_id",
+                    "entity_select.store_id",
+                    "value" => new \Zend_Db_Expr("
+                        (CASE 
+                            WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
+                            WHEN entity_select.entity_status='2' THEN 2 
+                            ELSE IF(entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(parent_count.count > 0, 1, 0))
+                         END
+                        )"
+                    )
+                ]
+            )
+            ->joinLeft(
+                ["parent_count"=> new \Zend_Db_Expr("( ". $parentsCountSql->__toString() . " )")],
+                "parent_count.entity_id = entity_select.entity_id",
+                ["count"]
+            );
+
+        return $finalSelect;
+    }
+
+    /**
+     * Getting count of parent products that have a certain value for an attribute
+     * Used for validation of child values
+     *
+     * @param $attributeId
+     * @param $value
+     * @param $storeId
+     * @return \Magento\Framework\DB\Select
+     */
+    protected function getProductAttributeParentCountSqlByAttrIdValueStoreId($attributeId, $value, $storeId)
+    {
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r.parent_id']
+            )
+            ->joinLeft(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                'c_p_e.entity_id = c_p_r.child_id',
+                ['c_p_e.entity_id']
+            )
+            ->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_int')],
+                't_d.entity_id = c_p_r.parent_id',
+                ['t_d.value']
+            )
+            ->where('t_d.attribute_id = ?', $attributeId)
+            ->where('t_d.store_id = 0 OR t_d.store_id = ?', $storeId);
+
+        $mainSelect = $this->adapter->select()
+            ->from(
+                ["parent_select"=> new \Zend_Db_Expr("( ". $select->__toString() . ' )')],
+                ["count" => new \Zend_Db_Expr("COUNT(parent_select.parent_id)"), 'entity_id']
+            )
+            ->where("parent_select.value = ?", $value)
+            ->group("parent_select.entity_id");
+
+        return $mainSelect;
+    }
+
     public function getProductOptionValuesByStoreAndKey($storeId, $key)
     {
         $select = $this->adapter->select()

@@ -872,50 +872,19 @@ class BxIndexer
                         }
                         $fetchedOptionValues = null;
                     }
-
                     $select->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
 
-                    if ($type['attribute_code'] == 'visibility' || $type['attribute_code'] ==  'status') {
+                    if ($type['attribute_code'] == 'visibility') {
                         $getValueForDuplicate = true;
-                        $select1 = $db->select()
-                            ->from(
-                                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                                array('c_p_e.entity_id',)
-                            )
-                            ->joinLeft(
-                                array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
-                                'c_p_e.entity_id = c_p_r.child_id',
-                                array('parent_id')
-                            );
+                        $select = $this->exporterResource->getProductAttributeParentUnionSqlByIndexerDelta($type['attribute_code'], $attrKey, $storeId, $this->getIndexerType(), $this->getDeltaIds());
+                    }
 
-                        $select1->where('t_d.attribute_id = ?', $typeKey)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-                        if($this->getIndexerType() == 'delta') $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
-
-                        $select2 = clone $select1;
-                        $select2->join(array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
-                            't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
-                            array(
-                                't_d.attribute_id',
-                                't_d.value',
-                                't_d.store_id'
-                            )
-                        );
-                        $select1->join(array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
-                            't_d.entity_id = c_p_r.parent_id',
-                            array(
-                                't_d.attribute_id',
-                                't_d.value',
-                                't_d.store_id'
-                            )
-                        );
-                        $select = $db->select()->union(
-                            array($select1, $select2),
-                            \Zend_Db_Select::SQL_UNION
-                        );
+                    if ($type['attribute_code'] == 'status') {
+                        $getValueForDuplicate = true;
+                        $select = $this->exporterResource->getProductStatusParentDependabilityByIndexerDelta($storeId, $this->getIndexerType(), $this->getDeltaIds());
                     }
 
                     $fetchedResult = $db->fetchAll($select);
-
                     if (sizeof($fetchedResult)) {
 
                         foreach ($fetchedResult as $i => $row) {
