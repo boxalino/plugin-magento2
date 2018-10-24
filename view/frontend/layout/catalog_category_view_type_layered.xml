@@ -7,8 +7,8 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Boxalino_Intelligence::css/filter.css"/>
-        <css src="Boxalino_Intelligence::css/nouislider.css"/>
+        <css src="Boxalino_Intelligence::css/_filter.css"/>
+        <css src="Boxalino_Intelligence::css/_nouislider.css"/>
     </head>
     <body>
         <referenceContainer name="content">
@@ -21,7 +21,7 @@
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
             </action>
-        </referenceBlock>
+        </referenceBlock> 
 
         <referenceContainer name="content">
             <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage"

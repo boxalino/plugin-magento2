@@ -2,26 +2,20 @@
 
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Boxalino_Intelligence::css/autocomplete.css"/>
-        <css src="Boxalino_Intelligence::css/overlay.css"/>
+        <css src="Boxalino_Intelligence::css/_autocomplete.css"/>
+        <css src="Boxalino_Intelligence::css/_overlay.css"/>
     </head>
     <body>
         <referenceContainer name="after.body.start">
-            <block class="Boxalino\Intelligence\Block\Script" name="bxScript"
-                   template="Boxalino_Intelligence::script.phtml">
-            </block>
+            <block class="Boxalino\Intelligence\Block\Script" name="bxScript" template="Boxalino_Intelligence::script.phtml"/>
         </referenceContainer>
 
         <referenceContainer name="before.body.end">
-            <block class="Boxalino\Intelligence\Block\Notification" name="bxNotification"
-                   template="Boxalino_Intelligence::notification.phtml">
-            </block>
+            <block class="Boxalino\Intelligence\Block\Notification" name="bxNotification" template="Boxalino_Intelligence::notification.phtml"/>
         </referenceContainer>
 
         <referenceContainer name="footer">
-            <block class="Boxalino\Intelligence\Block\BxOverlayBlock" name="bxOverlay"
-                   template="Boxalino_Intelligence::overlay.phtml">
-            </block>
+            <block class="Boxalino\Intelligence\Block\BxOverlayBlock" name="bxOverlay" template="Boxalino_Intelligence::overlay.phtml"/>
         </referenceContainer>
     </body>
 </page>
