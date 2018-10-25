@@ -36,10 +36,7 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
         array $data = []
-        )
-
-        {
-
+    ){
         $this->_logger = $context->getLogger();
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;

@@ -4,6 +4,7 @@
     <head>
         <css src="Boxalino_Intelligence::css/_autocomplete.css"/>
         <css src="Boxalino_Intelligence::css/_overlay.css"/>
+        <css src="Boxalino_Intelligence::css/_bxBanner.css"/>
     </head>
     <body>
         <referenceContainer name="after.body.start">

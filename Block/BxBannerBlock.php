@@ -18,43 +18,50 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         \Magento\Framework\App\Request\Http $request,
         array $data
-        )
-
-        {
-
+    ){
         $this->_logger = $context->getLogger();
-        parent::__construct($context, 
-                            $p13nHelper,
-                            $bxHelperData,
-                            $checkoutSession, 
-                            $catalogProductVisibility, 
-                            $factory, 
-                            $request,
-                            $data);
+        parent::__construct($context,
+            $p13nHelper,
+            $bxHelperData,
+            $checkoutSession,
+            $catalogProductVisibility,
+            $factory,
+            $request,
+            $data);
 
-        } 
+    }
 
-    protected function _prepareData(){
-        
+    protected function _prepareData()
+    {
         return $this;
     }
 
-    protected function prepareRecommendations($recommendations = array(), $returnFields = array()){
-        parent::prepareRecommendations($recommendations, array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
+    protected function prepareRecommendations($recommendations = array(), $returnFields = array())
+    {
+        parent::prepareRecommendations(
+            $recommendations,
+            array(
+                'title',
+                'products_bxi_bxi_jssor_slide',
+                'products_bxi_bxi_jssor_transition',
+                'products_bxi_bxi_name',
+                'products_bxi_bxi_jssor_control',
+                'products_bxi_bxi_jssor_break'
+            )
+        );
     }
 
-    public function isActive(){
-
+    public function isActive()
+    {
         if ($this->bxHelperData->isBannerEnabled()) {
-            
             return true;
-
         }
 
+        return false;
     }
 
-    public function check(){
-
+    public function check()
+    {
         try{
             $values = array(
 
@@ -77,32 +84,19 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
             );
 
             if (!in_array('', $values)) {
-
                 return true;
-
             }else{
-
                 foreach ($values as $key => $value) {
-
                     try{
-
                         if($value == '') {
-
                             throw new \Exception("Function $key returned empty.");
-
                         }
-
                     } catch(\Exception $e){
-
                         $this->setFallback(true);
-
                         $this->_logger->critical($e);
                     }
-
                 }
-
                 return false;
-
             }
         } catch (\Exception $e) {
             $this->setFallback(true);
@@ -110,8 +104,8 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         }
     }
 
-    public function getBannerSlides() {
-
+    public function getBannerSlides()
+    {
         $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $this->_data['widget']);
         $counters = array();
         foreach($slides as $id => $vals) {
@@ -119,20 +113,20 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         }
 
         // if the small banner is used, use the first banner for the first block & the second for the second
-
         if ($this->getBannerLayout() != 'large') {
-          if ($this->getIndex() == '1') {
-            return array(reset($slides));
-          }
-          if ($this->getIndex() == '2') {
-            return array(end($slides));
-          }
+            if ($this->getIndex() == '1') {
+                return array(reset($slides));
+            }
+            if ($this->getIndex() == '2') {
+                return array(end($slides));
+            }
         }
 
         return $slides;
     }
 
-    public function getBannerSlide($id, $vals, &$counters) {
+    public function getBannerSlide($id, $vals, &$counters)
+    {
         $language = $this->p13nHelper->getLanguage();
         if(isset($vals['products_bxi_bxi_jssor_slide']) && sizeof($vals['products_bxi_bxi_jssor_slide']) > 0) {
             $json = $vals['products_bxi_bxi_jssor_slide'][0];
@@ -141,16 +135,12 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
             if(isset($slide[$language])) {
                 $json = $slide[$language];
 
-                  // add configId as prefix for the classes
-
+                // add configId as prefix for the classes
                 $json = $this->addPrefixToClasses($json);
-
                 for($i=1; $i<10; $i++) {
-
                     if(!isset($counters[$i])) {
                         $counters[$i] = 0;
                     }
-
                     $pieces = explode('BX_COUNTER'.$i, $json);
                     foreach($pieces as $j => $piece) {
                         if($j >= sizeof($pieces)-1) {
@@ -159,7 +149,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                         $pieces[$j] .= $counters[$i]++;
                     }
                     $json = implode('', $pieces);
-                
+
                 }
                 return $json;
             }
@@ -167,9 +157,9 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         return '';
     }
 
-    public function getBannerJssorSlideGenericJS($key) {
+    public function getBannerJssorSlideGenericJS($key)
+    {
         $language = $this->p13nHelper->getLanguage();
-        
         $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array($key), $this->_data['widget']);
 
         $jsArray = array();
@@ -179,254 +169,216 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 $jsons = json_decode($vals[$key][0], true);
                 if(isset($jsons[$language])) {
                     $json = $jsons[$language];
-
                     //fix some special case an extra '}' appears wrongly at the end
                     $minus = 2;
                     if(substr($json, strlen($json)-1, 1) == '}') {
                         $minus = 3;
                     }
-
                     //removing the extra [] around
                     $json = substr($json, 1, strlen($json)-$minus);
-
                     $jsArray[] = $json;
                 }
             }
         }
-        
         return '[' . implode(',', $jsArray) . ']';
     }
 
-    public function addPrefixToClasses($json){
-
-      $idFromConfig = $this->getIdFromConfig();
-
-      $elems = explode(' ' ,$json);
-
+    public function addPrefixToClasses($json)
+    {
+        $idFromConfig = $this->getIdFromConfig();
+        $elems = explode(' ' ,$json);
         foreach ($elems as $i => $value) {
-          if (preg_match('/bxBanner/', $value)) {
-            $value = str_replace('bxBanner', $idFromConfig . '_bxBanner', $value);
-            $elems[$i] = $value;
-          }
+            if (preg_match('/bxBanner/', $value)) {
+                $value = str_replace('bxBanner', $idFromConfig . '_bxBanner', $value);
+                $elems[$i] = $value;
+            }
         }
 
-      $json = implode(' ', $elems);
-
-      return $json;
+        $json = implode(' ', $elems);
+        return $json;
 
     }
 
-    public function getBannerJssorSlideTransitions() {
-
+    public function getBannerJssorSlideTransitions()
+    {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition');
-    
+
     }
 
-    public function getBannerJssorSlideBreaks() {
-
+    public function getBannerJssorSlideBreaks()
+    {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break');
 
     }
 
-    public function getBannerJssorSlideControls() {
-
+    public function getBannerJssorSlideControls()
+    {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control');
-    
+
     }
 
-    public function getBannerJssorOptions() {
-
+    public function getBannerJssorOptions()
+    {
         $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $this->_data['widget']);
-
         // replace id from Intelligence with id from block configuration
-
         $bannerJssorOptions = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerJssorOptions);
 
         return $bannerJssorOptions;
     }
 
-    public function getBannerJssorId() {
-
+    public function getBannerJssorId()
+    {
         $bannerJssorId = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_id', '', $this->_data['widget']);
-
         return $bannerJssorId;
     }
 
-    public function getBannerJssorStyle() {
-
+    public function getBannerJssorStyle()
+    {
         $bannerJssorStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $this->_data['widget']);
-
         return $bannerJssorStyle;
     }
 
-    public function getBannerJssorSlidesStyle() {
-
+    public function getBannerJssorSlidesStyle()
+    {
         $bannerJssorrSlidesStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style', '', $this->_data['widget']);
-
         return $bannerJssorrSlidesStyle;
     }
 
-    public function getBannerJssorMaxWidth() {
-
+    public function getBannerJssorMaxWidth()
+    {
         $bannerJssorMaxWidth = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $this->_data['widget']);
-
         return $bannerJssorMaxWidth;
     }
 
-    public function getBannerJssorCSS() {
-
+    public function getBannerJssorCSS()
+    {
         $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $this->_data['widget']);
-
         // replace id from Intelligence with id from block configuration
-
         $bannerJssorCss = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerJssorCss);
 
         return str_replace("JSSORID", $this->getBannerJssorId(), $bannerJssorCss);
     }
 
-    public function getBannerJssorLoadingScreen() {
-
+    public function getBannerJssorLoadingScreen()
+    {
         $bannerJssorLoadingScreen = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $this->_data['widget']);
-
         return $bannerJssorLoadingScreen;
     }
 
-    public function getBannerJssorBulletNavigator() {
-
+    public function getBannerJssorBulletNavigator()
+    {
         $bannerJssorBulletNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $this->_data['widget']);
-
         return $bannerJssorBulletNavigator;
-
     }
 
-    public function getBannerJssorArrowNavigator() {
-
+    public function getBannerJssorArrowNavigator()
+    {
         $bannerJssorArrowNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $this->_data['widget']);
-
         return $bannerJssorArrowNavigator;
-
     }
 
-    public function getBannerFunction() {
-
+    public function getBannerFunction()
+    {
         $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $this->_data['widget']);
-
         // replace id from Intelligence with id from block configuration
-
         $bannerFunction = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerFunction);
 
         return $bannerFunction;
-
     }
 
-    public function getBannerLayout() {
-
+    public function getBannerLayout()
+    {
         $bannerLayout = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $this->_data['widget']);
-
         return $bannerLayout;
-
     }
 
-    public function getBannerTitle(){
-
-      $bannerTitle = $this->p13nHelper->getClientResponse()->getResultTitle($this->_data['widget']);
-
-      return $bannerTitle;
-
+    public function getBannerTitle()
+    {
+        $bannerTitle = $this->p13nHelper->getClientResponse()->getResultTitle($this->_data['widget']);
+        return $bannerTitle;
     }
 
-    public function getHitCount(){
-
-      $hitCount = sizeof($this->p13nHelper->getClientResponse()->getHitIds($this->_data['widget']));
-
-      return $hitCount;
-
+    public function getHitCount()
+    {
+        $hitCount = sizeof($this->p13nHelper->getClientResponse()->getHitIds($this->_data['widget']));
+        return $hitCount;
     }
 
-    public function getIdFromConfig(){
+    public function getIdFromConfig()
+    {
+        return 'largeBanner';
+        $jssorConfigId = $this->getData('jssorID');
 
-      $jssorConfigId = $this->getData('jssorID');
-	  
-	  if($jssorConfigId == "") {
-		  return $this->getBannerJssorId();
-	  }
+        if($jssorConfigId == "") {
+            return $this->getBannerJssorId();
+        }
 
-      return $jssorConfigId;
-
+        return $jssorConfigId;
     }
 
-    public function getIndex(){
+    public function getIndex()
+    {
+        $jssorIndex = $this->getData('jssorIndex');
 
-      $jssorIndex = $this->getData('jssorIndex');
-
-      return $jssorIndex;
-
+        return $jssorIndex;
     }
 
-    public function getOverlayValues($key){
-
-      return $this->p13nHelper->getOverlayValues($key, $this->_data['widget']);
-
+    public function getOverlayValues($key)
+    {
+        return $this->p13nHelper->getOverlayValues($key, $this->_data['widget']);
     }
 
-    public function getOverlayTimeout(){
+    public function getOverlayTimeout()
+    {
+        //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
+        $timeout = $this->getOverlayValues('bx_extend_timeout');
 
-      //$timeout is the time in seconds (e.g. 3), has to be multiplied by 1000 (milliseconds) for js function 'setTimeout'
-      $timeout = $this->getOverlayValues('bx_extend_timeout');
-
-      if ($timeout) {
-        return ($timeout * 1000);
-      }else{
-        return 5000;
-      }
-
+        if ($timeout) {
+            return ($timeout * 1000);
+        }else{
+            return 5000;
+        }
     }
 
-    public function getOverlayExitIntendTimeout(){
+    public function getOverlayExitIntendTimeout()
+    {
+        $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
 
-      $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
-
-      if (!empty($timeout)) {
-        return $timeout;
-      }else{
-        return 5;
-      }
-
+        if (!empty($timeout)) {
+            return $timeout;
+        }else{
+            return 5;
+        }
     }
 
-    public function getOverlayFrequency(){
+    public function getOverlayFrequency()
+    {
+        $frequency = $this->getOverlayValues('bx_extend_frequency');
 
-      $frequency = $this->getOverlayValues('bx_extend_frequency');
-
-      if (!empty($frequency)) {
-        return $frequency;
-      }else{
-        return 0;
-      }
-
+        if (!empty($frequency)) {
+            return $frequency;
+        }else{
+            return 0;
+        }
     }
 
-    public function getOverlayPosition(){
+    public function getOverlayPosition()
+    {
+        $position = $this->getOverlayValues('bx_extend_position');
+        if ($position) {
+            return $position;
+        }
 
-      $position = $this->getOverlayValues('bx_extend_position');
-
-      if ($position) {
-        return $position;
-      }
-
-      return 'Centre';
-
+        return 'Centre';
     }
 
-    public function withLightboxEffect(){
+    public function withLightboxEffect()
+    {
+        $withLightbox = $this->getOverlayValues('bx_extend_lightbox');
+        if (!empty($withLightbox)) {
+        }
 
-      $withLightbox = $this->getOverlayValues('bx_extend_lightbox');
-
-      if (!empty($withLightbox)) {
-      }
-
-      return true;
-
+        return true;
     }
 
 }
