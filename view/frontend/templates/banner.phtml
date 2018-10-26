@@ -26,12 +26,12 @@ if ($this->isActive() && $this->check()) {
                 'jssor'
             ], function ($, jssor) {
                 'use strict';
-                var largeBanner_slider_init = function() {
-                    var largeBanner_options = <?php echo $jssorOptions ?>;
-                    var largeBanner_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
-                    var largeBanner_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
-                    var largeBanner_SlideoControls = <?php echo $jssorSlideControls ?>;
-                    var largeBanner_slider = new $JssorSlider$("largeBanner", largeBanner_options);
+                var <?php echo $jssorId;?>_slider_init = function() {
+                    var <?php echo $jssorId;?>_options = <?php echo $jssorOptions ?>;
+                    var <?php echo $jssorId;?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+                    var <?php echo $jssorId;?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+                    var <?php echo $jssorId;?>_SlideoControls = <?php echo $jssorSlideControls ?>;
+                    var <?php echo $jssorId;?>_slider = new $JssorSlider$(<?php echo $jssorId;?>, <?php echo $jssorId;?>_options);
                     var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
                     function ScaleSlider() { <?php echo $jssorFunction ?> }
                     ScaleSlider();
@@ -39,11 +39,11 @@ if ($this->isActive() && $this->check()) {
                     $Jssor$.$AddEvent(window, "resize", ScaleSlider);
                     $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
                 };
-                largeBanner_slider_init();
+                <?php echo $jssorId;?>_slider_init();
             }
         );
     </script>
-    <div id="largeBanner" class="bxLargeBannerJssor">
+    <div id='<?php echo $jssorId;?>' class="bxLargeBannerJssor">
         <div data-u="loading" class="jssorl-009-spin"></div>
         <div data-u="slides" class="bxLargeBannerJssorSlides">
             <?php
@@ -52,7 +52,7 @@ if ($this->isActive() && $this->check()) {
             }
             ?>
         </div>
-        <?php if ($hitCount > 1 && $jssorLayout == 'large'){ ?>
+        <?php if ($hitCount > 1 && $jssorLayout == 'large'): ?>
             // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
             <div data-u="navigator" class="jssorb032 bxLargeBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
                 <div data-u="prototype" class="i">
@@ -71,6 +71,6 @@ if ($this->isActive() && $this->check()) {
                     <polyline class="a" points="4960,1920 11040,8000 4960,14080 "></polyline>
                 </svg>
             </div>
-        <?php  }; ?>
+        <?php endif; ?>
     </div>
 <?php } ?>

@@ -64,7 +64,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     {
         try{
             $values = array(
-
                 0 => $this->getBannerSlides(),
                 1 => $this->getBannerJssorId(),
                 2 => $this->getBannerJssorSlideTransitions(),
@@ -80,7 +79,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 12 => $this->getBannerJssorArrowNavigator(),
                 13 => $this->getBannerFunction(),
                 14 => $this->getBannerLayout()
-
             );
 
             if (!in_array('', $values)) {
@@ -306,7 +304,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getIdFromConfig()
     {
-        return 'largeBanner';
         $jssorConfigId = $this->getData('jssorID');
 
         if($jssorConfigId == "") {

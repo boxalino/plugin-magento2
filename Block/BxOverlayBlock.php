@@ -1,12 +1,12 @@
 <?php
-
 namespace Boxalino\Intelligence\Block;
 
 /**
  * Class OverlayBlock
  * @package Boxalino\Intelligence\Block
  */
-class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
+class BxOverlayBlock extends \Magento\Framework\View\Element\Template
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
@@ -45,81 +45,84 @@ class BxOverlayBlock extends \Magento\Framework\View\Element\Template {
 
     }
 
-    public function isActive(){
-      if ($this->bxHelperData->isOverlayEnabled()) {
-          return true;
-      }
-      return false;
+    public function isActive()
+    {
+        if ($this->bxHelperData->isOverlayEnabled()) {
+            return true;
+        }
+        return false;
     }
 
-    public function getControllerUrl(){
-
-      return $this->_storeManager->getStore()->getBaseUrl() . 'bxGenericRecommendations/index/setproperties/';
-
+    public function getControllerUrl()
+    {
+        return $this->_storeManager->getStore()->getBaseUrl() . 'bxGenericRecommendations/index/setproperties/';
     }
 
-    public function getGrandTotal(){
+    public function getGrandTotal()
+    {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 
-      $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-      $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+        $grandTotal = $cart->getQuote()->getGrandTotal();
 
-      $grandTotal = $cart->getQuote()->getGrandTotal();
-
-      if (empty($grandTotal)) {
-        return 0;
-      } else {
-        return $grandTotal;
-      }
-
+        if (empty($grandTotal)) {
+            return 0;
+        } else {
+            return $grandTotal;
+        }
     }
 
     // get template parameters from response
-
-    public function getVariantIndex(){
-      return $this->p13nHelper->getOverlayVariantId();
+    public function getVariantIndex()
+    {
+        return $this->p13nHelper->getOverlayVariantId();
     }
 
-    public function getTemplatePathFromResponse(){
-      return $this->getOverlayValues('bx-template-path');
+    public function getTemplatePathFromResponse()
+    {
+        return $this->getOverlayValues('bx-template-path');
     }
 
-    public function getBlockPathFromResponse(){
-      return $this->getOverlayValues('bx-block-path');
+    public function getBlockPathFromResponse()
+    {
+        return $this->getOverlayValues('bx-block-path');
     }
 
     // javascript config from response
-
-    public function getOverlayJsParameters(){
-      return $this->getOverlayValues('bx-extend-parameters');
+    public function getOverlayJsParameters()
+    {
+        return $this->getOverlayValues('bx-extend-parameters');
     }
 
-    public function getOverlayBehaviorJs(){
-      return $this->getOverlayValues('bx-extend-behaviour');
+    public function getOverlayBehaviorJs()
+    {
+        return $this->getOverlayValues('bx-extend-behaviour');
     }
 
-    public function getOverlayExtraParams(){
-      $paramsJson = $this->getOverlayValues('bx-extend-extra-params');
-      if (!empty($paramsJson)) {
-        return $paramsJson;
-      }else{
-        return 0;
-      }
+    public function getOverlayExtraParams()
+    {
+        $paramsJson = $this->getOverlayValues('bx-extend-extra-params');
+        if (!empty($paramsJson)) {
+            return $paramsJson;
+        }else{
+            return 0;
+        }
     }
 
-    public function getOverlayValues($key){
-      $overlayWidget = $this->p13nHelper->getOverlayChoice();
-      return $this->p13nHelper->getClientResponse()->getExtraInfo($key, '', $overlayWidget);
+    public function getOverlayValues($key)
+    {
+        $overlayWidget = $this->p13nHelper->getOverlayChoice();
+        return $this->p13nHelper->getClientResponse()->getExtraInfo($key, '', $overlayWidget);
     }
 
-    public function getLanguage(){
-      return $this->bxHelperData->getLanguage();
+    public function getLanguage()
+    {
+        return $this->bxHelperData->getLanguage();
     }
 
     // lightbox effect
-
-    public function withLightboxEffect(){
-
-      return $this->getOverlayValues('bx_extend_lightbox');
-
+    public function withLightboxEffect()
+    {
+        return $this->getOverlayValues('bx_extend_lightbox');
     }
 }
