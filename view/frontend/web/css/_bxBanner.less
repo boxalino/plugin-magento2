@@ -17,7 +17,8 @@ body {
   height: 100%;
 }
 .col {
-  .bxlargebannerjssorbulletnavigator{ position: absolute;
+  .bxlargebannerjssorbulletnavigator{
+    position: absolute;
     bottom: 12px;
     right: 12px;
   }
@@ -245,4 +246,218 @@ body {
   .a {
     stroke: unset !important;
   }
+}
+
+.bxSmallBannerJssor{
+  position:relative;
+  margin:0 auto;
+  top:0px;
+  left:0px;
+  width:1238px;
+  height:355px;
+  overflow:hidden;
+  visibility:hidden;
+}
+.bxSmallBannerJssorSlides{
+  cursor:default;
+  position:relative;
+  top:0px;
+  left:0px;
+  width:1238px;
+  height:355px;
+  overflow:hidden;
+}
+
+@color_1: black;
+@color_2: #009ee0;
+@font_family_1: true;
+@font_family_2: 'true';
+
+@keyframes jssorl-004-double-tail-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+html {
+	height: 100%;
+}
+body {
+	height: 100%;
+}
+.col {
+  float: left;
+  .jssorl-004-double-tail-spin img {animation-name: jssorl-004-double-tail-spin;
+  animation-duration: 1.2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+}
+.bxSmallBannerJssor {
+border-radius: 4px;
+box-sizing: border-box;
+box-shadow: 0 0 8px 0 rgba(0,0,0,.1);
+margin-bottom: 1% !important;
+}
+.smallBanner_bxBannerTitle {
+font-family: @font_family_1 !important;
+line-height: 1 !important;
+}
+.smallBanner_bxBannerDescription {
+font-family: @font_family_2 !important;
+}
+.smallBanner_bxBannerLink {
+z-index: 100 !important;
+position: absolute !important;
+display: block !important;
+width: 100% !important;
+height: 500% !important;
+top: 0 !important;
+left: 0 !important;
+}
+.i {
+position: absolute;
+cursor: pointer;
+fill: #000;
+fill-opacity: 0.5;
+stroke: #fff;
+stroke-width: 1200;
+stroke-miterlimit: 10;
+stroke-opacity: 0.3;
+}
+.iav {
+fill: #fff;
+stroke: #000;
+fill-opacity: 1;
+}
+.jssora051 {
+display: block;
+position: absolute;
+cursor: pointer;
+.a {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 360;
+  stroke-miterlimit: 10;
+}
+&:hover {
+  opacity: .8;
+}
+}
+.jssora051.jssora051dn {
+opacity: .5;
+}
+.jssora051.jssora051ds {
+opacity: .3;
+pointer-events: none;
+}
+} {
+  .col {
+    a {
+      text-decoration: none;
+    }
+  }
+}
+@media screen and (min-width:1000px) {
+.bxSmallBannerJssor {
+  width: 48% !important;
+  float: left !important;
+  margin: 1% !important;
+}
+.bannerSmall_bxBannerBackgroundImage {
+  clip-path: inset(0 470px 0 160px) !important;
+  left: -160px !important;
+}
+}
+@media screen and (max-width:768px) {
+.bxSmallBannerJssor {
+  width: 100% !important;
+  div {
+    &:nth-child(2) {
+      div {
+        overflow: visible !important;
+      }
+    }
+  }
+}
+.bannerSmall_bxBannerBackgroundImage {
+  top: auto !important;
+  left: auto !important;
+  display: none !important;
+  pointer-events: none !important;
+  cursor: default !important;
+  img {
+    display: none !important;
+  }
+}
+.bannerSmall_bxBannerLink {
+  z-index: 1000 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+.bannerSmall_bxBannerTitle {
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  top: 0 !important;
+  width: 95% !important;
+  height: auto !important;
+  z-index: auto !important;
+  font-family: @font_family_1 !important;
+  color: @color_1 !important;
+  text-align: left !important;
+  padding-left: 50px !important;
+  padding-top: 50px !important;
+  margin-bottom: 15px !important;
+  font-weight: 400 !important;
+  display: block !important;
+  font-size: 7rem !important;
+}
+.bannerSmall_bxBannerDescription {
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 95% !important;
+  height: auto !important;
+  z-index: auto !important;
+  font-family: @font_family_2 !important;
+  color: @color_2 !important;
+  text-align: left !important;
+  display: block !important;
+  padding-left: 50px !important;
+  font-style: normal;
+  font-weight: 400 !important;
+  line-height: 1.333 !important;
+  font-size: 4rem !important;
+  margin-top: 40px !important;
+  margin-bottom: 40px !important;
+}
+.bannerSmall_bxBannerSmallImage {
+  position: relative !important;
+  top: auto !important;
+  right: 0 !important;
+  left: 15% !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  width: 70% !important;
+  height: auto !important;
+  z-index: auto !important;
+}
+.bannerSmall_bxBannerButton {
+  position: relative !important;
+  left: 30% !important;
+  height: auto !important;
+  width: 40% !important;
+  top: 0 !important;
 }

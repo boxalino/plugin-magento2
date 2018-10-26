@@ -44,8 +44,10 @@ if ($this->isActive() && $this->check()) {
         );
     </script>
     <div id='<?php echo $jssorId;?>' class="bxLargeBannerJssor">
+    <!--<div id='<?php echo $jssorId;?>' class="bxSmallBannerJssor">-->
         <div data-u="loading" class="jssorl-009-spin"></div>
         <div data-u="slides" class="bxLargeBannerJssorSlides">
+        <!-- <div data-u="slides" class="bxSmallBannerJssorSlides"> -->
             <?php
             foreach($jssorSlides as $bannerSlideId => $values ) {
                 echo $values['div'];
