@@ -9,9 +9,6 @@ if ($this->isActive() && $this->check()) {
     $jssorSlideBreaks = $this->getBannerJssorSlideBreaks();
     $jssorSlideControls = $this->getBannerJssorSlideControls();
     $jssorMaxWidth = $this->getBannerJssorMaxWidth();
-    $jssorLoadingScreen = $this->getBannerJssorLoadingScreen();
-    $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
-    $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
     $jssorFunction = $this->getBannerFunction();
     $jssorLayout = $this->getBannerLayout();
     $jssorOptions = $this->getBannerJssorOptions();
@@ -43,11 +40,9 @@ if ($this->isActive() && $this->check()) {
             }
         );
     </script>
-    <div id='<?php echo $jssorId;?>' class="bxLargeBannerJssor">
-    <!--<div id='<?php echo $jssorId;?>' class="bxSmallBannerJssor">-->
+    <div id='<?php echo $jssorId;?>' class="<?php echo $this->getBannerLayoutCssClass();?>">
         <div data-u="loading" class="jssorl-009-spin"></div>
-        <div data-u="slides" class="bxLargeBannerJssorSlides">
-        <!-- <div data-u="slides" class="bxSmallBannerJssorSlides"> -->
+        <div data-u="slides" class="<?php echo $this->getBannerSlidesCssClass();?>">
             <?php
             foreach($jssorSlides as $bannerSlideId => $values ) {
                 echo $values['div'];
@@ -56,19 +51,19 @@ if ($this->isActive() && $this->check()) {
         </div>
         <?php if ($hitCount > 1 && $jssorLayout == 'large'): ?>
             // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
-            <div data-u="navigator" class="jssorb032 bxLargeBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
+            <div data-u="navigator" class="jssorb032 bxBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
                 <div data-u="prototype" class="i">
                     <svg viewbox="0 0 16000 16000">
                         <circle class="b" cx="8000" cy="8000" r="5800"></circle>
                     </svg>
                 </div>
             </div>
-            <div data-u="arrowleft" class="jssora051 bxLargeBannerJssorArrowLeft" data-autocenter="2" data-scale="0.75" data-scale-left="0.75">
+            <div data-u="arrowleft" class="jssora051 bxBannerJssorArrowLeft" data-autocenter="2" data-scale="0.75" data-scale-left="0.75">
                 <svg viewbox="0 0 16000 16000">
                     <polyline class="a" points="11040,1920 4960,8000 11040,14080 "></polyline>
                 </svg>
             </div>
-            <div data-u="arrowright" class="jssora051 bxLargeBannerJssorArrowRight" data-autocenter="2" data-scale="0.75" data-scale-right="0.75">
+            <div data-u="arrowright" class="jssora051 bxBannerJssorArrowRight" data-autocenter="2" data-scale="0.75" data-scale-right="0.75">
                 <svg viewbox="0 0 16000 16000">
                     <polyline class="a" points="4960,1920 11040,8000 4960,14080 "></polyline>
                 </svg>

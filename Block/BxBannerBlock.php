@@ -9,6 +9,12 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     protected $_logger;
 
+    protected $bannerLayout = null;
+
+    protected $bannerLayoutCssClass = null;
+
+    protected $bannerSlidesCssClass = null;
+
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
@@ -64,6 +70,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     {
         try{
             $values = array(
+
                 0 => $this->getBannerSlides(),
                 1 => $this->getBannerJssorId(),
                 2 => $this->getBannerJssorSlideTransitions(),
@@ -79,6 +86,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 12 => $this->getBannerJssorArrowNavigator(),
                 13 => $this->getBannerFunction(),
                 14 => $this->getBannerLayout()
+
             );
 
             if (!in_array('', $values)) {
@@ -286,8 +294,11 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function getBannerLayout()
     {
-        $bannerLayout = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $this->_data['widget']);
-        return $bannerLayout;
+        if(is_null($this->bannerLayout))
+        {
+            $this->bannerLayout = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_layout', '', $this->_data['widget']);
+        }
+        return $this->bannerLayout;
     }
 
     public function getBannerTitle()
@@ -376,6 +387,42 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         }
 
         return true;
+    }
+
+    public function getBannerCss()
+    {
+        $bannerLayout = $this->getBannerLayout();
+        if(strpos($bannerLayout, 'large')!== false)
+        {
+            $this->bannerLayoutCssClass = "bxLargeBannerJssor";
+            $this->bannerSlidesCssClass = 'bxLargeBannerJssorSlides';
+
+            return;
+        }
+
+        $this->bannerLayoutCssClass = "bxSmallBannerJssor";
+        $this->bannerSlidesCssClass = "bxSmallBannerJssorSlides";
+        return;
+    }
+
+    public function getBannerLayoutCssClass()
+    {
+        if(is_null($this->bannerLayoutCssClass))
+        {
+            $this->getBannerCss();
+        }
+
+        return $this->bannerLayoutCssClass;
+    }
+
+    public function getBannerSlidesCssClass()
+    {
+        if(is_null($this->bannerSlidesCssClass))
+        {
+            $this->getBannerCss();
+        }
+
+        return $this->bannerSlidesCssClass;
     }
 
 }

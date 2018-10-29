@@ -1,5 +1,4 @@
 <?php
-
 $bannerData = $this->bxGetBanner();
 $hitCount = $bannerData['hitCount'];
 $jssorSlides = $bannerData['bannerSlides'];
@@ -60,23 +59,23 @@ if ($hitCount<2 || (!empty($jssorLayout) && $jssorLayout != 'large')) {
         </div>
         <?php if ($hitCount > 1 && $jssorLayout == 'large'): ?>
             // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
-            <div data-u="navigator" class="jssorb032 bxNarrativeBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
+            <div data-u="navigator" class="jssorb032 bxBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
                 <div data-u="prototype" class="i">
                     <svg viewbox="0 0 16000 16000">
                         <circle class="b" cx="8000" cy="8000" r="5800"></circle>
                     </svg>
                 </div>
             </div>
-            <div data-u="arrowleft" class="jssora051 bxNarrativeBannerJssorArrowLeft" data-autocenter="2" data-scale="0.75" data-scale-left="0.75">
+            <div data-u="arrowleft" class="jssora051 bxBannerJssorArrowLeft" data-autocenter="2" data-scale="0.75" data-scale-left="0.75">
                 <svg viewbox="0 0 16000 16000">
                     <polyline class="a" points="11040,1920 4960,8000 11040,14080 "></polyline>
                 </svg>
             </div>
-            <div data-u="arrowright" class="jssora051 bxNarrativeBannerJssorArrowRight" data-autocenter="2" data-scale="0.75" data-scale-right="0.75">
+            <div data-u="arrowright" class="jssora051 bxBannerJssorArrowRight" data-autocenter="2" data-scale="0.75" data-scale-right="0.75">
                 <svg viewbox="0 0 16000 16000">
                     <polyline class="a" points="4960,1920 11040,8000 4960,14080 "></polyline>
                 </svg>
             </div>
         <?php endif; ?>
     </div>
-<?php } ?>
+<?php endif; ?>
