@@ -17,52 +17,7 @@ html {
 body {
   height: 100%;
 }
-.col {
-  .bxBannerJssorbulletnavigator {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-  }
-}
-.bxBannerJssorBulletNavigator {
-  .i {
-    width: 16px;
-    height: 16px;
-    svg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-  }
-}
-.bxBannerJssorArrowLeft {
-  width: 65px;
-  height: 65px;
-  top: 0px;
-  left: 25px;
-  svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-}
-.bxBannerJssorArrowRight {
-  width: 65px;
-  height: 65px;
-  top: 0px;
-  right: 25px;
-  svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-}
+
 .bxLargeBannerJssor {
   position: relative;
   margin: 0 auto;
@@ -82,14 +37,6 @@ body {
   height: 355px;
   overflow: hidden;
 }
-.jssorl-004-double-tail-spin {
-  img {
-    animation-name: jssorl-004-double-tail-spin;
-    animation-duration: 1.2s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-  }
-}
 .largeBanner_bxBannerTitle {
   font-family: @font_family_1 !important;
   line-height: 1 !important;
@@ -106,40 +53,6 @@ body {
   top: 0 !important;
   left: 0 !important;
 }
-.i {
-  position: absolute;
-  cursor: pointer;
-  .b {
-    fill: #000;
-    fill-opacity: 0.5;
-    stroke: #fff;
-    stroke-width: 1200;
-    stroke-miterlimit: 10;
-    stroke-opacity: 0.3;
-  }
-  &:hover {
-    .b {
-      fill: #fff;
-      fill-opacity: .7;
-      stroke: #000;
-      stroke-opacity: .5;
-    }
-  }
-}
-.iav {
-  .b {
-    fill: #fff;
-    stroke: #000;
-    fill-opacity: 1;
-  }
-}
-.jssorb031 {
-  .i {
-    .idn {
-      opacity: .3;
-    }
-  }
-}
 @media screen and (max-width:768px) {
   .largeBanner_bxBannerBackgroundImage {
     top: auto !important;
@@ -151,17 +64,15 @@ body {
       display: none !important;
     }
   }
-
   .largeBanner_bxBannerLink {
     z-index: 1000 !important;
-    display: inline !important;
+    display: block !important;
     width: 100% !important;
-    height: 100% !important;
-    position: relative !important;
+    height: 500% !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
   }
-
   .largeBanner_bxBannerTitle {
     position: relative !important;
     left: 0 !important;
@@ -181,7 +92,6 @@ body {
     display: block !important;
     font-size: 8rem !important;
   }
-
   .largeBanner_bxBannerDescription {
     position: relative !important;
     left: 0 !important;
@@ -225,11 +135,7 @@ body {
     top: 1220px !important;
   }
 }
-.jssora051 {
-  .a {
-    stroke: unset !important;
-  }
-}
+
 //Small Banner
 .bxSmallBannerJssor {
   position: relative;
@@ -336,7 +242,6 @@ body {
       }
     }
   }
-
   .bannerSmallLeft_bxBannerBackgroundImage {
     top: auto !important;
     left: auto !important;
@@ -347,7 +252,6 @@ body {
       display: none !important;
     }
   }
-
   .bannerSmallLeft_bxBannerLink {
     z-index: 1000 !important;
     display: block !important;
@@ -357,7 +261,6 @@ body {
     top: 0 !important;
     left: 0 !important;
   }
-
   .bannerSmallLeft_bxBannerTitle {
     position: relative !important;
     left: 0 !important;
@@ -378,7 +281,6 @@ body {
     display: block !important;
     font-size: 7rem !important;
   }
-
   .bannerSmallLeft_bxBannerDescription {
     position: relative !important;
     left: 0 !important;
@@ -401,7 +303,6 @@ body {
     margin-top: 40px !important;
     margin-bottom: 40px !important;
   }
-
   .bannerSmallLeft_bxBannerSmallImage {
     position: relative !important;
     top: auto !important;
@@ -413,7 +314,6 @@ body {
     height: auto !important;
     z-index: auto !important;
   }
-
   .bannerSmallLeft_bxBannerButton {
     position: relative !important;
     left: 30% !important;
@@ -421,7 +321,6 @@ body {
     width: 40% !important;
     top: 0 !important;
   }
-
   .bannerSmallRight_bxBannerBackgroundImage {
     top: auto !important;
     left: auto !important;
@@ -432,7 +331,6 @@ body {
       display: none !important;
     }
   }
-
   .bannerSmallRight_bxBannerLink {
     z-index: 1000 !important;
     display: block !important;
@@ -442,7 +340,6 @@ body {
     top: 0 !important;
     left: 0 !important;
   }
-
   .bannerSmallRight_bxBannerTitle {
     position: relative !important;
     left: 0 !important;
@@ -463,7 +360,6 @@ body {
     display: block !important;
     font-size: 7rem !important;
   }
-
   .bannerSmallRight_bxBannerDescription {
     position: relative !important;
     left: 0 !important;
@@ -486,7 +382,6 @@ body {
     margin-top: 40px !important;
     margin-bottom: 40px !important;
   }
-
   .bannerSmallRight_bxBannerSmallImage {
     position: relative !important;
     top: auto !important;
@@ -498,7 +393,6 @@ body {
     height: auto !important;
     z-index: auto !important;
   }
-
   .bannerSmallRight_bxBannerButton {
     position: relative !important;
     left: 30% !important;
@@ -507,8 +401,6 @@ body {
     top: 0 !important;
   }
 }
-
-
 
 /* NARRATIVE JSSOR  */
 .bxNarrativeBannerJssor {
@@ -523,7 +415,6 @@ body {
   border-radius: 4px !important;
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1) !important;
 }
-
 .bxNarrativeBannerJssorSlides {
   cursor: default;
   position: relative;
@@ -537,11 +428,9 @@ body {
   font-family: @font_family_1 !important;
   line-height: 1 !important;
 }
-
 .narrativeBanner_bxBannerDescription {
   font-family: @font_family_1 !important;
 }
-
 .narrativeBanner_bxBannerLink {
   z-index: 100 !important;
   position: absolute !important;
@@ -551,34 +440,7 @@ body {
   top: 0 !important;
   left: 0 !important;
 }
-.jssorb031 {
-  .i {
-    .idn {
-      opacity: .3;
-    }
-  }
-}
-.jssora051 {
-  display: block;
-  position: absolute;
-  cursor: pointer;
-  .a {
-    fill: none;
-    stroke: #fff;
-    stroke-width: 360;
-    stroke-miterlimit: 10;
-  }
-  &:hover {
-    opacity: .8;
-  }
-  .jssora051dn {
-    opacity: .5;
-  }
-  .jssora051ds {
-    opacity: .3;
-    pointer-events: none;
-  }
-}
+
 @media screen and (max-width: 768px) {
   .bxNarrativeBannerJssor {
     border-radius: 4px !important;
@@ -591,7 +453,6 @@ body {
       }
     }
   }
-
   .narrativeBanner_bxBannerBackgroundImage {
     top: auto !important;
     left: auto !important;
@@ -602,17 +463,15 @@ body {
       display: none !important;
     }
   }
-
   .narrativeBanner_bxBannerLink {
     z-index: 1000 !important;
     display: block !important;
     width: 100% !important;
-    height: 100% !important;
-    position: relative !important;
+    height: 500% !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
   }
-
   .narrativeBanner_bxBannerTitle {
     position: relative !important;
     left: 0 !important;
@@ -632,7 +491,6 @@ body {
     display: block !important;
     font-size: 8rem !important;
   }
-
   .narrativeBanner_bxBannerDescription {
     position: relative !important;
     left: 0 !important;
@@ -654,7 +512,6 @@ body {
     margin-top: 40px !important;
     margin-bottom: 40px !important;
   }
-
   .narrativeBanner_bxBannerSmallImage {
     position: relative !important;
     top: auto !important;
@@ -666,7 +523,6 @@ body {
     height: auto !important;
     z-index: auto !important;
   }
-
   .narrativeBanner_bxBannerButton {
     position: absolute !important;
     right: 0 !important;
@@ -676,5 +532,118 @@ body {
     height: 30% !important;
     width: auto !important;
     top: 1220px !important;
+  }
+}
+
+
+/* COMMON SEGMENTS RE-USED */
+.col {
+  .bxBannerJssorbulletnavigator {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+  }
+}
+.bxBannerJssorBulletNavigator {
+  .i {
+    width: 16px;
+    height: 16px;
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+.bxBannerJssorArrowLeft {
+  width: 65px;
+  height: 65px;
+  top: 0px;
+  left: 25px;
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+.bxBannerJssorArrowRight {
+  width: 65px;
+  height: 65px;
+  top: 0px;
+  right: 25px;
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+.jssorl-004-double-tail-spin {
+  img {
+    animation-name: jssorl-004-double-tail-spin;
+    animation-duration: 1.2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+}
+.jssorb031 {
+  .i {
+    .idn {
+      opacity: .3;
+    }
+  }
+}
+.jssora051 {
+  display: block;
+  position: absolute;
+  cursor: pointer;
+  .a {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 360;
+    stroke-miterlimit: 10;
+    stroke: unset !important;
+  }
+  &:hover {
+    opacity: .8;
+  }
+  .jssora051dn {
+    opacity: .5;
+  }
+  .jssora051ds {
+    opacity: .3;
+    pointer-events: none;
+  }
+}
+.i {
+  position: absolute;
+  cursor: pointer;
+  .b {
+    fill: #000;
+    fill-opacity: 0.5;
+    stroke: #fff;
+    stroke-width: 1200;
+    stroke-miterlimit: 10;
+    stroke-opacity: 0.3;
+  }
+  &:hover {
+    .b {
+      fill: #fff;
+      fill-opacity: .7;
+      stroke: #000;
+      stroke-opacity: .5;
+    }
+  }
+}
+.iav {
+  .b {
+    fill: #fff;
+    stroke: #000;
+    fill-opacity: 1;
   }
 }
