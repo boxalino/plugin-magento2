@@ -629,6 +629,7 @@ class BxIndexer
                     'confirmation_date' => $status == 1 ? $transaction['updated_at'] : null,
                     'shipping_date' => $status == 2 ? $transaction['updated_at'] : null,
                     'status' => $transaction['status'],
+                    'shipping_method'=> $transaction['shipping_method'],
                     'payment_method' => $transaction['payment_method'],
                     'payment_name' => $this->getMethodTitleFromAdditionalInformationJson($transaction['payment_title'])
                 );

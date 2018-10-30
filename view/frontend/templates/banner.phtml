@@ -13,7 +13,7 @@ if ($this->isActive() && $this->check()) {
     $jssorLayout = $this->getBannerLayout();
     $jssorOptions = $this->getBannerJssorOptions();
     // if there is only one banner or it is using the 'small' layout, don't be draggable
-    if ($hitCount < 2 || $jssorLayout != 'large') {
+    if ($hitCount < 2 || strpos($jssorLayout,'large') === false) {
         $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
     }
     ?>
@@ -49,7 +49,7 @@ if ($this->isActive() && $this->check()) {
             }
             ?>
         </div>
-        <?php if ($hitCount > 1 && $jssorLayout == 'large'): ?>
+        <?php if ($hitCount > 1 && strpos($jssorLayout,'large')): ?>
             // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
             <div data-u="navigator" class="jssorb032 bxBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
                 <div data-u="prototype" class="i">

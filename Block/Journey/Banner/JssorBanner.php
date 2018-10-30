@@ -42,7 +42,7 @@ class JssorBanner extends General implements CPOJourney
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
 
-            if ($bannerData['bannerLayout'] != 'large' || $this->getData('jssorIndex') != null) {
+            if (strpos($bannerData['bannerLayout'],'large') === false || $this->getData('jssorIndex') != null) {
                 if ($this->getData('jssorIndex') == '1') {
                     return array(reset($slides));
                 }
@@ -51,18 +51,10 @@ class JssorBanner extends General implements CPOJourney
                 }
             }
             $bannerData['bannerSlides'] = $slides;
-
             $bannerData['bannerTransitions'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition', 0, $choiceId);
             $bannerData['bannerBreaks'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break', 0, $choiceId);
             $bannerData['bannerControls'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control', 0, $choiceId);
-            $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
-            // replace id from Intelligence with id from block configuration
-            $bannerData['bannerOptions'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorOptions) : $bannerJssorOptions;
             $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
-
-            $bannerData['bannerLoadingScreen'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $choiceId, true, 0);
-            $bannerData['bannerBulletNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $choiceId, true, 0);
-            $bannerData['bannerArrowNavigator'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $choiceId, true, 0);
             $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $choiceId, true, 0);
             $bannerData['bannerFunction'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerFunction) : $bannerFunction;
         }
@@ -140,6 +132,35 @@ class JssorBanner extends General implements CPOJourney
             }
         }
         return '';
+    }
+
+    /**
+     * replace id from Intelligence with id from block configuration
+     * if there is only one banner or it is using the 'small' layout, don't be draggable
+     *
+     * @param $bannerData
+     * @throws \Exception
+     */
+    public function getBannerOptionsFromData($bannerData)
+    {
+        $defaultBannerJssorOptions = '{ $AutoPlay: 1, $LazyLoading: 1, $CaptionSliderOptions: { $Class: $JssorCaptionSlideo$, $Transitions: narrativeBanner_SlideoTransitions, $Breaks: narrativeBanner_SlideoBreaks, $Controls: narrativeBanner_SlideoControls }, $ArrowNavigatorOptions: { $Class: $JssorArrowNavigator$ }, $BulletNavigatorOptions: { $Class: $JssorBulletNavigator$ } }';
+        $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
+        if(empty($bannerJssorOptions))
+        {
+            $bannerJssorOptions = $defaultBannerJssorOptions;
+        }
+        if($bannerData['hitCount']<2 ||  (!empty($bannerData['bannerLayout']) && strpos($bannerData['bannerLayout'], 'large')===false))
+        {
+            $bannerJssorOptions = substr_replace(preg_replace("/\s+/","",$bannerJssorOptions), '$DragOrientation:0, ', 1, 0);
+        }
+
+        $finalOptions =  $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerJssorOptions) : $bannerJssorOptions;
+        if(empty($finalOptions))
+        {
+            return "{}";
+        }
+
+        return $finalOptions;
     }
 
     public function getP13nHelper(){

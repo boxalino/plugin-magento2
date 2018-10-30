@@ -9,17 +9,9 @@ $jssorSlideTransitions = $bannerData['bannerTransitions'];
 $jssorSlideBreaks = $bannerData['bannerBreaks'];
 $jssorSlideControls = $bannerData['bannerControls'];
 $jssorMaxWidth = $bannerData['bannerMaxWidth'];
-$jssorLoadingScreen = $bannerData['bannerLoadingScreen'];
-$jssorBulletNavigator = $bannerData['bannerBulletNavigator'];
-$jssorArrowNavigator = $bannerData['bannerArrowNavigator'];
 $jssorFunction = $bannerData['bannerFunction'];
 $jssorLayout = $bannerData['bannerLayout'];
-$jssorOptions = $bannerData['bannerOptions'];
-
-// if there is only one banner or it is using the 'small' layout, don't be draggable
-if ($hitCount<2 || (!empty($jssorLayout) && $jssorLayout != 'large')) {
-    $jssorOptions = substr_replace(preg_replace("/\s+/","",$jssorOptions), '$DragOrientation:0, ', 1, 0);
-}
+$jssorOptions = $this->getBannerOptionsFromData($bannerData);
 ?>
 <?php if(!empty($jssorSlides)) :?>
     <script type="text/javascript">
@@ -54,7 +46,7 @@ if ($hitCount<2 || (!empty($jssorLayout) && $jssorLayout != 'large')) {
             }
             ?>
         </div>
-        <?php if ($hitCount > 1 && $jssorLayout == 'large'): ?>
+        <?php if ($hitCount > 1 && strpos($jssorLayout,'large')): ?>
             // if there is more than one and the layout is not 'small', add the bullet- & arrow navigators
             <div data-u="navigator" class="jssorb032 bxBannerJssorBulletNavigator" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
                 <div data-u="prototype" class="i">
