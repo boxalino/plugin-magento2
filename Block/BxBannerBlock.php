@@ -70,7 +70,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     {
         try{
             $values = array(
-
                 0 => $this->getBannerSlides(),
                 1 => $this->getBannerJssorId(),
                 2 => $this->getBannerJssorSlideTransitions(),
@@ -86,7 +85,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 12 => $this->getBannerJssorArrowNavigator(),
                 13 => $this->getBannerFunction(),
                 14 => $this->getBannerLayout()
-
             );
 
             if (!in_array('', $values)) {
@@ -208,19 +206,16 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     public function getBannerJssorSlideTransitions()
     {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition');
-
     }
 
     public function getBannerJssorSlideBreaks()
     {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break');
-
     }
 
     public function getBannerJssorSlideControls()
     {
         return $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control');
-
     }
 
     public function getBannerJssorOptions()
@@ -351,7 +346,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     public function getOverlayExitIntendTimeout()
     {
         $timeout = $this->getOverlayValues('bx_extend_exit_intend_timeout');
-
         if (!empty($timeout)) {
             return $timeout;
         }else{
@@ -362,7 +356,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
     public function getOverlayFrequency()
     {
         $frequency = $this->getOverlayValues('bx_extend_frequency');
-
         if (!empty($frequency)) {
             return $frequency;
         }else{
