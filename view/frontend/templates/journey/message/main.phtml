@@ -2,7 +2,13 @@
 ?>
 
 <?php
-if(isset($config['search_message_display_type'])) : ?>
+if(isset($config['search_message_display_type'])) :
+
+if (isset($config['search_message_title'])) {
+  echo "<style>.page-title-wrapper{display: none !important;}</style>"; //if there is a searchmessage, hide the page title
+}
+
+?>
 
 <?php
     switch ($config['search_message_display_type']) {

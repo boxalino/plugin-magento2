@@ -2,6 +2,10 @@
   if ($this->isActive()) {
     $response = $this->getResponse();
 
+    if (!empty($response->getSearchMessageTitle())) {
+      echo "<style>.page-title-wrapper{display: none !important;}</style>"; //if there is a searchmessage, hide the page title
+    }
+
     switch ($response->getSearchMessageDisplayType()) {
       case 'main-image': ?>
         <div class="bx-main-image-search-message">
