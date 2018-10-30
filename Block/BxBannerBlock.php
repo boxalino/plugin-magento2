@@ -77,10 +77,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 4 => $this->getBannerJssorSlideControls(),
                 5 => $this->getBannerJssorOptions(),
                 6 => $this->getBannerJssorMaxWidth(),
-                7 => $this->getBannerJssorCSS(),
-                8 => $this->getBannerJssorStyle(),
                 9 => $this->getBannerJssorLoadingScreen(),
-                10 => $this->getBannerJssorSlidesStyle(),
                 11 => $this->getBannerJssorBulletNavigator(),
                 12 => $this->getBannerJssorArrowNavigator(),
                 13 => $this->getBannerFunction(),
@@ -233,31 +230,10 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         return $bannerJssorId;
     }
 
-    public function getBannerJssorStyle()
-    {
-        $bannerJssorStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_style', '', $this->_data['widget']);
-        return $bannerJssorStyle;
-    }
-
-    public function getBannerJssorSlidesStyle()
-    {
-        $bannerJssorrSlidesStyle = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_slides_style', '', $this->_data['widget']);
-        return $bannerJssorrSlidesStyle;
-    }
-
     public function getBannerJssorMaxWidth()
     {
         $bannerJssorMaxWidth = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $this->_data['widget']);
         return $bannerJssorMaxWidth;
-    }
-
-    public function getBannerJssorCSS()
-    {
-        $bannerJssorCss = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_css', '', $this->_data['widget']);
-        // replace id from Intelligence with id from block configuration
-        $bannerJssorCss = str_replace($this->getBannerJssorId(), $this->getIdFromConfig(), $bannerJssorCss);
-
-        return str_replace("JSSORID", $this->getBannerJssorId(), $bannerJssorCss);
     }
 
     public function getBannerJssorLoadingScreen()
