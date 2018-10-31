@@ -220,37 +220,40 @@ body {
 }
 @media screen and (min-width:1000px) {
   .bxSmallBannerJssor {
-    width: 48% !important;
-    height: -webkit-fill-available !important;
+    width: 49% !important;
+    height: 355px !important;
     float: left !important;
-    margin: 1% !important;
-    max-height: 335px !important;
   }
-  .bxSmallBannerJssor  div[data-scale-ratio]{
-    transform: none !important;
+  div [data-scale-ratio] {
+    transform: scale(1) !important;
     top: 0 !important;
     left: 0 !important;
   }
   .bannerSmallRight_bxBannerBackgroundImage {
-    height: 100% !important;
-    left: -30% !important;
-  }
-  .bannerSmallLeft_bxBannerBackgroundImage {
-    height: 100% !important;
     left: -25% !important;
   }
-
+  .bannerSmallLeft_bxBannerBackgroundImage {
+    left: -25% !important;
+  }
+}
+@media screen and (min-width: 768px) and (max-width:1000px){
+  .bxSmallBannerJssor{
+    div:nth-child(1){
+      right: unset !important;
+      bottom: unset !important;
+    }
+  }
 }
 @media screen and (max-width:768px) {
-  .bxSmallBannerJssor {
+  .bxSmallBannerJssorSlides{
     width: 100% !important;
-    div {
-      &:nth-child(2) {
-        div {
-          overflow: visible !important;
-        }
-      }
-    }
+    height: 100% !important;
+  }
+  .bxSmallBannerJssor {
+     div:nth-child(1){
+       right: unset !important;
+       bottom: unset !important;
+     }
   }
   .bannerSmallLeft_bxBannerBackgroundImage {
     top: auto !important;
@@ -266,8 +269,8 @@ body {
     z-index: 1000 !important;
     display: block !important;
     width: 100% !important;
-    height: 100% !important;
-    position: relative !important;
+    height: 500% !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
   }
@@ -346,7 +349,7 @@ body {
     display: block !important;
     width: 100% !important;
     height: 500% !important;
-    position: relative !important;
+   position: absolute !important;
     top: 0 !important;
     left: 0 !important;
   }
