@@ -566,7 +566,8 @@ class Exporter
                     'customer_id',
                     'base_subtotal',
                     'shipping_amount',
-                    'shipping_method'
+                    'shipping_method',
+                    'customer_is_guest'
                 )
             )
             ->joinLeft(
