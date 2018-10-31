@@ -42,7 +42,7 @@ class JssorBanner extends General implements CPOJourney
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
 
-            if ($bannerData['bannerLayout']!='large' || $this->getData('jssorIndex') != null) {
+            if (strpos($bannerData['bannerLayout'],'large')===false || $this->getData('jssorIndex') != null) {
                 if ($this->getData('jssorIndex') == '1') {
                     return array(reset($slides));
                 }
@@ -145,11 +145,12 @@ class JssorBanner extends General implements CPOJourney
     public function getBannerOptionsFromData($bannerData)
     {
         $defaultBannerJssorOptions = '{ $AutoPlay: 1, $LazyLoading: 1, $CaptionSliderOptions: { $Class: $JssorCaptionSlideo$, $Transitions: narrativeBanner_SlideoTransitions, $Breaks: narrativeBanner_SlideoBreaks, $Controls: narrativeBanner_SlideoControls }, $ArrowNavigatorOptions: { $Class: $JssorArrowNavigator$ }, $BulletNavigatorOptions: { $Class: $JssorBulletNavigator$ } }';
-        if(empty($bannerData['bannerOptions']))
+        $bannerJssorOptions = $bannerData['bannerOptions'];
+        if(empty($bannerJssorOptions))
         {
             $bannerJssorOptions = $defaultBannerJssorOptions;
         }
-        if($bannerData['hitCount']<2 ||  (!empty($bannerData['bannerLayout']) && $bannerData['bannerLayout']!='large'))
+        if($bannerData['hitCount']<2 ||  (!empty($bannerData['bannerLayout']) && strpos($bannerData['bannerLayout'],'large')===false))
         {
             $bannerJssorOptions = substr_replace(preg_replace("/\s+/","",$bannerJssorOptions), '$DragOrientation:0, ', 1, 0);
         }
