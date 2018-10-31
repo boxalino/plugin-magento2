@@ -13,7 +13,7 @@ if ($this->isActive() && $this->check()) {
     $jssorLayout = $this->getBannerLayout();
     $jssorOptions = $this->getBannerJssorOptions();
     // if there is only one banner or it is using the 'small' layout, don't be draggable
-    if ($hitCount < 2 || strpos($jssorLayout,'large') === false) {
+    if ($hitCount < 2 || $jssorLayout!='large') {
         $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
     }
     ?>
