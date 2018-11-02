@@ -42,7 +42,7 @@ class JssorBanner extends General implements CPOJourney
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
 
-            if (strpos($bannerData['bannerLayout'],'large') === false || $this->getData('jssorIndex') != null) {
+            if (strpos($bannerData['bannerLayout'],'large')===false || $this->getData('jssorIndex') != null) {
                 if ($this->getData('jssorIndex') == '1') {
                     return array(reset($slides));
                 }
@@ -55,6 +55,7 @@ class JssorBanner extends General implements CPOJourney
             $bannerData['bannerBreaks'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break', 0, $choiceId);
             $bannerData['bannerControls'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control', 0, $choiceId);
             $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
+            $bannerData['bannerOptions'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
             $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $choiceId, true, 0);
             $bannerData['bannerFunction'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerFunction) : $bannerFunction;
         }
@@ -144,12 +145,12 @@ class JssorBanner extends General implements CPOJourney
     public function getBannerOptionsFromData($bannerData)
     {
         $defaultBannerJssorOptions = '{ $AutoPlay: 1, $LazyLoading: 1, $CaptionSliderOptions: { $Class: $JssorCaptionSlideo$, $Transitions: narrativeBanner_SlideoTransitions, $Breaks: narrativeBanner_SlideoBreaks, $Controls: narrativeBanner_SlideoControls }, $ArrowNavigatorOptions: { $Class: $JssorArrowNavigator$ }, $BulletNavigatorOptions: { $Class: $JssorBulletNavigator$ } }';
-        $bannerJssorOptions = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
+        $bannerJssorOptions = $bannerData['bannerOptions'];
         if(empty($bannerJssorOptions))
         {
             $bannerJssorOptions = $defaultBannerJssorOptions;
         }
-        if($bannerData['hitCount']<2 ||  (!empty($bannerData['bannerLayout']) && strpos($bannerData['bannerLayout'], 'large')===false))
+        if($bannerData['hitCount']<2 ||  (!empty($bannerData['bannerLayout']) && strpos($bannerData['bannerLayout'],'large')===false))
         {
             $bannerJssorOptions = substr_replace(preg_replace("/\s+/","",$bannerJssorOptions), '$DragOrientation:0, ', 1, 0);
         }
