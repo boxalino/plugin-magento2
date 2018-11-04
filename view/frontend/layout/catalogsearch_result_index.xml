@@ -7,9 +7,10 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Boxalino_Intelligence::css/_filter.css"/>
-        <css src="Boxalino_Intelligence::css/_nouislider.css"/>
-        <css src="Boxalino_Intelligence::css/_blog_recommendations.css"/>
+        <css src="Boxalino_Intelligence::css/bxFilter.css"/>
+        <css src="Boxalino_Intelligence::css/bxnouislider.css"/>
+        <css src="Boxalino_Intelligence::css/bxBlogRecommendations.css"/>
+        <css src="Boxalino_Intelligence::css/bxSearchMessage.css"/>
     </head>
     <body>
         <attribute name="class" value="page-products"/>

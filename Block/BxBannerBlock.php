@@ -75,11 +75,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
                 2 => $this->getBannerJssorSlideTransitions(),
                 3 => $this->getBannerJssorSlideBreaks(),
                 4 => $this->getBannerJssorSlideControls(),
-                5 => $this->getBannerJssorOptions(),
                 6 => $this->getBannerJssorMaxWidth(),
-                9 => $this->getBannerJssorLoadingScreen(),
-                11 => $this->getBannerJssorBulletNavigator(),
-                12 => $this->getBannerJssorArrowNavigator(),
                 13 => $this->getBannerFunction(),
                 14 => $this->getBannerLayout()
             );
@@ -236,24 +232,6 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
         return $bannerJssorMaxWidth;
     }
 
-    public function getBannerJssorLoadingScreen()
-    {
-        $bannerJssorLoadingScreen = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_loading_screen', '', $this->_data['widget']);
-        return $bannerJssorLoadingScreen;
-    }
-
-    public function getBannerJssorBulletNavigator()
-    {
-        $bannerJssorBulletNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_bullet_navigator', '', $this->_data['widget']);
-        return $bannerJssorBulletNavigator;
-    }
-
-    public function getBannerJssorArrowNavigator()
-    {
-        $bannerJssorArrowNavigator = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_arrow_navigator', '', $this->_data['widget']);
-        return $bannerJssorArrowNavigator;
-    }
-
     public function getBannerFunction()
     {
         $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $this->_data['widget']);
@@ -393,5 +371,4 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
         return $this->bannerSlidesCssClass;
     }
-
 }
