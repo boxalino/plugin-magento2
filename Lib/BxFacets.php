@@ -1,5 +1,4 @@
 <?php
-
 namespace com\boxalino\bxclient\v1;
 
 class BxFacets
@@ -225,7 +224,7 @@ class BxFacets
     }
 
     public function getCPOFinderFacets($returnHidden=false){
-      return $this->getFacetExtraInfoFacets('finderFacet', 'true', false, $returnHidden, true);
+        return $this->getFacetExtraInfoFacets('finderFacet', 'true', false, $returnHidden, true);
     }
 
     public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
@@ -718,7 +717,7 @@ class BxFacets
             if($facet['type'] == 'hierarchical') {
                 $facetResponse = $this->getFacetResponse($fieldName);
                 if(is_null($facetResponse)) {
-                   return false;
+                    return false;
                 }
                 $tree = $this->buildTree($facetResponse->values);
                 $tree = $this->getSelectedTreeNode($tree);
@@ -746,7 +745,7 @@ class BxFacets
         $fieldName = $this->getCategoryFieldName();
         $facetResponse = $this->getFacetResponse($fieldName);
         if(is_null($facetResponse)) {
-           return array();
+            return array();
         }
         $tree = $this->buildTree($facetResponse->values);
         $treeEnd = $this->getSelectedTreeNode($tree);
@@ -901,10 +900,7 @@ class BxFacets
         if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
             $fv = reset($keyValues);
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive;
-            if($this->priceRangeMargin) {
-                $to -= 0.01;
-            }
+            $to = $this->getPriceRangeExclusive($this->selectedPriceValues[0]->rangeToExclusive);
             $to = round($to, 2);
             $valueLabel = $from . ' - ' . $to;
             $paramValue = "$from-$to";
@@ -960,10 +956,7 @@ class BxFacets
         $valueLabel = null;
         if($this->selectedPriceValues !== null && ($this->selectedPriceValues != null)){
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = $this->selectedPriceValues[0]->rangeToExclusive;
-            if($this->priceRangeMargin) {
-                $to -= 0.01;
-            }
+            $to = $this->getPriceRangeExclusive($this->selectedPriceValues[0]->rangeToExclusive);
             $to = round($to, 2);
             $valueLabel = $from . '-' . $to;
         }
@@ -1034,7 +1027,6 @@ class BxFacets
     }
 
     public function getThriftFacets() {
-
         $thriftFacets = array();
         foreach($this->facets as $fieldName => $facet) {
             $type = $facet['type'];
@@ -1071,11 +1063,7 @@ class BxFacets
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
                     if ($rangedValue[1] != '*') {
-                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1];
-                        if($rangedValue[0] == $rangedValue[1]) {
-                            $this->priceRangeMargin = true;
-                            $selectedFacet->rangeToExclusive += 0.01;
-                        }
+                        $selectedFacet->rangeToExclusive = $this->getPriceRangeExclusive((float)$rangedValue[1]);
                     }
                 } else {
                     $selectedFacet->stringValue = $value;
@@ -1110,5 +1098,16 @@ class BxFacets
                 }
             }
         }
+    }
+
+    /**
+     * The price range max value must not be exclusive, so that existing products for max price to be also displayed
+     *
+     * @param $value
+     * @return float
+     */
+    protected function getPriceRangeExclusive($value)
+    {
+        return $value+0.001;
     }
 }
