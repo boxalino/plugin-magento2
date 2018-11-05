@@ -18,7 +18,7 @@ class BxIndexConfig
     /**
      * @var array
      */
-    private $indexConfig = array();
+    protected $indexConfig = array();
 
     /**
      * BxIndexConfig constructor.
@@ -123,7 +123,7 @@ class BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountArray($account)
+    protected function getAccountArray($account)
     {
         if(isset($this->indexConfig[$account])) {
             return $this->indexConfig[$account];
@@ -137,7 +137,7 @@ class BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountFirstLanguageArray($account)
+    protected function getAccountFirstLanguageArray($account)
     {
         $accountArray = $this->getAccountArray($account);
         foreach($accountArray as $l => $vals) {
@@ -152,7 +152,7 @@ class BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountLanguageArray($account, $language)
+    protected function getAccountLanguageArray($account, $language)
     {
         $accountArray = $this->getAccountArray($account);
         if(isset($accountArray[$language])) {
