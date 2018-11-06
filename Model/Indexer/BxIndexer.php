@@ -1414,7 +1414,7 @@ class BxIndexer
                 array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
                 array(
-                    'LOWER(t_d.value)',
+                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
                     't_d.store_id'
                 )
             );
@@ -1422,7 +1422,7 @@ class BxIndexer
                 array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_r.parent_id',
                 array(
-                    'LOWER(t_d.value)',
+                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
                     't_d.store_id'
                 )
             );
