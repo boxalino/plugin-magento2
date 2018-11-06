@@ -681,7 +681,6 @@ class BxData
 
     public function getSourceIdFromFileNameFromPath($filePath, $container, $maxLength=23, $withoutExtension=false) {
         $sourceId = $this->getFileNameFromPath($filePath, $withoutExtension);
-        $shortened = false;
         if(strlen($sourceId) > $maxLength) {
             $sourceId = substr($sourceId, 0, $maxLength);
         }

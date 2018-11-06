@@ -1451,7 +1451,7 @@ class BxIndexer
                 $select = $db->select()
                     ->from(
                         array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
+                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN LOWER(c_p_e_v_a.value) ELSE LOWER(c_p_e_v_b.value) END as value"))
                     )->joinLeft(
                         array('c_p_e_v_a' => $this->rs->getTableName('catalog_product_entity_varchar')),
                         '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
