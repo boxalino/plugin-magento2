@@ -1,5 +1,4 @@
 <?php
-
 namespace Boxalino\Intelligence\Block;
 
 /**
@@ -34,32 +33,22 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
         array $data = []
     )
     {
-
         parent::__construct($context, $data);
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
-
     }
 
     public function isActive(){
-
         if ($this->bxHelperData->isPluginEnabled()) {
-
             return true;
-
         }
-
     }
 
     public function getResponse(){
-
         if(is_null($this->bxResponse)){
-
             $this->bxResponse = $this->p13nHelper->getResponse();
         }
-
         return $this->bxResponse;
-
     }
 
 }
