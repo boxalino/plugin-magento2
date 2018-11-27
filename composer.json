@@ -1,7 +1,6 @@
 {
   "name": "boxalino/plugin-magento2",
   "description": "Boxalino Magento 2 plug-in",
-  "version": "1.2.3",
   "type": "magento2-module",
   "homepage": "http://www.boxalino.com",
   "keywords": ["boxalino","intelligence","real-time","personalization","magento"],
@@ -13,7 +12,7 @@
     "AFL-3.0"
   ],
   "require": {
-    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "php": "7.*",
     "magento/module-catalog": "*",
     "magento/module-layered-navigation": "*",
     "magento/module-search": "*",
