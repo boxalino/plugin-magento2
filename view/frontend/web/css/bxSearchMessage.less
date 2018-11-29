@@ -3,19 +3,19 @@
 @font_family_1: true;
 
 //side image
-.bx-side-image-search-message {
+.bx-search-message {
 	display: block;
 	height: 140px;
 }
-.bx-side-image-search-message-container-right {
+.bx-search-message-container-right {
 	width: 40%;
 	float: right;
 }
-.bx-side-image-search-message-container-left {
+.bx-search-message-container-left {
 	width: 60%;
 	float: left;
 }
-.bx-side-image-search-message-title {
+.bx-search-message-title {
 	color: @color_1;
 	font-family: @font_family_1;
 	font-weight: 300;
@@ -23,15 +23,15 @@
 	font-size: 3.1rem;
 }
 
-.bx-side-image-search-message-side-image img{
+.bx-search-message-side-image img{
 	float: right
 }
 
 //no image
-.bx-no-image-search-message {
+.bx-search-message .no-image{
 	display: block;
 }
-.bx-no-image-search-message-title {
+.no-image .bx-search-message-title {
 	color: @color_1;
 	font-family: @font_family_1;
 	font-weight: 300;
@@ -39,15 +39,15 @@
 	font-size: 3.1rem;
 	display: block;
 }
-.bx-no-image-search-message-description {
+.no-image .bx-search-message-description {
 	color: @color_2;
 }
 @media screen and (max-width:768px) {
-	.bx-side-image-search-message-container-left {
+	.bx-search-message-container-left {
 		width: 100% !important;
 		display: block !important;
 	}
-	.bx-side-image-search-message-container-right {
+	.bx-search-message-container-right {
 		width: 100% !important;
 		display: block !important;
 	}

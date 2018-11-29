@@ -17,7 +17,7 @@
         </referenceContainer>
 
         <referenceContainer name="footer">
-            <block class="Boxalino\Intelligence\Block\BxOverlayBlock" name="bxOverlay" template="Boxalino_Intelligence::overlay.phtml"/>
+            <block class="Boxalino\Intelligence\Block\Overlay\Main" name="bxOverlay" template="Boxalino_Intelligence::overlay.phtml"/>
         </referenceContainer>
     </body>
 </page>

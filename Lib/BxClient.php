@@ -54,10 +54,15 @@ class BxClient
             $this->requestMap = $_REQUEST;
         }
         $this->isDev = $isDev;
-        $this->host = $host;
-        if($this->host == null) {
-            $this->host = "cdn.bx-cloud.com";
+        $this->apiKey = $apiKey;
+        if (empty($apiKey)) {
+            $this->apiKey = null;
         }
+        $this->apiSecret = $apiSecret;
+        if (empty($apiSecret)) {
+            $this->apiSecret = null;
+        }
+        $this->host = $this->setHost($host);
         $this->port = $port;
         if($this->port == null) {
             $this->port = 443;
@@ -79,14 +84,32 @@ class BxClient
             $this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
         }
         $this->domain = $domain;
-        $this->apiKey = $apiKey;
-        if (empty($apiKey)) {
-            $this->apiKey = null;
+    }
+
+    /**
+     * Setting the host based on configurations
+     *
+     * @param null $host
+     * @return null|string
+     */
+    public function setHost($host=null)
+    {
+        if(!empty($host))
+        {
+            return $host;
         }
-        $this->apiSecret = $apiSecret;
-        if (empty($apiSecret)) {
-            $this->apiSecret = null;
+
+        if($this->apiSecret == null && $this->apiKey == null)
+        {
+            return "cdn.bx-cloud.com";
         }
+
+        if($this->isDev)
+        {
+            return "r-st.bx-cloud.com";
+        }
+
+        return "main.bx-cloud.com";
     }
 
     public function setHost($host) {

@@ -1,43 +1,27 @@
-<?php if ($this->isActive() && $this->getBlockPathFromResponse() != null && $this->getTemplatePathFromResponse() != null) { ?>
-
-    <script type="text/javascript">
-        require([
-            'jquery'
-        ], function ($) {
-            'use strict';
-
-            var basketTotal = <?php echo $this->getGrandTotal(); ?>;
-            var parameters = <?php echo $this->getOverlayJsParameters(); ?>;
-            var controllerUrl = "<?php echo $this->getControllerUrl(); ?>";
-            var lang = "<?php echo $this->getLanguage(); ?>";
-
-            <?php echo $this->getOverlayBehaviorJs(); ?>
-
-        });
-
-
+<?php
+/**
+ * @see \Boxalino\Intelligence\Block\Block
+ */
+?>
+<?php if ($this->canBeDisplayed()):?>
+    <script type="text/x-magento-init">
+    {
+         "*":{
+            "bxOverlay": {
+                "basketTotal":<?php echo $this->getGrandTotal(); ?>,
+                "parameters":<?php echo $this->getOverlayJsParameters(); ?>,
+                "controllerUrl":"<?php echo $this->getControllerUrl(); ?>",
+                "lang":"<?php echo $this->getLanguage(); ?>"
+            }
+        }
+    }
     </script>
-
-    <div class="bxOverlay">
-
-        <?php
-
-        $variant_index = $this->getVariantIndex();
-        $template_path = $this->getTemplatePathFromResponse();
-        $block_path = $this->getBlockPathFromResponse();
-
-        $parameters = [['name' => 'variant', 'values' => [$variant_index]]];
-        $parameters[] = ['name' => 'jsParams', 'values' => [$this->getOverlayJsParameters()]];
-        $block = $this->getLayout()->createBlock($block_path, 'bx_overlay', ['data' => ['bxVisualElement' => ['parameters' => $parameters]]]  )->setTemplate($template_path);
-        echo $block->toHtml();
-        ?>
-
+    <div class="bxOverlay container">
+        <?php echo $this->getOverlayBlock()->toHtml();?>
     </div>
 
-    <?php if ($this->withLightboxEffect() == 'true') { ?>
-
+    <?php if ($this->withLightboxEffect() == 'true'): ?>
         <div class="bxOverlay" id="bxOverlayShadow"></div>
+    <?php endif; ?>
 
-    <?php } ?>
-
-<?php } ?>
+<?php endif; ?>
