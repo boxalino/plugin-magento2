@@ -16,12 +16,22 @@
         }
     }
     </script>
+    <script type="text/javascript">
+        require([
+            'jquery'
+        ], function ($) {
+            'use strict';
+
+            <?php echo $this->getOverlayBehaviorJs(); ?>
+        });
+    </script>
+
     <div class="bxOverlay container">
         <?php echo $this->getOverlayBlock()->toHtml();?>
     </div>
 
     <?php if ($this->withLightboxEffect() == 'true'): ?>
-        <div class="bxOverlay" id="bxOverlayShadow"></div>
+        <div class="bxOverlay shadow" id="bxOverlayShadow"></div>
     <?php endif; ?>
 
 <?php endif; ?>
