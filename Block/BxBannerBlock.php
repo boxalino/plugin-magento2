@@ -5,7 +5,9 @@ namespace Boxalino\Intelligence\Block;
  * Class BxRecommendationBlock
  * @package Boxalino\Intelligence\Block
  */
-Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\DataObject\IdentityInterface{
+Class BxBannerBlock extends BxRecommendationBlock
+    implements \Magento\Framework\DataObject\IdentityInterface
+{
 
     protected $_logger;
 
@@ -59,7 +61,7 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
     public function isActive()
     {
-        if ($this->bxHelperData->isBannerEnabled()) {
+        if ($this->bxHelperData->isBannerEnabled() && $this->bxHelperData->isPluginEnabled()) {
             return true;
         }
 
@@ -371,4 +373,5 @@ Class BxBannerBlock extends BxRecommendationBlock implements \Magento\Framework\
 
         return $this->bannerSlidesCssClass;
     }
+
 }

@@ -12,7 +12,7 @@ class Crosssell extends MageCrosssell{
      * @var string
      */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    
+
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -53,8 +53,7 @@ class Crosssell extends MageCrosssell{
      * @return $this|MageCrosssell
      */
     protected function _prepareData($execute = true){
-        
-        if($this->bxHelperData->isCrosssellEnabled()){
+        if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled()){
             $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
@@ -67,13 +66,13 @@ class Crosssell extends MageCrosssell{
                     $config['min'],
                     $config['max'],
                     $execute
-                );  
+                );
             }catch(\Exception $e){
                 $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return parent::_prepareData();
             }
-            
+
             if(!$execute){
                 return null;
             }
@@ -85,13 +84,14 @@ class Crosssell extends MageCrosssell{
             $this->_itemCollection = $this->bxHelperData->prepareProductCollection($this->_itemCollection, $entity_ids)
                 ->addAttributeToSelect('*');
             $this->_itemCollection->load();
-            
+
             foreach ($this->_itemCollection as $product) {
                 $product->setDoNotUseCategoryId(true);
             }
 
             return $this;
         }
+
         return parent::_prepareData();
     }
 }

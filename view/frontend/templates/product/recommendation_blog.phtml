@@ -1,19 +1,18 @@
-<?php if ($this->isActive() && $this->showBlock()) { ?>
-
-<div class="block blog">
-    <div class="block-title title">
-        <strong class="blogRecTitlePDP"><?php echo $this->getBlogArticleTitle() ?></strong></div>
-    <div class="block-content content">
-        <div class="products wrapper grid products-grid products-blog">
-            <ol class="blogArticleOrderedListPDP">
-                <?php foreach ($this->getBlogArticles() as $blogArticle) { ?>
-
-                    <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Product\ProductList\Blog")->setBlogArticle($blogArticle)->setTemplate("Boxalino_Intelligence::product/blog_article.phtml")->toHtml(); ?>
-
-                <?php } ?>
-            </ol>
+<?php if ($this->isActive() && $this->showBlock()) :?>
+    <div class="block blog">
+        <div class="block-title title">
+            <strong class="blogRecTitlePDP"><?php echo $this->getBlogArticleTitle() ?></strong></div>
+        <div class="block-content content">
+            <div class="products wrapper grid products-grid products-blog">
+                <ol class="blogArticleOrderedListPDP">
+                    <?php foreach ($this->getBlogArticles() as $blogArticle): ?>
+                        <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Product\ProductList\Blog")
+                            ->setBlogArticle($blogArticle)
+                            ->setTemplate("Boxalino_Intelligence::product/blog_article.phtml")
+                            ->toHtml();?>
+                    <?php endforeach; ?>
+                </ol>
+            </div>
         </div>
     </div>
-</div>
-
-<?php } ?>
+<?php endif; ?>

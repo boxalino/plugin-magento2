@@ -13,8 +13,9 @@ use Magento\Search\Model\QueryFactory;
  * Class Result
  * @package Boxalino\Intelligence\Block
  */
-class Result extends Mage_Result{
-    
+class Result extends Mage_Result
+{
+
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
@@ -44,7 +45,7 @@ class Result extends Mage_Result{
      * @var \Psr\Log\LoggerInterface
      */
     protected $_logger;
-    
+
     /**
      * Result constructor.
      * @param Context $context
@@ -70,7 +71,7 @@ class Result extends Mage_Result{
         $this->bxHelperData = $bxHelperData;
 
         try{
-            if( $this->bxHelperData->isSearchEnabled()){
+            if($this->bxHelperData->isSearchEnabled() && $this->bxHelperData->isPluginEnabled()){
                 if($this->hasSubPhrases()){
                     $this->queries =  $this->p13nHelper->getSubPhrasesQueries();
                 }
@@ -88,8 +89,8 @@ class Result extends Mage_Result{
      * @param $index
      * @return \Magento\Framework\Phrase
      */
-    public function getSubPhrasesResultText($index){
-
+    public function getSubPhrasesResultText($index)
+    {
         return __("Search result for: '%1'", $this->queries[$index] );
     }
 
@@ -97,15 +98,14 @@ class Result extends Mage_Result{
      * @return int
      */
     public function getSubPhrasesResultCount() {
-
         return sizeof($this->queries);
     }
 
     /**
      * @return \Magento\Framework\Phrase|string
      */
-    public function getSearchQueryText(){
-
+    public function getSearchQueryText()
+    {
         if($this->fallback){
             return parent::getSearchQueryText();
         }
@@ -124,8 +124,8 @@ class Result extends Mage_Result{
      * @param $index
      * @return string
      */
-    public function getSearchQueryLink($index){
-
+    public function getSearchQueryLink($index)
+    {
         return $this->getUrl('*/*', array('_current' => 'true', '_query' => array('q' => $this->queries[$index])));
     }
 
@@ -134,7 +134,6 @@ class Result extends Mage_Result{
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareLayout(){
-
         if($this->hasSubPhrases()){
             $title = __("Search result for: '%1'", implode(" ",  $this->queries));
             $this->pageConfig->getTitle()->set($title);
@@ -162,7 +161,6 @@ class Result extends Mage_Result{
      * @return int|mixed
      */
     public function hasSubPhrases(){
-
         if($this->fallback){
             return 0;
         }
@@ -185,7 +183,6 @@ class Result extends Mage_Result{
      * @return string
      */
     public function getProductListHtml(){
-        
         return $this->getChildHtml('search_result_list', false);
     }
 
@@ -199,11 +196,11 @@ class Result extends Mage_Result{
         if($this->fallback){
             return parent::getResultCount();
         }
-        if (!$this->getData('result_count')) { 
+        if (!$this->getData('result_count')) {
             $query = $this->_getQuery();
             $size = $this->hasSubPhrases() ?
                 $this->p13nHelper->getSubPhraseTotalHitCount(
-                $this->queries[\Boxalino\Intelligence\Block\Product\BxListProducts::$number]) :
+                    $this->queries[\Boxalino\Intelligence\Block\Product\BxListProducts::$number]) :
                 $this->p13nHelper->getTotalHitCount();
             $this->setResultCount($size);
             $query->saveNumResults($size);
@@ -212,14 +209,13 @@ class Result extends Mage_Result{
     }
 
     public function getBlogTotalHitCount(){
-      return $this->p13nHelper->getBlogTotalHitCount();
+        return $this->p13nHelper->getBlogTotalHitCount();
     }
 
     /**
      * @return bool
      */
     public function getFallback(){
-
         return $this->fallback;
     }
 
@@ -229,7 +225,7 @@ class Result extends Mage_Result{
 
     public function setTemplate($template) {
         if($this->bxHelperData->isSearchEnabled()){
-          return parent::setTemplate('Boxalino_Intelligence::result.phtml');
+            return parent::setTemplate('Boxalino_Intelligence::result.phtml');
         }
         return parent::setTemplate($template);
     }

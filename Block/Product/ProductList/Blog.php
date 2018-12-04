@@ -72,7 +72,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
     }
 
     public function isActive(){
-      return $this->bxHelperData->isBlogRecommendationEnabled();
+      return $this->bxHelperData->isBlogRecommendationEnabled() && $this->bxHelperData->isPluginEnabled();
     }
 
     public function getExcerptFieldName() {

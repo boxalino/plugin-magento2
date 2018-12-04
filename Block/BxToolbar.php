@@ -8,7 +8,8 @@ use Magento\Catalog\Model\Product\ProductList\Toolbar as ToolbarModel;
  * Class BxToolbar
  * @package Boxalino\Intelligence\Block
  */
-class BxToolbar extends Toolbar{
+class BxToolbar extends Toolbar
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
@@ -60,13 +61,13 @@ class BxToolbar extends Toolbar{
      * @return int|mixed
      */
     public function hasSubPhrases(){
-
-        if($this->bxHelperData->isSearchEnabled()){
+        if($this->bxHelperData->isSearchEnabled() && $this->bxHelperData->isPluginEnabled()){
             if($this->subPhrases == null){
                 $this->subPhrases = $this->p13Helper->areThereSubPhrases();
             }
             return $this->subPhrases;
         }
+
         return false;
     }
 }

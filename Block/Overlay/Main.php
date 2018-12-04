@@ -169,7 +169,7 @@ class Main extends \Magento\Framework\View\Element\Template
      */
     public function isActive()
     {
-        return $this->bxHelperData->isOverlayEnabled();
+        return $this->bxHelperData->isOverlayEnabled() && $this->bxHelperData->isPluginEnabled();
     }
 
     /**

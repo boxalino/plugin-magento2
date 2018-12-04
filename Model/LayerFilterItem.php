@@ -75,7 +75,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 
 	public function getRemoveUrl()
     {
-        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()) {
             $removeParams = $this->bxDataHelper->getRemoveParams();
             $addParams = $this->bxDataHelper->getSystemParams();
             $requestVar = $this->getFilter()->getRequestVar();
@@ -99,7 +99,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 
     public function getUrl()
     {
-        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()) {
 
             $removeParams = $this->bxDataHelper->getRemoveParams();
             $addParams = $this->bxDataHelper->getSystemParams();

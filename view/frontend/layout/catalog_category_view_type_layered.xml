@@ -12,21 +12,17 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Boxalino\Intelligence\Block\Facets" name="catalog.bxfilter.top"
-                   template="Boxalino_Intelligence::top_filters.phtml" before="-">
-            </block>
+            <block class="Boxalino\Intelligence\Block\Facets" name="catalog.bxfilter.top" template="Boxalino_Intelligence::top_filters.phtml" before="-"/>
         </referenceContainer>
 
         <referenceBlock name="catalog.navigation.renderer">
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
             </action>
-        </referenceBlock> 
+        </referenceBlock>
 
         <referenceContainer name="content">
-            <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage"
-                   template="Boxalino_Intelligence::searchMessage.phtml" >
-            </block>
+            <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage" template="Boxalino_Intelligence::searchMessage.phtml" />
         </referenceContainer>
 
         <referenceBlock name="catalog.leftnav">

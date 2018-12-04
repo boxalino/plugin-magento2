@@ -38,7 +38,7 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
      */
     public function addItemData($label, $value, $count, $selected = null, $type = null, $hidden = null){
 
-        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)){
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()){
             $this->_itemsData[] = [
                 'label' => $label,
                 'value' => $value,

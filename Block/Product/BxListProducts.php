@@ -18,7 +18,8 @@ use Magento\UrlRewrite\Helper\UrlRewrite;
  * Class BxListProducts
  * @package Boxalino\Intelligence\Block\Product
  */
-class BxListProducts extends ListProduct{
+class BxListProducts extends ListProduct
+{
 
     /**
      * @var int
@@ -136,7 +137,7 @@ class BxListProducts extends ListProduct{
 
         try{
             $layer = $this->getLayer();
-            if($this->bxHelperData->isEnabledOnLayer($layer)){
+            if($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()){
                 if(count($this->_productCollection) && !$this->p13nHelper->areThereSubPhrases()){
                     return $this->_productCollection;
                 }
@@ -175,7 +176,6 @@ class BxListProducts extends ListProduct{
      * @param $entity_ids
      */
     protected function _setupCollection($entity_ids){
-
         $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
         $list = $this->bxHelperData->prepareProductCollection($list, $entity_ids);
         $list->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
@@ -202,9 +202,8 @@ class BxListProducts extends ListProduct{
      * @return $this
      */
     protected function _beforeToHtml(){
-
         $layer = $this->getLayer();
-        if($this->bxHelperData->isEnabledOnLayer($layer)) {
+        if($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()) {
             $toolbar = $this->getToolbarBlock();
 
             // called prepare sortable parameters

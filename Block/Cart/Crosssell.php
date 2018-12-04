@@ -7,22 +7,22 @@ use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
  * @package Boxalino\Intelligence\Block\Cart
  */
 class Crosssell extends Mage_Crosssell{
-    
+
     /**
      * @var string
      */
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-    
+
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
      */
     protected $p13nHelper;
-    
+
     /**
      * @var \Boxalino\Intelligence\Helper\Data
      */
     protected $bxHelperData;
-    
+
     /**
      * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
      */
@@ -66,11 +66,8 @@ class Crosssell extends Mage_Crosssell{
      * @return $this|array|null
      */
     public function getItems($execute = true){
-        
-        if($this->bxHelperData->isCrosssellEnabled()){
-            
+        if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled()){
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
-
             $products = array();
             foreach ($this->getQuote()->getAllItems() as $item) {
                 $product = $item->getProduct();
@@ -80,7 +77,6 @@ class Crosssell extends Mage_Crosssell{
             }
 
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
-
             try{
                 $entity_ids = $this->p13nHelper->getRecommendation(
                     $choiceId,
@@ -99,7 +95,7 @@ class Crosssell extends Mage_Crosssell{
             if(!$execute){
                 return null;
             }
-            
+
             if ((count($entity_ids) == 0)) {
                 $entity_ids = array(0);
             }
@@ -107,14 +103,15 @@ class Crosssell extends Mage_Crosssell{
             $items = $this->factory->create()
                 ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
             $items->load();
-            
+
             foreach ($items as $product) {
                 $product->setDoNotUseCategoryId(true);
             }
 
             return $items;
         }
-       return parent::getItems();
+
+        return parent::getItems();
     }
 
 }

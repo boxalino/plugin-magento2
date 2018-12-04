@@ -157,7 +157,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     public function _initItems(){
         
         try{
-            if($this->bxDataHelper->isEnabledOnLayer($this->_layer)){
+            if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()){
                 $data = $this->_getItemsData();
                 $items = [];
                 foreach ($data as $itemData) {
@@ -193,7 +193,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
 
 
-        if($this->bxDataHelper->isEnabledOnLayer($this->_layer)) {
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()) {
             $filter = $this->objectManager->create("Boxalino\Intelligence\Model\LayerFilterItem");
              $filter
                 ->setFilter($this)

@@ -54,6 +54,14 @@ class Script extends \Magento\Framework\View\Element\Template
         parent::__construct($context, $data);
     }
 
+    public function setTemplate($template)
+    {
+        if(!$this->bxHelperData->isPluginEnabled()){
+            return $this;
+        }
+        return parent::setTemplate($template);
+    }
+
     /**
      * @return string
      */

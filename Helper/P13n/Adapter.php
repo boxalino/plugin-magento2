@@ -666,7 +666,6 @@ class Adapter
      */
     protected function getMagentoStoreConfigListOrder()
     {
-
         $storeConfig = $this->getMagentoStoreConfig();
         return $storeConfig['default_sort_by'];
     }
@@ -676,7 +675,6 @@ class Adapter
      */
     private function getMagentoStoreConfig()
     {
-
         return $this->scopeConfig->getValue('catalog/frontend');
     }
 
@@ -692,7 +690,6 @@ class Adapter
      */
     public function getUrlParameterPrefix()
     {
-
         return 'bx_';
     }
 

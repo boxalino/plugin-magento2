@@ -1,5 +1,4 @@
 <?php
-
 namespace Boxalino\Intelligence\Block;
 
 /**
@@ -47,7 +46,7 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
 
-        if(!is_null($this->getData('choice'))) {
+        if(!is_null($this->getData('choice')) && $this->bxHelperData->isPluginEnabled()) {
             $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
             $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain, false);
         }
@@ -170,8 +169,11 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     }
 
     public function renderDependencies() {
-
         $html = '';
+        if(!$this->bxHelperData->isPluginEnabled())
+        {
+            return $html;
+        }
         $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
         $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
         if(isset($dependencies['js'])) {
@@ -198,6 +200,10 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     public function renderElements() {
 
         $html = '';
+        if(!$this->bxHelperData->isPluginEnabled())
+        {
+            return $html;
+        }
         $position = $this->getData('position');
         $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
         $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);

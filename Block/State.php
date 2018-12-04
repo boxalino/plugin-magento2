@@ -1,5 +1,4 @@
 <?php
-
 namespace Boxalino\Intelligence\Block;
 
 use Magento\Catalog\Model\Layer\Filter\Item;
@@ -10,7 +9,8 @@ use Magento\Framework\DataObject;
  * Class State
  * @package Boxalino\Intelligence\Block
  */
-class State extends \Magento\Catalog\Model\Layer\State{
+class State extends \Magento\Catalog\Model\Layer\State
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
@@ -20,7 +20,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     /**
      * @var \Magento\Framework\ObjectManagerInterface
      */
-	private $objectManager;
+    private $objectManager;
 
     /**
      * @var \Boxalino\Intelligence\Helper\Data
@@ -59,7 +59,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
      * @param \Boxalino\Intelligence\Model\Facet $facet
      * @param array $data
      */
-	public function __construct(
+    public function __construct(
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
@@ -68,7 +68,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
         \Psr\Log\LoggerInterface $logger,
         \Boxalino\Intelligence\Model\Facet $facet,
-		array $data = []
+        array $data = []
     )
     {
         $this->_logger = $logger;
@@ -90,7 +90,7 @@ class State extends \Magento\Catalog\Model\Layer\State{
     public function getFilters()
     {
         try {
-            if ($this->bxHelperData->isEnabledOnLayer($this->_layer)) {
+            if ($this->bxHelperData->isEnabledOnLayer($this->_layer) && $this->bxHelperData->isPluginEnabled()) {
                 $category = $this->_categoryViewBlock->getCurrentCategory();
                 if($category != null && $category->getDisplayMode() == \Magento\Catalog\Model\Category::DM_PAGE){
                     return parent::getFilters();

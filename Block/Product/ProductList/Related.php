@@ -64,7 +64,7 @@ class Related extends MageRelated{
      */
     protected function _prepareData($execute = true)
     {
-        if($this->bxHelperData->isRelatedEnabled()){
+        if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled()){
 
             $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);

@@ -7,13 +7,12 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-      <css src="Boxalino_Intelligence::css/bxBlogRecommendations.css"/>
+        <css src="Boxalino_Intelligence::css/bxBlogRecommendations.css"/>
     </head>
     <body>
         <referenceContainer name="content.aside">
-          <block class="Boxalino\Intelligence\Block\Product\ProductList\Blog" name="blog_recommendations"
-                 template="Boxalino_Intelligence::product/recommendation_blog.phtml">
-          </block>
+            <block class="Boxalino\Intelligence\Block\Product\ProductList\Blog" name="blog_recommendations" template="Boxalino_Intelligence::product/recommendation_blog.phtml">
+            </block>
         </referenceContainer>
     </body>
 </page>

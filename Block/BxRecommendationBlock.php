@@ -5,7 +5,9 @@ namespace Boxalino\Intelligence\Block;
  * Class BxRecommendationBlock
  * @package Boxalino\Intelligence\Block
  */
-Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProduct implements \Magento\Framework\DataObject\IdentityInterface{
+class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProduct
+    implements \Magento\Framework\DataObject\IdentityInterface
+{
 
     /**
      * @var
@@ -116,7 +118,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * Recommendation setup
      */
     public function _construct(){
-
         try{
             if($this->bxHelperData->isPluginEnabled() && $this->bxHelperData->isSetup()){
                 $cmsBlock = $this->bxHelperData->getCmsBlock();
@@ -135,7 +136,7 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     }
 
     public function getReturnFields() {
-      return array();
+        return array();
     }
 
     /**
@@ -143,7 +144,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     protected function getCmsRecommendationBlocks($content){
-
         $results = array();
         $recommendations = array();
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
@@ -235,7 +235,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array|mixed
      */
     protected function getWidgetContext($scenario){
-
         $context = array();
         switch($scenario){
             case 'category':
@@ -269,7 +268,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed|string
      */
     public function getRecommendationTitle(){
-
         return isset($this->_data['title']) ? $this->_data['title'] : 'Recommendation';
     }
 
@@ -277,7 +275,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return \Magento\Quote\Model\Quote
      */
     protected function getQuote(){
-
         return $this->_checkoutSession->getQuote();
     }
 
@@ -285,7 +282,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed
      */
     public function getItems(){
-
         return $this->_itemCollection;
     }
 
@@ -293,7 +289,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return $this
      */
     protected function _beforeToHtml(){
-
         $this->_prepareData();
         return parent::_beforeToHtml();
     }
@@ -302,7 +297,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     public function getIdentities(){
-
         $identities = [];
         if($this->getItems() != null){
             foreach ($this->getItems() as $item) {
@@ -316,7 +310,6 @@ Class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return bool
      */
     public function canItemsAddToCart(){
-
         foreach ($this->getItems() as $item) {
             if (!$item->isComposite() && $item->isSaleable() && !$item->getRequiredOptions()) {
                 return true;

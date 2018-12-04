@@ -7,7 +7,7 @@ use Magento\Catalog\Block\Product\ProductList\Upsell as  MageUpsell;
  * @package Boxalino\Intelligence\Block\Product\ProductList
  */
 class Upsell extends MageUpsell{
-    
+
     /**
      * @var string
      */
@@ -57,20 +57,20 @@ class Upsell extends MageUpsell{
         $this->factory = $factory;
         parent::__construct($context, $checkoutCart, $catalogProductVisibility, $checkoutSession, $moduleManager, $data);
         $this->_prepareData(false);
-        
+
     }
 
     /**
      * @return $this
      */
     protected function _prepareData($execute = true){
-        
-        if($this->bxHelperData->isUpsellEnabled()){
-            
+
+        if($this->bxHelperData->isUpsellEnabled() && $this->bxHelperData->isPluginEnabled()){
+
             $products = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/upsell',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
-          
+
             try{
                 $entity_ids = $this->p13nHelper->getRecommendation(
                     $choiceId,
@@ -89,7 +89,7 @@ class Upsell extends MageUpsell{
             if(!$execute){
                 return null;
             }
-            
+
             if ((count($entity_ids) == 0)) {
                 $entity_ids = array(0);
             }
