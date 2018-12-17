@@ -1165,4 +1165,23 @@ class Adapter
         }
         return;
     }
+
+    /**
+     * Creating a request with params to boxalino server
+     * Used when the context params contain data needed to be synced
+     *
+     * @param $choice
+     * @param array $params
+     */
+    public function sendRequestWithParams($choice, $params=array(), $final=false, $hitCount = 0)
+    {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $choice, $hitCount);
+        $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+        $this->setPrefixContextParameter($this->prefixContextParameter, $params);
+        self::$bxClient->addRequest($bxRequest);
+        if($final)
+        {
+            self::$bxClient->sendAllChooseRequests();
+        }
+    }
 }

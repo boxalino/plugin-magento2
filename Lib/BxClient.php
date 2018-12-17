@@ -695,6 +695,18 @@ class BxClient
         return $this->autocompleteResponses;
     }
 
+    public function sendAllChooseRequests($chooseAll = false)
+    {
+        if(!empty($this->chooseRequests))
+        {
+            $this->choose($chooseAll);
+        }
+        $this->flushResponses();
+        $this->resetRequests();
+        $this->resetRequestContextParameter();
+    }
+
+
     public function setTimeout($timeout) {
         $this->_timeout = $timeout;
         return $this;
