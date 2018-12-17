@@ -121,6 +121,10 @@
                     <label>Boxalino Response Wait Time</label>
                     <comment>Optional: Keeping connection open to DI server in order to wait for processing the archive for any errors. Default set to 3000(sec).</comment>
                 </field>
+                <field id="local_tmp" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Local Temporary Archive Path</label>
+                    <comment>If set, the exported archive will be temporary stored in that path; If empty, the archive will be created in the directory PHP stores temporary files by default. You can find out which one is it via sys_get_temp_dir().</comment>
+                </field>
             </group>
             <group id="products" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Products</label>

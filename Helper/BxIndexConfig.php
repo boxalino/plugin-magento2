@@ -183,6 +183,16 @@ class BxIndexConfig
 
     /**
      * @param $account
+     * @return null | string
+     */
+    public function getExporterTemporaryArchivePath($account)
+    {
+        $config = $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/local_tmp');
+        return empty($config) ? null : $config;
+    }
+
+    /**
+     * @param $account
      * @return bool
      */
     public function isCustomersExportEnabled($account)

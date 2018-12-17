@@ -259,7 +259,7 @@ class BxIndexer
                     }
                     $this->logger->info('pushing to DI');
                     try {
-                        $this->bxData->pushData(null , $this->getTimeoutForExporter($account));
+                        $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($account) , $this->getTimeoutForExporter($account));
                     } catch(LocalizedException $e){
                         $this->logger->warning($e->getMessage());
                     } catch(\Exception $e){
