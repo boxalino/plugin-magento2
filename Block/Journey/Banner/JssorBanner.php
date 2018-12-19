@@ -11,10 +11,11 @@ use Boxalino\Intelligence\Block\Journey\General;
 class JssorBanner extends General implements CPOJourney
 {
 
-    public function bxGetBanner($choiceId = null) {
+    CONST JSSOR_BANNER_MAX_SIZE = "1238";
 
+    public function bxGetBanner($choiceId = null)
+    {
         $visualElement = $this->getData('bxVisualElement');
-
         $bannerData = array();
         $variant_index = null;
         foreach ($visualElement['parameters'] as $parameter) {
@@ -54,12 +55,24 @@ class JssorBanner extends General implements CPOJourney
             $bannerData['bannerTransitions'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_transition', 0, $choiceId);
             $bannerData['bannerBreaks'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_break', 0, $choiceId);
             $bannerData['bannerControls'] = $this->getBannerJssorSlideGenericJS('products_bxi_bxi_jssor_control', 0, $choiceId);
-            $bannerData['bannerMaxWidth'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
+            $bannerData['bannerMaxWidth'] = $this->getBannerMaxWidth($choiceId);
             $bannerData['bannerOptions'] = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_options', '', $choiceId, true, 0);
             $bannerFunction = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_function', '', $choiceId, true, 0);
             $bannerData['bannerFunction'] = $this->getData('jssorID') != null ? str_replace($bannerData['bannerId'], $this->getData('jssorID'), $bannerFunction) : $bannerFunction;
         }
+
         return $bannerData;
+    }
+
+    protected function getBannerMaxWidth($choiceId = null)
+    {
+        $bannerWidth = $this->p13nHelper->getClientResponse()->getExtraInfo('banner_jssor_max_width', '', $choiceId, true, 0);
+        if(!empty($bannerWidth))
+        {
+            return $bannerWidth;
+        }
+
+        return self::JSSOR_BANNER_MAX_SIZE;
     }
 
     protected function getBannerJssorSlideGenericJS($key, $variant_id, $choiceId=null) {
