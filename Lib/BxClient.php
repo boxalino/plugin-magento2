@@ -112,10 +112,6 @@ class BxClient
         return "main.bx-cloud.com";
     }
 
-    public function setHost($host) {
-        $this->host = $host;
-    }
-
     public function setApiKey($apiKey) {
         $this->apiKey = $apiKey;
     }
@@ -157,14 +153,26 @@ class BxClient
     }
 
     public static function LOAD_CLASSES($libPath) {
-
-        require_once($libPath . '/Thrift/ClassLoader/ThriftClassLoader.php');
         $cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
         $cl->registerNamespace('Thrift', $libPath);
         $cl->register(true);
-        require_once($libPath . '/P13nService.php');
-        require_once($libPath . '/Types.php');
 
+        $folders = ['P13n'];
+        $deferred = '';
+        foreach ($folders as $folder) {
+            $files =  glob($libPath . '/'. $folder . '/*.php', GLOB_NOSORT);
+            foreach ($files as $file) {
+                if(strpos($file, 'P13nServiceClient') !== false){
+                    $deferred = $file;
+                    continue;
+                }
+                require_once($file);
+            }
+        }
+        if($deferred !== ''){
+
+            require_once($deferred);
+        }
         require_once($libPath . "/BxFacets.php");
         require_once($libPath . "/BxFilter.php");
         require_once($libPath . "/BxRequest.php");
