@@ -21,6 +21,9 @@ use \Psr\Log\LoggerInterface;
 class BxIndexer
 {
 
+
+    CONST BOXALINO_DELTA_EXPORTS_PRODUCTS_MIN = 5;
+
     /**
      * @var \Psr\Log\LoggerInterface
      */
@@ -87,6 +90,11 @@ class BxIndexer
     protected $exporterResource;
 
     /**
+     * @var null
+     */
+    protected $latestDeltaUpdate = null;
+
+    /**
      * BxIndexer constructor.
      * @param LoggerInterface $logger
      * @param \Magento\Framework\App\ResourceConnection $rs
@@ -131,12 +139,13 @@ class BxIndexer
      * @param null $type
      * @return $this
      */
-    public function setIndexerType($type=null){
-
+    public function setIndexerType($type=null)
+    {
         $this->indexerType = $type;
         if($type == null){
-            $this->indexerType = 'full';
+            $this->indexerType = BxExporter::INDEXER_TYPE;
         }
+
         return $this;
     }
 
@@ -144,7 +153,6 @@ class BxIndexer
      * @return mixed
      */
     public function getIndexerType(){
-
         return $this->indexerType;
     }
 
@@ -152,16 +160,50 @@ class BxIndexer
      * @return mixed
      */
     protected function getDeltaIds(){
+        if (empty($this->deltaIds))
+        {
+            $lastUpdateDate = $this->getLatestDeltaUpdate();
+            $this->deltaIds = $this->exporterResource->getProductIdsByUpdatedAt($lastUpdateDate);
+            if(empty($deltaIds))
+            {
+                $categoryUpdates = $this->exporterResource->hasDeltaReadyCategories($lastUpdateDate);
+                if($categoryUpdates)
+                {
+                    $this->deltaIds = $this->exporterResource->getLatestUpdatedProductIds();
+                }
+            }
+        }
 
         return $this->deltaIds;
+    }
+
+    protected function getLatestDeltaUpdate()
+    {
+        if(is_null($this->latestDeltaUpdate))
+        {
+            $this->latestDeltaUpdate = date("Y-m-d H:i:s", strtotime("-1 hour"));
+        }
+
+        return $this->latestDeltaUpdate;
     }
 
     /**
      * @param $ids
      */
-    public function setDeltaIds($ids){
-
+    public function setDeltaIds($ids)
+    {
         $this->deltaIds = $ids;
+        return $this;
+    }
+
+    /**
+     * @param $date
+     * @return $this
+     */
+    public function setLatestDeltaUpdate($date)
+    {
+        $minTime = date('Y-m-d H:i:s',strtotime('-30 minutes'));
+        $this->latestDeltaUpdate = min([$minTime, $date]);
         return $this;
     }
 
@@ -172,16 +214,16 @@ class BxIndexer
      */
     public function exportStores($exportProducts=true, $exportCustomers=true, $exportTransactions=true)
     {
-        if(($this->getIndexerType() == 'delta') &&  $this->indexerModel->load('boxalino_indexer')->isWorking()){
+        if(($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxExporter::INDEXER_ID)->isWorking()){
             $this->logger->info("bxLog: Delta exporter will not run. Full exporter process must finish first.");
             return;
         }
-        if(($this->getIndexerType() == 'full') &&  $this->indexerModel->load('boxalino_indexer_delta')->isWorking()){
+        if(($this->getIndexerType() == BxExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxDeltaExporter::INDEXER_ID)->isWorking()){
             $this->logger->info("bxLog: Full exporter will not run. Delta exporter process must to finish first.");
             return;
         }
 
-        if($this->getIndexerType() == 'delta'){
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE){
             if($this->getDeltaIds() == null){
                 $this->logger->info("bxLog: The delta export is empty. Closing request.");
                 return;
@@ -196,7 +238,7 @@ class BxIndexer
                 $this->bxFiles->setAccount($account);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "", $this->config->isAccountDev($account));
-                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == 'delta');
+                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE);
 
                 $this->logger->info("bxLog: verify credentials for account: " . $account);
                 try{
@@ -270,8 +312,10 @@ class BxIndexer
                 }
             }
             $this->logger->info("bxLog: finished Boxalino {$this->indexerType} export");
+            return true;
         } catch(\Exception $e) {
             $this->logger->error("bxLog: failed with exception: " . $e->getMessage());
+            return false;
         }
     }
 
@@ -281,7 +325,7 @@ class BxIndexer
      */
     protected function getTimeoutForExporter($account)
     {
-        if($this->indexerType == "delta")
+        if($this->indexerType == BxDeltaExporter::INDEXER_TYPE)
         {
             return 60;
         }
@@ -350,23 +394,8 @@ class BxIndexer
         $this->logger->info('bxLog: get all product attributes.');
         $attributes = $this->exporterResource->getProductAttributes();
 
-        $requiredProperties = [
-            'entity_id',
-            'name',
-            'description',
-            'short_description',
-            'sku',
-            'price',
-            'special_price',
-            'special_from_date',
-            'special_to_date',
-            'category_ids',
-            'visibility',
-            'status'
-        ];
-
         $this->logger->info('bxLog: get configured product attributes.');
-        $attributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
+        $attributes = $this->config->getAccountProductsProperties($account, $attributes, $this->getRequiredProductAttributes());
         $this->logger->info('bxLog: returning configured product attributes: ' . implode(',', array_values($attributes)));
 
         return $attributes;
@@ -801,7 +830,7 @@ class BxIndexer
                 $data = [];
                 $additionalData = [];
                 $exportAttribute = false;
-                $global = false;
+                $global =  ($type['is_global'] == 1) ? true : false;
                 $getValueForDuplicate = false;
                 $d = [];
                 $headerLangRow = [];
@@ -813,7 +842,7 @@ class BxIndexer
                         array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
                         $columns
                     );
-                    if($this->getIndexerType() == 'delta') $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
+                    if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
@@ -848,7 +877,7 @@ class BxIndexer
                                     array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
                                 )
                                 ->where('t_g.attribute_id = ?', $typeKey)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
-                            if($this->getIndexerType() == 'delta')$select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
+                            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE)$select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
                             foreach ($db->fetchAll($select1) as $r) {
                                 $data[] = $r;
                             }
@@ -868,6 +897,7 @@ class BxIndexer
                                 }
                             }
                         }else{
+                            $optionValues = array();
                             $exportAttribute = true;
                             $optionSelect = false;
                         }
@@ -886,13 +916,14 @@ class BxIndexer
                     }
 
                     $fetchedResult = $db->fetchAll($select);
-                    if (sizeof($fetchedResult)) {
-
-                        foreach ($fetchedResult as $i => $row) {
-
-                            if (isset($data[$row['entity_id']]) && !$optionSelect) {
-
-                                if(isset($data[$row['entity_id']]['value_' . $lang])){
+                    if (sizeof($fetchedResult))
+                    {
+                        foreach ($fetchedResult as $i => $row)
+                        {
+                            if (isset($data[$row['entity_id']]) && !$optionSelect)
+                            {
+                                if(isset($data[$row['entity_id']]['value_' . $lang]))
+                                {
                                     if($row['store_id'] > 0){
                                         $data[$row['entity_id']]['value_' . $lang] = $row['value'];
                                         if(isset($duplicateIds[$row['entity_id']])){
@@ -912,7 +943,7 @@ class BxIndexer
                                             }
                                         }
                                     }
-                                }else{
+                                } else {
                                     $data[$row['entity_id']]['value_' . $lang] = $row['value'];
                                     if(isset($duplicateIds[$row['entity_id']])){
                                         $data['duplicate'.$row['entity_id']]['value_' . $lang] = $getValueForDuplicate ?
@@ -987,7 +1018,6 @@ class BxIndexer
                                     }
                                     continue;
                                 }else{
-
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
@@ -1001,7 +1031,6 @@ class BxIndexer
                                             }
                                         }
                                     }else{
-
                                         $valueLabel = $type['attribute_code'] == 'visibility' ||
                                         $type['attribute_code'] == 'status' ||
                                         $type['attribute_code'] == 'special_from_date' ||
@@ -1040,17 +1069,25 @@ class BxIndexer
                     $optionSourceKey = $this->bxData->addResourceFile(
                         $this->bxFiles->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
                         $labelColumns);
-                    if(sizeof($data) == 0){
+
+                    if(sizeof($data) == 0 && $this->getIndexerType() != BxDeltaExporter::INDEXER_TYPE) {
                         $d = array(array('entity_id',$type['attribute_code'] . '_id'));
                         $this->bxFiles->savepartToCsv('product_' . $type['attribute_code'] . '.csv',$d);
                         $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                         $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
-                        $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'],
-                            $type['attribute_code'] . '_id', $optionSourceKey);
+                        if($attrKey == ('int' || 'decimal') && $type['is_global'] == 1){
+                            $this->bxData->addSourceNumberField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
+                        } else {
+                            if(!$global){
+                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
+                            }else {
+                                $this->bxData->addSourceStringField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
+                            }
+                        }
                     }
                 }
 
-                if (sizeof($data)) {
+                if (sizeof($data) || in_array($type['attribute_code'], $this->getRequiredProductAttributes())) {
                     if(!$global || $type['attribute_code'] == 'visibility' ||
                         $type['attribute_code'] == 'status' ||
                         $type['attribute_code'] == 'special_from_date' ||
@@ -1075,7 +1112,11 @@ class BxIndexer
                             $d = array_merge(array(array('entity_id',$type['attribute_code'] . '_id')), $data);
                         }
                     }else {
-                        $d = array_merge(array(array_keys(end($data))), $data);
+                        if(empty($data)){
+                            $d = array(array("entity_id", "store_id", "value"));
+                        } else {
+                            $d = array_merge(array(array_keys(end($data))), $data);
+                        }
                     }
 
                     $this->bxFiles->savepartToCsv('product_' . $type['attribute_code'] . '.csv', $d);
@@ -1103,55 +1144,36 @@ class BxIndexer
                             $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $lc);
                             break;
                         case 'price':
-                            if(!$global){
-                                $col = null;
-                                foreach($labelColumns as $k => $v) {
-                                    $col = $v;
-                                    break;
-                                }
-                                $this->bxData->addSourceListPriceField($mainSourceKey, 'entity_id');
-                            }else {
-                                $this->bxData->addSourceListPriceField($mainSourceKey, 'entity_id');
-                            }
+                            $this->bxData->addSourceListPriceField($mainSourceKey, 'entity_id');
+                            $paramPriceLabel = 'value';
 
                             if(!$global){
+                                $paramPriceLabel = reset($labelColumns);
                                 $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "price_localized", $labelColumns);
                             } else {
-                                $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", 'value');
+                                $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", $paramPriceLabel);
                             }
 
-                            $paramPriceLabel = $global ? 'value' : reset($labelColumns);
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_fields', 'CASE WHEN (price.'.$paramPriceLabel.' IS NULL OR price.'.$paramPriceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$paramPriceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.entity_id = ref.parent_id');
+                            $this->bxData->addResourceFile($this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id', "value");
 
-                            $this->bxData->addResourceFile(
-                                $this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id','value'
-                            );
                             break;
                         case 'special_price':
+                            $this->bxData->addSourceDiscountedPriceField($mainSourceKey, 'entity_id');
+                            $paramSpecialPriceLabel = "value";
+
                             if(!$global){
-                                $col = null;
-                                foreach($labelColumns as $k => $v) {
-                                    $col = $v;
-                                    break;
-                                }
-                                $this->bxData->addSourceDiscountedPriceField($mainSourceKey, 'entity_id');
-                            }else {
-                                $this->bxData->addSourceDiscountedPriceField($mainSourceKey, 'entity_id');
-                            }
-                            if(!$global){
+                                $paramSpecialPriceLabel = reset($labelColumns);
                                 $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "special_price_localized", $labelColumns);
                             } else {
-                                $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", 'value');
+                                $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", $paramSpecialPriceLabel);
                             }
 
-                            $paramSpecialPriceLabel = $global ? 'value' : reset($labelColumns);
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$paramSpecialPriceLabel.' IS NULL OR price.'.$paramSpecialPriceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$paramSpecialPriceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id');
+                            $this->bxData->addResourceFile($this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id', "value");
 
-                            $this->bxData->addResourceFile(
-                                $this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id','value'
-                            );
                             break;
                         case ($attrKey == ('int' || 'decimal')) && $type['is_global'] == 1:
                             $this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
@@ -1165,6 +1187,7 @@ class BxIndexer
                             break;
                     }
                 }
+
                 $data = null;
                 $additionalData = null;
                 $d = null;
@@ -1172,6 +1195,7 @@ class BxIndexer
             }
 
         }
+
         $this->bxData->addSourceNumberField($mainSourceKey, 'bx_grouped_price', 'entity_id');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_fields', 'CASE WHEN sref.value IS NOT NULL AND sref.value > 0 AND (ref.value IS NULL OR sref.value < ref.value) THEN sref.value WHEN ref.value IS NOT NULL then ref.value WHEN sprice.'.$paramSpecialPriceLabel.' IS NOT NULL AND sprice.'.$paramSpecialPriceLabel.' > 0 AND price.'.$paramPriceLabel.' > sprice.'.$paramSpecialPriceLabel.' THEN sprice.'.$paramSpecialPriceLabel.' ELSE price.'.$paramPriceLabel.' END as price_value');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.group_id = ref.parent_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as sprice ON t.entity_id = sprice.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as sref ON t.group_id = sref.parent_id');
@@ -1202,7 +1226,7 @@ class BxIndexer
                 )
             )
             ->where('stock_id = ?', 1);
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
 
         $fetchedResult = $db->fetchAll($select);
         if(sizeof($fetchedResult)){
@@ -1233,7 +1257,7 @@ class BxIndexer
                 's_w.website_id = c_p_w.website_id',
                 array('s_w.name')
             );
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
 
         $fetchedResult = $db->fetchAll($select);
         if(sizeof($fetchedResult)){
@@ -1265,7 +1289,7 @@ class BxIndexer
                 'c_p_e.entity_id = c_p_r.child_id',
                 array()
             );
-        if($this->getIndexerType() == 'delta') $select1->where('product_id IN(?)', $this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('product_id IN(?)', $this->getDeltaIds());
 
         $select2 = clone $select1;
         $select2->join(array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
@@ -1327,7 +1351,7 @@ class BxIndexer
                     'link_id'
                 )
             );
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
 
         $fetchedResult = $db->fetchAll($select);
         if(sizeof($fetchedResult)) {
@@ -1364,7 +1388,7 @@ class BxIndexer
                 'pl.link_type_id = lt.link_type_id', array()
             )
             ->where('lt.link_type_id = pl.link_type_id');
-        if($this->getIndexerType() == 'delta') $select->where('product_id IN(?)', $this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
 
         $fetchedResult = $db->fetchAll($select);
         if(sizeof($fetchedResult)) {
@@ -1407,7 +1431,7 @@ class BxIndexer
                 );
 
             $select1->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-            if($this->getIndexerType() == 'delta') $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
 
             $select2 = clone $select1;
             $select2->join(
@@ -1538,5 +1562,23 @@ class BxIndexer
         }
 
         return $this;
+    }
+
+    public function getRequiredProductAttributes()
+    {
+        return [
+            'entity_id',
+            'name',
+            'description',
+            'short_description',
+            'sku',
+            'price',
+            'special_price',
+            'special_from_date',
+            'special_to_date',
+            'category_ids',
+            'visibility',
+            'status'
+        ];
     }
 }

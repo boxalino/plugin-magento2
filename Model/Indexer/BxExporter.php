@@ -8,6 +8,16 @@ namespace Boxalino\Intelligence\Model\Indexer;
 class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface{
 
     /**
+     * Indexer ID in configuration
+     */
+    const INDEXER_ID = 'boxalino_indexer';
+
+    /**
+     * Indexer type
+     */
+    const INDEXER_TYPE = "full";
+
+    /**
      * @var \Boxalino\Intelligence\Model\Indexer\BxIndexer
      */
     protected $bxIndexer;
@@ -40,7 +50,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @throws \Exception
      */
     public function executeFull(){
-        $this->bxIndexer->setIndexerType('full')->exportStores();
+        $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)->exportStores();
     }
 
 }

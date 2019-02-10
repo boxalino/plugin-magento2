@@ -13,4 +13,13 @@
 
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Intelligence\Controller\Result\Index" />
     <preference for="Magento\Catalog\Controller\Category\View" type="Boxalino\Intelligence\Controller\Category\View" />
+
+    <type name="Magento\Catalog\Model\Indexer\Product\Full">
+        <arguments>
+            <argument name="indexerList" xsi:type="array">
+                <item name="boxalino_indexer_delta" xsi:type="const">Boxalino\Intelligence\Model\Indexer\Delta\Processor::INDEXER_ID</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

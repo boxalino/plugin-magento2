@@ -1,6 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Model\ResourceModel;
 
+use Boxalino\Intelligence\Model\Indexer\BxDeltaExporter;
 use Magento\Framework\Exception\NoSuchEntityException;
 use \Psr\Log\LoggerInterface;
 use \Magento\Framework\App\ResourceConnection;
@@ -88,7 +89,7 @@ class Exporter
                 ['c_p_e_b.store_id']
             );
 
-        if($indexerType=='delta' && !empty($deltaIds))
+        if($indexerType == BxDeltaExporter::INDEXER_TYPE && !empty($deltaIds))
         {
             $select->where('c_p_r.parent_id IN(?)', $deltaIds);
         }
@@ -820,6 +821,58 @@ class Exporter
             )->where('c_p_e.entity_id IN (?)', $duplicateIds);
 
         return $this->adapter->fetchAll($select);
+    }
+
+    /**
+     * Check product IDs from last delta run
+     *
+     * @param null | string $date
+     * @return []
+     */
+    public function getProductIdsByUpdatedAt($date)
+    {
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['entity_id']
+            )->where("DATE_FORMAT(c_p_e.updated_at, '%Y-%m-%d %H:%i:%s') >=  DATE_FORMAT(?, '%Y-%m-%d %H:%i:%s')", $date);
+
+        return $this->adapter->fetchCol($select);
+    }
+
+    /**
+     * Check wether delta must be run due to existing updates in categories
+     *
+     * @param null $date
+     * @return bool
+     */
+    public function hasDeltaReadyCategories($date)
+    {
+        $select = $this->adapter->select()
+            ->from(
+                ['c_c_e'=> $this->adapter->getTableName("catalog_category_entity")],
+                ['entity_id']
+            )->where("DATE_FORMAT(c_c_e.updated_at, '%Y-%m-%d %H:%i:%s') >=  DATE_FORMAT(?, '%Y-%m-%d %H:%i:%s')", $date);
+
+        return (bool) $this->adapter->query($select)->rowCount();
+    }
+
+    /**
+     *  Get the latest updated product IDs to be used for delta export as a mock, in case there are category updates
+     *
+     * @param int $limit
+     * @return []
+     */
+    public function getLatestUpdatedProductIds()
+    {
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                [new \Zend_Db_Expr('MAX(entity_id)')]
+            )->order("c_p_e.updated_at DESC")
+            ->group(['c_p_e.attribute_set_id', 'c_p_e.type_id', 'c_p_e.has_options', 'c_p_e.required_options']);
+
+        return $this->adapter->fetchCol($select);
     }
 
 }
