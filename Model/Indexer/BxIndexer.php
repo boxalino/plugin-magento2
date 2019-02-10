@@ -648,9 +648,11 @@ class BxIndexer
                     'order_id' => $transaction['entity_id'],
                     'entity_id' => $transaction['product_id'],
                     'customer_id' => $transaction['customer_id'],
+                    'email' => $transaction['customer_email'],
                     'guest_id' => $transaction['guest_id'],
                     'price' => $transaction['original_price'],
                     'discounted_price' => $transaction['price'],
+                    'currency' => $transaction['order_currency_code'],
                     'quantity' => $transaction['qty_ordered'],
                     'total_order_value' => ($transaction['base_subtotal'] + $transaction['shipping_amount']),
                     'shipping_costs' => $transaction['shipping_amount'],
@@ -692,7 +694,7 @@ class BxIndexer
             $page++;
         }
 
-        $sourceKey = $this->bxData->setCSVTransactionFile($this->bxFiles->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
+        $sourceKey = $this->bxData->setCSVTransactionFile($this->bxFiles->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price', 'currency', 'email');
         $this->bxData->addSourceCustomerGuestProperty($sourceKey,'guest_id');
 
         $this->logger->info('bxLog: Transactions - exporting additional tables for account: ' . $account);

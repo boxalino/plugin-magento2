@@ -103,7 +103,7 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params, $validate);
     }
 
-    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true)
+    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $currencyColumn, $emailColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true)
     {
         $params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 
@@ -117,6 +117,8 @@ class BxData
         $params['productDiscountedPriceColumn'] = $productDiscountedPriceColumn;
         $params['totalOrderValueColumn'] = $totalOrderValueColumn;
         $params['orderReceptionDateColumn'] = $orderDateIdColumn;
+        $params['currencyColumn'] = $currencyColumn;
+        $params['emailColumn'] = $emailColumn;
 
         return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
     }
@@ -289,6 +291,16 @@ class BxData
 
     public function addSourceCustomerGuestProperty($sourceKey, $parameterValue) {
         $this->addSourceParameter($sourceKey, "guest_property_id", $parameterValue);
+    }
+
+    public function addSourceEmailProperty($sourceKey, $parameterValue)
+    {
+        $this->addSourceParameter($sourceKey, 'emailColumn', $parameterValue);
+    }
+
+    public function addSourceCurrencyProperty($sourceKey, $parameterValue)
+    {
+        $this->addSourceParameter($sourceKey, 'currencyColumn', $parameterValue);
     }
 
     public function addSourceParameter($sourceKey, $parameterName, $parameterValue) {
