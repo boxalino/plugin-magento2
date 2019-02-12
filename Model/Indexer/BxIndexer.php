@@ -170,7 +170,7 @@ class BxIndexer
 
         if(empty($this->latestDeltaUpdate) || strtotime($this->latestDeltaUpdate) < 0)
         {
-            $this->latestDeltaUpdate = date("Y-m-d H:i:s", strtotime("-600 hour"));
+            $this->latestDeltaUpdate = date("Y-m-d H:i:s", strtotime("-1 hour"));
         }
 
         return $this->latestDeltaUpdate;
