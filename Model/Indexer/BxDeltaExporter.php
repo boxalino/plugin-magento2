@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Model\Indexer;
 
-use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
+use Boxalino\Intelligence\Model\Indexer\BxIndexer;
 
 /**
  * Class BxDeltaExporter
@@ -22,25 +22,12 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
     protected $bxIndexer;
 
     /**
-     * @var \Magento\Indexer\Model\IndexerFactory
-     */
-    protected $indexerFactory;
-
-    /**
-     * @var view
-     */
-    protected $view;
-
-    /**
      * BxDeltaExporter constructor.
      * @param BxIndexer $bxIndexer
      */
-    public function __construct(
-        BxIndexer $bxIndexer,
-        \Magento\Indexer\Model\IndexerFactory $indexerFactory
-    ){
+    public function __construct(BxIndexer $bxIndexer)
+    {
         $this->bxIndexer = $bxIndexer;
-        $this->indexerFactory = $indexerFactory;
     }
 
     /**

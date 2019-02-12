@@ -1,6 +1,6 @@
 {
   "name": "boxalino/plugin-magento2",
-  "description": "Boxalino Magento 2 plug-in",
+  "description": "Boxalino Magento 2 plugin",
   "type": "magento2-module",
   "homepage": "http://www.boxalino.com",
   "keywords": ["boxalino","intelligence","real-time","personalization","magento"],
