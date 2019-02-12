@@ -50,7 +50,19 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * @throws \Exception
      */
     public function executeFull(){
-        $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)->exportStores();
+        try{
+            $startExportDate = date("Y-m-d H:i:s");
+            $status = $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)
+                ->setIndexerId(self::INDEXER_ID)
+                ->exportStores();
+
+            if($status)
+            {
+                $this->bxIndexer->updateIndexerLatestDate(self::INDEXER_ID, $startExportDate);
+            }
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 
 }
