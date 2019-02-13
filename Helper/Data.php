@@ -1,10 +1,12 @@
 <?php
 namespace Boxalino\Intelligence\Helper;
+
 /**
  * Class Data
  * @package Boxalino\Intelligence\Helper
  */
-class Data{
+class Data
+{
 
     /**
      * @var
@@ -126,8 +128,7 @@ class Data{
         \Magento\Catalog\Model\ResourceModel\Product $catalogProduct,
         \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $factory,
         \Magento\Framework\App\FrontControllerInterface $controllerInterface
-    )
-    {
+    ){
         $this->controllerInterface = $controllerInterface;
         $this->catalogCategory = $catalogProduct;
         $this->config = $scopeConfig;
@@ -142,7 +143,6 @@ class Data{
      * @return string language code
      */
     public function getLanguage() {
-
         return substr($this->config->getValue('general/locale/code',$this->scopeStore), 0, 2);
     }
 
@@ -151,27 +151,29 @@ class Data{
      * @param null $filters
      * @return string
      */
-    public function reportSearch($term, $filters = null){
-
+    public function reportSearch($term, $filters = null)
+    {
+        $script = "";
         if ($this->isTrackerEnabled()) {
             $logTerm = addslashes($term);
             $script = "_bxq.push(['trackSearch', '" . $logTerm . "', " . json_encode($filters) . "]);" . PHP_EOL;
-            return $script;
         }
-        return '';
+
+        return $script;
     }
 
     /**
      * @param $product
      * @return string
      */
-    public function reportProductView($product){
-
+    public function reportProductView($product)
+    {
+        $script = "";
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackProductView', '" . $product . "'])" . PHP_EOL;
-            return $script;
         }
-        return '';
+
+        return $script;
     }
 
     /**
@@ -181,40 +183,40 @@ class Data{
      * @param $currency
      * @return string
      */
-    public function reportAddToBasket($product, $count, $price, $currency){
-
+    public function reportAddToBasket($product, $count, $price, $currency)
+    {
+        $script = "";
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
-            print_r($script);
-            return $script;
         }
-        return '';
+        return $script;
     }
 
     /**
      * @param $categoryID
      * @return string
      */
-    public function reportCategoryView($categoryID){
-
+    public function reportCategoryView($categoryID)
+    {
+        $script = "";
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackCategoryView', '" . $categoryID . "'])" . PHP_EOL;
-            return $script;
         }
-        return '';
+        return $script;
     }
 
     /**
      * @param $customerId
      * @return string
      */
-    public function reportLogin($customerId){
-
+    public function reportLogin($customerId)
+    {
+        $script = "";
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackLogin', '" . $customerId . "'])" . PHP_EOL;
-            return $script;
         }
-        return '';
+
+        return $script;
     }
 
     /**
@@ -229,8 +231,9 @@ class Data{
      * @param $price number
      * @param $currency string
      */
-    public function reportPurchase($products, $orderId, $price, $currency){
-
+    public function reportPurchase($products, $orderId, $price, $currency)
+    {
+        $script = "";
         $productsJson = json_encode($products);
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push([" . PHP_EOL;
@@ -240,22 +243,24 @@ class Data{
             $script .= $productsJson . "," . PHP_EOL;
             $script .= $orderId . "" . PHP_EOL;
             $script .= "]);" . PHP_EOL;
-            return $script;
         }
-        return '';
+
+        return $script;
     }
 
     /**
      * @param $script
      */
-    public function addScript($script) {
+    public function addScript($script)
+    {
         self::$SCRIPTS[] = $script;
     }
 
     /**
      * @return array
      */
-    public function getScripts() {
+    public function getScripts()
+    {
         return self::$SCRIPTS;
     }
 
@@ -264,8 +269,8 @@ class Data{
      * @param $text
      * @return mixed|null|string
      */
-    public function sanitizeFieldName($text){
-
+    public function sanitizeFieldName($text)
+    {
         $maxLength = 50;
         $delimiter = "_";
 
@@ -301,8 +306,8 @@ class Data{
      * @param $params
      * @return \stdClass
      */
-    public function getFiltersValues($params){
-
+    public function getFiltersValues($params)
+    {
         $filters = new \stdClass();
         if (isset($params['cat'])) {
 
@@ -362,8 +367,8 @@ class Data{
     /**
      * @return array
      */
-    public function getWidgetConfig($widgetName){
-
+    public function getWidgetConfig($widgetName)
+    {
         if(!isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -383,28 +388,30 @@ class Data{
         return $widgetConfig;
     }
 
-    public function getCmsRecommendationBlocks($content) {
+    public function getCmsRecommendationBlocks($content)
+    {
+        $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
+        $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'read';
 
-      $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
-      $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'read';
+        $recs = array();
+        $recs[] = array(
+            'widget'=>$choiceId,
+            'scenario'=>'blog',
+            'min'=>$config['min'],
+            'max'=>$config['max']
+        );
 
-      $recs = array();
-      $recs[] = array(
-        'widget'=>$choiceId,
-        'scenario'=>'blog',
-        'min'=>$config['min'],
-        'max'=>$config['max']
-      );
-
-      return $recs;
+        return $recs;
     }
 
-    public function getBlogRecommendationChoiceId()  {
+    public function getBlogRecommendationChoiceId()
+    {
         $choice_id = $this->config->getValue('bxRecommendations/blog/widget', $this->scopeStore);
         return is_null($choice_id) ? 'read' : $choice_id;
     }
 
-    public function getBlogReturnFields() {
+    public function getBlogReturnFields()
+    {
         $fields = array(
             'title',
             $this->getExcerptFieldName(),
@@ -417,76 +424,80 @@ class Data{
         return array_merge($fields, $extraFields);
     }
 
-    public function getExcerptFieldName() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
-      if (isset($config['excerptFieldName'])) {
-        return $config['excerptFieldName'];
-      }
-      return 'products_blog_excerpt';
+    public function getExcerptFieldName()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['excerptFieldName'])) {
+            return $config['excerptFieldName'];
+        }
+        return 'products_blog_excerpt';
     }
 
-    public function getLinkFieldName() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+    public function getLinkFieldName()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['linkFieldName'])) {
+            return $config['linkFieldName'];
+        }
 
-      if (isset($config['linkFieldName'])) {
-        return $config['linkFieldName'];
-      }
-      return 'products_blog_link';
+        return 'products_blog_link';
     }
 
-    public function getMediaUrlFieldName() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+    public function getMediaUrlFieldName()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['mediaUrlFieldName'])) {
+            return $config['mediaUrlFieldName'];
+        }
 
-      if (isset($config['mediaUrlFieldName'])) {
-        return $config['mediaUrlFieldName'];
-      }
-      return 'products_blog_featured_media_url';
+        return 'products_blog_featured_media_url';
     }
 
-    public function getDateFieldName() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+    public function getDateFieldName()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['dateFieldName'])) {
+            return $config['dateFieldName'];
+        }
 
-      if (isset($config['dateFieldName'])) {
-        return $config['dateFieldName'];
-      }
-      return 'products_blog_date';
+        return 'products_blog_date';
     }
 
-    public function getExtraFieldNames() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+    public function getExtraFieldNames()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['extraFieldNamesFieldName'])) {
+            return explode(',', $config['extraFieldNamesFieldName']);
+        }
 
-      if (isset($config['extraFieldNamesFieldName'])) {
-        return explode(',', $config['extraFieldNamesFieldName']);
-      }
-
-      return array();
+        return array();
     }
 
-    public function getBlogArticleImageWidth() {
-      $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+    public function getBlogArticleImageWidth()
+    {
+        $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
+        if (isset($config['blogArticleImageHeight'])) {
+            return explode(',', $config['blogArticleImageHeight']);
+        }
 
-      if (isset($config['blogArticleImageHeight'])) {
-        return explode(',', $config['blogArticleImageHeight']);
-      }
-
-      return 960;
+        return 960;
     }
 
-    public function getBlogArticleImageHeight() {
-      $config = $this->config->getValue('bxRecommendations/field',$this->scopeStore);
+    public function getBlogArticleImageHeight()
+    {
+        $config = $this->config->getValue('bxRecommendations/field',$this->scopeStore);
+        if (isset($config['getBlogArticleImageWidth'])) {
+            return explode(',', $config['getBlogArticleImageWidth']);
+        }
 
-      if (isset($config['getBlogArticleImageWidth'])) {
-        return explode(',', $config['getBlogArticleImageWidth']);
-      }
-
-      return 580;
+        return 580;
     }
 
     /**
      * @return bool
      */
-    public function isPluginEnabled(){
-
+    public function isPluginEnabled()
+    {
         if(!isset($this->bxConfig['bxGeneral'])) {
             $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
         }
@@ -496,8 +507,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isSearchEnabled(){
-
+    public function isSearchEnabled()
+    {
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -507,8 +518,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isBlogEnabled(){
-
+    public function isBlogEnabled()
+    {
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -518,8 +529,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isAutocompleteEnabled(){
-
+    public function isAutocompleteEnabled()
+    {
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -529,19 +540,19 @@ class Data{
     /**
      * @return bool
      */
-    public function isTrackerEnabled(){
-
+    public function isTrackerEnabled()
+    {
         if(!isset($this->bxConfig['bxGeneral'])) {
             $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
         }
         return (bool)($this->isPluginEnabled() && $this->bxConfig['bxGeneral']['tracker']['enabled']);
     }
-    
+
     /**
      * @return bool
      */
-    public function isCrosssellEnabled(){
-
+    public function isCrosssellEnabled()
+    {
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -551,8 +562,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isRelatedEnabled(){
-
+    public function isRelatedEnabled()
+    {
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -562,8 +573,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isUpsellEnabled(){
-
+    public function isUpsellEnabled()
+    {
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -573,8 +584,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isBlogRecommendationEnabled(){
-
+    public function isBlogRecommendationEnabled()
+    {
         if(!isset($this->bxConfig['bxRecommendations'])) {
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
@@ -584,8 +595,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isBannerEnabled(){
-
+    public function isBannerEnabled()
+    {
         if(!isset($this->bxConfig['bxBanner'])) {
             $this->bxConfig['bxBanner'] = $this->config->getValue('bxBanner', $this->scopeStore);
         }
@@ -595,8 +606,8 @@ class Data{
     /**
      * @return bool
      */
-    public function isNavigationEnabled(){
-
+    public function isNavigationEnabled()
+    {
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
@@ -606,48 +617,48 @@ class Data{
     /**
      * @return bool
      */
-    public function isOverlayEnabled(){
-
+    public function isOverlayEnabled()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
         return (bool)($this->isPluginEnabled() && $this->bxConfig['bxOverlay']['overlay']['enabled']);
     }
 
-    public function getOverlayHitcount(){
-
+    public function getOverlayHitcount()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
         return $this->bxConfig['bxOverlay']['overlay']['hitcount'];
     }
 
-    public function getOverlayBannerChoiceHitCount(){
-
+    public function getOverlayBannerChoiceHitCount()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
         return $this->bxConfig['bxOverlay']['overlay']['bannerHitcount'];
     }
 
-    public function getOverlayOrder(){
-
+    public function getOverlayOrder()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
         return $this->bxConfig['bxOverlay']['overlay']['order'];
     }
 
-    public function getOverlayDir(){
-
+    public function getOverlayDir()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
         return $this->bxConfig['bxOverlay']['overlay']['dir'];
     }
 
-    public function getOverlayPageOffset(){
-
+    public function getOverlayPageOffset()
+    {
         if(!isset($this->bxConfig['bxOverlay'])){
             $this->bxConfig['bxOverlay'] = $this->config->getValue('bxOverlay', $this->scopeStore);
         }
@@ -658,8 +669,8 @@ class Data{
      * @param $layer
      * @return bool
      */
-    public function isEnabledOnLayer($layer){
-
+    public function isEnabledOnLayer($layer)
+    {
         switch(get_class($layer)){
             case 'Magento\Catalog\Model\Layer\Category\Interceptor':
                 return $this->isNavigationEnabled();
@@ -675,8 +686,8 @@ class Data{
      * @param $ids
      * @return mixed
      */
-    public function prepareProductCollection($productCollection, $ids) {
-
+    public function prepareProductCollection($productCollection, $ids)
+    {
         $productCollection->addFieldToFilter('entity_id', $ids)->getSelect()
             ->order(new \Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $ids).')'));
         return $productCollection;
@@ -685,16 +696,16 @@ class Data{
     /**
      * @return mixed
      */
-    public function getSubPhrasesLimit(){
-
+    public function getSubPhrasesLimit()
+    {
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
         }
         return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
     }
 
-    public function getFilterProductAttributes($context = 'search'){
-
+    public function getFilterProductAttributes($context = 'search')
+    {
         $attributes = [];
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeId = $objectManager->create('\Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
@@ -739,7 +750,7 @@ class Data{
         });
         return $attributes;
     }
-    
+
     /**
      * @return string
      */
@@ -751,7 +762,6 @@ class Data{
      * @return boolean
      */
     public function isSetup(){
-
         return $this->setup;
     }
 
@@ -773,7 +783,6 @@ class Data{
      * @param boolean $setup
      */
     public function setSetup($setup){
-
         $this->setup = $setup;
     }
 
@@ -781,7 +790,6 @@ class Data{
      * @param $block
      */
     public function setCmsBlock($block){
-
         $this->cmsBlock = $block;
     }
 
@@ -829,12 +837,29 @@ class Data{
         return $facetOptions;
     }
 
+    public function getExtraSortFields() {
+        $sortRules = explode(';', $this->config->getValue('bxSearch/advanced/extra_sort_fields', $this->scopeStore));
+        $sortFields = [];
+        foreach ($sortRules as $rule) {
+            if(empty($rule)){continue;}
+            $fieldRuleMapping = explode(':', $rule);
+            $additionalFields = explode(',',$fieldRuleMapping[1]);
+            $sortFields[$fieldRuleMapping[0]] = [];
+            foreach($additionalFields as $extraSortSelection)
+            {
+                $divided = explode('-', $extraSortSelection);
+                $sortFields[$fieldRuleMapping[0]][$divided[0]] = $divided[1];
+            }
+        }
+
+        return $sortFields;
+    }
+
     /**
      * @param $array
      * @return array
      */
     public function useValuesAsKeys($array){
-
         return array_combine(array_keys(array_flip($array)),$array);
     }
 
@@ -854,4 +879,5 @@ class Data{
     public function setIsFinder($isFinder) {
         $this->isFinder = $isFinder;
     }
+
 }

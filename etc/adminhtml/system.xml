@@ -299,6 +299,13 @@
                     <label>Separator for URL Parameter</label>
                     <comment>Optional: default separator is ',' and should normally not be changed.</comment>
                 </field>
+                <field id="extra_sort_fields" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Extra-Sorting Fields</label>
+                    <comment> <![CDATA[Optional: If you have fields which should add logic to sorting, define them here; It will not appear in the URL
+                                but they will be set as requests to the server; The order is relevant as well.
+                                E.g.: price:boxalino_custom_field-DESC, .. ;name:boxalino_custom_field-ASC,..]]>
+                    </comment>
+                </field>
             </group>
         </section>
 
