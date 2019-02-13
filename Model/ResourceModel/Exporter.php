@@ -877,4 +877,37 @@ class Exporter
         return $this->adapter->fetchCol($select);
     }
 
+    /**
+     * Rollback indexer latest updated date in case of error
+     *
+     * @param $id
+     * @param $updated
+     * @return int
+     */
+    public function updateIndexerUpdatedAt($id, $updated)
+    {
+        $dataBind = [
+            "updated"=>$updated,
+            "indexer_id"=>$id
+        ];
+
+        return $this->adapter->insertOnDuplicate(
+            $this->adapter->getTableName("boxalino_export"),
+            $dataBind, ["updated"]
+        );
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function getLatestUpdatedAt($id)
+    {
+        $select = $this->adapter->select()
+            ->from($this->adapter->getTableName("boxalino_export"), ["updated"])
+            ->where("indexer_id = ?", $id);
+
+        return $this->adapter->fetchOne($select);
+    }
+
 }

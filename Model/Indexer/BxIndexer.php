@@ -21,7 +21,6 @@ use \Psr\Log\LoggerInterface;
 class BxIndexer
 {
 
-
     CONST BOXALINO_DELTA_EXPORTS_PRODUCTS_MIN = 5;
 
     /**
@@ -67,12 +66,17 @@ class BxIndexer
     /**
      * @var []
      */
-    protected $deltaIds = null;
+    protected $deltaIds = array();
 
     /**
      * @var string
      */
-    protected $indexerType = 'full';
+    protected $indexerType = null;
+
+    /**
+     * @var string
+     */
+    protected $indexerId = null;
 
     /**
      * @var \Magento\Indexer\Model\Indexer
@@ -135,26 +139,6 @@ class BxIndexer
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }
 
-    /**
-     * @param null $type
-     * @return $this
-     */
-    public function setIndexerType($type=null)
-    {
-        $this->indexerType = $type;
-        if($type == null){
-            $this->indexerType = BxExporter::INDEXER_TYPE;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getIndexerType(){
-        return $this->indexerType;
-    }
 
     /**
      * @return mixed
@@ -181,31 +165,17 @@ class BxIndexer
     {
         if(is_null($this->latestDeltaUpdate))
         {
+            $this->latestDeltaUpdate = $this->getLatestUpdatedAt($this->getIndexerId());
+        }
+
+        if(empty($this->latestDeltaUpdate) || strtotime($this->latestDeltaUpdate) < 0)
+        {
             $this->latestDeltaUpdate = date("Y-m-d H:i:s", strtotime("-1 hour"));
         }
 
         return $this->latestDeltaUpdate;
     }
 
-    /**
-     * @param $ids
-     */
-    public function setDeltaIds($ids)
-    {
-        $this->deltaIds = $ids;
-        return $this;
-    }
-
-    /**
-     * @param $date
-     * @return $this
-     */
-    public function setLatestDeltaUpdate($date)
-    {
-        $minTime = date('Y-m-d H:i:s',strtotime('-30 minutes'));
-        $this->latestDeltaUpdate = min([$minTime, $date]);
-        return $this;
-    }
 
     /**
      * @param bool $exportProducts
@@ -216,108 +186,107 @@ class BxIndexer
     {
         if(($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxExporter::INDEXER_ID)->isWorking()){
             $this->logger->info("bxLog: Delta exporter will not run. Full exporter process must finish first.");
-            return;
+            return false;
         }
         if(($this->getIndexerType() == BxExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxDeltaExporter::INDEXER_ID)->isWorking()){
             $this->logger->info("bxLog: Full exporter will not run. Delta exporter process must to finish first.");
-            return;
+            return false;
         }
 
         if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE){
-            if($this->getDeltaIds() == null){
+            $deltaIds = $this->getDeltaIds();
+            if(empty($deltaIds)){
                 $this->logger->info("bxLog: The delta export is empty. Closing request.");
-                return;
+                return true;
             }
         }
         $this->logger->info("bxLog: starting Boxalino {$this->indexerType} export");
         $this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
-        try {
-            foreach ($this->config->getAccounts() as $account)
+
+        foreach ($this->config->getAccounts() as $account)
+        {
+            $this->logger->info("bxLog: initialize files on account: " . $account);
+            $this->bxFiles->setAccount($account);
+
+            $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "", $this->config->isAccountDev($account));
+            $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE);
+
+            $this->logger->info("bxLog: verify credentials for account: " . $account);
+            try{
+                $this->bxData->verifyCredentials();
+            } catch (\Exception $e){
+                $this->logger->info($e);
+                throw $e;
+            }
+
+            $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
+            if($exportProducts) {$exportProducts = $this->exportProducts($account);}
+            if($this->getIndexerType() == 'full'){
+                if($exportCustomers){ $this->exportCustomers($account);}
+                if($exportTransactions){ $this->exportTransactions($account);}
+            }
+
+            $this->logger->info('bxLog: Preparing category data for each language of the account: ' . $account);
+            $categories = [];
+            foreach ($this->config->getAccountLanguages($account) as $language) {
+                $store = $this->config->getStore($account, $language);
+                $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
+                $categories = $this->exportCategories($store, $language, $categories);
+            }
+            $this->prepareData($account, $categories);
+            $this->logger->info('bxLog: Categories exported.');
+
+            if(!$exportProducts)
             {
-                $this->logger->info("bxLog: initialize files on account: " . $account);
-                $this->bxFiles->setAccount($account);
+                $this->logger->info('bxLog: No Products found for account: ' . $account);
+                $this->logger->info('bxLog: Finished account: ' . $account);
+            } else {
+                if($this->getIndexerType() == 'full')
+                {
+                    $this->logger->info('bxLog: Prepare the final files: ' . $account);
+                    $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
 
-                $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "", $this->config->isAccountDev($account));
-                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE);
+                    try {
+                        $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
+                        $this->bxData->pushDataSpecifications();
+                    } catch(\Exception $e) {
+                        $value = @json_decode($e->getMessage(), true);
+                        if(isset($value['error_type_number']) && $value['error_type_number'] == 3)
+                        {
+                            $this->logger->warning('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
+                            $this->bxData->pushDataSpecifications();
+                        } else {
+                            throw $e;
+                        }
+                    }
 
-                $this->logger->info("bxLog: verify credentials for account: " . $account);
-                try{
-                    $this->bxData->verifyCredentials();
-                } catch (\Exception $e){
-                    $this->logger->info($e);
+                    $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
+                    $publish = $this->config->publishConfigurationChanges($account);
+                    $changes = $this->bxData->publishOwnerChanges($publish);
+                    if(sizeof($changes['changes']) > 0 && !$publish)
+                    {
+                        $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
+                    }
+                    $this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
+
+                }
+                $this->logger->info('pushing to DI');
+                try {
+                    $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($account) , $this->getTimeoutForExporter($account));
+                } catch(LocalizedException $e){
+                    $this->logger->warning($e->getMessage());
+                } catch(\Exception $e){
+                    $this->logger->error($e);
                     throw $e;
                 }
-
-                $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-                if($exportProducts) {$exportProducts = $this->exportProducts($account);}
-                if($this->getIndexerType() == 'full'){
-                    if($exportCustomers){ $this->exportCustomers($account);}
-                    if($exportTransactions){ $this->exportTransactions($account);}
-                }
-
-                $this->logger->info('bxLog: Preparing category data for each language of the account: ' . $account);
-                $categories = [];
-                foreach ($this->config->getAccountLanguages($account) as $language) {
-                    $store = $this->config->getStore($account, $language);
-                    $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
-                    $categories = $this->exportCategories($store, $language, $categories);
-                }
-                $this->prepareData($account, $categories);
-                $this->logger->info('bxLog: Categories exported.');
-
-                if(!$exportProducts)
-                {
-                    $this->logger->info('bxLog: No Products found for account: ' . $account);
-                    $this->logger->info('bxLog: Finished account: ' . $account);
-                } else {
-                    if($this->getIndexerType() == 'full')
-                    {
-                        $this->logger->info('bxLog: Prepare the final files: ' . $account);
-                        $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
-
-                        try {
-                            $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
-                            $this->bxData->pushDataSpecifications();
-                        } catch(\Exception $e) {
-                            $value = @json_decode($e->getMessage(), true);
-                            if(isset($value['error_type_number']) && $value['error_type_number'] == 3)
-                            {
-                                $this->logger->warning('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
-                                $this->bxData->pushDataSpecifications();
-                            } else {
-                                throw $e;
-                            }
-                        }
-
-                        $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
-                        $publish = $this->config->publishConfigurationChanges($account);
-                        $changes = $this->bxData->publishOwnerChanges($publish);
-                        if(sizeof($changes['changes']) > 0 && !$publish)
-                        {
-                            $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
-                        }
-                        $this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
-
-                    }
-                    $this->logger->info('pushing to DI');
-                    try {
-                        $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($account) , $this->getTimeoutForExporter($account));
-                    } catch(LocalizedException $e){
-                        $this->logger->warning($e->getMessage());
-                    } catch(\Exception $e){
-                        $this->logger->error($e);
-                        throw $e;
-                    }
-                    $this->logger->info('bxLog: Finished account: ' . $account);
-                }
+                $this->logger->info('bxLog: Finished account: ' . $account);
             }
-            $this->logger->info("bxLog: finished Boxalino {$this->indexerType} export");
-            return true;
-        } catch(\Exception $e) {
-            $this->logger->error("bxLog: failed with exception: " . $e->getMessage());
-            return false;
         }
+
+        $this->logger->info("bxLog: finished Boxalino {$this->indexerType} export");
+        return true;
     }
+
 
     /**
      * Get timeout for exporter
@@ -1583,4 +1552,89 @@ class BxIndexer
             'status'
         ];
     }
+
+    /**
+     * @param $indexerId
+     * @param $date
+     */
+    public function updateIndexerLatestDate($indexerId, $date)
+    {
+        $this->exporterResource->updateIndexerUpdatedAt($indexerId, $date);
+    }
+
+    /**
+     * Get indexer latest updated at
+     *
+     * @param $id
+     * @return string
+     */
+    public function getLatestUpdatedAt($id)
+    {
+        return $this->exporterResource->getLatestUpdatedAt($id);
+    }
+
+    /**
+     * @param string $type
+     * @return $this
+     */
+    public function setIndexerType($type)
+    {
+        $this->indexerType = $type;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndexerId() {
+        if(is_null($this->indexerId))
+        {
+            $this->setIndexerId(BxExporter::INDEXER_ID);
+        }
+
+        return $this->indexerId;
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setIndexerId($id)
+    {
+        $this->indexerId = $id;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndexerType() {
+        if(is_null($this->indexerType))
+        {
+            $this->setIndexerType(BxExporter::INDEXER_TYPE);
+        }
+
+        return $this->indexerType;
+    }
+
+    /**
+     * @param $ids
+     */
+    public function setDeltaIds($ids)
+    {
+        $this->deltaIds = $ids;
+        return $this;
+    }
+
+    /**
+     * @param $date
+     * @return $this
+     */
+    public function setLatestDeltaUpdate($date)
+    {
+        $this->latestDeltaUpdate = $date;
+        return $this;
+    }
+
+
 }

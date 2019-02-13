@@ -17,7 +17,7 @@
     <type name="Magento\Catalog\Model\Indexer\Product\Full">
         <arguments>
             <argument name="indexerList" xsi:type="array">
-                <item name="boxalino_indexer_delta" xsi:type="const">Boxalino\Intelligence\Model\Indexer\Delta\Processor::INDEXER_ID</item>
+                <item name="boxalino_indexer_delta" xsi:type="const">Boxalino\Intelligence\Model\Indexer\BxDeltaExporter::INDEXER_ID</item>
             </argument>
         </arguments>
     </type>

@@ -71,7 +71,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     public function getFilters(\Magento\Catalog\Model\Layer $layer){
 
         try {
-            if ($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxDataHelper->isPluginEnabled()) {
+            if ($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()) {
 
                 $filters = array();
 
