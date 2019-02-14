@@ -621,8 +621,12 @@ class Adapter
         }
 
         $sortFields = new \com\boxalino\bxclient\v1\BxSortFields();
-        $sortFields->push($field, $direction);
+        if(empty($field))
+        {
+            return $sortFields;
+        }
 
+        $sortFields->push($field, $direction);
         $extraSortRequests = $this->bxHelperData->getExtraSortFields();
         if(!isset($extraSortRequests[$orderBy]))
         {
