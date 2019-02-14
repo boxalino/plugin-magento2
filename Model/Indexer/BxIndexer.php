@@ -4,7 +4,7 @@ namespace Boxalino\Intelligence\Model\Indexer;
 use Boxalino\Intelligence\Helper\BxIndexConfig;
 use Boxalino\Intelligence\Helper\BxFiles;
 use Boxalino\Intelligence\Helper\BxGeneral;
-use Boxalino\Intelligence\Model\ResourceModel\Exporter as ExporterResource;
+use Boxalino\Intelligence\Api\ExporterResourceInterface;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -20,8 +20,6 @@ use \Psr\Log\LoggerInterface;
  */
 class BxIndexer
 {
-
-    CONST BOXALINO_DELTA_EXPORTS_PRODUCTS_MIN = 5;
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -66,7 +64,7 @@ class BxIndexer
     /**
      * @var []
      */
-    protected $deltaIds = array();
+    protected $deltaIds = [];
 
     /**
      * @var string
@@ -119,9 +117,8 @@ class BxIndexer
         \Magento\Framework\App\ProductMetadata $productMetaData,
         \Magento\Indexer\Model\Indexer $indexer,
         \Magento\Directory\Model\CountryFactory $countryFactory,
-        ExporterResource $exporterResource
-    )
-    {
+        ExporterResourceInterface $exporterResource
+    ) {
         $this->bxFiles = $bxFiles;
         $this->exporterResource = $exporterResource;
         $this->countryFactory = $countryFactory;
@@ -139,11 +136,15 @@ class BxIndexer
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }
 
-
     /**
      * @return mixed
      */
     protected function getDeltaIds(){
+        if($this->getIndexerType() != BxDeltaExporter::INDEXER_TYPE)
+        {
+            return $this->deltaIds;
+        }
+
         if (empty($this->deltaIds))
         {
             $lastUpdateDate = $this->getLatestDeltaUpdate();
@@ -195,12 +196,13 @@ class BxIndexer
 
         if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE){
             $deltaIds = $this->getDeltaIds();
+            $this->setContextOnResource();
             if(empty($deltaIds)){
-                $this->logger->info("bxLog: The delta export is empty. Closing request.");
+                $this->logger->info("bxLog: The delta export is empty at {$this->getLatestDeltaUpdate()}. Closing request.");
                 return true;
             }
         }
-        $this->logger->info("bxLog: starting Boxalino {$this->indexerType} export");
+        $this->logger->info("bxLog: starting Boxalino {$this->indexerType} export. Latest update at {$this->getLatestDeltaUpdate()}");
         $this->logger->info("bxLog: retrieved index config: " . $this->config->toString());
 
         foreach ($this->config->getAccounts() as $account)
@@ -502,12 +504,11 @@ class BxIndexer
      * @param $account
      * @return array
      */
-    protected function getCustomerAttributes($account){
-
-        $attributes = [];
+    protected function getCustomerAttributes($account)
+    {
         $this->logger->info('bxLog: get all customer attributes for account: ' . $account);
-
         $attributes = $this->exporterResource->getCustomerAttributes();
+
         $this->logger->info('bxLog: get configured customer attributes for account: ' . $account);
         $filteredAttributes = $this->config->getAccountCustomersProperties($account, $attributes, array('dob', 'gender'));
 
@@ -715,7 +716,7 @@ class BxIndexer
             }
 
             $data = [];
-            $fetchedResult = $this->exporterResource->getProductEntityByLimitPageIndexerDelta($limit, $page, $this->getIndexerType(), $this->getDeltaIds());
+            $fetchedResult = $this->exporterResource->getProductEntityByLimitPage($limit, $page);
             if(sizeof($fetchedResult)){
                 foreach ($fetchedResult as $r) {
                     if($r['group_id'] == null) $r['group_id'] = $r['entity_id'];
@@ -825,7 +826,7 @@ class BxIndexer
 
                     if ($type['attribute_code'] == 'price'|| $type['attribute_code'] == 'special_price') {
                         if($langIndex == 0) {
-                            $priceData = $this->exporterResource->getPriceByTypeAndIndexerType($attrKey, $typeKey, $this->getIndexerType(), $this->getDeltaIds());
+                            $priceData = $this->exporterResource->getPriceByType($attrKey, $typeKey);
                             if (sizeof($priceData)) {
                                 $priceData = array_merge(array(array_keys(end($priceData))), $priceData);
                             } else {
@@ -848,7 +849,7 @@ class BxIndexer
                                     array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
                                 )
                                 ->where('t_g.attribute_id = ?', $typeKey)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
-                            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE)$select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
+                            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
                             foreach ($db->fetchAll($select1) as $r) {
                                 $data[] = $r;
                             }
@@ -878,12 +879,12 @@ class BxIndexer
 
                     if ($type['attribute_code'] == 'visibility') {
                         $getValueForDuplicate = true;
-                        $select = $this->exporterResource->getProductAttributeParentUnionSqlByIndexerDelta($type['attribute_code'], $attrKey, $storeId, $this->getIndexerType(), $this->getDeltaIds());
+                        $select = $this->exporterResource->getProductAttributeParentUnionSqlByCodeTypeStore($type['attribute_code'], $attrKey, $storeId);
                     }
 
                     if ($type['attribute_code'] == 'status') {
                         $getValueForDuplicate = true;
-                        $select = $this->exporterResource->getProductStatusParentDependabilityByIndexerDelta($storeId, $this->getIndexerType(), $this->getDeltaIds());
+                        $select = $this->exporterResource->getProductStatusParentDependabilityByStore($storeId);
                     }
 
                     $fetchedResult = $db->fetchAll($select);
@@ -1038,23 +1039,17 @@ class BxIndexer
                     $optionValues = null;
                     $a = null;
                     $optionSourceKey = $this->bxData->addResourceFile(
-                        $this->bxFiles->getPath($type['attribute_code'] . '.csv'), $type['attribute_code'] . '_id',
-                        $labelColumns);
+                        $this->bxFiles->getPath($type['attribute_code'] . '.csv'),
+                        $type['attribute_code'] . '_id',
+                        $labelColumns
+                    );
 
                     if(sizeof($data) == 0 && $this->getIndexerType() != BxDeltaExporter::INDEXER_TYPE) {
                         $d = array(array('entity_id',$type['attribute_code'] . '_id'));
                         $this->bxFiles->savepartToCsv('product_' . $type['attribute_code'] . '.csv',$d);
                         $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
                         $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_' . $type['attribute_code'] . '.csv'), 'entity_id');
-                        if($attrKey == ('int' || 'decimal') && $type['is_global'] == 1){
-                            $this->bxData->addSourceNumberField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
-                        } else {
-                            if(!$global){
-                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
-                            }else {
-                                $this->bxData->addSourceStringField($attributeSourceKey, $type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
-                            }
-                        }
+                        $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$type['attribute_code'], $type['attribute_code'] . '_id', $optionSourceKey);
                     }
                 }
 
@@ -1184,24 +1179,10 @@ class BxIndexer
     protected function exportProductInformation($duplicateIds, $account, $languages)
     {
         $this->logger->info('bxLog: Products - exportProductInformation for account ' . $account);
-        $fetchedResult = array();
-        $db = $this->rs->getConnection();
-        //product stock
-        $select = $db->select()
-            ->from(
-                $this->rs->getTableName('cataloginventory_stock_status'),
-                array(
-                    'entity_id' => 'product_id',
-                    'stock_status',
-                    'qty'
-                )
-            )
-            ->where('stock_id = ?', 1);
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
 
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)){
-            foreach ($fetchedResult as $r) {
+        $productStockData = $this->exporterResource->getProductStockInformation();
+        if(sizeof($productStockData)){
+            foreach ($productStockData as $r) {
                 $data[] = array('entity_id'=>$r['entity_id'], 'qty'=>$r['qty']);
                 if(isset($duplicateIds[$r['entity_id']])){
                     $data[] = array('entity_id'=>'duplicate'.$r['entity_id'], 'qty'=>$r['qty']);
@@ -1209,30 +1190,15 @@ class BxIndexer
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $this->bxFiles->savePartToCsv('product_stock.csv', $d);
-            $data = null;
-            $d = null;
+            $data = null; $d = null;$productStockData = null;
             $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_stock.csv'), 'entity_id');
             $this->bxData->addSourceNumberField($attributeSourceKey, 'qty', 'qty');
         }
-        $fetchedResult = null;
 
         //product website
-        $select = $db->select()
-            ->from(
-                array('c_p_w' => $this->rs->getTableName('catalog_product_website')),
-                array(
-                    'entity_id' => 'product_id',
-                    'website_id',
-                )
-            )->joinLeft(array('s_w' => $this->rs->getTableName('store_website')),
-                's_w.website_id = c_p_w.website_id',
-                array('s_w.name')
-            );
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
-
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)){
-            foreach ($fetchedResult as $r) {
+        $productWebsiteInformation = $this->exporterResource->getProductWebsiteInformation();
+        if(sizeof($productWebsiteInformation)){
+            foreach ($productWebsiteInformation as $r) {
                 $data[] = $r;
                 if(isset($duplicateIds[$r['entity_id']])){
                     $r['entity_id'] = 'duplicate'.$r['entity_id'];
@@ -1241,92 +1207,30 @@ class BxIndexer
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $this->bxFiles->savePartToCsv('product_website.csv', $d);
-            $data = null;
-            $d = null;
+            $data = null; $d = null; $productWebsiteInformation = null;
             $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_website.csv'), 'entity_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'website_name', 'name');
             $this->bxData->addSourceStringField($attributeSourceKey, 'website_id', 'website_id');
         }
-        $fetchedResult = null;
 
         //product parent categories
-        $select1 = $db->select()
-            ->from(
-                array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                array('c_p_e.entity_id',)
-            )
-            ->joinLeft(
-                array('c_p_r' => $this->rs->getTableName('catalog_product_relation')),
-                'c_p_e.entity_id = c_p_r.child_id',
-                array()
-            );
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('product_id IN(?)', $this->getDeltaIds());
-
-        $select2 = clone $select1;
-        $select2->join(array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
-            'c_c_p.product_id = c_p_r.parent_id',
-            array(
-                'category_id'
-            )
-        );
-        $select1->join(array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
-            'c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
-            array(
-                'category_id'
-            )
-        );
-        $select = $db->select()->union(
-            array($select1, $select2),
-            \Zend_Db_Select::SQL_UNION
-        );
-        $fetchedResult = $db->fetchAll($select);
-
-        if(sizeof($fetchedResult)) {
-            foreach ($fetchedResult as $r) {
-                $data[] = $r;
-            }
-            $fetchedResult = null;
-
-            $select = $db->select()
-                ->from(
-                    array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                    array('entity_id')
-                )->join(
-                    array('c_c_p' => $this->rs->getTableName('catalog_category_product')),
-                    'c_c_p.product_id = c_p_e.entity_id',
-                    array(
-                        'category_id'
-                    )
-                )->where('c_p_e.entity_id IN(?)', $duplicateIds);
-
-            $duplicateResult = $db->fetchAll($select);
+        $productParentCategory = $this->exporterResource->getProductParentCategoriesInformation();
+        if(sizeof($productParentCategory)) {
+            $duplicateResult = $this->exporterResource->getProductParentCategoriesInformationByDuplicateIds($duplicateIds);
             foreach ($duplicateResult as $r){
                 $r['entity_id'] = 'duplicate'.$r['entity_id'];
-                $data[] = $r;
+                $productParentCategory[] = $r;
             }
             $duplicateResult = null;
-            $d = array_merge(array(array_keys(end($data))), $data);
+            $d = array_merge(array(array_keys(end($productParentCategory))), $productParentCategory);
             $this->bxFiles->savePartToCsv('product_categories.csv', $d);
-            $data = null;
-            $d = null;
+            $d = null;$productParentCategory = null;
         }
-        $fetchedResult = null;
 
         //product super link
-        $select = $db->select()
-            ->from(
-                $this->rs->getTableName('catalog_product_super_link'),
-                array(
-                    'entity_id' => 'product_id',
-                    'parent_id',
-                    'link_id'
-                )
-            );
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
-
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)) {
-            foreach ($fetchedResult as $r) {
+        $superLink = $this->exporterResource->getProductSuperLinkInformation();
+        if(sizeof($superLink)) {
+            foreach ($superLink as $r) {
                 $data[] = $r;
                 if(isset($duplicateIds[$r['entity_id']])){
                     $r['entity_id'] = 'duplicate'.$r['entity_id'];
@@ -1336,34 +1240,16 @@ class BxIndexer
 
             $d = array_merge(array(array_keys(end($data))), $data);
             $this->bxFiles->savePartToCsv('product_parent.csv', $d);
-            $data = null;
-            $d = null;
+            $data = null;$d = null;$superLink=null;
             $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_parent.csv'), 'entity_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'parent_id', 'parent_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'link_id', 'link_id');
         }
-        $fetchedResult = null;
 
         //product link
-        $select = $db->select()
-            ->from(
-                array('pl'=> $this->rs->getTableName('catalog_product_link')),
-                array(
-                    'entity_id' => 'product_id',
-                    'linked_product_id',
-                    'lt.code'
-                )
-            )
-            ->joinLeft(
-                array('lt' => $this->rs->getTableName('catalog_product_link_type')),
-                'pl.link_type_id = lt.link_type_id', array()
-            )
-            ->where('lt.link_type_id = pl.link_type_id');
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('product_id IN(?)', $this->getDeltaIds());
-
-        $fetchedResult = $db->fetchAll($select);
-        if(sizeof($fetchedResult)) {
-            foreach ($fetchedResult as $r) {
+        $linkData = $this->exporterResource->getProductLinksInformation();
+        if(sizeof($linkData)) {
+            foreach ($linkData as $r) {
                 $data[] = $r;
                 if(isset($duplicateIds[$r['entity_id']])){
                     $r['entity_id'] = 'duplicate'.$r['entity_id'];
@@ -1372,16 +1258,17 @@ class BxIndexer
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $this->bxFiles->savePartToCsv('product_links.csv', $d);
-            $data = null;
-            $d = null;
+            $data = null;$linkData=null;$d = null;
             $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_links.csv'), 'entity_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'code', 'code');
             $this->bxData->addSourceStringField($attributeSourceKey, 'linked_product_id', 'linked_product_id');
         }
+
         $this->logger->info("exportProductInformation finished");
-        $fetchedResult = null;
 
         //product parent title
+        $fetchedResult = array();
+        $db = $this->rs->getConnection();
         $attrId = $this->exporterResource->getAttributeIdByAttributeCodeAndEntityType('name', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $lvh = array();
         foreach ($languages as $language) {
@@ -1488,7 +1375,7 @@ class BxIndexer
         $attributeId = $this->exporterResource->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         foreach ($languages as $language){
             $storeObject = $this->config->getStore($account, $language);
-            $ids = $this->exporterResource->getProductDuplicateIds($storeObject->getId(), $attributeId, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, $this->getIndexerType(), $this->getDeltaIds());
+            $ids = $this->exporterResource->getProductDuplicateIds($storeObject->getId(), $attributeId, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE);
             $storeObject = null;
         }
         return $ids;
@@ -1570,7 +1457,7 @@ class BxIndexer
      */
     public function getLatestUpdatedAt($id)
     {
-        return $this->exporterResource->getLatestUpdatedAt($id);
+        return $this->exporterResource->getLatestUpdatedAtByIndexerId($id);
     }
 
     /**
@@ -1636,5 +1523,20 @@ class BxIndexer
         return $this;
     }
 
+    /**
+     * set export context to the exporter resource
+     *
+     * @return $this
+     */
+    protected function setContextOnResource()
+    {
+        $this->exporterResource->setExportIds($this->getDeltaIds());
+        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE)
+        {
+            $this->exporterResource->isDelta(true);
+        }
+
+        return $this;
+    }
 
 }

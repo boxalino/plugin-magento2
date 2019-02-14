@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Model\ResourceModel;
 
-use Boxalino\Intelligence\Model\Indexer\BxDeltaExporter;
+use Boxalino\Intelligence\Api\ExporterResourceInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use \Psr\Log\LoggerInterface;
 use \Magento\Framework\App\ResourceConnection;
@@ -13,7 +13,7 @@ use Magento\Framework\Config\ConfigOptionsListConstants;
  * Class Exporter
  * @package Boxalino\Intelligence\Model\ResourceModel
  */
-class Exporter
+class Exporter implements ExporterResourceInterface
 {
 
     /**
@@ -32,6 +32,16 @@ class Exporter
     protected $deploymentConfig;
 
     /**
+     * @var []
+     */
+    protected $exportIds = [];
+
+    /**
+     * @var bool
+     */
+    protected $isDelta = false;
+
+    /**
      * BxIndexer constructor.
      * @param LoggerInterface $logger
      * @param ResourceConnection $resource
@@ -41,8 +51,7 @@ class Exporter
         LoggerInterface $logger,
         ResourceConnection $resource,
         \Magento\Framework\App\DeploymentConfig $deploymentConfig
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->adapter = $resource->getConnection();
         $this->deploymentConfig = $deploymentConfig;
@@ -70,7 +79,7 @@ class Exporter
         return $this->adapter->fetchOne($select);
     }
 
-    public function getProductDuplicateIds($storeId, $attributeId, $condition, $indexerType= 'full', $deltaIds = [])
+    public function getProductDuplicateIds($storeId, $attributeId, $condition)
     {
         $select = $this->adapter->select()
             ->from(
@@ -89,9 +98,9 @@ class Exporter
                 ['c_p_e_b.store_id']
             );
 
-        if($indexerType == BxDeltaExporter::INDEXER_TYPE && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('c_p_r.parent_id IN(?)', $deltaIds);
+            $select->where('c_p_r.parent_id IN(?)', $this->exportIds);
         }
 
         $main =  $this->adapter->select()
@@ -236,7 +245,7 @@ class Exporter
         }
     }
 
-    public function getProductEntityByLimitPageIndexerDelta($limit, $page, $indexerType= 'full', $deltaIds = [])
+    public function getProductEntityByLimitPage($limit, $page)
     {
         $select = $this->adapter->select()
             ->from(
@@ -249,9 +258,9 @@ class Exporter
                 'e.entity_id = p_t.child_id', ['group_id' => 'parent_id']
             );
 
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('e.entity_id IN(?)', $deltaIds);
+            $select->where('e.entity_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
@@ -321,18 +330,18 @@ class Exporter
         return $this->adapter->fetchAll($select);
     }
 
-    public function getPriceByTypeAndIndexerType($type, $key, $indexerType = 'full', $deltaIds = [])
+    public function getPriceByType($type, $key)
     {
         $select = $this->getPriceSqlByType($type, $key);
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('c_p_r.parent_id IN(?)', $deltaIds);
+            $select->where('c_p_r.parent_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
     }
 
-    protected function getPriceSqlByType($type, $key)
+    public function getPriceSqlByType($type, $key)
     {
         $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $select = $this->adapter->select()
@@ -363,12 +372,10 @@ class Exporter
      *
      * @param $attributeCode string
      * @param $storeId int
-     * @param string $indexerType
-     * @param array $deltaIds
      * @return \Zend_Db_Select
      * @throws \Zend_Db_Select_Exception
      */
-    public function getProductAttributeParentUnionSqlByIndexerDelta($attributeCode, $type, $storeId, $indexerType = 'full', $deltaIds = [])
+    public function getProductAttributeParentUnionSqlByCodeTypeStore($attributeCode, $type, $storeId)
     {
         $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType($attributeCode, \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $select1 = $this->adapter->select()
@@ -383,7 +390,7 @@ class Exporter
             );
 
         $select1->where('t_d.attribute_id = ?', $attributeId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-        if($indexerType== 'delta') $select1->where('c_p_e.entity_id IN(?)', $deltaIds);
+        if(!empty($this->exportIds) && $this->isDelta) $select1->where('c_p_e.entity_id IN(?)', $this->exportIds);
 
         $select2 = clone $select1;
         $select2->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
@@ -414,11 +421,9 @@ class Exporter
      * Fixes the issue when parent product is enabled but child product is disabled.
      *
      * @param $storeId
-     * @param string $indexerType
-     * @param array $deltaIds
      * @return mixed
      */
-    public function getProductStatusParentDependabilityByIndexerDelta($storeId, $indexerType = 'full', $deltaIds = [])
+    public function getProductStatusParentDependabilityByStore($storeId)
     {
         $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $visibilityId = $this->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
@@ -445,7 +450,7 @@ class Exporter
                 ['entity_visibility'=>'c_p_e_v.value']
             );
 
-        if($indexerType== 'delta') $select->where('c_p_e.entity_id IN(?)', $deltaIds);
+        if(!empty($this->exportIds) && $this->isDelta) $select->where('c_p_e.entity_id IN(?)', $this->exportIds);
         $visibilityOptions = implode(',', [\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH]);
         $finalSelect = $this->adapter->select()
             ->from(
@@ -632,23 +637,23 @@ class Exporter
         return $this->adapter->fetchAll($select);
     }
 
-    public function getProductStockInformationByIndexerDelta($indexerType = 'full', $deltaIds=[])
+    public function getProductStockInformation()
     {
         $select = $this->adapter->select()
             ->from(
                 $this->adapter->getTableName('cataloginventory_stock_status'),
-                ['entity_id' => 'product_id', 'qty']
+                ['entity_id' => 'product_id', 'stock_status', 'qty']
             )
             ->where('stock_id = ?', 1);
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('product_id IN(?)', $deltaIds);
+            $select->where('product_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
     }
 
-    public function getProductWebsiteInformationByIndexerDelta($indexerType = 'full', $deltaIds=[])
+    public function getProductWebsiteInformation()
     {
         $select = $this->adapter->select()
             ->from(
@@ -659,30 +664,30 @@ class Exporter
                 's_w.website_id = c_p_w.website_id',
                 ['s_w.name']
             );
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('product_id IN(?)', $deltaIds);
+            $select->where('product_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
     }
 
-    public function getProductSuperLinkInformationByIndexerDelta($indexerType = 'full', $deltaIds=[])
+    public function getProductSuperLinkInformation()
     {
         $select = $this->adapter->select()
             ->from(
                 $this->adapter->getTableName('catalog_product_super_link'),
                 ['entity_id' => 'product_id', 'parent_id', 'link_id']
             );
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('product_id IN(?)', $deltaIds);
+            $select->where('product_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
     }
 
-    public function getProductLinksInformationByIndexerDelta($indexerType = 'full', $deltaIds=[])
+    public function getProductLinksInformation()
     {
         $select = $this->adapter->select()
             ->from(
@@ -694,15 +699,15 @@ class Exporter
                 'pl.link_type_id = lt.link_type_id', []
             )
             ->where('lt.link_type_id = pl.link_type_id');
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('product_id IN(?)', $deltaIds);
+            $select->where('product_id IN(?)', $this->exportIds);
         }
 
         return $this->adapter->fetchAll($select);
     }
 
-    protected function getProductParentCategoriesInformationSql($indexerType = 'full', $deltaIds=[])
+    protected function getProductParentCategoriesInformationSql()
     {
         $select = $this->adapter->select()
             ->from(
@@ -714,17 +719,17 @@ class Exporter
                 'c_p_e.entity_id = c_p_r.child_id',
                 []
             );
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('product_id IN(?)', $deltaIds);
+            $select->where('product_id IN(?)', $this->exportIds);
         }
 
         return $select;
     }
 
-    public function getProductParentCategoriesInformationByIndexerDelta($indexerType = 'full', $deltaIds=[])
+    public function getProductParentCategoriesInformation()
     {
-        $selectTwo = $this->getProductParentCategoriesInformationSql($indexerType, $deltaIds);
+        $selectTwo = $this->getProductParentCategoriesInformationSql();
         $selectOne = clone $selectTwo;
         $selectOne->join(
             ['c_c_p' => $this->adapter->getTableName('catalog_category_product')],
@@ -761,7 +766,7 @@ class Exporter
         return $this->adapter->fetchAll($select);
     }
 
-    protected function getProductParentTitleInformationSql($storeId, $indexerType = 'full', $deltaIds=[])
+    protected function getProductParentTitleInformationSql($storeId)
     {
         $select = $this->adapter->select()
             ->from(
@@ -774,17 +779,17 @@ class Exporter
                 ['c_p_r.parent_id']
             );
         $select->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-        if($indexerType=='delta' && !empty($deltaIds))
+        if(!empty($this->exportIds) && $this->isDelta)
         {
-            $select->where('c_p_e.entity_id IN(?)', $deltaIds);
+            $select->where('c_p_e.entity_id IN(?)', $this->exportIds);
         }
 
         return $select;
     }
 
-    public function getProductParentTitleInformationByIndexerDeltaStore($storeId, $indexerType = 'full', $deltaIds=[])
+    public function getProductParentTitleInformationByStore($storeId)
     {
-        $selectTwo = $this->getProductParentTitleInformationSql($storeId, $indexerType, $deltaIds);
+        $selectTwo = $this->getProductParentTitleInformationSql($storeId);
         $selectOne = clone $selectTwo;
         $selectOne->join(
             ['t_d' => $this->adapter->getTableName('catalog_product_entity_varchar')],
@@ -806,7 +811,7 @@ class Exporter
         return $this->adapter->fetchAll($select);
     }
 
-    public function getProductParentTitleInformationByStoreAttrDuplicateIds($store, $attrId, $duplicateIds = [])
+    public function getProductParentTitleInformationByStoreAttrDuplicateIds($storeId, $attrId, $duplicateIds = [])
     {
         $select = $this->adapter->select()
             ->from(
@@ -862,8 +867,6 @@ class Exporter
     /**
      *  Get the latest updated product IDs to be used for delta export as a mock, in case there are category updates
      *
-     * @param int $limit
-     * @return []
      */
     public function getLatestUpdatedProductIds()
     {
@@ -901,13 +904,30 @@ class Exporter
      * @param $id
      * @return string
      */
-    public function getLatestUpdatedAt($id)
+    public function getLatestUpdatedAtByIndexerId($id)
     {
         $select = $this->adapter->select()
             ->from($this->adapter->getTableName("boxalino_export"), ["updated"])
             ->where("indexer_id = ?", $id);
 
         return $this->adapter->fetchOne($select);
+    }
+
+    public function setExportIds($exportIds = [])
+    {
+        $this->exportIds = $exportIds;
+        return $this;
+    }
+
+    public function getExportIds()
+    {
+        return $this->exportIds;
+    }
+
+    public function isDelta($isDelta)
+    {
+        $this->isDelta = $isDelta;
+        return $this;
     }
 
 }
