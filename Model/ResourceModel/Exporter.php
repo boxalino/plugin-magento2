@@ -462,8 +462,8 @@ class Exporter implements ExporterResourceInterface
                     "value" => new \Zend_Db_Expr("
                         (CASE 
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
-                            WHEN entity_select.entity_status='2' THEN 2 
-                            ELSE IF(entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(parent_count.count > 0, 1, 0))
+                            WHEN c_p_e_s_p.value = '2' THEN 2 
+                            ELSE IF(entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(parent_count.count > 0, 1, 2))
                          END
                         )"
                     )
@@ -473,6 +473,11 @@ class Exporter implements ExporterResourceInterface
                 ["parent_count"=> new \Zend_Db_Expr("( ". $parentsCountSql->__toString() . " )")],
                 "parent_count.entity_id = entity_select.entity_id",
                 ["count"]
+            )
+            ->join(
+                ['c_p_e_s_p' => $this->adapter->getTableName('catalog_product_entity_int')],
+                "entity_select.parent_id = c_p_e_s_p.entity_id AND c_p_e_s_p.attribute_id = {$statusId} AND c_p_e_s_p.store_id IN (0, {$storeId})",
+                ['c_p_e_s_p.value']
             );
 
         return $finalSelect;

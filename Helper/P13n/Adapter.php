@@ -374,7 +374,10 @@ class Adapter
     {
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
-        $returnFields = array_merge($returnFields, $additionalFields);
+        if(!empty($additionalFields))
+        {
+            $returnFields = array_merge($returnFields, $additionalFields);
+        }
 
         self::$bxClient->forwardRequestMapAsContextParameters();
         if($addFinder) {
@@ -962,12 +965,16 @@ class Adapter
         }
     }
 
-    public function sendOverlayRequestWithParams()
+    public function sendOverlayRequestWithParams($final=true)
     {
         $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getOverlayChoice());
         $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
         $this->setPrefixContextParameter($this->prefixContextParameter);
         self::$bxClient->addRequest($bxRequest);
+        if($final)
+        {
+            self::$bxClient->sendAllChooseRequests();
+        }
     }
 
     /**
