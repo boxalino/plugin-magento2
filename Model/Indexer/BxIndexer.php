@@ -1457,7 +1457,10 @@ class BxIndexer
      */
     public function getLatestUpdatedAt($id)
     {
-        return $this->exporterResource->getLatestUpdatedAtByIndexerId($id);
+        $latestUpdate = $this->exporterResource->getLatestUpdatedAtByIndexerId($id);
+        $minRange = date("Y-m-d H:i:s", strtotime("-30min"));
+
+        return min($latestUpdate, $minRange);
     }
 
     /**

@@ -463,7 +463,7 @@ class Exporter implements ExporterResourceInterface
                         (CASE 
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
                             WHEN c_p_e_s_p.value = '2' THEN 2 
-                            ELSE IF(entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(parent_count.count > 0, 1, 2))
+                            ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND parent_count.count > 0, 1, 2))
                          END
                         )"
                     )
@@ -474,10 +474,10 @@ class Exporter implements ExporterResourceInterface
                 "parent_count.entity_id = entity_select.entity_id",
                 ["count"]
             )
-            ->join(
+            ->joinLeft(
                 ['c_p_e_s_p' => $this->adapter->getTableName('catalog_product_entity_int')],
                 "entity_select.parent_id = c_p_e_s_p.entity_id AND c_p_e_s_p.attribute_id = {$statusId} AND c_p_e_s_p.store_id IN (0, {$storeId})",
-                ['c_p_e_s_p.value']
+                []
             );
 
         return $finalSelect;
