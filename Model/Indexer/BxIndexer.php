@@ -1213,19 +1213,22 @@ class BxIndexer
             $this->bxData->addSourceStringField($attributeSourceKey, 'website_id', 'website_id');
         }
 
-        //product parent categories
+        //product parent categories -- !always added!
         $productParentCategory = $this->exporterResource->getProductParentCategoriesInformation();
-        if(sizeof($productParentCategory)) {
-            $duplicateResult = $this->exporterResource->getProductParentCategoriesInformationByDuplicateIds($duplicateIds);
-            foreach ($duplicateResult as $r){
-                $r['entity_id'] = 'duplicate'.$r['entity_id'];
-                $productParentCategory[] = $r;
-            }
-            $duplicateResult = null;
-            $d = array_merge(array(array_keys(end($productParentCategory))), $productParentCategory);
-            $this->bxFiles->savePartToCsv('product_categories.csv', $d);
-            $d = null;$productParentCategory = null;
+        $duplicateResult = $this->exporterResource->getProductParentCategoriesInformationByDuplicateIds($duplicateIds);
+        foreach ($duplicateResult as $r){
+            $r['entity_id'] = 'duplicate'.$r['entity_id'];
+            $productParentCategory[] = $r;
         }
+        $duplicateResult = null;
+        if (empty($productParentCategory))
+        {
+            $d = [['entity_id', 'category_id']];
+        } else {
+            $d = array_merge(array(array_keys(end($productParentCategory))), $productParentCategory);
+        }
+        $this->bxFiles->savePartToCsv('product_categories.csv', $d);
+        $d = null;$productParentCategory = null;
 
         //product super link
         $superLink = $this->exporterResource->getProductSuperLinkInformation();
