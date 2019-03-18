@@ -145,8 +145,8 @@ define([
                                         //idleTime before showOverlay
                                         clearInterval(refreshIntervalId);
                                         // shows overlay
-                                        basketValue = eval(99 - basketTotal);
-                                        overlayText = overlayText.replace('BXBASKETVALUE', basketValue)
+                                        basketValue = eval(parameters['altTextSwitch'] - basketTotal);
+                                        overlayText = overlayText.replace('BXBASKETVALUE', basketValue);
                                         showOverlay();
                                     }
                                 }, 1000); // 1 second
