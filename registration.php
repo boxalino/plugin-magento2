@@ -4,7 +4,9 @@
     'Boxalino_Intelligence',
     __DIR__
 );
-
+if (!defined('BP')) {
+    define('BP', dirname(\Composer\Factory::getComposerFile()));
+}
 $vendorDir = require BP . '/app/etc/vendor_path.php';
 $vendorAutoload = BP . "/{$vendorDir}/autoload.php";
 /** @var \Composer\Autoload\ClassLoader $composerAutoloader */
