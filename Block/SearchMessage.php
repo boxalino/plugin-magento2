@@ -6,7 +6,8 @@ namespace Boxalino\Intelligence\Block;
  * Class Facets
  * @package Boxalino\Intelligence\Block
  */
-class SearchMessage extends \Magento\Framework\View\Element\Template{
+class SearchMessage extends \Magento\Framework\View\Element\Template
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\P13n\Adapter
@@ -19,6 +20,16 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
     private $bxHelperData;
 
     private $bxResponse;
+
+    /**
+     * @var bool
+     */
+    protected $fallback = false;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
 
     /**
      * SearchMessage constructor.
@@ -34,28 +45,48 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
         array $data = []
     )
     {
-
         parent::__construct($context, $data);
         $this->p13nHelper = $p13nHelper;
         $this->bxHelperData = $bxHelperData;
-
+        $this->_logger = $context->getLogger();
     }
 
     public function isActive()
     {
-        return $this->bxHelperData->isPluginEnabled();
+        if($this->bxHelperData->isPluginEnabled())
+        {
+            $this->getResponse();
+            if($this->fallback)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function getResponse()
     {
-        if(is_null($this->bxResponse))
-        {
-            $this->bxResponse = $this->p13nHelper->getResponse();
+        try {
+            if(is_null($this->bxResponse))
+            {
+                $this->bxResponse = $this->p13nHelper->getResponse();
+            }
+
+            return $this->bxResponse;
+        } catch(\Exception $e){
+            $this->fallback = true;
+            $this->_logger->critical($e);
         }
 
-        return $this->bxResponse;
     }
 
+    public function getFallbackResponse()
+    {
+        return null;
+    }
 
     public function getDisplayType() {
         return $this->getResponse()->getExtraInfo('search_message_display_type');
@@ -110,6 +141,10 @@ class SearchMessage extends \Magento\Framework\View\Element\Template{
     }
 
     public function getSideImageCssClass() {
+        if($this->fallback){
+            return $this->getFallbackResponse();
+        }
+
         return $this->getResponse()->getExtraInfo('search_message_side_image_css_class');
     }
 

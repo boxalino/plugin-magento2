@@ -428,7 +428,7 @@ class Adapter
     private function addBlogResult($queryText, $hitCount) {
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
         $requestParams =  $this->request->getParams();
-        $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+        $pageOffset = isset($requestParams['bx_blog_page'])&&!empty($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setGroupBy('id');
         $returnFields = $this->bxHelperData->getBlogReturnFields();
@@ -526,8 +526,8 @@ class Adapter
         $sortFields = $this->prepareSortFields($requestParams);
         $categoryId = $this->registry->registry('current_category') != null ? $this->registry->registry('current_category')->getId() : null;
         $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-        $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
-
+        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+        
         $this->search($queryText, $pageOffset, $hitCount, $sortFields, $categoryId, $addFinder);
     }
 
@@ -544,7 +544,7 @@ class Adapter
             $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         }
         if($pageOffset == null) {
-            $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+            $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
         }
 
         $language = $this->getLanguage();
