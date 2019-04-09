@@ -372,7 +372,7 @@ class Adapter
      */
     public function search($queryText, $pageOffset = 0, $hitCount,  \com\boxalino\bxclient\v1\BxSortFields $bxSortFields = null, $categoryId = null, $addFinder = false)
     {
-        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice','products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
         if(!empty($additionalFields))
         {
