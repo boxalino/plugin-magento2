@@ -195,6 +195,51 @@ class BxIndexConfig
      * @param $account
      * @return bool
      */
+    public function isExportSchedulerEnabled($account)
+    {
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/enabled') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return bool
+     */
+    public function getExportSchedulerFullMinInterval($account)
+    {
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/full_min_interval') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return bool
+     */
+    public function getExportSchedulerDeltaMinInterval($account)
+    {
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_min_interval') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return bool
+     */
+    public function getExportSchedulerDeltaStart($account)
+    {
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_start') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return bool
+     */
+    public function getExportSchedulerDeltaEnd($account)
+    {
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_end') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return bool
+     */
     public function isCustomersExportEnabled($account)
     {
         return $this->getFirstAccountStore($account)->getConfig('bxExporter/customers/enabled') == 1;
