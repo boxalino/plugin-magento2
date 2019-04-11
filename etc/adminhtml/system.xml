@@ -134,14 +134,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                     <comment>Use the Plugin Export Scheduler to set boundaries on the data export. If disabled, your server crons will run as scheduled.</comment>
                 </field>
-                <field id="full_min_interval" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Delta-Full Period</label>
-                    <depends>
-                        <field id="*/exporter/enabled">1</field>
-                    </depends>
-                    <validate>validate-digits validate-not-negative-number</validate>
-                    <comment>The minimum time after a full export that delta can start running. Check with us at support@boxalino.com what is the recommended value for your store. Default value: 120min</comment>
-                </field>
                 <field id="delta_min_interval" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Delta-Delta Period</label>
                     <depends>

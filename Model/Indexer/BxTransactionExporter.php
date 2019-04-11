@@ -52,16 +52,18 @@ class BxTransactionExporter implements \Magento\Framework\Indexer\ActionInterfac
     /**
      * @throws \Exception
      */
-    public function executeFull(){
-        try{
-            $startExportDate = date("Y-m-d H:i:s");
-            $status = $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)
-                ->setIndexerId(self::INDEXER_ID)
-                ->exportStores(false, false, true);
+    public function executeFull()
+    {
+        $startExportDate = date("Y-m-d H:i:s");
+        if(!$this->processManager->processCanRun())
+        {
+            return true;
+        }
 
-            if($status)
-            {
-                $this->bxIndexer->updateIndexerLatestDate(self::INDEXER_ID, $startExportDate);
+        try{
+            $status = $this->processManager->run();
+            if($status) {
+                $this->processManager->updateProcessRunDate($startExportDate);
             }
         } catch (\Exception $exception) {
             throw $exception;

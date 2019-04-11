@@ -204,15 +204,6 @@ class BxIndexConfig
      * @param $account
      * @return bool
      */
-    public function getExportSchedulerFullMinInterval($account)
-    {
-        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/full_min_interval') == 1;
-    }
-
-    /**
-     * @param $account
-     * @return bool
-     */
     public function getExportSchedulerDeltaMinInterval($account)
     {
         return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_min_interval') == 1;

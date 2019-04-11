@@ -1,0 +1,97 @@
+<?php
+namespace Boxalino\Intelligence\Model\Exporter\Process;
+
+use Boxalino\Intelligence\Model\Exporter\ProcessManager;
+use phpDocumentor\Reflection\Types\Boolean;
+
+class Transaction extends ProcessManager
+{
+    /**
+     * Indexer ID in configuration
+     */
+    const INDEXER_ID = 'boxalino_indexer_transactions';
+
+    /**
+     * Indexer type
+     */
+    const INDEXER_TYPE = "full";
+
+    /**
+     * Default server timeout
+     */
+    const SERVER_TIMEOUT_DEFAULT = 500;
+
+    public function getType(): string
+    {
+        return self::INDEXER_TYPE;
+    }
+    
+    public function getIndexerId(): string
+    {
+        return self::INDEXER_ID;
+    }
+    
+    public function exportDeniedOnAccount($account)
+    {
+        return false;
+    }
+
+    /**
+     * Get timeout for exporter
+     * @return bool|int
+     */
+    public function getTimeout($account)
+    {
+        $customTimeout = $this->config->getExporterTimeout($account);
+        if($customTimeout)
+        {
+            return $customTimeout;
+        }
+
+        return self::SERVER_TIMEOUT_DEFAULT;
+    }
+
+    /**
+     * Latest run date is not checked for the full export
+     * 
+     * @return null
+     */
+    public function getLatestRun()
+    {
+        return $this->getLatestUpdatedAt($this->getIndexerId());;
+    }
+
+    /**
+     * Full export does not care for ids -- everything is exported
+     * 
+     * @return array
+     */
+    public function getIds(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return bool
+     */
+    public function getExportProducts()
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getExportCustomers()
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getExportTransactions()
+    {
+        return true;
+    }
+}

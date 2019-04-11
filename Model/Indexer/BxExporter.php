@@ -1,6 +1,8 @@
 <?php
 namespace Boxalino\Intelligence\Model\Indexer;
 
+use Boxalino\Intelligence\Model\Exporter\Process\Full as ProcessManager;
+
 /**
  * Class BxExporter
  * @package Boxalino\Intelligence\Model\Indexer
@@ -26,9 +28,9 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      * BxExporter constructor.
      * @param \Boxalino\Intelligence\Model\Indexer\BxIndexer $bxIndexer
      */
-    public function __construct(BxIndexer $bxIndexer)
+    public function __construct(ProcessManager $processManager)
     {
-        $this->bxIndexer = $bxIndexer;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -49,16 +51,18 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     /**
      * @throws \Exception
      */
-    public function executeFull(){
-        try{
-            $startExportDate = date("Y-m-d H:i:s");
-            $status = $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)
-                ->setIndexerId(self::INDEXER_ID)
-                ->exportStores();
+    public function executeFull()
+    {
+        $startExportDate = date("Y-m-d H:i:s");
+        if(!$this->processManager->processCanRun())
+        {
+            return true;
+        }
 
-            if($status)
-            {
-                $this->bxIndexer->updateIndexerLatestDate(self::INDEXER_ID, $startExportDate);
+        try{
+            $status = $this->processManager->run();
+            if($status) {
+                $this->processManager->updateProcessRunDate($startExportDate);
             }
         } catch (\Exception $exception) {
             throw $exception;
