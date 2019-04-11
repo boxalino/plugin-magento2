@@ -33,12 +33,18 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
     /**
      * @param int $id
      */
-    public function executeRow($id){}
+    public function executeRow($id)
+    {
+
+    }
 
     /**
      * @param array $ids
      */
-    public function executeList(array $ids){}
+    public function executeList(array $ids)
+    {
+        error_log("reindex list" . implode($ids), 3, "/var/www/magento/var/log/bx.log");
+    }
 
     /**
      * In case of a scheduled update, it will be run
@@ -47,6 +53,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * @throws \Exception
      */
     public function execute($ids){
+        error_log("reindex ids" . implode($ids), 3, "/var/www/magento/var/log/bx.log");
         $startExportDate = date("Y-m-d H:i:s");
         try{
             $status = $this->bxIndexer->setDeltaIds($ids)
@@ -67,6 +74,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * Run via the command line
      */
     public function executeFull(){
+        error_log("reindex full" . implode($ids), 3, "/var/www/magento/var/log/bx.log");
         $startExportDate = date("Y-m-d H:i:s");
         try{
             $status = $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)
