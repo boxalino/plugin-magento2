@@ -23,7 +23,6 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
 
     /**
      * BxDeltaExporter constructor.
-     * @param BxIndexer $bxIndexer
      */
     public function __construct(ProcessManager $processManager)
     {

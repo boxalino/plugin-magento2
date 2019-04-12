@@ -2,7 +2,6 @@
 namespace Boxalino\Intelligence\Model\Exporter\Process;
 
 use Boxalino\Intelligence\Model\Exporter\ProcessManager;
-use Boxalino\Intelligence\Model\Indexer\BxDeltaExporter;
 
 class Delta extends ProcessManager
 {
@@ -23,7 +22,7 @@ class Delta extends ProcessManager
      * @var array
      */
     protected $ids = [];
-    
+
     /**
      * stop execution if there are no deltas
      *

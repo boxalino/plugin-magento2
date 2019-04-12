@@ -20,13 +20,12 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
     const INDEXER_TYPE = "full";
 
     /**
-     * @var \Boxalino\Intelligence\Model\Indexer\BxIndexer
+     * @var ProcessManager
      */
-    protected $bxIndexer;
+    protected $processManager;
 
     /**
      * BxExporter constructor.
-     * @param \Boxalino\Intelligence\Model\Indexer\BxIndexer $bxIndexer
      */
     public function __construct(ProcessManager $processManager)
     {

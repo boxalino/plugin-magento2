@@ -2,8 +2,6 @@
 namespace Boxalino\Intelligence\Model\Exporter\Process;
 
 use Boxalino\Intelligence\Model\Exporter\ProcessManager;
-use Boxalino\Intelligence\Model\Indexer\BxExporter;
-use phpDocumentor\Reflection\Types\Boolean;
 
 class Full extends ProcessManager
 {

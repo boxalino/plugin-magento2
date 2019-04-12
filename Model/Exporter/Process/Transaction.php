@@ -2,7 +2,6 @@
 namespace Boxalino\Intelligence\Model\Exporter\Process;
 
 use Boxalino\Intelligence\Model\Exporter\ProcessManager;
-use phpDocumentor\Reflection\Types\Boolean;
 
 class Transaction extends ProcessManager
 {

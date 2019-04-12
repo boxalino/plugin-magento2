@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Model\Indexer;
 
-use Boxalino\Intelligence\Model\Indexer\BxIndexer;
+use Boxalino\Intelligence\Model\Exporter\Process\Transaction as ProcessManager;
 
 /**
  * Class BxTransactionExporter
@@ -21,17 +21,13 @@ class BxTransactionExporter implements \Magento\Framework\Indexer\ActionInterfac
     const INDEXER_TYPE = "full";
 
     /**
-     * @var \Boxalino\Intelligence\Model\Indexer\BxIndexer
+     * @var ProcessManager
      */
-    protected $bxIndexer;
+    protected $processManager;
 
-    /**
-     * BxTransactionExporter constructor.
-     * @param \Boxalino\Intelligence\Model\Indexer\BxIndexer $bxIndexer
-     */
-    public function __construct(BxIndexer $bxIndexer)
+    public function __construct(ProcessManager $processManager)
     {
-        $this->bxIndexer = $bxIndexer;
+        $this->processManager = $processManager;
     }
 
     /**
