@@ -136,24 +136,9 @@ class Delta extends ProcessManager
     /**
      * @return bool
      */
-    public function getExportProducts()
-    {
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getExportCustomers()
+    public function getExportFull()
     {
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function getExportTransactions()
-    {
-        return false;
-    }
 }

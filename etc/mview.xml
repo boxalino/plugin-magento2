@@ -32,9 +32,4 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
         </subscriptions>
     </view>
-    <view id="boxalino_indexer_transactions" class="Boxalino\Intelligence\Model\Indexer\BxTransactionExporter" group="default">
-        <subscriptions>
-            <table name="sales_order" entity_column="entity_id" />
-        </subscriptions>
-    </view>
 </config>

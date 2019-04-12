@@ -73,24 +73,9 @@ class Full extends ProcessManager
     /**
      * @return bool
      */
-    public function getExportProducts()
+    public function getExportFull()
     {
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    public function getExportCustomers()
-    {
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getExportTransactions()
-    {
-        return true;
-    }
 }

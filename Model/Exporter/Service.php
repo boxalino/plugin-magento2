@@ -11,7 +11,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Config\ConfigOptionsListConstants;
 use Magento\Catalog\Model\ProductFactory;
-use Boxalino\Intelligence\Model\Indexer\BxDeltaExporter;
 
 use Zend\Server\Exception\RuntimeException;
 use \Psr\Log\LoggerInterface;
@@ -106,18 +105,8 @@ class Service
     /**
      * @var bool
      */
-    protected $exportProducts = true;
-    
-    /**
-     * @var bool
-     */
-    protected $exportCustomers = true;
-    
-    /**
-     * @var bool
-     */
-    protected $exportTransactions = true;
-    
+    protected $exportFull = true;
+
     /**
      * BxIndexer constructor.
      * @param LoggerInterface $logger
@@ -163,7 +152,7 @@ class Service
         $this->logger->info("BxIndexLog: initialize files on account: " . $this->getAccount());
         $this->bxFiles->setAccount($this->account);
         $bxClient = new \com\boxalino\bxclient\v1\BxClient($this->account, $this->config->getAccountPassword($this->account), "", $this->config->isAccountDev($this->account));
-        $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($this->account), $this->config->isAccountDev($this->account), $this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE);
+        $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($this->account), $this->config->isAccountDev($this->account), !$this->exportFull);
 
         $this->logger->info("BxIndexLog: verify credentials for account: " . $this->account);
         try{
@@ -173,20 +162,22 @@ class Service
             throw new \Exception("BxIndexLog: verifyCredentials on account {$this->account} failed with exception: {$e->getMessage()}");
         }
 
-        $this->logger->info('BxIndexLog: Preparing the attributes and category data for each language of the account: ' . $this->account);
         $this->setContextOnResource();
-        if($this->exportProducts) {$exportProducts = $this->exportProducts();}
-        if(empty($this->deltaIds)){
-            if($this->exportCustomers){ $this->exportCustomers(); }
-            if($this->exportTransactions){ $this->exportTransactions(); }
-        }
+        $this->logger->info('BxIndexLog: Preparing the attributes and category data for each language of the account: ' . $this->account);
+
+        $exportProducts = $this->exportProducts();
         $this->exportCategories();
+
+        if($this->exportFull){
+            $this->exportCustomers();
+            $this->exportTransactions();
+        }
 
         if(!$exportProducts)
         {
             $this->logger->info('BxIndexLog: No Products found for account: ' . $this->account);
         } else {
-            if(empty($this->deltaIds))
+            if($this->exportFull)
             {
                 $this->logger->info('BxIndexLog: Prepare the final files: ' . $this->account);
                 $this->logger->info('BxIndexLog: Prepare XML configuration file: ' . $this->account);
@@ -751,7 +742,7 @@ class Service
                         array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
                         $columns
                     );
-                    if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
+                    if(!$this->exportFull) $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($this->account, $lang);
@@ -786,7 +777,7 @@ class Service
                                     array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
                                 )
                                 ->where('t_g.attribute_id = ?', $typeKey)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
-                            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
+                            if(!$this->exportFull) $select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
                             foreach ($db->fetchAll($select1) as $r) {
                                 $data[] = $r;
                             }
@@ -981,7 +972,7 @@ class Service
                         $labelColumns
                     );
 
-                    if(sizeof($data) == 0 && $this->getIndexerType() != BxDeltaExporter::INDEXER_TYPE) {
+                    if(sizeof($data) == 0 && $this->exportFull) {
                         $d = array(array('entity_id',$type['attribute_code'] . '_id'));
                         $this->bxFiles->savepartToCsv('product_' . $type['attribute_code'] . '.csv',$d);
                         $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
@@ -1229,7 +1220,7 @@ class Service
                 );
 
             $select1->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+            if(!$this->exportFull) $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
 
             $select2 = clone $select1;
             $select2->join(
@@ -1442,7 +1433,7 @@ class Service
     protected function setContextOnResource()
     {
         $this->exporterResource->setExportIds($this->getDeltaIds());
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE)
+        if(!$this->exportFull)
         {
             $this->exporterResource->isDelta(true);
         }
@@ -1488,19 +1479,10 @@ class Service
         return $this;
     }
 
-    public function setExportProducts($value)
+    public function setExportFull($value)
     {
-        $this->exportProducts = $value;
+        $this->exportFull = $value;
         return $this;
     }
-    public function setExportCustomers($value)
-    {
-        $this->exportCustomers = $value;
-        return $this;
-    }
-    public function setExportTransactions($value)
-    {
-        $this->exportTransactions = $value;
-        return $this;
-    }
+
 }

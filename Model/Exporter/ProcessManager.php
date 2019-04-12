@@ -98,9 +98,7 @@ abstract class ProcessManager
                         ->setDeltaIds($this->getIds())
                         ->setIndexerType($this->getType())
                         ->setIndexerId($this->getIndexerId())
-                        ->setExportCustomers($this->getExportCustomers())
-                        ->setExportProducts($this->getExportProducts())
-                        ->setExportTransactions($this->getExportTransactions())
+                        ->setExportFull($this->getExportFull())
                         ->setTimeoutForExporter($this->getTimeout($account))
                         ->export();
                 }
@@ -178,8 +176,6 @@ abstract class ProcessManager
     abstract function exportDeniedOnAccount($account);
     abstract function getType() : string;
     abstract function getIndexerId() : string;
-    abstract function getExportCustomers();
-    abstract function getExportTransactions();
-    abstract function getExportProducts();
-    
+    abstract function getExportFull();
+
 }
