@@ -9,7 +9,8 @@ namespace Boxalino\Intelligence\Plugin;
  * @see \Magento\Widget\Model\Template\Filter
  * @author th
  */
-class FilterPlugin{
+class FilterPlugin
+{
     /**
      * @var \Boxalino\Intelligence\Helper\Data
      */

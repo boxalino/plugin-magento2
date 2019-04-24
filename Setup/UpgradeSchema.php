@@ -100,6 +100,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             'entity_id',
             [
                 'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                'length' => \Magento\Framework\Db\Ddl\Table::MAX_TEXT_SIZE,
                 'comment' => 'for delta exports: list of product IDs that have to be updated on next indexer run',
             ]
         );

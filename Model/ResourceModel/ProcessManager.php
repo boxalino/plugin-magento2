@@ -32,7 +32,7 @@ class ProcessManager
     /**
      * Check product IDs from last delta run
      *
-     * @param null | string $date
+     * @param null | array $date
      * @return array
      */
     public function getProductIdsByUpdatedAt($date)
@@ -47,59 +47,6 @@ class ProcessManager
     }
 
     /**
-     * Check wether delta must be run due to existing updates in categories
-     *
-     * @param null $date
-     * @return bool
-     */
-    public function hasDeltaReadyCategories($date)
-    {
-        $select = $this->adapter->select()
-            ->from(
-                ['c_c_e'=> $this->adapter->getTableName("catalog_category_entity")],
-                ['entity_id']
-            )->where("DATE_FORMAT(c_c_e.updated_at, '%Y-%m-%d %H:%i:%s') >=  DATE_FORMAT(?, '%Y-%m-%d %H:%i:%s')", $date);
-
-        return (bool) $this->adapter->query($select)->rowCount();
-    }
-
-    /**
-     *  Get the latest updated product IDs to be used for delta export as a mock, in case there are category updates
-     * @return array
-     */
-    public function getLatestUpdatedProductIds()
-    {
-        $select = $this->adapter->select()
-            ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
-                [new \Zend_Db_Expr('MAX(entity_id)')]
-            )->order("c_p_e.updated_at DESC")
-            ->group(['c_p_e.attribute_set_id', 'c_p_e.type_id', 'c_p_e.has_options', 'c_p_e.required_options']);
-
-        return $this->adapter->fetchCol($select);
-    }
-
-    /**
-     * Get the products belonging to the category to update them as well
-     * @param $date
-     * @return array
-     */
-    public function getProductsOnUpdatedCategories($date)
-    {
-        $select = $this->adapter->select()
-            ->from(
-                ['c_c_e'=> $this->adapter->getTableName("catalog_category_entity")],
-                []
-            )->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_category_product')],
-                "c_c_e.entity_id = c_p_r.category_id",
-                ['product_id']
-            )->where("DATE_FORMAT(c_c_e.updated_at, '%Y-%m-%d %H:%i:%s') >=  DATE_FORMAT(?, '%Y-%m-%d %H:%i:%s')", $date);
-
-        return $this->adapter->fetchCol($select);
-    }
-
-    /**
      * Rollback indexer latest updated date in case of error
      *
      * @param $id
@@ -109,8 +56,8 @@ class ProcessManager
     public function updateIndexerUpdatedAt($id, $updated)
     {
         $dataBind = [
-            "updated"=>$updated,
-            "indexer_id"=>$id
+            "updated" => $updated,
+            "indexer_id" => $id
         ];
 
         return $this->adapter->insertOnDuplicate(
@@ -132,4 +79,37 @@ class ProcessManager
         return $this->adapter->fetchOne($select);
     }
 
+    /**
+     * Getting a list of product IDs affected
+     *
+     * @param $id
+     * @return string
+     */
+    public function getAffectedEntityIds($id)
+    {
+        $select = $this->adapter->select()
+            ->from($this->adapter->getTableName("boxalino_export"), ["entity_id"])
+            ->where("indexer_id = ?", $id);
+
+        return $this->adapter->fetchOne($select);
+    }
+
+    /**
+     * Updating the list of product IDs affected
+     *
+     * @param $id
+     * @return string
+     */
+    public function updateAffectedEntityIds($id, $ids)
+    {
+        $dataBind = [
+            "entity_id" => $ids,
+            "indexer_id" => $id
+        ];
+
+        return $this->adapter->insertOnDuplicate(
+            $this->adapter->getTableName("boxalino_export"),
+            $dataBind, ["entity_id"]
+        );
+    }
 }

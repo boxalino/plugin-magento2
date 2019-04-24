@@ -81,7 +81,7 @@ abstract class ProcessManager
         if(empty($configurations))
         {
             $this->logger->info("BxIndexLog: no active configurations found on either of the stores. Process cancelled.");
-            return;
+            return false;
         }
         
         $errorMessages = array();
