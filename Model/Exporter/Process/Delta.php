@@ -37,7 +37,8 @@ class Delta extends ProcessManager
             return true;
         }
 
-        parent::run();
+        $this->logger->info("bxLog: The delta export has " . count($ids) . " products to update in stack.");
+        return parent::run();
     }
 
     public function getType(): string
@@ -120,14 +121,13 @@ class Delta extends ProcessManager
     public function getIds()
     {
         $lastUpdateDate = $this->getLatestRun();
-        $ids = $this->processResource->getProductIdsByUpdatedAt($lastUpdateDate);
+        $directProductUpdates = $this->processResource->getProductIdsByUpdatedAt($lastUpdateDate);
+        $categoryProductUpdates = $this->processResource->getAffectedEntityIds(self::INDEXER_ID);
+
+        $ids = array_filter(array_unique(array_merge($directProductUpdates, explode(",", $categoryProductUpdates))));
         if(empty($ids))
         {
-            $categoryUpdates = $this->processResource->hasDeltaReadyCategories($lastUpdateDate);
-            if($categoryUpdates)
-            {
-                return $this->processResource->getLatestUpdatedProductIds();
-            }
+            return array();
         }
         
         return $ids;
@@ -139,6 +139,14 @@ class Delta extends ProcessManager
     public function getExportFull()
     {
         return false;
+    }
+
+    /**
+     * resetting the affected products in case of a succesfull execution of delta export
+     */
+    public function updateAffectedProductIds()
+    {
+        $this->processResource->updateAffectedEntityIds($this->getIndexerId(), "");
     }
 
 }

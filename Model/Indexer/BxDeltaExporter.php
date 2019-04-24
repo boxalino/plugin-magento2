@@ -63,6 +63,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
             $status = $this->processManager->run();
             if($status) {
                 $this->processManager->updateProcessRunDate($startExportDate);
+                $this->processManager->updateAffectedProductIds();
             }
         } catch (\Exception $exception) {
             throw $exception;

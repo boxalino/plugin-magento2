@@ -36,6 +36,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $this->addExportTable($installer);
         }
 
+        if (version_compare($context->getVersion(), '1.0.3', '<')) {
+            $this->addEntityIdsToExportTable($installer);
+        }
+
         $installer->endSetup();
     }
 
@@ -75,5 +79,32 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
             $installer->getConnection()->createTable($table);
         }
+    }
+
+    /**
+     * adding a new row to keep track of product changes via other events than product save
+     *
+     * @param SchemaSetupInterface $installer
+     */
+    public function addEntityIdsToExportTable(SchemaSetupInterface $installer)
+    {
+        $installer->startSetup();
+
+        $connection = $installer->getConnection();
+        if($connection->tableColumnExists($installer->getTable('boxalino_export'), "entity_id")){
+            return $this;
+        }
+        
+        $connection->addColumn(
+            $installer->getTable('boxalino_export'),
+            'entity_id',
+            [
+                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                'length' => \Magento\Framework\Db\Ddl\Table::MAX_TEXT_SIZE,
+                'comment' => 'for delta exports: list of product IDs that have to be updated on next indexer run',
+            ]
+        );
+
+        $installer->endSetup();
     }
 }
