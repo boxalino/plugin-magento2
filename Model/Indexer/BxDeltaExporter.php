@@ -48,7 +48,10 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * @param \int[] $ids
      * @throws \Exception
      */
-    public function execute($ids){}
+    public function execute($ids)
+    {
+        error_log("reindex " . implode($ids), 3, "/var/www/magento/var/log/bx.log");
+    }
 
     /**
      * Run on execute full command
