@@ -28,6 +28,16 @@ class Main extends \Magento\Framework\View\Element\Template
      */
     protected $overlayWidgetChoice = null;
 
+    /**
+     * @var bool
+     */
+    protected $fallback = false;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
@@ -157,7 +167,7 @@ class Main extends \Magento\Framework\View\Element\Template
 
         if(is_null($this->response))
         {
-            $this->response = $this->p13nHelper->getClientResponse();
+            $this->response = $this->getResponse();
         }
 
         return $this->response->getExtraInfo($key, '', $this->overlayWidgetChoice);
@@ -169,7 +179,18 @@ class Main extends \Magento\Framework\View\Element\Template
      */
     public function isActive()
     {
-        return $this->bxHelperData->isOverlayEnabled() && $this->bxHelperData->isPluginEnabled();
+        if($this->bxHelperData->isOverlayEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            $this->getResponse();
+            if($this->fallback)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -208,4 +229,24 @@ class Main extends \Magento\Framework\View\Element\Template
     {
         return $this->bxHelperData->getLanguage();
     }
+
+    /**
+     * @return mixed|null
+     */
+    public function getResponse()
+    {
+        try{
+            if(is_null($this->response))
+            {
+                $this->response = $this->p13nHelper->getClientResponse();
+            }
+
+            return $this->response;
+        }  catch(\Exception $e){
+            $this->fallback = true;
+            $this->_logger->critical($e);
+        }
+
+    }
+
 }

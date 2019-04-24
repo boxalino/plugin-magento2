@@ -126,6 +126,39 @@
                     <comment>If set, the exported archive will be temporary stored in that path; If empty, the archive will be created in the directory PHP stores temporary files by default. You can find out which one is it via sys_get_temp_dir().</comment>
                 </field>
             </group>
+            <group id="scheduler" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Scheduler</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable plugin scheduler control</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Use the Plugin Export Scheduler to set boundaries on the data export. If disabled, your server crons will run as scheduled.</comment>
+                </field>
+                <field id="delta_min_interval" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Delta-Delta Period</label>
+                    <depends>
+                        <field id="*/exporter/enabled">1</field>
+                    </depends>
+                    <validate>validate-digits validate-not-negative-number</validate>
+                    <comment>The minimum time required between two consecutive delta exports (in minutes). Default value: 60min</comment>
+                </field>
+                <field id="delta_start" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Delta Daily Start</label>
+                    <depends>
+                        <field id="*/exporter/enabled">1</field>
+                    </depends>
+                    <validate>validate-digits validate-not-negative-number validate-digits-range digits-range-0-23</validate>
+                    <comment>Daily hour starting from the delta exports can be run</comment>
+                </field>
+                <field id="delta_end" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Delta Daily End</label>
+                    <depends>
+                        <field id="*/exporter/enabled">1</field>
+                    </depends>
+                    <validate>validate-digits validate-not-negative-number validate-digits-range digits-range-0-23</validate>
+                    <comment>Daily hour until when the delta exports can be run</comment>
+                </field>
+            </group>
             <group id="products" translate="label" type="text"  sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Products</label>
                 <!-- create text type field -->
