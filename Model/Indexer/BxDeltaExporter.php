@@ -1,7 +1,7 @@
 <?php
 namespace Boxalino\Intelligence\Model\Indexer;
 
-use Boxalino\Intelligence\Model\Indexer\BxIndexer;
+use Boxalino\Intelligence\Model\Exporter\Process\Delta as ProcessManager;
 
 /**
  * Class BxDeltaExporter
@@ -17,17 +17,16 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
     const INDEXER_TYPE = 'delta';
 
     /**
-     * @var BxIndexer
+     * @var ProcessManager
      */
-    protected $bxIndexer;
+    protected $processManager;
 
     /**
      * BxDeltaExporter constructor.
-     * @param BxIndexer $bxIndexer
      */
-    public function __construct(BxIndexer $bxIndexer)
+    public function __construct(ProcessManager $processManager)
     {
-        $this->bxIndexer = $bxIndexer;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -46,35 +45,24 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      * @param \int[] $ids
      * @throws \Exception
      */
-    public function execute($ids){
-        $startExportDate = date("Y-m-d H:i:s");
-        try{
-            $status = $this->bxIndexer->setDeltaIds($ids)
-                ->setIndexerType(self::INDEXER_TYPE)
-                ->setIndexerId(self::INDEXER_ID)
-                ->exportStores(true,false,false);
-
-            if($status) {
-                $this->bxIndexer->updateIndexerLatestDate(self::INDEXER_ID, $startExportDate);
-            }
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
+    public function execute($ids){}
 
     /**
      * Run on execute full command
      * Run via the command line
      */
-    public function executeFull(){
+    public function executeFull()
+    {
         $startExportDate = date("Y-m-d H:i:s");
-        try{
-            $status = $this->bxIndexer->setIndexerType(self::INDEXER_TYPE)
-                ->setIndexerId(self::INDEXER_ID)
-                ->exportStores(true,false,false);
+        if(!$this->processManager->processCanRun())
+        {
+            return true;
+        }
 
+        try{
+            $status = $this->processManager->run();
             if($status) {
-                $this->bxIndexer->updateIndexerLatestDate(self::INDEXER_ID, $startExportDate);
+                $this->processManager->updateProcessRunDate($startExportDate);
             }
         } catch (\Exception $exception) {
             throw $exception;

@@ -1,11 +1,12 @@
 <?php
-namespace Boxalino\Intelligence\Model\Indexer;
+namespace Boxalino\Intelligence\Model\Exporter;
 
 use Boxalino\Intelligence\Helper\BxIndexConfig;
 use Boxalino\Intelligence\Helper\BxFiles;
 use Boxalino\Intelligence\Helper\BxGeneral;
 use Boxalino\Intelligence\Api\ExporterResourceInterface;
 
+use Boxalino\Intelligence\Model\Indexer\BxExporter;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Config\ConfigOptionsListConstants;
@@ -18,7 +19,7 @@ use \Psr\Log\LoggerInterface;
  * Class BxIndexer
  * @package Boxalino\Intelligence\Model\Indexer
  */
-class BxIndexer
+class Service
 {
 
     /**
@@ -97,6 +98,16 @@ class BxIndexer
     protected $account = null;
 
     /**
+     * @var null
+     */
+    protected $serverTimeout = null;
+
+    /**
+     * @var bool
+     */
+    protected $exportFull = true;
+
+    /**
      * BxIndexer constructor.
      * @param LoggerInterface $logger
      * @param \Magento\Framework\App\ResourceConnection $rs
@@ -128,10 +139,6 @@ class BxIndexer
         $this->productMetaData = $productMetaData;
         $this->bxGeneral = $bxGeneral;
         $this->config = $bxIndexConfig;
-
-        $libPath = __DIR__ . '/../../Lib';
-        require_once($libPath . '/BxClient.php');
-        \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }
 
 
@@ -140,118 +147,80 @@ class BxIndexer
      * @param bool $exportCustomers
      * @param bool $exportTransactions
      */
-    public function exportStores($exportProducts=true, $exportCustomers=true, $exportTransactions=true)
+    public function export()
     {
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE){
-            $this->setContextOnResource();
-            if(empty($this->deltaIds)){
-                $this->logger->info("bxLog: The delta export is empty at {$this->getLatestDeltaUpdate()}. Closing request.");
-                return true;
-            }
-        }
-        $this->logger->info("bxLog: starting Boxalino {$this->indexerType} export. Latest update at {$this->getLatestUpdate()}");
-        $account = $this->getAccount();
-        
-        $this->logger->info("bxLog: initialize files on account: " . $account);
-        $this->bxFiles->setAccount($account);
+        $this->logger->info("BxIndexLog: initialize files on account: " . $this->getAccount());
+        $this->bxFiles->setAccount($this->account);
+        $bxClient = new \com\boxalino\bxclient\v1\BxClient($this->account, $this->config->getAccountPassword($this->account), "", $this->config->isAccountDev($this->account));
+        $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($this->account), $this->config->isAccountDev($this->account), !$this->exportFull);
 
-        $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "", $this->config->isAccountDev($account));
-        $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE);
-
-        $this->logger->info("bxLog: verify credentials for account: " . $account);
+        $this->logger->info("BxIndexLog: verify credentials for account: " . $this->account);
         try{
             $this->bxData->verifyCredentials();
         } catch (\Exception $e){
-            $this->logger->info($e);
-            throw $e;
+            $this->logger->error("BxIndexLog: verifyCredentials failed with exception: {$e->getMessage()}");
+            throw new \Exception("BxIndexLog: verifyCredentials on account {$this->account} failed with exception: {$e->getMessage()}");
         }
 
-        $this->logger->info('bxLog: Export the customers, transactions and product files for account: ' . $account);
-        if($exportProducts) {$exportProducts = $this->exportProducts($account);}
-        if($this->getIndexerType() == 'full'){
-            if($exportCustomers){ $this->exportCustomers($account);}
-            if($exportTransactions){ $this->exportTransactions($account);}
-        }
+        $this->setContextOnResource();
+        $this->logger->info('BxIndexLog: Preparing the attributes and category data for each language of the account: ' . $this->account);
 
-        $this->logger->info('bxLog: Preparing category data for each language of the account: ' . $account);
-        $categories = [];
-        foreach ($this->config->getAccountLanguages($account) as $language) {
-            $store = $this->config->getStore($account, $language);
-            $this->logger->info('bxLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
-            $categories = $this->exportCategories($store, $language, $categories);
+        $exportProducts = $this->exportProducts();
+        $this->exportCategories();
+
+        if($this->exportFull){
+            $this->exportCustomers();
+            $this->exportTransactions();
         }
-        $this->prepareData($account, $categories);
-        $this->logger->info('bxLog: Categories exported.');
 
         if(!$exportProducts)
         {
-            $this->logger->info('bxLog: No Products found for account: ' . $account);
-            $this->logger->info('bxLog: Finished account: ' . $account);
+            $this->logger->info('BxIndexLog: No Products found for account: ' . $this->account);
         } else {
-            if($this->getIndexerType() == 'full')
+            if($this->exportFull)
             {
-                $this->logger->info('bxLog: Prepare the final files: ' . $account);
-                $this->logger->info('bxLog: Prepare XML configuration file: ' . $account);
+                $this->logger->info('BxIndexLog: Prepare the final files: ' . $this->account);
+                $this->logger->info('BxIndexLog: Prepare XML configuration file: ' . $this->account);
 
                 try {
-                    $this->logger->info('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account);
+                    $this->logger->info('BxIndexLog: Push the XML configuration file to the Data Indexing server for account: ' . $this->account);
                     $this->bxData->pushDataSpecifications();
+                }catch(\LogicException $e){
+                    $this->logger->info('BxIndexLog: publishing XML configurations returned a timeout: ' . $e->getMessage());
                 } catch(\Exception $e) {
                     $value = @json_decode($e->getMessage(), true);
                     if(isset($value['error_type_number']) && $value['error_type_number'] == 3)
                     {
-                        $this->logger->warning('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account);
+                        $this->logger->warning('BxIndexLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $this->account);
                         $this->bxData->pushDataSpecifications();
                     } else {
                         throw $e;
                     }
                 }
 
-                $this->logger->info('bxLog: Publish the configuration chagnes from the magento2 owner for account: ' . $account);
-                $publish = $this->config->publishConfigurationChanges($account);
+                $this->logger->info('BxIndexLog: Publish the configuration chagnes from the magento2 owner for account: ' . $this->account);
+                $publish = $this->config->publishConfigurationChanges($this->account);
                 $changes = $this->bxData->publishOwnerChanges($publish);
                 if(sizeof($changes['changes']) > 0 && !$publish)
                 {
-                    $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $account);
+                    $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $this->account);
                 }
-                $this->logger->info('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account);
-
+                $this->logger->info('BxIndexLog: Push the Zip data file to the Data Indexing server for account: ' . $this->account);
             }
             
             $this->logger->info('pushing to DI');
             try {
-                $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($account) , $this->getTimeoutForExporter($account));
-            } catch(LocalizedException $e){
+                $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($this->account) , $this->getTimeoutForExporter($this->account));
+            } catch(\LogicException $e){
                 $this->logger->warning($e->getMessage());
             } catch(\Exception $e){
                 $this->logger->error($e);
                 throw $e;
             }
-            
-            $this->logger->info('bxLog: Finished account: ' . $account);
-        }
-        
-    }
-
-
-    /**
-     * Get timeout for exporter
-     * @return bool|int
-     */
-    protected function getTimeoutForExporter($account)
-    {
-        if($this->indexerType == BxDeltaExporter::INDEXER_TYPE)
-        {
-            return 60;
         }
 
-        $customTimeout = $this->config->getExporterTimeout($account);
-        if($customTimeout)
-        {
-            return $customTimeout;
-        }
-
-        return 3000;
+        $this->logger->info('BxIndexLog: Finished account: ' . $this->account);
+        return true;
     }
 
     /**
@@ -260,10 +229,10 @@ class BxIndexer
      * @param null $tags
      * @param null $productTags
      */
-    protected function prepareData($account, $categories, $tags = null, $productTags = null)
+    protected function addCategoriesData($categories, $tags = null, $productTags = null)
     {
         $withTag = ($tags != null && $productTags != null) ? true : false;
-        $languages = $this->config->getAccountLanguages($account);
+        $languages = $this->config->getAccountLanguages($this->account);
         $categories = array_merge(array(array_keys(end($categories))), $categories);
         $this->bxFiles->savePartToCsv('categories.csv', $categories);
         $labelColumns = array();
@@ -276,13 +245,29 @@ class BxIndexer
     }
 
     /**
+     * exporting categories
+     * @throws \Exception
+     */
+    public function exportCategories()
+    {
+        $this->logger->info('BxIndexLog: Preparing category data for each language of the account: ' . $this->account);
+        $categories = [];
+        foreach ($this->config->getAccountLanguages($this->account) as $language) {
+            $store = $this->config->getStore($this->account, $language);
+            $this->logger->info('BxIndexLog: Start exportCategories for language . ' . $language . ' on store:' . $store->getId());
+            $categories = $this->exportCategoriesByStoreLanguage($store, $language, $categories);
+        }
+        $this->addCategoriesData($categories);
+        $this->logger->info('BxIndexLog: Categories exported.');
+    }
+    /**
      * @param $store
      * @param $language
      * @param $transformedCategories
      * @return mixed
      * @throws \Exception
      */
-    protected function exportCategories($store, $language, $transformedCategories)
+    protected function exportCategoriesByStoreLanguage($store, $language, $transformedCategories)
     {
         $categories = $this->exporterResource->getCategoriesByStoreId($store->getId());
         foreach($categories as $r){
@@ -304,29 +289,28 @@ class BxIndexer
      * @param $store
      * @return array
      */
-    protected function getStoreProductAttributes($account)
+    protected function getStoreProductAttributes()
     {
-        $this->logger->info('bxLog: get all product attributes.');
+        $this->logger->info('BxIndexLog: get all product attributes.');
         $attributes = $this->exporterResource->getProductAttributes();
 
-        $this->logger->info('bxLog: get configured product attributes.');
-        $attributes = $this->config->getAccountProductsProperties($account, $attributes, $this->getRequiredProductAttributes());
-        $this->logger->info('bxLog: returning configured product attributes: ' . implode(',', array_values($attributes)));
+        $this->logger->info('BxIndexLog: get configured product attributes.');
+        $attributes = $this->config->getAccountProductsProperties($this->account, $attributes, $this->getRequiredProductAttributes());
+        $this->logger->info('BxIndexLog: returning configured product attributes: ' . implode(',', array_values($attributes)));
 
         return $attributes;
     }
 
     /**
-     * @param $account
      * @throws \Zend_Db_Select_Exception
      */
-    protected function exportCustomers($account){
-
-        if(!$this->config->isCustomersExportEnabled($account)) {
+    protected function exportCustomers()
+    {
+        if(!$this->config->isCustomersExportEnabled($this->account)) {
             return;
         }
 
-        $this->logger->info('bxLog: starting exporting customers for account: ' . $account);
+        $this->logger->info('BxIndexLog: starting exporting customers for account: ' . $this->account);
         $countryHelper = $this->countryFactory->create();
         $limit = 1000;
         $count = $limit;
@@ -334,9 +318,9 @@ class BxIndexer
         $header = true;
         $attrsFromDb = ['int'=>[], 'static'=>[], 'varchar'=>[], 'datetime'=>[]];
 
-        $this->logger->info('bxLog: get final customer attributes for account: ' . $account);
-        $customer_attributes = $this->getCustomerAttributes($account);
-        $this->logger->info('bxLog: get customer attributes backend types for account: ' . $account);
+        $this->logger->info('BxIndexLog: get final customer attributes for account: ' . $this->account);
+        $customer_attributes = $this->getCustomerAttributes($this->account);
+        $this->logger->info('BxIndexLog: get customer attributes backend types for account: ' . $this->account);
 
         $result = $this->exporterResource->getCustomerAttributesByCodes($customer_attributes);
         foreach ($result as $attr) {
@@ -347,24 +331,24 @@ class BxIndexer
 
         $fieldsForCustomerSelect =  array_merge(['entity_id', 'confirmation'], $attrsFromDb['static']);
         do {
-            $this->logger->info('bxLog: Customers - load page $page for account: ' . $account);
+            $this->logger->info('BxIndexLog: Customers - load page $page for account: ' . $this->account);
             $customers_to_save = [];
 
-            $this->logger->info('bxLog: Customers - get customer ids for page $page for account: ' . $account);
+            $this->logger->info('BxIndexLog: Customers - get customer ids for page $page for account: ' . $this->account);
             $customers = $this->exporterResource->getCustomerAddressByFieldsAndLimit($limit, $page, $fieldsForCustomerSelect);
 
-            $this->logger->info('bxLog: Customers - prepare side queries page $page for account: ' . $account);
+            $this->logger->info('BxIndexLog: Customers - prepare side queries page $page for account: ' . $this->account);
             $ids = array_keys($customers);
             $customerAttributesValues = $this->exporterResource->getUnionCustomerAttributesByAttributesAndIds($attrsFromDb, $ids);
             if(!empty($customerAttributesValues))
             {
-                $this->logger->info('bxLog: Customers - retrieve data for side queries page $page for account: ' . $account);
+                $this->logger->info('BxIndexLog: Customers - retrieve data for side queries page $page for account: ' . $this->account);
                 foreach ($customerAttributesValues as $r) {
                     $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
                 }
             }
 
-            $this->logger->info('bxLog: Customers - load data per customer for page $page for account: ' . $account);
+            $this->logger->info('BxIndexLog: Customers - load data per customer for page $page for account: ' . $this->account);
             foreach ($customers as $customer) {
                 $id = $customer['entity_id'];
                 $countryCode = $customer['country_id'];
@@ -395,7 +379,7 @@ class BxIndexer
                 $data = array_merge(array(array_keys(end($customers_to_save))), $customers_to_save);
                 $header = false;
             }
-            $this->logger->info('bxLog: Customers - save to file for page $page for account: ' . $account);
+            $this->logger->info('BxIndexLog: Customers - save to file for page $page for account: ' . $this->account);
             $this->bxFiles->savePartToCsv('customers.csv', $data);
             $data = null;
 
@@ -405,7 +389,7 @@ class BxIndexer
         } while ($count >= $limit);
 
         $customers = null;
-        if ($this->config->isCustomersExportEnabled($account)) {
+        if ($this->config->isCustomersExportEnabled($this->account)) {
             $customerSourceKey = $this->bxData->addMainCSVCustomerFile($this->bxFiles->getPath('customers.csv'), 'customer_id');
             foreach ($customer_attributes as $prop) {
                 if($prop == 'id') {
@@ -415,31 +399,31 @@ class BxIndexer
                 $this->bxData->addSourceStringField($customerSourceKey, $prop, $prop);
             }
 
-            $this->logger->info('bxLog: Customers - exporting additional tables for account: ' . $account);
-            $this->exportExtraTables('customers', $this->config->getAccountExtraTablesByEntityType($account, 'customers'));
+            $this->logger->info('BxIndexLog: Customers - exporting additional tables for account: ' . $this->account);
+            $this->exportExtraTables('customers', $this->config->getAccountExtraTablesByEntityType($this->account, 'customers'));
         }
-        $this->logger->info('bxLog: Customers - end of exporting for account: ' . $account);
+        $this->logger->info('BxIndexLog: Customers - end of exporting for account: ' . $this->account);
     }
 
 
     /**
-     * @param $account
+     * @param $this->account
      * @return array
      */
-    protected function getTransactionAttributes($account)
+    protected function getTransactionAttributes()
     {
-        $this->logger->info('bxLog: get all transaction attributes for account: ' . $account);
+        $this->logger->info('BxIndexLog: get all transaction attributes for account: ' . $this->account);
         $dbConfig = $this->deploymentConfig->get(ConfigOptionsListConstants::CONFIG_PATH_DB);
         if(!isset($dbConfig['connection']['default']['dbname'])) {
             $this->logger->info("ConfigOptionsListConstants::CONFIG_PATH_DB doesn't provide a dbname in ['connection']['default']['dbname']");
             return [];
         }
         $attributes = $this->exporterResource->getTransactionColumnsAsAttributes();
-        $this->logger->info('bxLog: get configured transaction attributes for account: ' . $account);
-        $filteredAttributes = $this->config->getAccountTransactionsProperties($account, $attributes, []);
+        $this->logger->info('BxIndexLog: get configured transaction attributes for account: ' . $this->account);
+        $filteredAttributes = $this->config->getAccountTransactionsProperties($this->account, $attributes, []);
 
         $attributes = array_intersect($attributes, $filteredAttributes);
-        $this->logger->info('bxLog: returning configured transaction attributes for account ' . $account . ': ' . implode(',', array_values($attributes)));
+        $this->logger->info('BxIndexLog: returning configured transaction attributes for account ' . $this->account . ': ' . implode(',', array_values($attributes)));
 
         return $attributes;
     }
@@ -448,16 +432,16 @@ class BxIndexer
      * @param $account
      * @return array
      */
-    protected function getCustomerAttributes($account)
+    protected function getCustomerAttributes()
     {
-        $this->logger->info('bxLog: get all customer attributes for account: ' . $account);
+        $this->logger->info('BxIndexLog: get all customer attributes for account: ' . $this->account);
         $attributes = $this->exporterResource->getCustomerAttributes();
 
-        $this->logger->info('bxLog: get configured customer attributes for account: ' . $account);
-        $filteredAttributes = $this->config->getAccountCustomersProperties($account, $attributes, array('dob', 'gender'));
+        $this->logger->info('BxIndexLog: get configured customer attributes for account: ' . $this->account);
+        $filteredAttributes = $this->config->getAccountCustomersProperties($this->account, $attributes, array('dob', 'gender'));
 
         $attributes = array_intersect($attributes, $filteredAttributes);
-        $this->logger->info('bxLog: returning configured customer attributes for account ' . $account . ': ' . implode(',', array_values($attributes)));
+        $this->logger->info('BxIndexLog: returning configured customer attributes for account ' . $this->account . ': ' . implode(',', array_values($attributes)));
 
         return $attributes;
     }
@@ -466,21 +450,21 @@ class BxIndexer
      * @param $account
      * @param $exportFull
      */
-    protected function exportTransactions($account)
+    protected function exportTransactions()
     {
         // don't export transactions in delta sync or when disabled
-        if(!$this->config->isTransactionsExportEnabled($account)) {
+        if(!$this->config->isTransactionsExportEnabled($this->account)) {
             return;
         }
 
-        $this->logger->info('bxLog: starting transaction export for account ' . $account);
+        $this->logger->info('BxIndexLog: starting transaction export for account ' . $this->account);
 
         $limit = 5000;
         $page = 1;
         $header = true;
         $transactions_to_save = array();
         $date = date("Y-m-d H:i:s", strtotime("-1 month"));
-        $transaction_attributes = $this->getTransactionAttributes($account);
+        $transaction_attributes = $this->getTransactionAttributes($this->account);
         if (count($transaction_attributes)) {
             $billing_columns = $shipping_columns = array();
             foreach ($transaction_attributes as $attribute) {
@@ -488,9 +472,9 @@ class BxIndexer
                 $shipping_columns['shipping_' . $attribute] = $attribute;
             }
         }
-        $tempSelect = $this->exporterResource->prepareTransactionsSelectByShippingBillingModeSql($account, $billing_columns, $shipping_columns, $this->config->getTransactionMode($account));
+        $tempSelect = $this->exporterResource->prepareTransactionsSelectByShippingBillingModeSql($this->account, $billing_columns, $shipping_columns, $this->config->getTransactionMode($this->account));
         while (true) {
-            $this->logger->info('bxLog: Transactions - load page ' . $page . ' for account ' . $account);
+            $this->logger->info('BxIndexLog: Transactions - load page ' . $page . ' for account ' . $this->account);
             $configurable = array();
             $transactions = $this->exporterResource->getTransactionsByLimitPage($limit, $page, $tempSelect);
             if(sizeof($transactions) < 1 && $page == 1){
@@ -499,7 +483,7 @@ class BxIndexer
                 break;
             }
 
-            $this->logger->info('bxLog: Transactions - loaded page ' . $page . ' for account ' . $account);
+            $this->logger->info('BxIndexLog: Transactions - loaded page ' . $page . ' for account ' . $this->account);
             foreach ($transactions as $transaction) {
                 //is configurable
                 if ($transaction['product_type'] == 'configurable') {
@@ -510,7 +494,7 @@ class BxIndexer
                 if($productOptions === FALSE) {
                     $productOptions = @json_decode($transaction['product_options'], true);
                     if(is_null($productOptions)) {
-                        $this->logger->error("bxLog: failed to unserialize and json decode product_options for order with entity_id: " . $transaction['entity_id']);
+                        $this->logger->error("BxIndexLog: failed to unserialize and json decode product_options for order with entity_id: " . $transaction['entity_id']);
                         continue;
                     }
                 }
@@ -602,7 +586,7 @@ class BxIndexer
                 $header = false;
             }
 
-            $this->logger->info('bxLog: Transactions - save to file for account ' . $account);
+            $this->logger->info('BxIndexLog: Transactions - save to file for account ' . $this->account);
             $this->bxFiles->savePartToCsv('transactions.csv', $data);
             $data = null;
             $page++;
@@ -611,10 +595,10 @@ class BxIndexer
         $sourceKey = $this->bxData->setCSVTransactionFile($this->bxFiles->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price', 'currency', 'email');
         $this->bxData->addSourceCustomerGuestProperty($sourceKey,'guest_id');
 
-        $this->logger->info('bxLog: Transactions - exporting additional tables for account: ' . $account);
-        $this->exportExtraTables('transactions', $this->config->getAccountExtraTablesByEntityType($account,'transactions'));
+        $this->logger->info('BxIndexLog: Transactions - exporting additional tables for account: ' . $this->account);
+        $this->exportExtraTables('transactions', $this->config->getAccountExtraTablesByEntityType($this->account,'transactions'));
 
-        $this->logger->info('bxLog: Transactions - end of export for account ' . $account);
+        $this->logger->info('BxIndexLog: Transactions - end of export for account ' . $this->account);
     }
 
     /**
@@ -639,20 +623,20 @@ class BxIndexer
      * @param $files
      * @return bool
      */
-    protected function exportProducts($account){
+    protected function exportProducts()
+    {
+        $languages = $this->config->getAccountLanguages($this->account);
+        $this->logger->info('BxIndexLog: Products - start of export for account ' . $this->account);
 
-        $languages = $this->config->getAccountLanguages($account);
-        $this->logger->info('bxLog: Products - start of export for account ' . $account);
-
-        $attrs = $this->getStoreProductAttributes($account);
-        $this->logger->info('bxLog: Products - get info about attributes - before for account ' . $account);
+        $attrs = $this->getStoreProductAttributes();
+        $this->logger->info('BxIndexLog: Products - get info about attributes - before for account ' . $this->account);
 
         $countMax = 1000000; //$this->_storeConfig['maximum_population'];
         $limit = 1000; //$this->_storeConfig['export_chunk'];
         $totalCount = 0;
         $page = 1;
         $header = true;
-        $duplicateIds = $this->getDuplicateIds($account, $languages);
+        $duplicateIds = $this->getDuplicateIds($languages);
 
         while (true) {
             if ($countMax > 0 && $totalCount >= $countMax) {
@@ -693,7 +677,7 @@ class BxIndexer
         $this->bxData->addFieldParameter($attributeSourceKey, 'group_id', 'multiValued', 'false');
 
         $productAttributes = $this->exporterResource->getProductAttributesByCodes($attrs);
-        $this->logger->info('bxLog: Products - connected to DB, built attribute info query for account ' . $account);
+        $this->logger->info('BxIndexLog: Products - connected to DB, built attribute info query for account ' . $this->account);
 
         $attrsFromDb = ['int'=>[], 'varchar'=>[], 'text'=>[], 'decimal'=>[], 'datetime'=>[]];
         foreach ($productAttributes as $r) {
@@ -707,11 +691,11 @@ class BxIndexer
             }
         }
 
-        $this->exportProductAttributes($attrsFromDb, $languages, $account, $attributeSourceKey, $duplicateIds);
-        $this->exportProductInformation($duplicateIds, $account, $languages);
+        $this->exportProductAttributes($attrsFromDb, $languages, $attributeSourceKey, $duplicateIds);
+        $this->exportProductInformation($duplicateIds, $languages);
 
-        $this->logger->info('bxLog: Products - exporting additional tables for account: ' . $account);
-        $this->exportExtraTables('products', $this->config->getAccountExtraTablesByEntityType($account,'products'));
+        $this->logger->info('BxIndexLog: Products - exporting additional tables for account: ' . $this->account);
+        $this->exportExtraTables('products', $this->config->getAccountExtraTablesByEntityType($this->account,'products'));
 
         return true;
     }
@@ -724,9 +708,9 @@ class BxIndexer
      * @param $duplicateIds
      * @throws \Exception
      */
-    protected function exportProductAttributes($attrs = array(), $languages, $account, $mainSourceKey, $duplicateIds)
+    protected function exportProductAttributes($attrs = array(), $languages,  $mainSourceKey, $duplicateIds)
     {
-        $this->logger->info('bxLog: Products - exportProductAttributes for account ' . $account);
+        $this->logger->info('BxIndexLog: Products - exportProductAttributes for account ' . $this->account);
         $paramPriceLabel = '';
         $paramSpecialPriceLabel = '';
 
@@ -758,10 +742,10 @@ class BxIndexer
                         array('t_d' => $this->rs->getTableName('catalog_product_entity_' . $attrKey)),
                         $columns
                     );
-                    if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
+                    if(!$this->exportFull) $select->where('t_d.entity_id IN(?)', $this->getDeltaIds());
 
                     $labelColumns[$lang] = 'value_' . $lang;
-                    $storeObject = $this->config->getStore($account, $lang);
+                    $storeObject = $this->config->getStore($this->account, $lang);
                     $storeId = $storeObject->getId();
 
                     $storeBaseUrl = $storeObject->getBaseUrl();
@@ -793,7 +777,7 @@ class BxIndexer
                                     array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
                                 )
                                 ->where('t_g.attribute_id = ?', $typeKey)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
-                            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
+                            if(!$this->exportFull) $select1->where('t_g.entity_id IN(?)', $this->getDeltaIds());
                             foreach ($db->fetchAll($select1) as $r) {
                                 $data[] = $r;
                             }
@@ -882,7 +866,7 @@ class BxIndexer
                                 continue;
                             } else {
                                 if ($type['attribute_code'] == 'url_key') {
-                                    if ($this->config->exportProductUrl($account)) {
+                                    if ($this->config->exportProductUrl($this->account)) {
                                         $url = $storeBaseUrl . $row['value'] . '.html';
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
@@ -895,7 +879,7 @@ class BxIndexer
                                     }
                                 }
                                 if ($type['attribute_code'] == 'image') {
-                                    if ($this->config->exportProductImages($account)) {
+                                    if ($this->config->exportProductImages($this->account)) {
                                         $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'value_' . $lang => $url);
@@ -988,7 +972,7 @@ class BxIndexer
                         $labelColumns
                     );
 
-                    if(sizeof($data) == 0 && $this->getIndexerType() != BxDeltaExporter::INDEXER_TYPE) {
+                    if(sizeof($data) == 0 && $this->exportFull) {
                         $d = array(array('entity_id',$type['attribute_code'] . '_id'));
                         $this->bxFiles->savepartToCsv('product_' . $type['attribute_code'] . '.csv',$d);
                         $fieldId = $this->bxGeneral->sanitizeFieldName($type['attribute_code']);
@@ -1116,13 +1100,13 @@ class BxIndexer
 
     /**
      * @param $duplicateIds
-     * @param $account
+     * @param $this->account
      * @param $languages
      * @throws \Exception
      */
-    protected function exportProductInformation($duplicateIds, $account, $languages)
+    protected function exportProductInformation($duplicateIds, $languages)
     {
-        $this->logger->info('bxLog: Products - exportProductInformation for account ' . $account);
+        $this->logger->info('BxIndexLog: Products - exportProductInformation for account ' . $this->account);
 
         $productStockData = $this->exporterResource->getProductStockInformation();
         if(sizeof($productStockData)){
@@ -1220,7 +1204,7 @@ class BxIndexer
         $lvh = array();
         foreach ($languages as $language) {
             $lvh[$language] = 'value_'.$language;
-            $store = $this->config->getStore($account, $language);
+            $store = $this->config->getStore($this->account, $language);
             $storeId = $store->getId();
             $store = null;
 
@@ -1236,7 +1220,7 @@ class BxIndexer
                 );
 
             $select1->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
-            if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE) $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
+            if(!$this->exportFull) $select1->where('c_p_e.entity_id IN(?)', $this->getDeltaIds());
 
             $select2 = clone $select1;
             $select2->join(
@@ -1317,11 +1301,11 @@ class BxIndexer
      * @return array
      * @throws \Exception
      */
-    protected function getDuplicateIds($account, $languages){
+    protected function getDuplicateIds($languages){
         $ids = [];
         $attributeId = $this->exporterResource->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         foreach ($languages as $language){
-            $storeObject = $this->config->getStore($account, $language);
+            $storeObject = $this->config->getStore($this->account, $language);
             $ids = $this->exporterResource->getProductDuplicateIds($storeObject->getId(), $attributeId, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE);
             $storeObject = null;
         }
@@ -1341,7 +1325,7 @@ class BxIndexer
     {
         if(empty($tables))
         {
-            $this->logger->info("bxLog: {$entity} no additional tables have been found.");
+            $this->logger->info("BxIndexLog: {$entity} no additional tables have been found.");
             return $this;
         }
 
@@ -1356,13 +1340,13 @@ class BxIndexer
                 $this->bxFiles->savePartToCsv($fileName, $dataToSave);
 
                 $this->bxData->addExtraTableToEntity($this->bxFiles->getPath($fileName), $entity, reset($columns), $columns);
-                $this->logger->info("bxLog: {$entity} - additional table {$table} exported.");
+                $this->logger->info("BxIndexLog: {$entity} - additional table {$table} exported.");
             } catch (NoSuchEntityException $exception)
             {
-                $this->logger->warning("bxLog: {$entity} additional table ". $exception->getMessage());
+                $this->logger->warning("BxIndexLog: {$entity} additional table ". $exception->getMessage());
             } catch (\Exception $exception)
             {
-                $this->logger->error("bxLog: {$entity} additional table error: ". $exception->getMessage());
+                $this->logger->error("BxIndexLog: {$entity} additional table error: ". $exception->getMessage());
             }
         }
 
@@ -1449,7 +1433,7 @@ class BxIndexer
     protected function setContextOnResource()
     {
         $this->exporterResource->setExportIds($this->getDeltaIds());
-        if($this->getIndexerType() == BxDeltaExporter::INDEXER_TYPE)
+        if(!$this->exportFull)
         {
             $this->exporterResource->isDelta(true);
         }
@@ -1474,6 +1458,31 @@ class BxIndexer
     public function getAccount()
     {
         return $this->account;
+    }
+
+    /**
+     * Get timeout for exporter
+     * @return bool|int
+     */
+    public function getTimeoutForExporter()
+    {
+        return $this->serverTimeout;
+    }
+
+    /**
+     * Get timeout for exporter
+     * @return bool|int
+     */
+    public function setTimeoutForExporter($serverTimeout)
+    {
+        $this->serverTimeout = $serverTimeout;
+        return $this;
+    }
+
+    public function setExportFull($value)
+    {
+        $this->exportFull = $value;
+        return $this;
     }
 
 }

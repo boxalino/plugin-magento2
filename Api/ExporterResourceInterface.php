@@ -32,35 +32,6 @@ interface ExporterResourceInterface
      */
     public function getTableContent($table);
 
-    /**
-     * @param $date
-     * @return mixed
-     */
-    public function getProductIdsByUpdatedAt($date);
-
-    /**
-     * @param $date
-     * @return mixed
-     */
-    public function hasDeltaReadyCategories($date);
-
-    /**
-     * @return mixed
-     */
-    public function getLatestUpdatedProductIds();
-
-    /**
-     * @param $id
-     * @param $updated
-     * @return mixed
-     */
-    public function updateIndexerUpdatedAt($id, $updated);
-
-    /**
-     * @param $id
-     * @return mixed
-     */
-    public function getLatestUpdatedAtByIndexerId($id);
 
     /**
      * P R O D U C T   E X P O R T   F U N C T I O N A L I T Y
