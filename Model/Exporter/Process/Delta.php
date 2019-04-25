@@ -86,10 +86,10 @@ class Delta extends ProcessManager
             $deltaTimeRange = $this->config->getExportSchedulerDeltaMinInterval($account);
             if($latestDeltaRunDate === min($latestDeltaRunDate, date("Y-m-d H:i:s", strtotime("-$deltaTimeRange min"))))
             {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         return true;
