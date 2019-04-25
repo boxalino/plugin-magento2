@@ -85,14 +85,14 @@ abstract class ProcessManager
         }
         
         $errorMessages = array();
-        $successMessages = array();
-
         $this->logger->info("BxIndexLog: starting Boxalino {$this->getType()} export process. Latest update at {$this->getLatestRun()}");
+        $exporterHasRun = false;
         foreach($this->getAccounts() as $account)
         {
             try{
                 if($this->exportAllowedByAccount($account))
                 {
+                    $exporterHasRun = true;
                     $this->exporterService
                         ->setAccount($account)
                         ->setDeltaIds($this->getIds())
@@ -108,7 +108,12 @@ abstract class ProcessManager
             }
         }
         
-        if(empty($errorMessages))
+        if(!$exporterHasRun)
+        {
+            return false;
+        }
+        
+        if(empty($errorMessages) && $exporterHasRun)
         {
             return true;
         }
@@ -122,11 +127,6 @@ abstract class ProcessManager
         if(($this->getType() == BxDeltaExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxExporter::INDEXER_ID)->isWorking())
         {
             $this->logger->info("bxLog: Delta exporter will not run. Full exporter process must finish first.");
-            return false;
-        }
-        if(($this->getType() == BxExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxDeltaExporter::INDEXER_ID)->isWorking())
-        {
-            $this->logger->info("bxLog: Full exporter will not run. Delta exporter process must finish first.");
             return false;
         }
         
