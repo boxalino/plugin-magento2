@@ -206,7 +206,7 @@ class BxIndexConfig
      */
     public function getExportSchedulerDeltaMinInterval($account)
     {
-        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_min_interval') == 1;
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_min_interval');
     }
 
     /**
@@ -215,7 +215,7 @@ class BxIndexConfig
      */
     public function getExportSchedulerDeltaStart($account)
     {
-        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_start') == 1;
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_start');
     }
 
     /**
@@ -224,7 +224,7 @@ class BxIndexConfig
      */
     public function getExportSchedulerDeltaEnd($account)
     {
-        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_end') == 1;
+        return $this->getFirstAccountStore($account)->getConfig('bxExporter/scheduler/delta_end');
     }
 
     /**

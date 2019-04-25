@@ -82,14 +82,14 @@ class Delta extends ProcessManager
         $runDateHour= $runDateHour->format("H");
         if($runDateHour === min(max($runDateHour, $startHour), $endHour))
         {
-            $latestDeltaRunDate = $this->getLatestDeltaUpdate();
+            $latestDeltaRunDate = $this->getLatestUpdatedAt($this->getIndexerId());
             $deltaTimeRange = $this->config->getExportSchedulerDeltaMinInterval($account);
-            if($latestDeltaRunDate === min($latestDeltaRunDate, date("Y-m-d H:i:s", strtotime("-$deltaTimeRange min"))))
+            if($latestDeltaRunDate == min($latestDeltaRunDate, date("Y-m-d H:i:s", strtotime("-$deltaTimeRange min"))))
             {
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         return true;
