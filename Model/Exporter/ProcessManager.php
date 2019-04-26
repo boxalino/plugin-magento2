@@ -118,7 +118,7 @@ abstract class ProcessManager
             return true;
         }
         
-        throw new \Exception(__("Boxalino Export failed with messages: " . implode(",", $errorMessages)));
+        throw new \Exception(__("BxIndexLog: Boxalino Export failed with messages: " . implode(",", $errorMessages)));
     }
 
 
@@ -126,7 +126,7 @@ abstract class ProcessManager
     {
         if(($this->getType() == BxDeltaExporter::INDEXER_TYPE) &&  $this->indexerModel->load(BxExporter::INDEXER_ID)->isWorking())
         {
-            $this->logger->info("bxLog: Delta exporter will not run. Full exporter process must finish first.");
+            $this->logger->info("BxIndexLog: Delta exporter will not run. Full exporter process must finish first.");
             return false;
         }
         
@@ -137,7 +137,7 @@ abstract class ProcessManager
     {
         if($this->exportDeniedOnAccount($account))
         {
-            $this->logger->info("bxLog: The {$this->getType()} export is denied permission to run. Check your exporter configurations.");
+            $this->logger->info("BxIndexLog: The {$this->getType()} export is denied permission to run. Check your exporter configurations.");
             return false;
         }
 

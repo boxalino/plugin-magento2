@@ -203,7 +203,7 @@ class Service
                 $changes = $this->bxData->publishOwnerChanges($publish);
                 if(sizeof($changes['changes']) > 0 && !$publish)
                 {
-                    $this->logger->warning("changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $this->account);
+                    $this->logger->warning("BxIndexLog: changes in configuration detected butnot published as publish configuration automatically option has not been activated for account: " . $this->account);
                 }
                 $this->logger->info('BxIndexLog: Push the Zip data file to the Data Indexing server for account: ' . $this->account);
             }

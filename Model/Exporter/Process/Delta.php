@@ -33,11 +33,11 @@ class Delta extends ProcessManager
         $ids = $this->getIds();
         if(empty($ids))
         {
-            $this->logger->info("bxLog: The delta export is empty at {$this->getLatestRun()}. Closing request.");
+            $this->logger->info("BxIndexLog: The delta export is empty at {$this->getLatestRun()}. Closing request.");
             return true;
         }
 
-        $this->logger->info("bxLog: The delta export has " . count($ids) . " products to update in stack.");
+        $this->logger->info("BxIndexLog: The delta export has " . count($ids) . " products to update in stack.");
         return parent::run();
     }
 
