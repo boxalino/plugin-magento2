@@ -16,7 +16,7 @@ use Zend\Server\Exception\RuntimeException;
 use \Psr\Log\LoggerInterface;
 
 /**
- * Class BxIndexer
+ * Class Service
  * @package Boxalino\Intelligence\Model\Indexer
  */
 class Service
@@ -108,7 +108,7 @@ class Service
     protected $exportFull = true;
 
     /**
-     * BxIndexer constructor.
+     * Service constructor.
      * @param LoggerInterface $logger
      * @param \Magento\Framework\App\ResourceConnection $rs
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig

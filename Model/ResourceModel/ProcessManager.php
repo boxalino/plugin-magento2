@@ -18,7 +18,7 @@ class ProcessManager
     protected $adapter;
     
     /**
-     * BxIndexer constructor.
+     * ProcessManager constructor.
      * @param LoggerInterface $logger
      * @param ResourceConnection $resource
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig

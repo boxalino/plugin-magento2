@@ -42,7 +42,7 @@ class Exporter implements ExporterResourceInterface
     protected $isDelta = false;
 
     /**
-     * BxIndexer constructor.
+     * Exporter constructor.
      * @param LoggerInterface $logger
      * @param ResourceConnection $resource
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
