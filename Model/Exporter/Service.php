@@ -157,6 +157,8 @@ class Service
         $this->logger->info("BxIndexLog: verify credentials for account: " . $this->account);
         try{
             $this->bxData->verifyCredentials();
+        } catch(\LogicException $e){
+            $this->logger->warning('BxIndexLog: verifyCredentials returned a timeout: ' . $e->getMessage());
         } catch (\Exception $e){
             $this->logger->error("BxIndexLog: verifyCredentials failed with exception: {$e->getMessage()}");
             throw new \Exception("BxIndexLog: verifyCredentials on account {$this->account} failed with exception: {$e->getMessage()}");
@@ -185,7 +187,7 @@ class Service
                 try {
                     $this->logger->info('BxIndexLog: Push the XML configuration file to the Data Indexing server for account: ' . $this->account);
                     $this->bxData->pushDataSpecifications();
-                }catch(\LogicException $e){
+                } catch(\LogicException $e){
                     $this->logger->info('BxIndexLog: publishing XML configurations returned a timeout: ' . $e->getMessage());
                 } catch(\Exception $e) {
                     $value = @json_decode($e->getMessage(), true);
