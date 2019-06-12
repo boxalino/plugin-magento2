@@ -5,6 +5,12 @@ On every plugin update - please check the file and what needs to be tested on yo
 
 If you have any question, just contact us at support@boxalino.com
 
+### v1.6.3 - 2019-06-12
+###### 1. .gitignore update
+The package can be retrieved via a git pull after a composer install
+###### 2. Exporter service timeout response processed as logic exceptions
+The DI requests for account validation, XML publish and archive export can return a timeout when the DI service is busy.
+This does not mean the process failed so the use-cases have been treated as warning/infos when debugging is needed.
 
 ### v1.6.2 - 2019-04-26
 ##### 1. Integration of Exporter Scheduler for delta-full exports
