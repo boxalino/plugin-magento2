@@ -33,7 +33,8 @@ class Delta extends ProcessManager
         $ids = $this->getIds();
         if(empty($ids))
         {
-            $this->logger->info("BxIndexLog: The delta export is empty at {$this->getLatestRun()}. Closing request.");
+            $latestRun = $this->getLatestRun();
+            $this->logger->info("BxIndexLog: The delta export is empty at {$this->getUtcTime()} (UTC) / {$this->getCurrentStoreTime()} (store time). Latest update at {$latestRun} (UTC)  / {$this->getStoreTime($latestRun)} (store time). Closing request.");
             return true;
         }
 
@@ -78,9 +79,8 @@ class Delta extends ProcessManager
 
         $startHour = $this->config->getExportSchedulerDeltaStart($account);
         $endHour = $this->config->getExportSchedulerDeltaEnd($account);
-        $runDateHour = new \DateTime('NOW');
-        $runDateHour= $runDateHour->format("H");
-        if($runDateHour === min(max($runDateHour, $startHour), $endHour))
+        $runDateStoreHour = $this->getCurrentStoreTime('H');;
+        if($runDateStoreHour === min(max($runDateStoreHour, $startHour), $endHour))
         {
             $latestDeltaRunDate = $this->getLatestUpdatedAt($this->getIndexerId());
             $deltaTimeRange = $this->config->getExportSchedulerDeltaMinInterval($account);

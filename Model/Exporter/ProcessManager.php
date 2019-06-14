@@ -47,6 +47,11 @@ abstract class ProcessManager
      */
     protected $exporterService;
 
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
+     */
+    protected $timezone;
+
 
     /**
      * ProcessManager constructor.
@@ -61,13 +66,15 @@ abstract class ProcessManager
         ExporterService $service,
         \Magento\Indexer\Model\Indexer $indexer,
         BxIndexConfig $bxIndexConfig,
-        ProcessManagerResource $processResource
+        ProcessManagerResource $processResource,
+        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone
     ) {
         $this->processResource = $processResource;
         $this->indexerModel = $indexer;
         $this->logger = $logger;
         $this->config = $bxIndexConfig;
         $this->exporterService = $service;
+        $this->timezone = $timezone;
 
         $libPath = __DIR__ . '/../../Lib';
         require_once($libPath . '/BxClient.php');
@@ -85,7 +92,8 @@ abstract class ProcessManager
         }
         
         $errorMessages = array();
-        $this->logger->info("BxIndexLog: starting Boxalino {$this->getType()} export process. Latest update at {$this->getLatestRun()}");
+        $latestRun = $this->getLatestRun();
+        $this->logger->info("BxIndexLog: starting Boxalino {$this->getType()} export process. Latest update at {$latestRun} (UTC)  / {$this->getStoreTime($latestRun)} (store time)");
         $exporterHasRun = false;
         foreach($this->getAccounts() as $account)
         {
@@ -168,6 +176,25 @@ abstract class ProcessManager
     public function updateProcessRunDate($date)
     {
         $this->processResource->updateIndexerUpdatedAt($this->getIndexerId(), $date);
+    }
+
+    public function getCurrentStoreTime($format = 'Y-m-d H:i:s')
+    {
+        return $this->timezone->date()->format($format);
+    }
+
+    public function getStoreTime($date)
+    {
+        return $this->timezone->formatDate($date, 1, true);
+    }
+
+    public function getUtcTime($time=null)
+    {
+        if(is_null($time)){
+            return $this->timezone->convertConfigTimeToUtc($this->getCurrentStoreTime());
+        }
+
+        return $this->timezone->convertConfigTimeToUtc($time);
     }
 
     abstract function getTimeout($account);

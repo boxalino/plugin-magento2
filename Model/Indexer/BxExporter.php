@@ -52,7 +52,7 @@ class BxExporter implements \Magento\Framework\Indexer\ActionInterface, \Magento
      */
     public function executeFull()
     {
-        $startExportDate = date("Y-m-d H:i:s");
+        $startExportDate = $this->processManager->getUtcTime();
         if(!$this->processManager->processCanRun())
         {
             return true;

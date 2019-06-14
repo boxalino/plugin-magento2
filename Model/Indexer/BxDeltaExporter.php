@@ -53,7 +53,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
      */
     public function executeFull()
     {
-        $startExportDate = date("Y-m-d H:i:s");
+        $startExportDate = $this->processManager->getUtcTime();
         if(!$this->processManager->processCanRun())
         {
             return true;
