@@ -210,7 +210,7 @@ class Service
                 $this->logger->info('BxIndexLog: Push the Zip data file to the Data Indexing server for account: ' . $this->account);
             }
             
-            $this->logger->info('pushing to DI');
+            $this->logger->info('BxIndexLog: pushing to DI');
             try {
                 $this->bxData->pushData($this->config->getExporterTemporaryArchivePath($this->account) , $this->getTimeoutForExporter($this->account));
             } catch(\LogicException $e){
