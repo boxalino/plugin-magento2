@@ -5,11 +5,19 @@ On every plugin update - please check the file and what needs to be tested on yo
 
 If you have any question, just contact us at support@boxalino.com
 
+### v1.6.4 - 2019-06-14
+* *post-deploy step* : *php bin/magento setup:di:compile* required
+##### 1. Exporter Scheduler time-range comparison with store time
+* *description* : The configured time for Exporter Scheduler should be set to store local time. The exporter run hour/times are saved in UTC.
+Logs updated to reflect both UTC and store locale time.
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/be5bcdd9d782997e206ebee60a1343138e3a18fa
+
+
 ### v1.6.3 - 2019-06-12
-###### 1. .gitignore update
-The package can be retrieved via a git pull after a composer install
-###### 2. Exporter service timeout response processed as logic exceptions
-The DI requests for account validation, XML publish and archive export can return a timeout when the DI service is busy.
+##### 1. .gitignore update
+* *description* :  The package can be retrieved via a git pull after a composer install
+##### 2. Exporter service timeout response processed as logic exceptions
+* *description* : The DI requests for account validation, XML publish and archive export can return a timeout when the DI service is busy.
 This does not mean the process failed so the use-cases have been treated as warning/infos when debugging is needed.
 
 ### v1.6.2 - 2019-04-26
