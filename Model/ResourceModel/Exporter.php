@@ -427,12 +427,16 @@ class Exporter implements ExporterResourceInterface
     {
         $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $visibilityId = $this->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
+        
         $parentsCountSql = $this->getProductAttributeParentCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
+        $childCountSql = $this->getConfigurableProductAttributeChildCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
 
+        $statusSql = $this->getEavJoinAttributeSQLByStoreAttrIdTable($statusId, $storeId, "catalog_product_entity_int");
+        $visibilitySql = $this->getEavJoinAttributeSQLByStoreAttrIdTable($visibilityId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
                 ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
-                ['c_p_e.entity_id']
+                ['c_p_e.entity_id', 'c_p_e.type_id']
             )
             ->joinLeft(
                 ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
@@ -440,17 +444,18 @@ class Exporter implements ExporterResourceInterface
                 ['parent_id']
             )
             ->join(
-                ['c_p_e_s' => $this->adapter->getTableName('catalog_product_entity_int')],
-                "c_p_e.entity_id = c_p_e_s.entity_id AND c_p_e_s.attribute_id = {$statusId} AND c_p_e_s.store_id IN (0, {$storeId})",
+                ['c_p_e_s' => new \Zend_Db_Expr("( ". $statusSql->__toString() . ' )')],
+                "c_p_e.entity_id = c_p_e_s.entity_id",
                 ['c_p_e_s.attribute_id', 'c_p_e_s.store_id','entity_status'=>'c_p_e_s.value']
             )
             ->join(
-                ['c_p_e_v' => $this->adapter->getTableName('catalog_product_entity_int')],
-                "c_p_e.entity_id = c_p_e_v.entity_id AND c_p_e_v.attribute_id = {$visibilityId} AND c_p_e_v.store_id IN (0, {$storeId})",
+                ['c_p_e_v' => new \Zend_Db_Expr("( ". $visibilitySql->__toString() . ' )')],
+                "c_p_e.entity_id = c_p_e_v.entity_id",
                 ['entity_visibility'=>'c_p_e_v.value']
             );
 
         if(!empty($this->exportIds) && $this->isDelta) $select->where('c_p_e.entity_id IN(?)', $this->exportIds);
+        $configurableType = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
         $visibilityOptions = implode(',', [\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH]);
         $finalSelect = $this->adapter->select()
             ->from(
@@ -461,8 +466,9 @@ class Exporter implements ExporterResourceInterface
                     "entity_select.store_id",
                     "value" => new \Zend_Db_Expr("
                         (CASE 
+                            WHEN entity_select.type_id = '{$configurableType}' AND entity_select.entity_status = '1' THEN child_count.child_value
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
-                            WHEN c_p_e_s_p.value = '2' THEN 2 
+                            WHEN entity_select.entity_status = '2' THEN 2 
                             ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND parent_count.count > 0, 1, 2))
                          END
                         )"
@@ -475,12 +481,67 @@ class Exporter implements ExporterResourceInterface
                 ["count"]
             )
             ->joinLeft(
-                ['c_p_e_s_p' => $this->adapter->getTableName('catalog_product_entity_int')],
-                "entity_select.parent_id = c_p_e_s_p.entity_id AND c_p_e_s_p.attribute_id = {$statusId} AND c_p_e_s_p.store_id IN (0, {$storeId})",
-                []
+                ["child_count"=> new \Zend_Db_Expr("( ". $childCountSql->__toString() . " )")],
+                "child_count.entity_id = entity_select.entity_id",
+                ["child_count", 'configurable', 'child_value']
             );
 
         return $finalSelect;
+    }
+
+    /**
+     * Default function for accessing product attributes values
+     * join them with default store
+     * and make a selection on the store id
+     *
+     * @param $attributeId
+     * @param $storeId
+     * @param $table
+     * @return mixed
+     */
+    protected function getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, $table, $main = 'catalog_product_entity')
+    {
+        $select = $this->adapter
+            ->select()
+            ->from(
+                array('e' => $main),
+                array('entity_id' => 'entity_id')
+            );
+
+        $innerCondition = array(
+            $this->adapter->quoteInto("{$attributeId}_default.entity_id = e.entity_id", ''),
+            $this->adapter->quoteInto("{$attributeId}_default.attribute_id = ?", $attributeId),
+            $this->adapter->quoteInto("{$attributeId}_default.store_id = ?", 0)
+        );
+
+        $joinLeftConditions = array(
+            $this->adapter->quoteInto("{$attributeId}_store.entity_id = e.entity_id", ''),
+            $this->adapter->quoteInto("{$attributeId}_store.attribute_id = ?", $attributeId),
+            $this->adapter->quoteInto("{$attributeId}_store.store_id IN(?)", $storeId)
+        );
+
+        $select
+            ->joinInner(
+                array($attributeId . '_default' => $table), implode(' AND ', $innerCondition),
+                array('default_value' => 'value', 'attribute_id')
+            )
+            ->joinLeft(
+                array("{$attributeId}_store" => $table), implode(' AND ', $joinLeftConditions),
+                array("store_value" => 'value', 'store_id')
+            );
+
+        $selectSql = $this->adapter->select()
+            ->from(
+                array('joins' => $select),
+                array(
+                    'attribute_id'=>'joins.attribute_id',
+                    'entity_id' => 'joins.entity_id',
+                    'store_id' => new \Zend_Db_Expr("IF (joins.store_value IS NULL OR joins.store_value = '', 0, joins.store_id)"),
+                    'value' => new \Zend_Db_Expr("IF (joins.store_value IS NULL OR joins.store_value = '', joins.default_value, joins.store_value)")
+                )
+            );
+
+        return $selectSql;
     }
 
     /**
@@ -494,6 +555,7 @@ class Exporter implements ExporterResourceInterface
      */
     protected function getProductAttributeParentCountSqlByAttrIdValueStoreId($attributeId, $value, $storeId)
     {
+        $storeAttributeValue = $this->getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
                 ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
@@ -504,12 +566,10 @@ class Exporter implements ExporterResourceInterface
                 'c_p_e.entity_id = c_p_r.child_id',
                 ['c_p_e.entity_id']
             )
-            ->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_int')],
+            ->join(['t_d' => new \Zend_Db_Expr("( ". $storeAttributeValue->__toString() . ' )')],
                 't_d.entity_id = c_p_r.parent_id',
                 ['t_d.value']
-            )
-            ->where('t_d.attribute_id = ?', $attributeId)
-            ->where('t_d.store_id = 0 OR t_d.store_id = ?', $storeId);
+            );
 
         $mainSelect = $this->adapter->select()
             ->from(
@@ -518,6 +578,44 @@ class Exporter implements ExporterResourceInterface
             )
             ->where("parent_select.value = ?", $value)
             ->group("parent_select.entity_id");
+
+        return $mainSelect;
+    }
+
+    /**
+     * Getting count of child products that have a certain value for an attribute
+     * Used for validation of parent values
+     *
+     * @param $attributeId
+     * @param $value
+     * @param $storeId
+     * @return \Magento\Framework\DB\Select
+     */
+    protected function getConfigurableProductAttributeChildCountSqlByAttrIdValueStoreId($attributeId, $value, $storeId)
+    {
+        $configurableType = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+        $storeAttributeValue = $this->getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, "catalog_product_entity_int");
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r.child_id']
+            )
+            ->joinLeft(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                'c_p_e.entity_id = c_p_r.parent_id',
+                ['c_p_e.entity_id']
+            )
+            ->join(['t_d' => new \Zend_Db_Expr("( ". $storeAttributeValue->__toString() . ' )')],
+                't_d.entity_id = c_p_r.child_id',
+                ['t_d.value']
+            );
+
+        $mainSelect = $this->adapter->select()
+            ->from(
+                ["child_select"=> new \Zend_Db_Expr("( ". $select->__toString() . ' )')],
+                ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), "child_value" => new \Zend_Db_Expr("MAX(child_select.value)"), 'entity_id', 'configurable'=> new \Zend_Db_Expr("1")]
+            )
+            ->group("child_select.entity_id");
 
         return $mainSelect;
     }

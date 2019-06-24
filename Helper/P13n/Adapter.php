@@ -376,7 +376,7 @@ class Adapter
         $additionalFields = explode(',', $this->scopeConfig->getValue('bxGeneral/advanced/additional_fields', $this->scopeStore));
         if(!empty($additionalFields))
         {
-            $returnFields = array_merge($returnFields, $additionalFields);
+            $returnFields = array_filter(array_merge($returnFields, $additionalFields));
         }
 
         self::$bxClient->forwardRequestMapAsContextParameters();
