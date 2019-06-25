@@ -5,6 +5,13 @@ On every plugin update - please check the file and what needs to be tested on yo
 
 If you have any question, just contact us at support@boxalino.com
 
+
+### v1.6.5 - 2019-06-24
+* *test* : *php bin/magento setup:di:compile* required
+##### 1. Exporter update on Configurable products status
+* *description* : Per default M2 behavior, the configurable product must appear disabled if the children are disabled
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/1bfa90cda7d1252f9df9a3b7e3b224886ce64db1
+
 ### v1.6.4 - 2019-06-14
 * *post-deploy step* : *php bin/magento setup:di:compile* required
 ##### 1. Exporter Scheduler time-range comparison with store time
