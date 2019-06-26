@@ -466,7 +466,7 @@ class Exporter implements ExporterResourceInterface
                     "entity_select.store_id",
                     "value" => new \Zend_Db_Expr("
                         (CASE 
-                            WHEN entity_select.type_id = '{$configurableType}' AND entity_select.entity_status = '1' THEN child_count.child_value
+                            WHEN entity_select.type_id = '{$configurableType}' AND entity_select.entity_status = '1' THEN IF(child_count.child_count > 0, 1, 2)
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
                             WHEN entity_select.entity_status = '2' THEN 2 
                             ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND parent_count.count > 0, 1, 2))
@@ -483,7 +483,7 @@ class Exporter implements ExporterResourceInterface
             ->joinLeft(
                 ["child_count"=> new \Zend_Db_Expr("( ". $childCountSql->__toString() . " )")],
                 "child_count.entity_id = entity_select.entity_id",
-                ["child_count", 'configurable', 'child_value']
+                ["child_count"]
             );
 
         return $finalSelect;
@@ -608,12 +608,13 @@ class Exporter implements ExporterResourceInterface
             ->join(['t_d' => new \Zend_Db_Expr("( ". $storeAttributeValue->__toString() . ' )')],
                 't_d.entity_id = c_p_r.child_id',
                 ['t_d.value']
-            );
+            )
+            ->where('t_d.value = ?', $value);
 
         $mainSelect = $this->adapter->select()
             ->from(
                 ["child_select"=> new \Zend_Db_Expr("( ". $select->__toString() . ' )')],
-                ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), "child_value" => new \Zend_Db_Expr("MAX(child_select.value)"), 'entity_id', 'configurable'=> new \Zend_Db_Expr("1")]
+                ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), 'entity_id', 'configurable'=> new \Zend_Db_Expr("1")]
             )
             ->group("child_select.entity_id");
 
