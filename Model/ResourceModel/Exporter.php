@@ -429,7 +429,7 @@ class Exporter implements ExporterResourceInterface
         $visibilityId = $this->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         
         $parentsCountSql = $this->getProductAttributeParentCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
-        $childCountSql = $this->getConfigurableProductAttributeChildCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
+        $childCountSql = $this->getParentProductAttributeChildCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
 
         $statusSql = $this->getEavJoinAttributeSQLByStoreAttrIdTable($statusId, $storeId, "catalog_product_entity_int");
         $visibilitySql = $this->getEavJoinAttributeSQLByStoreAttrIdTable($visibilityId, $storeId, "catalog_product_entity_int");
@@ -456,6 +456,7 @@ class Exporter implements ExporterResourceInterface
 
         if(!empty($this->exportIds) && $this->isDelta) $select->where('c_p_e.entity_id IN(?)', $this->exportIds);
         $configurableType = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+        $groupedType = \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE;
         $visibilityOptions = implode(',', [\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_CATALOG, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH]);
         $finalSelect = $this->adapter->select()
             ->from(
@@ -466,7 +467,7 @@ class Exporter implements ExporterResourceInterface
                     "entity_select.store_id",
                     "value" => new \Zend_Db_Expr("
                         (CASE 
-                            WHEN entity_select.type_id = '{$configurableType}' AND entity_select.entity_status = '1' THEN IF(child_count.child_count > 0, 1, 2)
+                            WHEN (entity_select.type_id = '{$configurableType}' OR entity_select.type_id = '{$groupedType}') AND entity_select.entity_status = '1' THEN IF(child_count.child_count > 0, 1, 2)
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
                             WHEN entity_select.entity_status = '2' THEN 2 
                             ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND parent_count.count > 0, 1, 2))
@@ -591,9 +592,8 @@ class Exporter implements ExporterResourceInterface
      * @param $storeId
      * @return \Magento\Framework\DB\Select
      */
-    protected function getConfigurableProductAttributeChildCountSqlByAttrIdValueStoreId($attributeId, $value, $storeId)
+    protected function getParentProductAttributeChildCountSqlByAttrIdValueStoreId($attributeId, $value, $storeId)
     {
-        $configurableType = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
         $storeAttributeValue = $this->getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
@@ -614,7 +614,7 @@ class Exporter implements ExporterResourceInterface
         $mainSelect = $this->adapter->select()
             ->from(
                 ["child_select"=> new \Zend_Db_Expr("( ". $select->__toString() . ' )')],
-                ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), 'entity_id', 'configurable'=> new \Zend_Db_Expr("1")]
+                ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), 'entity_id']
             )
             ->group("child_select.entity_id");
 
