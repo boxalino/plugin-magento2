@@ -167,7 +167,7 @@ class Variant {
           break;
         case 60:
           if ($ftype == TType::LST) {
-            $this->semanticFilteringResults = array();
+            $this->semanticFilteringResults = [];
             $_size185 = 0;
             $_etype188 = 0;
             $xfer += $input->readListBegin($_etype188, $_size185);
@@ -185,7 +185,7 @@ class Variant {
           break;
         case 70:
           if ($ftype == TType::MAP) {
-            $this->extraInfo = array();
+            $this->extraInfo = [];
             $_size191 = 0;
             $_ktype192 = 0;
             $_vtype193 = 0;

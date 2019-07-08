@@ -145,7 +145,7 @@ class BatchChoiceRequest {
           break;
         case 4:
           if ($ftype == TType::LST) {
-            $this->profileIds = array();
+            $this->profileIds = [];
             $_size208 = 0;
             $_etype211 = 0;
             $xfer += $input->readListBegin($_etype211, $_size208);
@@ -162,7 +162,7 @@ class BatchChoiceRequest {
           break;
         case 5:
           if ($ftype == TType::LST) {
-            $this->choiceInquiries = array();
+            $this->choiceInquiries = [];
             $_size214 = 0;
             $_etype217 = 0;
             $xfer += $input->readListBegin($_etype217, $_size214);
@@ -180,7 +180,7 @@ class BatchChoiceRequest {
           break;
         case 6:
           if ($ftype == TType::LST) {
-            $this->profileContexts = array();
+            $this->profileContexts = [];
             $_size220 = 0;
             $_etype223 = 0;
             $xfer += $input->readListBegin($_etype223, $_size220);

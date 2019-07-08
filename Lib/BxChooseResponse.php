@@ -11,7 +11,7 @@ class BxChooseResponse
         $this->bxRequests = is_array($bxRequests) ? $bxRequests : array($bxRequests);
     }
 
-    protected $notificationLog = array();
+    protected $notificationLog = [];
 
     protected $notificationMode = false;
 
@@ -154,7 +154,7 @@ class BxChooseResponse
     }
 
     public function getSearchResultHitIds($searchResult, $fieldId='id') {
-        $ids = array();
+        $ids = [];
         if($searchResult) {
             if($searchResult->hits){
                 foreach ($searchResult->hits as $item) {
@@ -201,7 +201,7 @@ class BxChooseResponse
     }
 
     public function retrieveHitFieldValues($item, $field, $fields, $hits) {
-        $fieldValues = array();
+        $fieldValues = [];
         foreach($this->bxRequests as $bxRequest) {
             $fieldValues = array_merge($fieldValues, $bxRequest->retrieveHitFieldValues($item, $field, $fields, $hits));
         }
@@ -209,11 +209,11 @@ class BxChooseResponse
     }
 
     public function getSearchHitFieldValues($searchResult, $fields=null) {
-        $fieldValues = array();
+        $fieldValues = [];
         if($searchResult) {
             $hits = $searchResult->hits;
             if($searchResult->hits == null){
-                $hits = array();
+                $hits = [];
                 if(!is_null($searchResult->hitsGroups)) {
                     foreach ($searchResult->hitsGroups as $hitGroup){
                         $hits[] = $hitGroup->hits[0];
@@ -284,7 +284,7 @@ class BxChooseResponse
                 continue;
             }
             foreach($fieldValueMap as $fieldName => $fieldValues) {
-                if(sizeof($fieldValues)>0) {
+                if(!empty($fieldValues)>0) {
                     if($returnOneValue) {
                         return $fieldValues[0];
                     } else {
@@ -333,14 +333,14 @@ class BxChooseResponse
 
     public function areThereSubPhrases($choice=null, $count=0, $maxBaseResults=0) {
         $variant = $this->getChoiceResponseVariant($choice, $count);
-        return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0 && $this->getTotalHitCount($choice, false, $count) <= $maxBaseResults;
+        return isset($variant->searchRelaxation->subphrasesResults) && !empty($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0 && $this->getTotalHitCount($choice, false, $count) <= $maxBaseResults;
     }
 
     public function getSubPhrasesQueries($choice=null, $count=0) {
         if(!$this->areThereSubPhrases($choice, $count)) {
-            return array();
+            return [];
         }
-        $queries = array();
+        $queries = [];
         $variant = $this->getChoiceResponseVariant($choice, $count);
         foreach($variant->searchRelaxation->subphrasesResults as $searchResult) {
             $queries[] = $searchResult->queryText;
@@ -374,7 +374,7 @@ class BxChooseResponse
         if($searchResult) {
             return $this->getSearchResultHitIds($searchResult, $fieldId);
         }
-        return array();
+        return [];
     }
 
     public function getSubPhraseHitFieldValues($queryText, $fields, $choice=null, $considerRelaxation=true, $count=0) {
@@ -382,14 +382,14 @@ class BxChooseResponse
         if($searchResult) {
             return $this->getSearchHitFieldValues($searchResult, $fields);
         }
-        return array();
+        return [];
     }
 
     public function toJson($fields) {
-        $object = array();
-        $object['hits'] = array();
+        $object = [];
+        $object['hits'] = [];
         foreach($this->getHitFieldValues($fields) as $id => $fieldValueMap) {
-            $hitFieldValues = array();
+            $hitFieldValues = [];
             foreach($fieldValueMap as $fieldName => $fieldValues) {
                 $hitFieldValues[$fieldName] = array('values'=>$fieldValues);
             }
@@ -400,7 +400,7 @@ class BxChooseResponse
 
     public function getSearchResultExtraInfo($searchResult, $extraInfoKey, $defaultExtraInfoValue = null) {
         if($searchResult) {
-            if(is_array($searchResult->extraInfo) && sizeof($searchResult->extraInfo) > 0 && isset($searchResult->extraInfo[$extraInfoKey])) {
+            if(is_array($searchResult->extraInfo) && !empty($searchResult->extraInfo) && sizeof($searchResult->extraInfo) > 0 && isset($searchResult->extraInfo[$extraInfoKey])) {
                 return $searchResult->extraInfo[$extraInfoKey];
             }
             return $defaultExtraInfoValue;
@@ -430,7 +430,7 @@ class BxChooseResponse
 
     public function getCPOJourney($choice_id = 'narrative') {
         $variant = $this->getChoiceResponseVariant($choice_id);
-        $journey = array();
+        $journey = [];
         if($variant) {
             foreach ($variant->extraInfo as $k => $v) {
                 if(strpos($k, 'cpo_journey') === 0) {
@@ -473,7 +473,7 @@ class BxChooseResponse
     }
 
     public function getNarrativeDependencies($choice_id = 'narrative') {
-        $dependencies = array();
+        $dependencies = [];
         $narratives = $this->getNarratives($choice_id);
         foreach ($narratives as $visualElement) {
             $values = $this->getParameterValuesForVisualElement($visualElement['visualElement'], 'dependencies');
@@ -508,11 +508,11 @@ class BxChooseResponse
                 }
             }
         }
-        return array();
+        return [];
     }
 
     protected function getOverwriteParams($parameters) {
-        $overwriteParameters = array();
+        $overwriteParameters = [];
         foreach ($parameters as $parameter) {
             if(strpos($parameter['name'], '!') === 0) {
                 $overwrite = $parameter;
@@ -526,12 +526,12 @@ class BxChooseResponse
     protected function prepareVisualElement($render, $overwriteParams) {
 
         $visualElement = $render['visualElement'];
-		$renderParameters = isset($render['parameters']) ? $render['parameters'] : array();
-		$visualElementParameters = isset($visualElement['parameters']) ? $visualElement['parameters'] : array();
+		$renderParameters = isset($render['parameters']) ? $render['parameters'] : [];
+		$visualElementParameters = isset($visualElement['parameters']) ? $visualElement['parameters'] : [];
         $visualElementParams = $this->mergeJourneyParams($renderParameters, $visualElementParameters);
         $visualElement['parameters'] = $this->mergeJourneyParams($overwriteParams, $visualElementParams);
         $overwriteParams = array_merge($overwriteParams, $this->getOverwriteParams($visualElement['parameters']));
-        if(isset($visualElement['subRenderings']) && sizeof($visualElement['subRenderings'])) {
+        if(isset($visualElement['subRenderings']) && !empty($visualElement['subRenderings'])) {
             foreach ($visualElement['subRenderings'] as $index => $subRendering) {
                 foreach ($subRendering['rendering']['visualElements'] as $index2 => $subElement) {
                     $subRendering['rendering']['visualElements'][$index2] = $this->prepareVisualElement($subElement, $overwriteParams);
@@ -579,7 +579,7 @@ class BxChooseResponse
 
     public function getVariantExtraInfo($variant, $extraInfoKey, $defaultExtraInfoValue = null) {
         if($variant) {
-            if(is_array($variant->extraInfo) && sizeof($variant->extraInfo) > 0 && isset($variant->extraInfo[$extraInfoKey])) {
+            if(is_array($variant->extraInfo) && !empty($variant->extraInfo) && sizeof($variant->extraInfo) > 0 && isset($variant->extraInfo[$extraInfoKey])) {
                 return $variant->extraInfo[$extraInfoKey];
             }
             return $defaultExtraInfoValue;

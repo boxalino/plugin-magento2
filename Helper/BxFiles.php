@@ -49,17 +49,17 @@ class BxFiles {
     /**
      * @var array
      */
-    protected $_attributesWithIds = array();
+    protected $_attributesWithIds = [];
 
     /**
      * @var array
      */
-    protected $_allTags = array();
+    protected $_allTags = [];
 
     /**
      * @var array
      */
-    protected $_countries = array();
+    protected $_countries = [];
 
     /**
      * @var array language code
@@ -103,12 +103,12 @@ class BxFiles {
     /**
      * @var array
      */
-    protected $_files = array();
+    protected $_files = [];
 
     /**
      * @var array
      */
-    private $filesMtM = array();
+    private $filesMtM = [];
 
     /**
      * BxFiles constructor.

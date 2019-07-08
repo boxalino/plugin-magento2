@@ -68,7 +68,7 @@ class Crosssell extends Mage_Crosssell{
     public function getItems($execute = true){
         if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled()){
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
-            $products = array();
+            $products = [];
             foreach ($this->getQuote()->getAllItems() as $item) {
                 $product = $item->getProduct();
                 if ($product) {
@@ -96,8 +96,8 @@ class Crosssell extends Mage_Crosssell{
                 return null;
             }
 
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
+            if (empty($entity_ids)) {
+                $entity_ids = [0];
             }
 
             $items = $this->factory->create()

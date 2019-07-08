@@ -61,12 +61,12 @@ class Data
     /**
      * @var array
      */
-    protected static $SCRIPTS = array();
+    protected static $SCRIPTS = [];
 
     /**
      * @var array
      */
-    protected $bxConfig = array();
+    protected $bxConfig = [];
 
     /**
      * @var bool
@@ -76,12 +76,12 @@ class Data
     /**
      * @var array
      */
-    protected $cmsBlock = array();
+    protected $cmsBlock = [];
 
     /**
      * @var array
      */
-    protected $removedAttributes = array();
+    protected $removedAttributes = [];
 
     /**
      * @var
@@ -91,7 +91,7 @@ class Data
     /**
      * @var array
      */
-    protected $bx_filter = array();
+    protected $bx_filter = [];
 
     /**
      * @var bool
@@ -101,12 +101,12 @@ class Data
     /**
      * @var array
      */
-    protected $removeParams = array();
+    protected $removeParams = [];
 
     /**
      * @var array
      */
-    protected $systemParams = array();
+    protected $systemParams = [];
 
     /**
      * Data constructor.
@@ -350,7 +350,7 @@ class Data
                     $values = html_entity_decode($values);
                     preg_match_all('!\d+!', $values, $matches);
                     if (is_array($matches[0])) {
-                        $attrValues = array();
+                        $attrValues = [];
                         $paramName = 'filter_' . $param;
                         foreach ($matches[0] as $id) {
                             $attribute = $attribute = $getAttribute->getSource()->getOptionText($id);
@@ -372,7 +372,7 @@ class Data
         if(!isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
         }
-        $widgetConfig = array();
+        $widgetConfig = [];
         if(isset($this->bxConfig['bxRecommendations']['others'])) {
             $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
             $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
@@ -393,7 +393,7 @@ class Data
         $config = $this->config->getValue('bxRecommendations/blog',$this->scopeStore);
         $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'read';
 
-        $recs = array();
+        $recs = [];
         $recs[] = array(
             'widget'=>$choiceId,
             'scenario'=>'blog',
@@ -470,7 +470,7 @@ class Data
             return explode(',', $config['extraFieldNamesFieldName']);
         }
 
-        return array();
+        return [];
     }
 
     public function getBlogArticleImageWidth()
@@ -827,7 +827,7 @@ class Data
 
     public function getFacetOptions() {
         $fields = explode(',',$this->config->getValue('bxSearch/advanced/multiselect_fields', $this->scopeStore));
-        $facetOptions = array();
+        $facetOptions = [];
         foreach ($fields as $field) {
             $values = explode(';', $field);
             $fieldName = $values[0];

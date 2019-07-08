@@ -98,7 +98,7 @@ class State extends \Magento\Catalog\Model\Layer\State
 
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
-                    $filters = array();
+                    $filters = [];
                     foreach ($this->bxFacetModel->getFacets() as $filter) {
                         $fieldName = $filter->getFieldName();
                         if($facets->isSelected($fieldName)){

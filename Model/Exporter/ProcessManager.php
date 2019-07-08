@@ -91,7 +91,7 @@ abstract class ProcessManager
             return false;
         }
         
-        $errorMessages = array();
+        $errorMessages = [];
         $latestRun = $this->getLatestRun();
         $this->logger->info("BxIndexLog: starting Boxalino {$this->getType()} export process. Latest update at {$latestRun} (UTC)  / {$this->getStoreTime($latestRun)} (store time)");
         $exporterHasRun = false;

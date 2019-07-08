@@ -170,7 +170,7 @@ class Filter {
           break;
         case 3:
           if ($ftype == TType::LST) {
-            $this->stringValues = array();
+            $this->stringValues = [];
             $_size0 = 0;
             $_etype3 = 0;
             $xfer += $input->readListBegin($_etype3, $_size0);

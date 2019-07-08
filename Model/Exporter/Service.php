@@ -237,7 +237,7 @@ class Service
         $languages = $this->config->getAccountLanguages($this->account);
         $categories = array_merge(array(array_keys(end($categories))), $categories);
         $this->bxFiles->savePartToCsv('categories.csv', $categories);
-        $labelColumns = array();
+        $labelColumns = [];
         foreach ($languages as $lang) {
             $labelColumns[$lang] = 'value_' . $lang;
         }
@@ -464,11 +464,11 @@ class Service
         $limit = 5000;
         $page = 1;
         $header = true;
-        $transactions_to_save = array();
+        $transactions_to_save = [];
         $date = date("Y-m-d H:i:s", strtotime("-1 month"));
         $transaction_attributes = $this->getTransactionAttributes($this->account);
         if (count($transaction_attributes)) {
-            $billing_columns = $shipping_columns = array();
+            $billing_columns = $shipping_columns = [];
             foreach ($transaction_attributes as $attribute) {
                 $billing_columns['billing_' . $attribute] = $attribute;
                 $shipping_columns['shipping_' . $attribute] = $attribute;
@@ -477,7 +477,7 @@ class Service
         $tempSelect = $this->exporterResource->prepareTransactionsSelectByShippingBillingModeSql($this->account, $billing_columns, $shipping_columns, $this->config->getTransactionMode($this->account));
         while (true) {
             $this->logger->info('BxIndexLog: Transactions - load page ' . $page . ' for account ' . $this->account);
-            $configurable = array();
+            $configurable = [];
             $transactions = $this->exporterResource->getTransactionsByLimitPage($limit, $page, $tempSelect);
             if(sizeof($transactions) < 1 && $page == 1){
                 return;
@@ -516,7 +516,7 @@ class Service
                             $transaction['original_price'] = ($product->getPrice());
                             $transaction['price'] = ($product->getPrice());
 
-                            $tmp = array();
+                            $tmp = [];
                             $tmp['original_price'] = $transaction['original_price'];
                             $tmp['price'] = $transaction['price'];
 
@@ -799,7 +799,7 @@ class Service
                                 }
                             }
                         }else{
-                            $optionValues = array();
+                            $optionValues = [];
                             $exportAttribute = true;
                             $optionSelect = false;
                         }
@@ -1033,7 +1033,7 @@ class Service
                         case 'status':
                         case 'special_from_date':
                         case 'special_to_date':
-                            $lc = array();
+                            $lc = [];
                             foreach ($languages as $lcl) {
                                 $lc[$lcl] = 'value_' . $lcl;
                             }
@@ -1200,10 +1200,10 @@ class Service
         $this->logger->info("exportProductInformation finished");
 
         //product parent title
-        $fetchedResult = array();
+        $fetchedResult = [];
         $db = $this->rs->getConnection();
         $attrId = $this->exporterResource->getAttributeIdByAttributeCodeAndEntityType('name', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
-        $lvh = array();
+        $lvh = [];
         foreach ($languages as $language) {
             $lvh[$language] = 'value_'.$language;
             $store = $this->config->getStore($this->account, $language);

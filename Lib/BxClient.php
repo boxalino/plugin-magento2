@@ -23,28 +23,28 @@ class BxClient
     private $autocompleteRequests = null;
     private $autocompleteResponses = null;
 
-    private $chooseRequests = array();
+    private $chooseRequests = [];
     private $chooseResponses = null;
 
-    private $bundleChooseRequests = array();
+    private $bundleChooseRequests = [];
 
     const VISITOR_COOKIE_TIME = 31536000;
 
     private $_timeout = 2;
     private $curl_timeout = 2000;
-    private $requestContextParameters = array();
+    private $requestContextParameters = [];
 
     private $sessionId = null;
     private $profileId = null;
 
-    private $requestMap = array();
+    private $requestMap = [];
 
     private $socketHost = null;
     private $socketPort = null;
     private $socketSendTimeout = null;
     private $socketRecvTimeout = null;
 
-    private $notifications = array();
+    private $notifications = [];
 
     public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request=null, $apiKey=null, $apiSecret=null) {
         $this->account = $account;
@@ -364,7 +364,7 @@ class BxClient
     }
 
     public function resetRequestContextParameter() {
-        $this->requestContextParameters = array();
+        $this->requestContextParameters = [];
     }
 
 
@@ -494,8 +494,8 @@ class BxClient
     }
 
     public function resetRequests() {
-        $this->chooseRequests = array();
-        $this->bundleChooseRequests = array();
+        $this->chooseRequests = [];
+        $this->bundleChooseRequests = [];
     }
 
     public function getRequest($index=0) {
@@ -515,7 +515,7 @@ class BxClient
     }
 
     public function getRecommendationRequests(){
-        $requests = array();
+        $requests = [];
         foreach ($this->chooseRequests as $request){
             if($request instanceof BxRecommendationRequest){
                 $requests[] = $request;
@@ -526,7 +526,7 @@ class BxClient
 
     public function getThriftChoiceRequest($size=0) {
 
-        if(sizeof($this->chooseRequests) == 0 && sizeof($this->autocompleteRequests) > 0) {
+        if(empty($this->chooseRequests) && !empty($this->autocompleteRequests)) {
             list($sessionid, $profileid) = $this->getSessionAndProfile();
             $userRecord = $this->getUserRecord();
             $p13nrequests = array_map(function($request) use(&$profileid, &$userRecord) {
@@ -535,13 +535,12 @@ class BxClient
             return $p13nrequests;
         }
 
-        $choiceInquiries = array();
+        $choiceInquiries = [];
         $requests = $size === 0 ? $this->chooseRequests : array_slice($this->chooseRequests, -$size);
         foreach($requests as $request) {
-
             $choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
             $choiceInquiry->choiceId = $request->getChoiceId();
-            if(sizeof($choiceInquiries) == 0 && $this->getChoiceIdOverwrite()) {
+            if(empty($choiceInquiries) && $this->getChoiceIdOverwrite()) {
                 $choiceInquiry->choiceId = $this->getChoiceIdOverwrite();
             }
             if($this->isTest === true || ($this->isDev && $this->isTest === null)) {
@@ -576,7 +575,7 @@ class BxClient
 
     public function getThriftBundleChoiceRequest() {
 
-        $bundleRequest = array();
+        $bundleRequest = [];
         foreach($this->bundleChooseRequests as $bundleChooseRequest) {
             $choiceInquiries = array();
             foreach ($bundleChooseRequest as $request) {

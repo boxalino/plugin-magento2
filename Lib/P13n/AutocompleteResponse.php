@@ -101,7 +101,7 @@ class AutocompleteResponse {
       {
         case 11:
           if ($ftype == TType::LST) {
-            $this->hits = array();
+            $this->hits = [];
             $_size280 = 0;
             $_etype283 = 0;
             $xfer += $input->readListBegin($_etype283, $_size280);

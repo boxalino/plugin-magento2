@@ -106,7 +106,7 @@ Class BxBannerBlock extends BxRecommendationBlock
     public function getBannerSlides()
     {
         $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $this->_data['widget']);
-        $counters = array();
+        $counters = [];
         foreach($slides as $id => $vals) {
             $slides[$id]['div'] = $this->getBannerSlide($id, $vals, $counters);
         }
@@ -161,7 +161,7 @@ Class BxBannerBlock extends BxRecommendationBlock
         $language = $this->p13nHelper->getLanguage();
         $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array($key), $this->_data['widget']);
 
-        $jsArray = array();
+        $jsArray = [];
         foreach($slides as $id => $vals) {
             if(isset($vals[$key]) && sizeof($vals[$key]) > 0) {
 

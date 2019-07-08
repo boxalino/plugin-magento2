@@ -24,7 +24,7 @@ class Result extends Mage_Result
     /**
      * @var mixed
      */
-    protected $queries = array();
+    protected $queries = [];
 
     /**
      * @var BxHelperData

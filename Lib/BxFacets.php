@@ -3,7 +3,7 @@ namespace com\boxalino\bxclient\v1;
 
 class BxFacets
 {
-    public $facets = array();
+    public $facets = [];
     protected $searchResult = null;
 
     protected $selectedPriceValues = null;
@@ -14,7 +14,7 @@ class BxFacets
 
     protected $priceRangeMargin = false;
 
-    protected $notificationLog = array();
+    protected $notificationLog = [];
 
     protected $notificationMode = false;
 
@@ -46,7 +46,7 @@ class BxFacets
         return "categories";
     }
 
-    private $filters = array();
+    private $filters = [];
 
     public function getFilters() {
         return $this->filters;
@@ -69,7 +69,7 @@ class BxFacets
     }
 
     public function addFacet($fieldName, $selectedValue=null, $type='string', $label=null, $order=2, $boundsOnly=false, $maxCount=-1, $andSelectedValues = false) {
-        $selectedValues = array();
+        $selectedValues = [];
         if(!is_null($selectedValue)) {
             $selectedValues = is_array($selectedValue) ? $selectedValue : [$selectedValue];
         }
@@ -94,7 +94,7 @@ class BxFacets
 
     public function getForceIncludedFieldNames($onlySelected=false) {
 
-        $fieldNames = array();
+        $fieldNames = [];
         if(is_null($this->forceIncludedFacets)) {
             $this->getFieldNames();
         }
@@ -118,7 +118,7 @@ class BxFacets
     }
 
     public function getSelectedSemanticFilterValues($field) {
-        $selectedValues = array();
+        $selectedValues = [];
         $fieldNames = $this->getFieldNames();
 
         foreach ($fieldNames as $fieldName) {
@@ -135,10 +135,10 @@ class BxFacets
     }
 
     public function getFieldNames() {
-        $fieldNames = array();
+        $fieldNames = [];
 
-        if($this->searchResult && (sizeof($this->facets) !== sizeof($this->searchResult->facetResponses))) {
-            $this->forceIncludedFacets = array();
+        if($this->searchResult && !empty($this->facets) && (sizeof($this->facets) !== sizeof($this->searchResult->facetResponses))) {
+            $this->forceIncludedFacets = [];
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
                     $this->facets[$facetResponse->fieldName] = [
@@ -176,7 +176,7 @@ class BxFacets
     }
 
     public function getDisplayFacets($display, $default=false) {
-        $selectedFacets = array();
+        $selectedFacets = [];
         foreach($this->getFieldNames() as $fieldName) {
             if($this->getFacetDisplay($fieldName) == $display || ($this->getFacetDisplay($fieldName) == null && $default)) {
                 $selectedFacets[] = $fieldName;
@@ -186,7 +186,7 @@ class BxFacets
     }
 
     public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false, $returnHidden=false, $withSoftFacets=false) {
-        $selectedFacets = array();
+        $selectedFacets = [];
         foreach($this->getFieldNames() as $fieldName) {
             if(!$returnHidden && $this->isFacetHidden($fieldName)) {
                 continue;
@@ -391,33 +391,33 @@ class BxFacets
 
     protected function buildTree($response, $parents = array(), $parentLevel = 0) {
         if(sizeof($parents)==0) {
-            $parents = array();
+            $parents = [];
             foreach($response as $node) {
-                if(sizeof($node->hierarchy) == 1) {
+                if(!empty($node->hierarchy) && sizeof($node->hierarchy) == 1) {
                     $parents[] = $node;
                 }
             }
             if(sizeof($parents) == 1) {
                 $parents = $parents[0]->hierarchy;
             } else if(sizeof($parents) > 1) {
-                $children = array();
+                $children = [];
                 $hitCountSum = 0;
                 foreach($parents as $parent) {
                     $children[] = $this->buildTree($response, $parent->hierarchy,  $parentLevel);
                     $hitCountSum += $children[sizeof($children)-1]['node']->hitCount;
                 }
-                $root = array();
+                $root = [];
                 $root['stringValue'] = '0/Root';
                 $root['hitCount'] = $hitCountSum;
                 $root['hierarchyId'] = 0;
-                $root['hierarchy'] = array();
+                $root['hierarchy'] = [];
                 $root['selected'] = false;
                 return array('node'=>(object)$root, 'children'=>$children);
             }
         }
-        $children = array();
+        $children = [];
         foreach($response as $node) {
-            if(sizeof($node->hierarchy) == $parentLevel + 2) {
+            if(!empty($node->hierarchy) && sizeof($node->hierarchy) == $parentLevel + 2) {
                 $allTrue = true;
                 foreach($parents as $k => $v) {
                     if(!isset($node->hierarchy[$k]) || $node->hierarchy[$k] != $v) {
@@ -430,7 +430,7 @@ class BxFacets
             }
         }
         foreach($response as $node) {
-            if(sizeof($node->hierarchy) == $parentLevel + 1) {
+            if(!empty($node->hierarchy) && sizeof($node->hierarchy) == $parentLevel + 1) {
                 $allTrue = true;
                 foreach($node->hierarchy as $k => $v) {
                     if(!isset($parents[$k]) || $parents[$k] != $v) {
@@ -446,7 +446,7 @@ class BxFacets
     }
 
     protected function getFirstNodeWithSeveralChildren($tree, $minCategoryLevel=0) {
-        if(sizeof($tree['children']) == 0) {
+        if(empty($tree['children'])) {
             return null;
         }
         if(sizeof($tree['children']) > 1 && $minCategoryLevel <= 0) {
@@ -464,7 +464,7 @@ class BxFacets
     }
 
     public function getFacetSelectedValues($fieldName) {
-        $selectedValues = array();
+        $selectedValues = [];
         foreach($this->getFacetKeysValues($fieldName) as $val) {
             if(isset($val->selected) && $val->selected && isset($val->stringValue)) {
                 $selectedValues[] = (string) $val->stringValue;
@@ -519,20 +519,20 @@ class BxFacets
         return null;
     }
 
-    private $facetKeyValuesCache = array();
+    private $facetKeyValuesCache = [];
     protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
 
         if(isset($this->facetKeyValuesCache[$fieldName.'_'.$minCategoryLevel])) {
             return $this->facetKeyValuesCache[$fieldName.'_'.$minCategoryLevel];
         }
         if($fieldName == "") {
-            return array();
+            return [];
         }
-        if($fieldName == 'category_id') return array();
-        $facetValues = array();
+        if($fieldName == 'category_id') return [];
+        $facetValues = [];
         $facetResponse = $this->getFacetResponse($fieldName);
         if(is_null($facetResponse)) {
-            return array();
+            return [];
         }
         $type = $this->getFacetType($fieldName);
         switch($type) {
@@ -599,7 +599,7 @@ class BxFacets
 
         $displaySelectedValues = $this->getFacetExtraInfo($fieldName, "displaySelectedValues");
         if($displaySelectedValues == "only") {
-            $finalFacetValues = array();
+            $finalFacetValues = [];
             foreach($facetValues as $k => $v) {
                 if($v->selected) {
                     $finalFacetValues[$k] = $v;
@@ -608,7 +608,7 @@ class BxFacets
             $facetValues = empty($finalFacetValues) ? $facetValues : $finalFacetValues;
         }
         if($displaySelectedValues == "top") {
-            $finalFacetValues = array();
+            $finalFacetValues = [];
             foreach($facetValues as $k => $v) {
                 if($v->selected) {
                     $finalFacetValues[$k] = $v;
@@ -628,7 +628,7 @@ class BxFacets
             if($enumDisplaySizeMin == 0) {
                 $enumDisplaySizeMin = $enumDisplaySize;
             }
-            $finalFacetValues = array();
+            $finalFacetValues = [];
             foreach($facetValues as $k => $v) {
                 if(sizeof($finalFacetValues) >= $enumDisplaySizeMin) {
                     $v->hidden = true;
@@ -655,7 +655,7 @@ class BxFacets
                             }
                         }
                     } else if($effect['hide'] == '') {
-                        $temp = array();
+                        $temp = [];
                         foreach ($dependency['values'] as $key => $value) {
                             if(isset($values[$value])){
                                 $temp[$value] = $values[$value];
@@ -664,7 +664,7 @@ class BxFacets
                         }
                         array_splice($values, $effect['order'], 0, $temp);
                         $temp = $values;
-                        $values = array();
+                        $values = [];
                         foreach ($temp as $value) {
                             $values[$value->stringValue] = $value;
                         }
@@ -676,7 +676,7 @@ class BxFacets
     }
 
     public function getSelectedValues($fieldName) {
-        $selectedValues = array();
+        $selectedValues = [];
         try {
             foreach($this->getFacetValues($fieldName) as $key) {
                 if($this->isFacetValueSelected($fieldName, $key)) {
@@ -745,17 +745,17 @@ class BxFacets
         $fieldName = $this->getCategoryFieldName();
         $facetResponse = $this->getFacetResponse($fieldName);
         if(is_null($facetResponse)) {
-            return array();
+            return [];
         }
         $tree = $this->buildTree($facetResponse->values);
         $treeEnd = $this->getSelectedTreeNode($tree);
         if($treeEnd == null) {
-            return array();
+            return [];
         }
         if($treeEnd['node']->stringValue == $tree['node']->stringValue) {
-            return array();
+            return [];
         }
-        $parents = array();
+        $parents = [];
         $parent = $treeEnd;
         while($parent) {
             $parts = explode('/', $parent['node']->stringValue);
@@ -765,7 +765,7 @@ class BxFacets
             $parent = $this->getTreeParent($tree, $parent);
         }
         krsort($parents);
-        $final = array();
+        $final = [];
         foreach($parents as $v) {
             $final[$v[0]] = $v[1];
         }
@@ -833,7 +833,7 @@ class BxFacets
     }
 
     public function getCategoriesKeyLabels() {
-        $categoryValueArray = array();
+        $categoryValueArray = [];
         foreach ($this->getCategories() as $v){
             $label = $this->getCategoryValueLabel($v);
             $categoryValueArray[$label] = $v;
@@ -869,7 +869,7 @@ class BxFacets
 
     public function getSelectedCategoryIds()
     {
-        $ids = array();
+        $ids = [];
         if (isset($this->facets['category_id'])){
             $ids = $this->facets['category_id']['selectedValues'];
         }
@@ -890,7 +890,7 @@ class BxFacets
         return array_keys($this->getFacetKeysValues($fieldName, $ranking, $minCategoryLevel));
     }
 
-    private $facetValueArrayCache = array();
+    private $facetValueArrayCache = [];
     protected function getFacetValueArray($fieldName, $facetValue) {
         $hash = $fieldName . ' - ' . $facetValue;
         if(isset($this->facetValueArrayCache[$hash])) {
@@ -1027,7 +1027,7 @@ class BxFacets
     }
 
     public function getThriftFacets() {
-        $thriftFacets = array();
+        $thriftFacets = [];
         foreach($this->facets as $fieldName => $facet) {
             $type = $facet['type'];
             $order = $facet['order'];
@@ -1053,7 +1053,7 @@ class BxFacets
 
     private function facetSelectedValue($fieldName, $option)
     {
-        $selectedFacets = array();
+        $selectedFacets = [];
         if (isset($this->facets[$fieldName]['selectedValues'])) {
             foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
                 $selectedFacet = new \com\boxalino\p13n\api\thrift\FacetValue();
@@ -1077,7 +1077,7 @@ class BxFacets
     }
 
     public function getParentId($fieldName, $id){
-        $hierarchy = array();
+        $hierarchy = [];
 
         foreach ($this->searchResult->facetResponses as $response) {
             if($response->fieldName == $fieldName){

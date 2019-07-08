@@ -104,7 +104,7 @@ class ChoiceUpdateRequest {
           break;
         case 31:
           if ($ftype == TType::MAP) {
-            $this->variantIds = array();
+            $this->variantIds = [];
             $_size317 = 0;
             $_ktype318 = 0;
             $_vtype319 = 0;

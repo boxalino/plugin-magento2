@@ -10,7 +10,7 @@ class ResourceManager{
     /**
      * @var array
      */
-    protected $resource = array();
+    protected $resource = [];
 
     /**
      * @var array
@@ -24,7 +24,7 @@ class ResourceManager{
 
     protected function initResource() {
         foreach ($this->types as $type) {
-            $this->resource[$type] = array();
+            $this->resource[$type] = [];
         }
     }
 
@@ -40,7 +40,7 @@ class ResourceManager{
 
     public function setResource($resource, $id, $type) {
         if(!isset($this->resource[$type])) {
-            $this->resource[$type] = array();
+            $this->resource[$type] = [];
         }
         $this->resource[$type][$id] = $resource;
     }

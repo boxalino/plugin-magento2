@@ -108,7 +108,7 @@ class SearchResult {
       {
         case 1:
           if ($ftype == TType::LST) {
-            $this->hits = array();
+            $this->hits = [];
             $_size150 = 0;
             $_etype153 = 0;
             $xfer += $input->readListBegin($_etype153, $_size150);
@@ -126,7 +126,7 @@ class SearchResult {
           break;
         case 2:
           if ($ftype == TType::LST) {
-            $this->facetResponses = array();
+            $this->facetResponses = [];
             $_size156 = 0;
             $_etype159 = 0;
             $xfer += $input->readListBegin($_etype159, $_size156);
@@ -158,7 +158,7 @@ class SearchResult {
           break;
         case 50:
           if ($ftype == TType::LST) {
-            $this->hitsGroups = array();
+            $this->hitsGroups = [];
             $_size162 = 0;
             $_etype165 = 0;
             $xfer += $input->readListBegin($_etype165, $_size162);

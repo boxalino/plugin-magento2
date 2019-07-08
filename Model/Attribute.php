@@ -361,7 +361,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute {
                 return $paramValue;
             }else {
 
-                $changedSelection = array();
+                $changedSelection = [];
                 foreach($selectedValues as $selected) {
                     $changedSelection[] = $attributeModel->getOptionId($selected);
                 }

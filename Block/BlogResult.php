@@ -58,10 +58,10 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
     }
 
     protected function prepareBlogCollection() {
-        $blogs = array();
+        $blogs = [];
         $blog_ids = $this->p13nHelper->getBlogIds();
         foreach ($blog_ids as $id) {
-            $blog = array();
+            $blog = [];
             foreach ($this->bxHelperData->getBlogReturnFields() as $field) {
                 $value = $this->p13nHelper->getHitVariable($id, $field, true);
                 $blog[$field] = is_array($value) ? reset($value) : $value;

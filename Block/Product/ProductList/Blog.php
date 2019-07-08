@@ -58,7 +58,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
 
     public function getCmsRecommendationBlocks($content) {
         if($this->isActive() == false) {
-            return array();
+            return [];
         }
         return $this->bxHelperData->getCmsRecommendationBlocks($content);
     }
@@ -114,11 +114,11 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock implements
     }
 
     public function getBlogArticles() {
-       $articles = array();
+       $articles = [];
        $blog_result = $this->p13nHelper->getClientResponse()->getHitFieldValues($this->getReturnFields(), $this->getChoiceId());
        if($blog_result) {
          foreach($blog_result as $article) {
-           $a = array();
+           $a = [];
            foreach($article as $k => $v) {
              $a[$k] = isset($v[0]) ? $v[0] : '';
            }

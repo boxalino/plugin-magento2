@@ -237,8 +237,7 @@ class BxRequest
 	}
 
 	public function setBasketProductWithPrices($fieldName, $basketContent, $role = 'mainProduct', $subRole = 'subProduct', $relatedProducts = array(), $relatedProductField='id') {
-		if ($basketContent !== false && count($basketContent)) {
-			
+		if ($basketContent !== false && !empty($basketContent)) {
 			// Sort basket content by price
 			usort($basketContent, function ($a, $b) {
 				if ($a['price'] > $b['price']) {
@@ -249,17 +248,15 @@ class BxRequest
 				return 0;
 			});
 
-			$basketItem = array_shift($basketContent);
-
+            $basketItem = array_shift($basketContent);
 			$contextItem = new \com\boxalino\p13n\api\thrift\ContextItem();
 			$contextItem->indexId = $this->getIndexId();
 			$contextItem->fieldName = $fieldName;
 			$contextItem->contextItemId = $basketItem['id'];
 			$contextItem->role = $role;
-
-			$this->contextItems[] = $contextItem;
-
-			foreach ($basketContent as $basketItem) {
+            $this->contextItems[] = $contextItem;
+            
+            foreach ($basketContent as $basketItem) {
 				$contextItem = new \com\boxalino\p13n\api\thrift\ContextItem();
 				$contextItem->indexId = $this->getIndexId();
 				$contextItem->fieldName = $fieldName;

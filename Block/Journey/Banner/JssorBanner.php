@@ -16,7 +16,7 @@ class JssorBanner extends General implements CPOJourney
     public function bxGetBanner($choiceId = null)
     {
         $visualElement = $this->getData('bxVisualElement');
-        $bannerData = array();
+        $bannerData = [];
         $variant_index = null;
         foreach ($visualElement['parameters'] as $parameter) {
             if($parameter['name'] == 'variant') {
@@ -38,7 +38,7 @@ class JssorBanner extends General implements CPOJourney
             }
 
             $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $choiceId, true, 0);
-            $counters = array();
+            $counters = [];
             foreach($slides as $id => $val) {
                 $slides[$id]['div'] = $this->getBannerSlide($id, $val, $counters, $choiceId);
             }
@@ -78,7 +78,7 @@ class JssorBanner extends General implements CPOJourney
     protected function getBannerJssorSlideGenericJS($key, $variant_id, $choiceId=null) {
         $language = $this->p13nHelper->getLanguage();
         $slides = $this->p13nHelper->getClientResponse()->getHitFieldValues(array($key), $choiceId, true, 0);
-        $jsArray = array();
+        $jsArray = [];
         foreach($slides as $id => $vals) {
             if(isset($vals[$key]) && sizeof($vals[$key]) > 0) {
 

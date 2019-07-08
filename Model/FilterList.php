@@ -73,7 +73,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
         try {
             if ($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()) {
 
-                $filters = array();
+                $filters = [];
 
                 if($layer instanceof \Magento\Catalog\Model\Layer\Category) {
                     if (!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()) {

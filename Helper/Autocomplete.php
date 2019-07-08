@@ -94,7 +94,7 @@ class Autocomplete{
 				}
 			}
 
-			$value = array();
+			$value = [];
 			$value['escape_name'] = $this->escapeHtml($product->getName());
 			$value['name'] = $product->getName();
 			$value['url'] = $product->getProductUrl();
@@ -102,7 +102,7 @@ class Autocomplete{
 			$value['image'] = $image;
 			$values[$product->getId()] = $value;
 		}
-		$returnValues = array();
+		$returnValues = [];
 		foreach ($ids as $id) {
 		    if(isset($values[$id])){
                 $returnValues[] = $values[$id];

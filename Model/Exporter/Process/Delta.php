@@ -127,7 +127,7 @@ class Delta extends ProcessManager
         $ids = array_filter(array_unique(array_merge($directProductUpdates, explode(",", $categoryProductUpdates))));
         if(empty($ids))
         {
-            return array();
+            return [];
         }
         
         return $ids;

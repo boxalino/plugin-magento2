@@ -70,7 +70,7 @@ class Parametrized extends \Boxalino\Intelligence\Block\BxRecommendationBlock im
 
     public function getCmsRecommendationBlocks($content) {
 
-      $recs = array();
+      $recs = [];
       $recs[] = array(
         'widget'=>$this->getChoiceId(),
         'scenario'=>$this->getScenario(),

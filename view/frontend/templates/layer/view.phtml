@@ -21,7 +21,7 @@ if(!$data->isEnabledOnLayer($block->getLayer()) || !$data->isPluginEnabled()):
                 <?php
                     $wrapOptions = false;
                     $filters = $block->getFilters();
-                    $expanded = array();
+                    $expanded = [];
                     $index = 0;
                     foreach($filters as $filter){
                         if(get_class($filter) === 'Boxalino\Intelligence\Model\Attribute') {

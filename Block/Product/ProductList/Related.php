@@ -89,8 +89,8 @@ class Related extends MageRelated{
                 return null;
             }
 
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
+            if (empty($entity_ids)) {
+                $entity_ids = [0];
             }
             $this->_itemCollection = $this->factory->create();
             $this->_itemCollection = $this->bxHelperData->prepareProductCollection($this->_itemCollection, $entity_ids)
@@ -107,6 +107,8 @@ class Related extends MageRelated{
             }
             return $this;
         }
+        
         return parent::_prepareData();
     }
+    
 }

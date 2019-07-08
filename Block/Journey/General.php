@@ -46,7 +46,7 @@ class General extends \Magento\Framework\View\Element\Template
 
     public function getSubRenderings()
     {
-        $elements = array();
+        $elements = [];
         $element = $this->getData('bxVisualElement');
         if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
             $elements = $element['subRenderings'][0]['rendering']['visualElements'];

@@ -74,7 +74,7 @@ class Facets extends \Magento\Framework\View\Element\Template
                 if($this->layer instanceof \Magento\Catalog\Model\Layer\Category){
                     if(!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()){
                         $this->bxHelperData->setFallback(true);
-                        return array();
+                        return [];
                     }
                 }
                 $facets = $this->p13nHelper->getFacets();
@@ -95,6 +95,6 @@ class Facets extends \Magento\Framework\View\Element\Template
             $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
         }
-        return array();
+        return [];
     }
 }

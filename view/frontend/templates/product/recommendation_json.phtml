@@ -5,14 +5,14 @@ $widget = $this->getData('widget');
 $image = 'upsell_products_list';
 $lang = $this->getLanguage();
 
-$json = array();
+$json = [];
 $json['title'] = $this->getRecommendationTitle();
 $json['widget'] = $widget;
 $json['lang'] = $lang;
-$json['products'] = array();
+$json['products'] = [];
 if($productCollection) {
   foreach($productCollection as $product) {
-      $jsonProduct = array();
+      $jsonProduct = [];
       $jsonProduct['url'] =  $block->getProductUrl($product);
       $jsonProduct['image_attributes'] =  $block->getImage($product, $image)->getCustomAttributes();
       $jsonProduct['image_url'] =  $block->getImage($product, $image)->getImageUrl();

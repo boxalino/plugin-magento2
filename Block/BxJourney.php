@@ -25,7 +25,7 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     /**
      * @var array
      */
-    protected $elementConfig = array();
+    protected $elementConfig = [];
 
     /**
      * BxJourney constructor.
@@ -60,7 +60,7 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
             if (strpos($command, 'magento_block_function_') === 0) {
                 $function = substr($command, strlen('magento_block_function_'));
                 foreach ($argument as $value) {
-                    $args = array();
+                    $args = [];
                     if ($function == 'setData') {
                         $args = json_decode($value, true);
                         call_user_func(array($block, $function), $args);
@@ -81,7 +81,7 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     }
 
     protected function createChildrenBlocks($visualElements, $childNames) {
-        $children = array();
+        $children = [];
         foreach ($visualElements as $visualElement) {
             foreach($visualElement['visualElement']['parameters'] as $parameter) {
                 if($parameter['name'] == 'magento_block_name' && in_array(reset($parameter['values']), $childNames)) {
@@ -113,8 +113,8 @@ class BxJourney extends \Magento\Framework\View\Element\Template{
     protected function createBlockElement($visualElement, $additional_parameter = null) {
 
         $parameters = $visualElement['parameters'];
-        $children = array();
-        $arguments = array();
+        $children = [];
+        $arguments = [];
         $type = '';
         $name = '';
         $data = ['bxVisualElement' => $visualElement];

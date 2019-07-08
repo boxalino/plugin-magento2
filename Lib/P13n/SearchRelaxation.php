@@ -70,7 +70,7 @@ class SearchRelaxation {
       {
         case 10:
           if ($ftype == TType::LST) {
-            $this->suggestionsResults = array();
+            $this->suggestionsResults = [];
             $_size171 = 0;
             $_etype174 = 0;
             $xfer += $input->readListBegin($_etype174, $_size171);
@@ -88,7 +88,7 @@ class SearchRelaxation {
           break;
         case 20:
           if ($ftype == TType::LST) {
-            $this->subphrasesResults = array();
+            $this->subphrasesResults = [];
             $_size177 = 0;
             $_etype180 = 0;
             $xfer += $input->readListBegin($_etype180, $_size177);

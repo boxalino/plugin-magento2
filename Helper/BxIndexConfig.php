@@ -18,7 +18,7 @@ class BxIndexConfig
     /**
      * @var array
      */
-    protected $indexConfig = array();
+    protected $indexConfig = [];
 
     /**
      * BxIndexConfig constructor.
@@ -36,7 +36,7 @@ class BxIndexConfig
      */
     public function initialize()
     {
-        $this->indexConfig = array();
+        $this->indexConfig = [];
         $websites = $this->storeManager->getWebsites();
         foreach($websites  as $website)
         {
@@ -259,7 +259,7 @@ class BxIndexConfig
      */
     public function toString()
     {
-        $lines = array();
+        $lines = [];
         foreach($this->indexConfig as $a => $vs) {
             $lines[] = $a . " - " . implode(',', array_keys($vs));
         }
@@ -389,7 +389,7 @@ class BxIndexConfig
             }
         }
 
-        $finalProperties = array();
+        $finalProperties = [];
         foreach($allProperties as $i => $p) {
             if(!in_array($p, $excludes)) {
                 $finalProperties[$i] = $p;

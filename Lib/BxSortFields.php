@@ -4,7 +4,7 @@ namespace com\boxalino\bxclient\v1;
 
 class BxSortFields
 {
-	private $sorts = array();
+	private $sorts = [];
 
     public function __construct($field=null, $reverse=false)
     {
@@ -35,7 +35,7 @@ class BxSortFields
 	}
 	
 	public function getThriftSortFields() {
-		$sortFields = array();
+		$sortFields = [];
 		foreach ($this->getSortFields() as $field) {
 			$sortFields[] = new \com\boxalino\p13n\api\thrift\SortField(array(
 				'fieldName' => $field,

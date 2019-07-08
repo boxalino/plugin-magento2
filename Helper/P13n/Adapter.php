@@ -18,7 +18,7 @@ class Adapter
     /**
      * @var array
      */
-    private static $choiceContexts = array();
+    private static $choiceContexts = [];
 
     /**
      * @var string
@@ -170,7 +170,7 @@ class Adapter
      */
     public function getSystemFilters($queryText = "", $type='product')
     {
-        $filters = array();
+        $filters = [];
         if($type == 'product') {
             if ($queryText == "") {
                 $filters[] = new \com\boxalino\bxclient\v1\BxFilter('products_visibility_' . $this->bxHelperData->getLanguage(), array(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE, \Magento\Catalog\Model\Product\Visibility::VISIBILITY_IN_SEARCH), true);
@@ -264,7 +264,7 @@ class Adapter
      */
     public function autocomplete($queryText, \Boxalino\Intelligence\Helper\Autocomplete $autocomplete)
     {
-        $data = array();
+        $data = [];
         if (empty($queryText)) {
             return $data;
         }
@@ -273,7 +273,7 @@ class Adapter
         $autocomplete_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/limit', $this->scopeStore);
         $products_limit = $this->scopeConfig->getValue('bxSearch/autocomplete/products_limit', $this->scopeStore);
         $searches = $this->bxHelperData->isBlogEnabled() ? array('product', 'blog') : array('product');
-        $bxRequests = array();
+        $bxRequests = [];
         foreach ($searches as $search) {
             $isBlog = $search == 'blog';
             $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(),
@@ -303,7 +303,7 @@ class Adapter
                 $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
                 $searchChoiceProducts = $autocomplete->getListValues($searchChoiceIds);
                 foreach ($searchChoiceProducts as $product) {
-                    $row = array();
+                    $row = [];
                     $row['type'] = 'global_products';
                     $row['row_class'] = 'suggestion-item global_product_suggestions';
                     $row['product'] = $product;
@@ -339,7 +339,7 @@ class Adapter
                 $searchChoiceIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->getSearchChoice($queryText, true), true, 0, 10, $this->getEntityIdFieldName());
                 $first = true;
                 foreach ($searchChoiceIds as $id)  {
-                    $blog = array();
+                    $blog = [];
                     foreach ($this->bxHelperData->getBlogReturnFields() as $field) {
                         $value = $bxAutocompleteResponse->getBxSearchResponse()->getHitVariable($this->getSearchChoice($queryText, true), $id, $field, 0);
                         $blog[$field] = is_array($value) ? reset($value) : $value;
@@ -726,9 +726,9 @@ class Adapter
     private function prepareFacets()
     {
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
-        $selectedValues = array();
-        $bxSelectedValues = array();
-        $systemParamValues = array();
+        $selectedValues = [];
+        $bxSelectedValues = [];
+        $systemParamValues = [];
         $requestParams = $this->request->getParams();
         $context = $this->navigation ? 'navigation' : 'search';
         $attributeCollection = $this->bxHelperData->getFilterProductAttributes($context);
@@ -1062,7 +1062,7 @@ class Adapter
     {
         if (!$execute) {
             if (!isset(self::$choiceContexts[$widgetName])) {
-                self::$choiceContexts[$widgetName] = array();
+                self::$choiceContexts[$widgetName] = [];
             }
             if (in_array(json_encode($context), self::$choiceContexts[$widgetName])) {
                 return;
@@ -1097,7 +1097,7 @@ class Adapter
                     self::$bxClient->addRequestContextParameter('current_category_id', $categoryId);
 
                     if ($widgetType === 'basket' && is_array($context)) {
-                        $basketProducts = array();
+                        $basketProducts = [];
                         foreach ($context as $product) {
                             $basketProducts[] = array('id' => $product->getId(), 'price' => $product->getPrice());
                         }
@@ -1122,7 +1122,7 @@ class Adapter
             if($this->isOverlyActive()) {
                 $this->addOverlayRequests();
             }
-            return array();
+            return [];
         }
         $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
         return $this->getClientResponse()->getHitIds($widgetName, true, $count, 10, $this->getEntityIdFieldName());

@@ -213,7 +213,7 @@ class AutocompleteRequest {
           break;
         case 61:
           if ($ftype == TType::SET) {
-            $this->excludeVariantIds = array();
+            $this->excludeVariantIds = [];
             $_size250 = 0;
             $_etype253 = 0;
             $xfer += $input->readSetBegin($_etype253, $_size250);

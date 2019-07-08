@@ -8,7 +8,7 @@ namespace Boxalino\Intelligence\Model;
  */
 class Facet {
 
-    protected $bxFacets = array();
+    protected $bxFacets = [];
 
     public function setFacets($bxFacets) {
         $this->bxFacets = $bxFacets;

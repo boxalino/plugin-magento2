@@ -99,7 +99,7 @@ class Observer implements ObserverInterface{
             $order = $orders->getFirstItem();
             $orderData = $order->getData();
             $transactionId = $orderData['entity_id'];
-            $products = array();
+            $products = [];
             foreach ($order->getAllItems() as $item) {
                 if ($item->getPrice() > 0) {
                     $products[] = array(

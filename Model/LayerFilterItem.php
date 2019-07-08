@@ -25,7 +25,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     /**
      * @var array
      */
-    private $fieldName = array();
+    private $fieldName = [];
 
 
     /**

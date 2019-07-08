@@ -54,7 +54,7 @@ class AutocompleteRequestBundle {
       {
         case 11:
           if ($ftype == TType::LST) {
-            $this->requests = array();
+            $this->requests = [];
             $_size303 = 0;
             $_etype306 = 0;
             $xfer += $input->readListBegin($_etype306, $_size303);

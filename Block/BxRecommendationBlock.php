@@ -136,7 +136,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     }
 
     public function getReturnFields() {
-        return array();
+        return [];
     }
 
     /**
@@ -144,15 +144,15 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array
      */
     protected function getCmsRecommendationBlocks($content){
-        $results = array();
-        $recommendations = array();
+        $results = [];
+        $recommendations = [];
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
 
         if(isset($results[1])){
             foreach($results[1] as $index => $result){
                 if(strpos($result,'Boxalino\Intelligence') !== false){
                     preg_match_all("/[-^\s](.*?)\=\"(.*?)\"/",$result, $sectionResults);
-                    $result_holder = array();
+                    $result_holder = [];
                     foreach($sectionResults[1] as $index => $sectionResult){
                         $result_holder[$sectionResult] = $sectionResults[2][$index];
                     }
@@ -170,7 +170,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
                 try{
-                    $recommendation = array();
+                    $recommendation = [];
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
                     $recommendation['scenario'] = isset($widget['scenario']) ? $widget['scenario'] :
                         $widgetConfig['scenario'];
@@ -204,8 +204,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      */
     protected function _prepareData(){
         if($this->bxHelperData->isPluginEnabled() ){
-            $context = isset($this->_data['context']) ? $this->_data['context'] : array();
-            $entity_ids = array();
+            $context = isset($this->_data['context']) ? $this->_data['context'] : [];
+            $entity_ids = [];
             try{
                 $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
             }catch (\Exception $e){
@@ -214,8 +214,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                 return $this;
             }
 
-            if ((count($entity_ids) == 0)) {
-                $entity_ids = array(0);
+            if (empty($entity_ids)) {
+                $entity_ids = [0];
             }
 
             $this->_itemCollection = $this->factory->create();
@@ -235,7 +235,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return array|mixed
      */
     protected function getWidgetContext($scenario){
-        $context = array();
+        $context = [];
         switch($scenario){
             case 'category':
                 if($this->registry->registry('current_category') != null){

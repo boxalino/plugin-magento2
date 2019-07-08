@@ -78,7 +78,7 @@ class ProductView extends ListProduct implements CPOJourney{
 
     public function getSubRenderings()
     {
-        $elements = array();
+        $elements = [];
         $element = $this->getData('bxVisualElement');
         if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
             $elements = $element['subRenderings'][0]['rendering']['visualElements'];

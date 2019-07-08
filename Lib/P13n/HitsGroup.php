@@ -90,7 +90,7 @@ class HitsGroup {
           break;
         case 30:
           if ($ftype == TType::LST) {
-            $this->hits = array();
+            $this->hits = [];
             $_size143 = 0;
             $_etype146 = 0;
             $xfer += $input->readListBegin($_etype146, $_size143);

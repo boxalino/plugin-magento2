@@ -138,7 +138,7 @@ class BxListProducts extends ListProduct
         try{
             $layer = $this->getLayer();
             if($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()){
-                if(count($this->_productCollection) && !$this->p13nHelper->areThereSubPhrases()){
+                if(!empty($this->_productCollection) && count($this->_productCollection) && !$this->p13nHelper->areThereSubPhrases()){
                     return $this->_productCollection;
                 }
 
@@ -157,8 +157,8 @@ class BxListProducts extends ListProduct
                     $entity_ids = $this->p13nHelper->getEntitiesIds();
                 }
 
-                if(count($entity_ids) == 0){
-                    $entity_ids = array(0);
+                if (empty($entity_ids)) {
+                    $entity_ids = [0];
                 }
                 $this->_setupCollection($entity_ids);
                 return $this->_productCollection;

@@ -17,7 +17,7 @@ class BxParametrizedRequest extends BxRequest
 	private $requestContextItemFieldName = "bxcif";
 	private $requestContextItemFieldValues = "bxciv";
 
-	protected $requestParameterExclusionPatterns = array();
+	protected $requestParameterExclusionPatterns = [];
 	
 	public function __construct($language, $choiceId, $max=10, $min=0, $bxReturnFields=null, $getItemFieldsCB=null) {
 		parent::__construct($language, $choiceId, $max, $min);
@@ -111,9 +111,9 @@ class BxParametrizedRequest extends BxRequest
 	}
 
 	public function getPrefixedParameters($prefix, $checkOtherPrefixes=true) {
-		$params = array();
+		$params = [];
 		if(!is_array($this->requestMap)) {
-			return array();
+			return [];
 		}
 		foreach($this->requestMap as $k => $v) {
 			if($this->matchesPrefix($k, $prefix, $checkOtherPrefixes)) {
@@ -125,7 +125,7 @@ class BxParametrizedRequest extends BxRequest
 
 	public function getContextItems() {
 		$contextItemFieldName = null;
-		$contextItemFieldValues = array();
+		$contextItemFieldValues = [];
 		$params = $this->getPrefixedParameters($this->requestParametersPrefix, false);
 		foreach($params as $name => $values) {
 			if($name == $this->requestContextItemFieldName) {
@@ -162,7 +162,7 @@ class BxParametrizedRequest extends BxRequest
     }
 
     public function getRequestContextParameters() {
-		$params = array();
+		$params = [];
 		foreach($this->getPrefixedParameters($this->requestWeightedParametersPrefix) as $name => $values) {
 			$params[$name] = $values;
 		}
@@ -189,7 +189,7 @@ class BxParametrizedRequest extends BxRequest
 	}
 	
 	public function getWeightedParameters() {
-		$params = array();
+		$params = [];
 		foreach($this->getPrefixedParameters($this->requestWeightedParametersPrefix) as $name => $values) {
 			$pieces = explode('_', $name);
 			$fieldValue = "";
@@ -199,7 +199,7 @@ class BxParametrizedRequest extends BxRequest
 			}
 			$fieldName = implode('_', $pieces);
 			if(!isset($params[$fieldName])) {
-				$params[$fieldName] = array();
+				$params[$fieldName] = [];
 			}
 			$params[$fieldName][$fieldValue] = $values;
 			
@@ -257,8 +257,8 @@ class BxParametrizedRequest extends BxRequest
 	private $callBackCache = null;
 	public function retrieveFromCallBack($items, $fields) {
 		if($this->callBackCache === null) {
-			$this->callBackCache = array();
-			$ids = array();
+			$this->callBackCache = [];
+			$ids = [];
 			foreach($items as $item) {
 				$ids[] = $item->values['id'][0];
 			}
