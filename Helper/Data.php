@@ -676,6 +676,10 @@ class Data
                 return $this->isNavigationEnabled();
             case 'Magento\Catalog\Model\Layer\Search\Interceptor':
                 return $this->isSearchEnabled();
+            case 'Magento\Catalog\Model\Layer\Category':
+                return $this->isNavigationEnabled();
+            case 'Magento\Catalog\Model\Layer\Search':
+                return $this->isSearchEnabled();
             default:
                 return false;
         }
