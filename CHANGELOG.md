@@ -5,13 +5,33 @@ On every plugin update - please check the file and what needs to be tested on yo
 
 If you have any question, just contact us at support@boxalino.com
 
+### Version History
+**[v1.6.6 : 2019-07-10](#v1.6.6)**<br>
+**[v1.6.5 : 2019-06-24](#v1.6.5)**<br>
+**[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
+**[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
+**[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
 
+
+<a name="v1.6.6"></a>
+### v1.6.6 - 2019-07-10
+* *test* : navigation, search, add to basket tracker
+##### 1. PHP7.2, Magento2.3.2 compatibility fixes
+* *description* : Tested M2.3.2 and PHP7.2 compatibility
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/fcef82879d3e282cf856e93dfb40dc4752986085
+https://github.com/boxalino/plugin-magento2/commit/372000b4afbbc04538abb2a1d6ec42069d8095c6
+##### 2. Add to cart tracker updates
+* *description* : Update on add to cart tracker
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/c64de811f998471ea9ec53c6cd4d0937532403ab
+
+<a name="v1.6.5"></a>
 ### v1.6.5 - 2019-06-24
 * *test* : *php bin/magento setup:di:compile* required
 ##### 1. Exporter update on Configurable products status
 * *description* : Per default M2 behavior, the configurable product must appear disabled if the children are disabled
 * *commits* : https://github.com/boxalino/plugin-magento2/commit/1bfa90cda7d1252f9df9a3b7e3b224886ce64db1
 
+<a name="v1.6.4"></a>
 ### v1.6.4 - 2019-06-14
 * *post-deploy step* : *php bin/magento setup:di:compile* required
 ##### 1. Exporter Scheduler time-range comparison with store time
@@ -19,7 +39,7 @@ If you have any question, just contact us at support@boxalino.com
 Logs updated to reflect both UTC and store locale time.
 * *commits* : https://github.com/boxalino/plugin-magento2/commit/be5bcdd9d782997e206ebee60a1343138e3a18fa
 
-
+<a name="v1.6.3"></a>
 ### v1.6.3 - 2019-06-12
 ##### 1. .gitignore update
 * *description* :  The package can be retrieved via a git pull after a composer install
@@ -27,6 +47,7 @@ Logs updated to reflect both UTC and store locale time.
 * *description* : The DI requests for account validation, XML publish and archive export can return a timeout when the DI service is busy.
 This does not mean the process failed so the use-cases have been treated as warning/infos when debugging is needed.
 
+<a name="v1.6.2"></a>
 ### v1.6.2 - 2019-04-26
 ##### 1. Integration of Exporter Scheduler for delta-full exports
 * *setup version* : 1.0.3
