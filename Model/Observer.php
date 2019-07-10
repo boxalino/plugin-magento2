@@ -70,6 +70,7 @@ class Observer implements ObserverInterface{
         $event = $observer->getEvent();
         switch($event->getName()){
             case "checkout_cart_add_product_complete": //onProductAddedToCart
+                $this->onAddToBasket($event);
                 break;
             case "checkout_onepage_controller_success_action": //onOrderSuccessPageView
                 $this->onOrderSuccessPageView($event);
@@ -82,6 +83,21 @@ class Observer implements ObserverInterface{
                 break;
             default:
                 break;
+        }
+    }
+
+    protected function onAddToBasket($event)
+    {
+        try {
+            $product = $event->getProduct();
+            $count = $event->getRequest()->getPost('qty');
+            $price = $product->getPrice();
+            $currency = $this->storeManager->getStore()->getCurrentCurrencyCode();
+            
+            $script = $this->bxHelperData->reportAddToBasket($product->getId(), $count, $price, $currency);
+            $this->addScript($script);
+        } catch (\Exception $e) {
+            $this->_logger->critical($e);
         }
     }
 
