@@ -1071,7 +1071,7 @@ class Service
                             $this->bxData->addResourceFile($this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id', "value");
 
                             break;
-                        case ($attrKey == ('int' || 'decimal')) && $type['is_global'] == 1:
+                        case ($attrKey === 'int' || $attrKey === 'decimal') && $type['is_global'] == 1:
                             $this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
                             break;
                         default:
