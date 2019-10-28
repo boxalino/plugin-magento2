@@ -6,11 +6,18 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v1.6.6 : 2019-07-10](#v1.6.6)**<br>
+**[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
 **[v1.6.5 : 2019-06-24](#v1.6.5)**<br>
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+<a name="v1.6.7"></a>
+### v1.6.7 - 2019-10-10
+##### 1. XML configuration data-type update
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/c8f3956fe2599be61969c05df589c6b63f5e9607
+##### 2. Overlay styles update for M2.3.3
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/e56a28edbfea2a589c655236ef6c5afc4ecd158e
 
 
 <a name="v1.6.6"></a>
