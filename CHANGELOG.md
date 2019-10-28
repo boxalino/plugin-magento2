@@ -7,6 +7,7 @@ If you have any question, just contact us at support@boxalino.com
 
 ### Version History
 **[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
+**[v1.6.6 : 2019-06-10](#v1.6.6)**<br>
 **[v1.6.5 : 2019-06-24](#v1.6.5)**<br>
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
