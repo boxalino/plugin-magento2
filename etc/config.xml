@@ -4,9 +4,12 @@
         <default>
 			<bxGeneral>
                 <general>
-                    <enabled>1</enabled>
+                    <enabled>0</enabled>
                     <dev>0</dev>
                 </general>
+                <tracker>
+                    <enabled>0</enabled>
+                </tracker>
             </bxGeneral>
             <bxExporter>
                 <exporter>
@@ -19,6 +22,10 @@
                     <delta_start>7</delta_start>
                     <delta_end>23</delta_end>
                 </scheduler>
+                <products>
+                    <export_url>1</export_url>
+                    <export_images>1</export_images>
+                </products>
                 <customers>
                     <enabled>1</enabled>
                 </customers>
@@ -34,8 +41,11 @@
                     <enabled>0</enabled>
                     <blog>0</blog>
                 </search>
+                <navigation>
+                    <enabled>0</enabled>
+                </navigation>
                 <autocomplete>
-                    <enabled>1</enabled>
+                    <enabled>0</enabled>
                     <limit>7</limit>
                     <products_limit>1</products_limit>
                 </autocomplete>
@@ -46,17 +56,17 @@
             </bxSearch>
             <bxRecommendations>
                 <cart>
-                    <status>1</status>
+                    <status>0</status>
                     <min>3</min>
                     <max>3</max>
                 </cart>
                 <related>
-                    <status>1</status>
+                    <status>0</status>
                     <min>3</min>
                     <max>3</max>
                 </related>
                 <upsell>
-                    <status>1</status>
+                    <status>0</status>
                     <min>3</min>
                     <max>3</max>
                 </upsell>
@@ -68,12 +78,12 @@
             </bxRecommendations>
             <bxBanner>
                 <banner>
-                    <status>1</status>
+                    <status>0</status>
                 </banner>
             </bxBanner>
             <bxOverlay>
                 <overlay>
-                    <enabled>1</enabled>
+                    <enabled>0</enabled>
                     <hitcount>3</hitcount>
                     <bannerHitcount>1</bannerHitcount>
                     <order>0</order>
