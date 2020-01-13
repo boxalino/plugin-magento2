@@ -146,6 +146,10 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     protected function getCmsRecommendationBlocks($content){
         $results = [];
         $recommendations = [];
+        if(is_array($content))
+        {
+            return $recommendations;
+        }
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
 
         if(isset($results[1])){
@@ -170,8 +174,15 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
                 try{
-                    $recommendation = [];
+                    $recommendation = array();
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
+
+                }catch(\Exception $e){
+                    $this->_logger->critical($e);
+                    $widgetConfig = [];
+                }
+
+                try{
                     $recommendation['scenario'] = isset($widget['scenario']) ? $widget['scenario'] :
                         $widgetConfig['scenario'];
                     $recommendation['min'] = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
