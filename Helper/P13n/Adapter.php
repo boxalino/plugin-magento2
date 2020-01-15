@@ -101,6 +101,11 @@ class Adapter
     protected $prefixContextParameter = '';
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * Adapter constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Catalog\Model\Category $catalogCategory
@@ -109,7 +114,10 @@ class Adapter
      * @param \Magento\Search\Model\QueryFactory $queryFactory
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
+     * @param \Magento\Framework\App\Response\Http $response
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
+     * @param \Magento\Eav\Model\Config $config
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -121,9 +129,10 @@ class Adapter
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         \Magento\Framework\App\Response\Http $response,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Magento\Eav\Model\Config $config
-
+        \Magento\Eav\Model\Config $config,
+        \Psr\Log\LoggerInterface $logger
     ){
+        $this->_logger = $logger;
         $this->_modelConfig = $config;
         $this->response = $response;
         $this->bxHelperData = $bxHelperData;
@@ -214,6 +223,7 @@ class Adapter
 
     /**
      * @param $queryText
+     * @param bool $isBlog
      * @return mixed|string
      */
     public function getSearchChoice($queryText, $isBlog = false)
@@ -225,14 +235,14 @@ class Adapter
             }
             return $choice;
         }
-        $landingPageChoiceId = $this->landingPageChoice;
 
+        $landingPageChoiceId = $this->landingPageChoice;
         if (!empty($landingPageChoiceId)) {
             $this->currentSearchChoice = $landingPageChoiceId;
             return $landingPageChoiceId;
         }
-
-        if ($queryText == null) {
+        $choice = null;
+        if (empty($queryText) && $this->isNavigation) {
             $choice = $this->scopeConfig->getValue('bxSearch/advanced/navigation_choice_id', $this->scopeStore);
             if ($choice == null) {
                 $choice = "navigation";
@@ -243,7 +253,7 @@ class Adapter
         }
 
         $choice = $this->scopeConfig->getValue('bxSearch/advanced/search_choice_id', $this->scopeStore);
-        if ($choice == null) {
+        if ($choice == null && !empty($queryText)) {
             $choice = "search";
         }
         $this->currentSearchChoice = $choice;
@@ -518,8 +528,12 @@ class Adapter
         $isFinder = $this->bxHelperData->getIsFinder();
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
-
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
+        $choice = $this->getSearchChoice($queryText);
+        if(is_null($choice) && !$isFinder && !$addFinder)
+        {
+            throw new \Exception("Invalid request context: missing choice. Please contact Boxalino with your specific project scenario.");
+        }
+        if (self::$bxClient->getChoiceIdRecommendationRequest($choice) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
             return;
         }
@@ -798,7 +812,7 @@ class Adapter
         }
 
         if (!$this->navigation) {
-            $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : $this->storeManager->getStore()->getRootCategoryId();
+            $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : $this->getMagentoRootCategoryId();
             $values = explode($separator, $values);
             $andSelectedValues = isset($facetOptions['category_id']) ? $facetOptions['category_id']['andSelectedValues']: false;
             $bxFacets->addCategoryFacet($values, 2, -1, $andSelectedValues);
@@ -847,10 +861,15 @@ class Adapter
 
     public function getBlogIds()
     {
-        $this->simpleSearch();
-        $choice_id = $this->getSearchChoice('', true);
-        return $this->getClientResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
-
+        try{
+            $this->simpleSearch();
+            $choice_id = $this->getSearchChoice('', true);
+            return $this->getClientResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
+        } catch (\Exception $exception)
+        {
+            $this->_logger->warning("Boxalino P13N  conflict: " . $exception->getMessage());
+            return false;
+        }
     }
 
     public function getBlogTotalHitCount()
@@ -993,14 +1012,19 @@ class Adapter
      */
     public function getFacets($getFinder = false)
     {
-        $this->simpleSearch($getFinder);
-        $facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
-        if (empty($facets)) {
-            return null;
-        }
+        try{
+            $this->simpleSearch($getFinder);
+            $facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
+            if (empty($facets)) {
+                return null;
+            }
 
-        $facets->setParameterPrefix($this->getUrlParameterPrefix());
-        return $facets;
+            $facets->setParameterPrefix($this->getUrlParameterPrefix());
+            return $facets;
+        } catch (\Exception $exception) {
+            $this->_logger->warning("Boxalino P13N  conflict: " . $exception->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -1066,11 +1090,13 @@ class Adapter
      * @param int $minAmount
      * @param int $amount
      * @param bool $execute
+     * @param array $returnFields
      * @return array|void
+     * @throws \Exception
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute = true, $returnFields = array())
     {
-        if (!$execute) {
+        if (!$execute || !isset(self::$choiceContexts[$widgetName])) {
             if (!isset(self::$choiceContexts[$widgetName])) {
                 self::$choiceContexts[$widgetName] = [];
             }

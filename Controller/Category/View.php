@@ -54,6 +54,7 @@ class View extends \Magento\Catalog\Controller\Category\View{
         try{
             if($this->bxHelperData->isNavigationEnabled()) {
                 $this->_initCategory();
+                $this->p13nHelper->setIsNavigation(true);
                 $start = microtime(true);
                 $this->p13nHelper->addNotification('debug', "request start at " . $start);
 

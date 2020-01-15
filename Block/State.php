@@ -96,6 +96,11 @@ class State extends \Magento\Catalog\Model\Layer\State
                     return parent::getFilters();
                 }
 
+                if(!is_null($category))
+                {
+                    $this->p13nHelper->setIsNavigation(true);
+                }
+
                 $facets = $this->p13nHelper->getFacets();
                 if ($facets) {
                     $filters = [];
