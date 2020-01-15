@@ -6,12 +6,29 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.0.0 : 2020-01-15](#v1.6.7)**<br>
 **[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
 **[v1.6.6 : 2019-06-10](#v1.6.6)**<br>
 **[v1.6.5 : 2019-06-24](#v1.6.5)**<br>
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+<a name="v2.0.0"></a>
+### v2.0.0 - 2020-01-15
+* *test* : navigation, search, overlay, banners, recommendations
+##### 1. Recommendations on a no-results search page
+* *description* : If a search request has no product/blog matches, a widget is displayed. Enable via backend configurations Boxalino -> Recommendations -> No results
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/581148ca9ed55dae9ad28ec05151c8f98cb8474a
+##### 2. Adding custom sorting options
+* *configuration path* : "Boxalino -> Search-Navigation", tab "Advanced -> Custom sort option mapping"
+* _description_ : If your system has created custom logic/fields for sorting, it has to be used. Map your system field (used for sorting) to a Boxalino field.
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/42d3a7b637c514600ce040f65adf79d47bab33e8
+##### 3. User-Friendly view for debugging Boxalino responses
+* _description_ : For developers - use &boxalino_response=true OR boxalino_request=true as an URL parameter to see the content requested/returned by the SOLR index as JSON.
+##### 4. Minor adjustments for other interceptors integration
+* _description_ : Disabling all features by default; Check for navigation context (on category view);
+
 
 <a name="v1.6.7"></a>
 ### v1.6.7 - 2019-10-10

@@ -3,6 +3,24 @@ namespace com\boxalino\bxclient\v1;
 
 class BxClient
 {
+    CONST BOXALINO_DEBUG_REQUEST = "boxalino_request";
+    CONST BOXALINO_DEBUG_RESPONSE = "boxalino_response";
+    CONST BOXALINO_TECH_DEBUG = "dev_bx_disp";
+    CONST BOXALINO_TECH_SOCKET = "dev_bx_socket";
+    CONST BOXALINO_TECH_CHOICE = "dev_bx_choice";
+    CONST BOXALINO_TECH_TEST = "dev_bx_test_mode";
+    CONST BOXALINO_TECH_NOTIFICATIONS = "dev_bx_notifications";
+    CONST BOXALINO_TECH_BENCHMARK = "dev_bx_debug";
+
+    protected $nondebugableChoices = ['autocomplete'];
+
+    protected $debugContext = [
+        self::BOXALINO_TECH_BENCHMARK,
+        self::BOXALINO_DEBUG_REQUEST,
+        self::BOXALINO_DEBUG_RESPONSE,
+        self::BOXALINO_TECH_DEBUG
+    ];
+
     private $account;
     private $password;
     private $isDev;
@@ -29,6 +47,7 @@ class BxClient
     private $bundleChooseRequests = [];
 
     const VISITOR_COOKIE_TIME = 31536000;
+    const BXL_UUID_REQUEST = "_system_requestid";
 
     private $_timeout = 2;
     private $curl_timeout = 2000;
@@ -38,6 +57,8 @@ class BxClient
     private $profileId = null;
 
     private $requestMap = [];
+    protected $sendRequestId = false;
+    protected $uuid = null;
 
     private $socketHost = null;
     private $socketPort = null;
@@ -112,7 +133,7 @@ class BxClient
         return "main.bx-cloud.com";
     }
 
-    public function setApiKey($apiKey) {
+    public function setApiKey($apiKey){
         $this->apiKey = $apiKey;
     }
 
@@ -152,11 +173,11 @@ class BxClient
         $this->requestMap[$key] = $value;
     }
 
-    public static function LOAD_CLASSES($libPath) {
+    public static function LOAD_CLASSES($libPath)
+    {
         $cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
         $cl->registerNamespace('Thrift', $libPath);
         $cl->register(true);
-
         $folders = ['P13n'];
         $deferred = '';
         foreach ($folders as $folder) {
@@ -170,7 +191,6 @@ class BxClient
             }
         }
         if($deferred !== ''){
-
             require_once($deferred);
         }
         require_once($libPath . "/BxFacets.php");
@@ -214,8 +234,8 @@ class BxClient
         $this->profileId = $profileId;
     }
 
-    public function getSessionAndProfile() {
-
+    public function getSessionAndProfile()
+    {
         if($this->sessionId != null && $this->profileId != null) {
             return array($this->sessionId, $this->profileId);
         }
@@ -267,12 +287,12 @@ class BxClient
         $this->curl_timeout = $timeout;
     }
 
-    private function getP13n($timeout=2, $useCurlIfAvailable=true){
-
+    private function getP13n($timeout=2, $useCurlIfAvailable=true)
+    {
         list($sessionId, $profileId) = $this->getSessionAndProfile();
 
-        if (isset($this->requestMap['dev_bx_socket'])) {
-            $this->setSocket($this->requestMap['dev_bx_socket']);
+        if (isset($this->requestMap[self::BOXALINO_TECH_SOCKET])) {
+            $this->setSocket($this->requestMap[self::BOXALINO_TECH_SOCKET]);
         }
 
         if($this->socketHost != null) {
@@ -299,12 +319,11 @@ class BxClient
         return $client;
     }
 
-    public function getChoiceRequest($inquiries, $requestContext = null) {
-
+    public function getChoiceRequest($inquiries, $requestContext = null)
+    {
         $choiceRequest = new \com\boxalino\p13n\api\thrift\ChoiceRequest();
 
         list($sessionid, $profileid) = $this->getSessionAndProfile();
-
         $choiceRequest->userRecord = $this->getUserRecord();
         $choiceRequest->profileId = $profileid;
         $choiceRequest->inquiries = $inquiries;
@@ -367,11 +386,9 @@ class BxClient
         $this->requestContextParameters = [];
     }
 
-
     protected function getBasicRequestContextParameters()
     {
         list($sessionid, $profileid) = $this->getSessionAndProfile();
-
         return array(
             'User-Agent'	 => array(@$_SERVER['HTTP_USER_AGENT']),
             'User-Host'	  => array($this->getIP()),
@@ -398,15 +415,20 @@ class BxClient
     {
         $requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
         $requestContext->parameters = $this->getBasicRequestContextParameters();
-        foreach($this->getRequestContextParameters() as $k => $v) {
+
+        if(function_exists("random_bytes") && $this->sendRequestId)
+        {
+            $this->addRequestContextParameter(self::BXL_UUID_REQUEST, $this->uuid());
+        }
+
+        foreach($this->getRequestContextParameters() as $k => $v)
+        {
             $requestContext->parameters[$k] = $v;
         }
 
-        if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext'])) {
-            $requestContext->parameters = array_merge(
-                $this->requestMap['p13nRequestContext'],
-                $requestContext->parameters
-            );
+        if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext']))
+        {
+            $requestContext->parameters = array_merge($this->requestMap['p13nRequestContext'],$requestContext->parameters);
         }
 
         return $requestContext;
@@ -414,43 +436,46 @@ class BxClient
 
     private function throwCorrectP13nException($e) {
         if(strpos($e->getMessage(), 'Could not connect ') !== false) {
-            throw new \Exception('The connection to our server failed even before checking your credentials. This might be typically caused by 2 possible things: wrong values in host, port, schema or uri (typical value should be host=cdn.bx-cloud.com, port=443, uri =/p13n.web/p13n and schema=https, your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates), which you can either fix, or avoid the problem by adding the line "curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);" in the file "lib\Thrift\Transport\P13nTCurlClient" after the call to curl_init in the function flush. Full error message=' . $e->getMessage());
+            throw new \Exception('The connection to our server failed before checking your credentials. This might be typically caused by 2 possible things: wrong values in host/schema/port (for exports), api key or api secret (your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri .  ', api key =' . $this->getApiKey() .', request: ' . $this->getRequestId() . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates) which can be fixed. Full error message=' . $e->getMessage());
         }
 
         if(strpos($e->getMessage(), 'Bad protocol id in TCompact message') !== false) {
-            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . '. Full error message=' . $e->getMessage());
+            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . ', account=' . $this->account . ', host=' . $this->host .  ', api key =' . $this->getApiKey() . ', request: ' . $this->getRequestId() . '. Full error message=' . $e->getMessage());
         }
 
         if(strpos($e->getMessage(), 'choice not found') !== false) {
             $parts = explode('choice not found', $e->getMessage());
             $pieces = explode('	at ', $parts[1]);
             $choiceId = str_replace(':', '', trim($pieces[0]));
-            throw new \Exception("Configuration not live on account " . $this->getAccount() . ": choice $choiceId doesn't exist. NB: If you get a message indicating that the choice doesn't exist, go to http://intelligence.bx-cloud.com, log in your account and make sure that the choice id you want to use is published.");
+            throw new \Exception("Configuration IS not live on account " . $this->getAccount() . ": choice/widget $choiceId doesn't exist. NB: If you get a message indicating that the choice doesn't exist, go to http://intelligence.bx-cloud.com, log in your account and make sure that the choice ID you want to use is published.");
         }
         if(strpos($e->getMessage(), 'Solr returned status 404') !== false) {
-            throw new \Exception("Data not live on account " . $this->getAccount() . ": index returns status 404. Please publish your data first, like in example backend_data_basic.php.");
+            throw new \Exception("Data is not live on account " . $this->getAccount() . ": index returns status 404. Please publish your data first, like in example backend_data_basic.php.");
         }
+
         if(strpos($e->getMessage(), 'undefined field') !== false) {
             $parts = explode('undefined field', $e->getMessage());
             $pieces = explode('	at ', $parts[1]);
             $field = str_replace(':', '', trim($pieces[0]));
-            throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist.");
+            throw new \Exception("The request is done on a filter or facets of a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist. Request: " . $this->getRequestId());
         }
+
         if(strpos($e->getMessage(), 'All choice variants are excluded') !== false) {
-            throw new \Exception("You have an invalid configuration for with a choice defined, but having no defined strategies. This is a quite unusual case, please contact support@boxalino.com to get support.");
+            throw new \Exception("You have an invalid configuration for a choice defined. This is a quite unusual case, please contact support@boxalino.com to get support. Request: " . $this->getRequestId());
         }
+
         throw $e;
     }
 
     private function p13nchoose($choiceRequest) {
         try {
             $choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
-            if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+            if($this->debugContextAvailable()) {
                 $debug = true;
-                if (isset($this->requestMap['dev_bx_choice'])) {
+                if (isset($this->requestMap[self::BOXALINO_TECH_CHOICE])) {
                     $debug = false;
                     foreach ($choiceRequest->inquiries as $inquiry) {
-                        if ($inquiry->choiceId == $this->requestMap['dev_bx_choice']) {
+                        if ($inquiry->choiceId == $this->requestMap[self::BOXALINO_TECH_CHOICE]) {
                             $debug = true;
                             break;
                         }
@@ -524,9 +549,9 @@ class BxClient
         return $requests;
     }
 
-    public function getThriftChoiceRequest($size=0) {
-
-        if(empty($this->chooseRequests) && !empty($this->autocompleteRequests)) {
+    public function getThriftChoiceRequest($size=0)
+    {
+        if(sizeof($this->chooseRequests) == 0 && sizeof($this->autocompleteRequests) > 0) {
             list($sessionid, $profileid) = $this->getSessionAndProfile();
             $userRecord = $this->getUserRecord();
             $p13nrequests = array_map(function($request) use(&$profileid, &$userRecord) {
@@ -540,7 +565,7 @@ class BxClient
         foreach($requests as $request) {
             $choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
             $choiceInquiry->choiceId = $request->getChoiceId();
-            if(empty($choiceInquiries) && $this->getChoiceIdOverwrite()) {
+            if(sizeof($choiceInquiries) == 0 && $this->getChoiceIdOverwrite()) {
                 $choiceInquiry->choiceId = $this->getChoiceIdOverwrite();
             }
             if($this->isTest === true || ($this->isDev && $this->isTest === null)) {
@@ -558,8 +583,8 @@ class BxClient
         return $choiceRequest;
     }
 
-    public function getBundleChoiceRequest($inquiries, $requestContext = null) {
-
+    public function getBundleChoiceRequest($inquiries, $requestContext = null)
+    {
         $choiceRequest = new \com\boxalino\p13n\api\thrift\ChoiceRequest();
         list($sessionid, $profileid) = $this->getSessionAndProfile();
 
@@ -573,11 +598,11 @@ class BxClient
         return $choiceRequest;
     }
 
-    public function getThriftBundleChoiceRequest() {
-
+    public function getThriftBundleChoiceRequest()
+    {
         $bundleRequest = [];
         foreach($this->bundleChooseRequests as $bundleChooseRequest) {
-            $choiceInquiries = array();
+            $choiceInquiries = [];
             foreach ($bundleChooseRequest as $request) {
                 $this->addRequest($request);
                 $choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
@@ -599,7 +624,7 @@ class BxClient
     protected function choose($chooseAll=false, $size=0) {
         if($chooseAll) {
             $bundleResponse = $this->p13nchooseAll($this->getThriftBundleChoiceRequest());
-            $variants = array();
+            $variants = [];
             foreach ($bundleResponse->responses as $choiceResponse) {
                 $variants = array_merge($variants, $choiceResponse->variants);
             }
@@ -631,7 +656,7 @@ class BxClient
     }
 
     public function getNotificationMode() {
-        return isset($this->requestMap['dev_bx_notifications']) && $this->requestMap['dev_bx_notifications'] == 'true';
+        return isset($this->requestMap[self::BOXALINO_TECH_NOTIFICATIONS]) && $this->requestMap[self::BOXALINO_TECH_NOTIFICATIONS] == 'true';
     }
 
     public function setAutocompleteRequest($request) {
@@ -708,11 +733,11 @@ class BxClient
         {
             $this->choose($chooseAll);
         }
+
         $this->flushResponses();
         $this->resetRequests();
         $this->resetRequestContextParameter();
     }
-
 
     public function setTimeout($timeout) {
         $this->_timeout = $timeout;
@@ -733,7 +758,7 @@ class BxClient
 
     public function addNotification($type, $notification) {
         if(!isset($this->notifications[$type])) {
-            $this->notifications[$type] = array();
+            $this->notifications[$type] = [];
         }
         $this->notifications[$type][] = $notification;
     }
@@ -744,7 +769,7 @@ class BxClient
         return $final;
     }
 
-    public function finalNotificationCheck($force=false, $requestMapKey = 'dev_bx_notifications')
+    public function finalNotificationCheck($force=false, $requestMapKey = self::BOXALINO_TECH_NOTIFICATIONS)
     {
         if ($force || (isset($this->requestMap[$requestMapKey]) && $this->requestMap[$requestMapKey] == 'true')) {
             $value = "<pre><h1>Notifications</h1>" .  var_export($this->notifications, true) . "</pre>";
@@ -756,24 +781,131 @@ class BxClient
         }
     }
 
+    protected function debugContextAvailable()
+    {
+        $context = array_intersect(array_keys($this->requestMap), $this->debugContext);
+        if(empty($context))
+        {
+            return false;
+        }
+
+        foreach($context as $param)
+        {
+            if($this->requestMap[$param] == 'true')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function debug($request, $response, $type, $checkNotifications=true, $checkDebug=true)
     {
         $request = $this->excludeCredentials($request);
-        if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true' && $checkDebug) {
+        if($this->debugContextAvailable() && $checkDebug)
+        {
             ini_set('xdebug.var_display_max_children', -1);
             ini_set('xdebug.var_display_max_data', -1);
             ini_set('xdebug.var_display_max_depth', -1);
-            $this->debugOutput = "<pre><h1>Request {$type}</h1>" . var_export($request, true) .  "<br><h1>Choice Response</h1>" . var_export($response, true) . "</pre>";
+            $this->debugOutput = $this->preparedebugOutput($request, $response, $type);
             if(!$this->debugOutputActive) {
                 echo $this->debugOutput;
                 exit;
             }
         }
 
-        if(isset($this->requestMap['dev_bx_debug']) && $this->requestMap['dev_bx_debug'] == 'true' && $checkNotifications) {
+        if(isset($this->requestMap[self::BOXALINO_TECH_BENCHMARK]) && $this->requestMap[self::BOXALINO_TECH_BENCHMARK] == 'true' && $checkNotifications) {
             $this->addNotification('bxRequest', $request);
             $this->addNotification('bxResponse', $response);
         }
+    }
+
+    protected function prepareDebugOutput($request, $response, $type)
+    {
+        if(isset($this->requestMap[self::BOXALINO_TECH_DEBUG]) && $this->requestMap[self::BOXALINO_TECH_DEBUG] == 'true')
+        {
+            if(isset($this->requestMap['format']))
+            {
+                $debugOutput = [
+                    json_encode($request, true),
+                    json_encode($response, true)
+                ];
+
+                return implode("<br><br><br><br>", $debugOutput);
+            }
+            return "<pre><h1>Request {$type}</h1>" . var_export($request, true) .  "<br><h1>Choice Response</h1>" . var_export($response, true) . "</pre>";
+        }
+
+        if(isset($this->requestMap[self::BOXALINO_DEBUG_REQUEST]) && $this->requestMap[self::BOXALINO_DEBUG_REQUEST] == 'true')
+        {
+            return json_encode($request, true);
+        }
+
+        if(isset($this->requestMap[self::BOXALINO_DEBUG_RESPONSE]) && $this->requestMap[self::BOXALINO_DEBUG_RESPONSE] == 'true')
+        {
+            $logs = [];
+            $bxChooseResponse = new \com\boxalino\bxclient\v1\BxChooseResponse($response, $this->chooseRequests);
+            $logs[] = 'REQUEST ID - ' . $this->getRequestId() ;
+            $logs[] = 'SESSION ID : PROFILE ID = ' . implode(" : ", $this->getSessionAndProfile()) . "<br><br>";
+            foreach($this->chooseRequests as $inquiredRequest)
+            {
+                $inquiredChoice = $inquiredRequest->getChoiceId();
+                if(in_array($inquiredChoice, $this->nondebugableChoices))
+                {
+                    continue;
+                }
+                $inquiredFields = $inquiredRequest->getReturnFields();
+                $matchingProducts = $bxChooseResponse->getHitFieldValues($inquiredFields, $inquiredChoice, true);
+
+                $logs[]="==============<i>Debug of Boxalino Response on <b>{$inquiredChoice}</b></i>===================";
+                $logs[]= "COUNT: {$bxChooseResponse->getTotalHitCount($inquiredChoice)}";
+                $logs[]="======<i><b>PRODUCTS</b></i>=====";
+                foreach($matchingProducts as $id => $fieldValueMap) {
+                    foreach($fieldValueMap as $fieldName => $fieldValues) {
+                        $logs[] = " $fieldName: " . implode(',', $fieldValues) . "";
+                    }
+                    $logs[] = "</div>";
+                }
+                $logs[] = "</div>\n";
+
+                if(in_array($inquiredChoice, ['search', 'navigation']))
+                {
+                    $logs[]="=====<i><b>FACETS</b></i>====";
+                    $bxFacets = $bxChooseResponse->getFacets();
+                    $fieldNames = $bxFacets->getFieldNames();
+                    foreach($fieldNames as $facetField)
+                    {
+                        if($facetField == 'discountedPrice')
+                        {
+                            $logs[] = "<b>{$facetField}</b>";
+                            foreach($bxFacets->getPriceRanges() as $fieldValue) {
+                                $log = "value - {$bxFacets->getPriceValueParameterValue($fieldValue)}; label - {$bxFacets->getPriceValueLabel($fieldValue)}; products count - {$bxFacets->getPriceValueCount($fieldValue)}";
+                                if($bxFacets->isPriceValueSelected($fieldValue)){$log .= " <b>is selected</b>";}
+                                $logs[] = $log;
+                            }
+                            $logs[] = "<br>";
+                            continue;
+                        }
+                        $logs[] = "facet - <b>{$facetField}</b>";
+                        foreach($bxFacets->getFacetValues($facetField) as $fieldValue) {
+                            $log = "value: <i>{$bxFacets->getFacetValueParameterValue($facetField, $fieldValue)}</i>; label - <i>{$bxFacets->getFacetValueLabel($facetField, $fieldValue)}</i>; count - <i>{$bxFacets->getFacetValueCount($facetField, $fieldValue)}</i>";
+                            if($bxFacets->isFacetValueSelected($facetField, $fieldValue))
+                            {
+                                $log.= " <b>is selected</b>";
+                            }
+                            $logs[] = $log;
+                        }
+                        $extraInfo = json_encode($bxFacets->getAllFacetExtraInfo($facetField), true);
+                        $logs[] = "extra info - {$extraInfo}";
+                        $logs[] = "<br>";
+                    }
+                }
+            }
+
+            return implode("<br>", $logs);
+        }
+
     }
 
     protected function excludeCredentials($request)
@@ -798,6 +930,36 @@ class BxClient
         $request->userRecord = $userRecord;
 
         return $request;
+    }
+
+    public function setSendRequestId($value)
+    {
+        $this->sendRequestId = $value;
+        return $this;
+    }
+
+    protected function uuid()
+    {
+        $uuid = bin2hex(random_bytes(16));
+        $hyphen = chr(45);
+        return substr($uuid, 0, 8).$hyphen
+            .substr($uuid, 8, 4).$hyphen
+            .substr($uuid,12, 4).$hyphen
+            .substr($uuid,16, 4).$hyphen
+            .substr($uuid,20,12);
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestId()
+    {
+        if(isset($this->requestContextParameters[self::BXL_UUID_REQUEST]))
+        {
+            return array_pop($this->requestContextParameters[self::BXL_UUID_REQUEST]);
+        }
+
+        return "undefined";
     }
 
 }

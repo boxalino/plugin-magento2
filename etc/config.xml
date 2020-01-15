@@ -10,6 +10,9 @@
                 <tracker>
                     <enabled>0</enabled>
                 </tracker>
+                <advanced>
+                    <send_request_id>0</send_request_id>
+                </advanced>
             </bxGeneral>
             <bxExporter>
                 <exporter>

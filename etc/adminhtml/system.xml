@@ -99,6 +99,11 @@
                     <label>CURL Connection Timeout</label>
                     <comment>Optional: default value is 1000 (1 second) and should normally not be changed. Please provide the value is in millisecond.</comment>
                 </field>
+                <field id="send_request_id" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Send Request Id</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Sending a request UUID allows tracking on our server if the request arrived. To only be used when an issue has been identified.</comment>
+                </field>
             </group>
         </section>
 
