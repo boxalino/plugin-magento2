@@ -52,22 +52,28 @@ class Crosssell extends MageCrosssell{
     /**
      * @return $this|MageCrosssell
      */
-    protected function _prepareData($execute = true){
-        if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled()){
-            $products = $this->_coreRegistry->registry('product');
+    protected function _prepareData($execute = true)
+    {
+        if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            $product = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
+            $entity_ids = [];
 
             try{
-                $entity_ids = $this->p13nHelper->getRecommendation(
-                    $choiceId,
-                    $products,
-                    'basket',
-                    $config['min'],
-                    $config['max'],
-                    $execute
-                );
-            }catch(\Exception $e){
+                if(!is_null($product))
+                {
+                    $entity_ids = $this->p13nHelper->getRecommendation(
+                        $choiceId,
+                        $product,
+                        'product',
+                        $config['min'],
+                        $config['max'],
+                        $execute
+                    );
+                }
+            } catch(\Exception $e) {
                 $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return parent::_prepareData();

@@ -64,22 +64,25 @@ class Related extends MageRelated{
      */
     protected function _prepareData($execute = true)
     {
-        if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled()){
-
-            $products = $this->_coreRegistry->registry('product');
+        if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            $product = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
+            $entity_ids = [];
 
             try{
-                $entity_ids = $this->p13nHelper->getRecommendation(
-                    $choiceId,
-                    $products,
-                    'product',
-                    $config['min'],
-                    $config['max'],
-                    $execute
-                );
-            }catch(\Exception $e){
+                if(!is_null($product)) {
+                    $entity_ids = $this->p13nHelper->getRecommendation(
+                        $choiceId,
+                        $product,
+                        'product',
+                        $config['min'],
+                        $config['max'],
+                        $execute
+                    );
+                }
+            } catch(\Exception $e) {
                 $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return parent::_prepareData();
