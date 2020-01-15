@@ -230,4 +230,19 @@ class Result extends Mage_Result
         return parent::setTemplate($template);
     }
 
+    /**
+     * @return bool
+     */
+    public function showNoResults()
+    {
+        return $this->bxHelperData->isNoResultsEnabled();
+    }
+
+    /**
+     * @return string
+     */
+    public function getNoResultsWidgetName()
+    {
+        return $this->bxHelperData->getNoResultsWidgetName();
+    }
 }

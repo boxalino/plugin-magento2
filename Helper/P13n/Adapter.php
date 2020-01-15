@@ -81,6 +81,11 @@ class Adapter
     protected $navigation = false;
 
     /**
+     * @var bool
+     */
+    protected $isNavigation = false;
+
+    /**
      * @var \Magento\Eav\Model\Config
      */
     protected $_modelConfig;
@@ -1210,5 +1215,24 @@ class Adapter
         {
             self::$bxClient->sendAllChooseRequests();
         }
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setIsNavigation($value)
+    {
+        $this->isNavigation = $value;
+        return $this;
+    }
+
+    /**
+     * clear prior requests (ex: in case of noresults)
+     */
+    public function flushResponses()
+    {
+        self::$bxClient->flushResponses();
+        self::$bxClient->resetRequests();
     }
 }

@@ -35,8 +35,7 @@
         <?php endif; ?>
     <?php endif; ?>
     </div>
-<?php else: ?>
-  <?php if($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
+<?php elseif($this->isBlogSearchActive() && $this->getBlogTotalHitCount() > 0): ?>
       <button id="bx-product-tab"><?php echo __('Products'); ?></button>
       <button id="bx-blog-tab"><?php echo __('Blog-Articles'); ?></button>
       <div class="bx-product-result">
@@ -67,8 +66,16 @@
             <?php endif; ?>
         </div>
     </div>
+    <?php if($block->showNoResults()) :?>
+        <?php echo $this->getLayout()->createBlock('Boxalino\Intelligence\Block\BxRecommendationBlock')
+            ->setBlockId('search.result.noresults')
+            ->setWidget($block->getNoResultsWidgetName())
+            ->setTitle("You may be interested in the following products")
+            ->setTemplate("Boxalino_Intelligence::product/recommendation.phtml")
+            ->toHtml();
+        ?>
+    <?php endif;?>
   <?php endif; ?>
-<?php endif; ?>
 <script>
     require([
         'jquery',

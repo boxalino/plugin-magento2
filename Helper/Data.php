@@ -617,6 +617,18 @@ class Data
     /**
      * @return bool
      */
+    public function isNoResultsEnabled()
+    {
+        if(!isset($this->bxConfig['bxRecommendations'])){
+            $this->bxConfig['bxRecommendations'] = $this->config->getValue('bxRecommendations', $this->scopeStore);
+        }
+
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['noresults']['enabled']);
+    }
+
+    /**
+     * @return bool
+     */
     public function isOverlayEnabled()
     {
         if(!isset($this->bxConfig['bxOverlay'])){
@@ -857,6 +869,28 @@ class Data
         }
 
         return $sortFields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNoResultsWidgetName()
+    {
+        $configName = $this->config->getValue('bxRecommendations/noresults/widget');
+        if(empty($configName))
+        {
+            return "noresults";
+        }
+
+        return $configName;
+    }
+
+    /**
+     * @return []
+     */
+    public function getNoResultsWidgetConfig()
+    {
+        return $this->config->getValue('bxRecommendations/noresults',$this->scopeStore);
     }
 
     /**

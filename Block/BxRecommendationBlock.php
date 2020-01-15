@@ -117,7 +117,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     /**
      * Recommendation setup
      */
-    public function _construct(){
+    public function _construct()
+    {
         try{
             if($this->bxHelperData->isPluginEnabled() && $this->bxHelperData->isSetup()){
                 $cmsBlock = $this->bxHelperData->getCmsBlock();
@@ -125,8 +126,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                     $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
                     $this->prepareRecommendations($recommendationBlocks, $this->getReturnFields());
                     $this->bxHelperData->setSetup(false);
-                }else{
-                    $this->prepareRecommendations(array($this->_data), $this->getReturnFields());
+                } else {
+                    $this->prepareRecommendations([$this->_data], $this->getReturnFields());
                 }
             }
         }catch(\Exception $e){
@@ -135,7 +136,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         }
     }
 
-    public function getReturnFields() {
+    public function getReturnFields()
+    {
         return [];
     }
 
@@ -143,7 +145,8 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @param $content
      * @return array
      */
-    protected function getCmsRecommendationBlocks($content){
+    protected function getCmsRecommendationBlocks($content)
+    {
         $results = [];
         $recommendations = [];
         if(is_array($content))
@@ -166,18 +169,21 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         }
         return $recommendations;
     }
+
     /**
      * @param array $recommendations
      * @return null
      */
-    protected function prepareRecommendations($recommendations = array(), $returnFields = array()){
-        if($recommendations && is_array($recommendations)){
-            foreach($recommendations as $index => $widget){
+    protected function prepareRecommendations($recommendations = array(), $returnFields = array())
+    {
+        if($recommendations && is_array($recommendations))
+        {
+            foreach($recommendations as $index => $widget)
+            {
                 try{
                     $recommendation = array();
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
-
-                }catch(\Exception $e){
+                } catch(\Exception $e) {
                     $this->_logger->critical($e);
                     $widgetConfig = [];
                 }
@@ -193,6 +199,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                         $scenario = isset($widget['scenario']) ? $widget['scenario'] : $widgetConfig['scenario'];
                         $recommendation['context']  = $this->getWidgetContext($scenario);
                     }
+
                     $this->p13nHelper->getRecommendation(
                         $widget['widget'],
                         $recommendation['context'],
@@ -202,7 +209,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
                         false,
                         $returnFields
                     );
-                }catch(\Exception $e){
+                } catch(\Exception $e) {
                     $this->_logger->critical($e);
                 }
             }
@@ -213,13 +220,20 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     /**
      * @return $this
      */
-    protected function _prepareData(){
+    protected function _prepareData()
+    {
         if($this->bxHelperData->isPluginEnabled() ){
-            $context = isset($this->_data['context']) ? $this->_data['context'] : [];
             $entity_ids = [];
-            try{
+            try {
+                $context = isset($this->_data['context']) ? $this->_data['context'] : [];
+                if($this->_data['widget'] == $this->getNoResultsWidgetName()){
+                    $config = $this->bxHelperData->getNoResultsWidgetConfig($this->_data['widget']);
+                    $this->p13nHelper->flushResponses();
+                    $this->p13nHelper->getRecommendation($this->getNoResultsWidgetName(), [], "other", $config['min'], $config['max'], false);
+                }
+
                 $entity_ids = $this->p13nHelper->getRecommendation($this->_data['widget'], $context);
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 $this->bxHelperData->setFallback(true);
                 $this->_logger->critical($e);
                 return $this;
@@ -239,6 +253,14 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
             }
         }
         return $this;
+    }
+
+    /**
+     * @return string | null
+     */
+    public function getNoResultsWidgetName()
+    {
+        return $this->bxHelperData->getNoResultsWidgetName();
     }
 
     /**

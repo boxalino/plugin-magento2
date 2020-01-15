@@ -75,6 +75,11 @@
                     <min>3</min>
                     <max>3</max>
                 </blog>
+                <noresults>
+                    <enabled>0</enabled>
+                    <min>3</min>
+                    <max>3</max>
+                </noresults>
             </bxRecommendations>
             <bxBanner>
                 <banner>

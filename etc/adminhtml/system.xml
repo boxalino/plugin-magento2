@@ -444,8 +444,29 @@
                 </field>
             </group>
 
+            <group id="noresults" showInDefault="1" showInWebsite="1" showInStore="0"  sortOrder="4">
+                <label>No Results Search Recommendations</label>
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Widget Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is Boxalino no results search recommendations active?</comment>
+                </field>
+                <field id="min" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="2">
+                    <label>Minimum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="max" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="3">
+                    <label>Maximum recommended items</label>
+                    <comment>E.g.: if you want 4 recommendations (no more no less), then write 4 both on minimum and maximum recommended items</comment>
+                </field>
+                <field id="widget" type="text" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+                    <label>Widget name</label>
+                    <comment>Optional: default value is "noresults" and should normally not be changed</comment>
+                </field>
+            </group>
+
             <!-- Upsell Configuration -->
-            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="4">
+            <group id="others" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="5">
                 <label>Other recommendations Configuration</label>
                 <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
 
