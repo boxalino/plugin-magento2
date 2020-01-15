@@ -611,33 +611,30 @@ class Adapter
      */
     protected function prepareSortFields($requestParams, $orderBy=null, $direction=null)
     {
-        $field = '';
-        if(is_null($orderBy))
-        {
+        $field = ''; $dir=false;
+        if(is_null($orderBy)){
             $orderBy = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
         }
 
-        if(is_null($direction))
+        $fieldsMapping = $this->bxHelperData->getSortOptionsMapping();
+        if(isset($fieldsMapping[$orderBy]))
         {
-            $direction = isset($requestParams['product_list_dir']) ? true : false;
+            $field = array_keys($fieldsMapping[$orderBy])[0];
+            $dir = array_values($fieldsMapping[$orderBy])[0] == 'asc' ? false : true;
         }
 
-        if (($orderBy == 'title') || ($orderBy == 'name')) {
-            $field = 'products_bx_parent_title';
-        } elseif ($orderBy == 'price') {
-            $field = 'products_bx_grouped_price';
+        if(is_null($direction)) {
+            $direction = isset($requestParams['product_list_dir']) ? true : $dir;
         }
 
         $sortFields = new \com\boxalino\bxclient\v1\BxSortFields();
-        if(empty($field))
-        {
+        if(empty($field)){
             return $sortFields;
         }
 
         $sortFields->push($field, $direction);
         $extraSortRequests = $this->bxHelperData->getExtraSortFields();
-        if(!isset($extraSortRequests[$orderBy]))
-        {
+        if(!isset($extraSortRequests[$orderBy])){
             return $sortFields;
         }
 
@@ -672,6 +669,14 @@ class Adapter
             $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
             return $dependencies;
         }
+    }
+
+    /**
+     * @return int
+     */
+    protected function getMagentoRootCategoryId()
+    {
+        return $this->storeManager->getStore()->getRootCategoryId();
     }
 
     /**
@@ -1098,7 +1103,7 @@ class Adapter
                     }
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
 
-                    $categoryId = is_null($this->registry->registry('current_category')) ? 2 : $this->registry->registry('current_category')->getId();
+                    $categoryId = is_null($this->registry->registry('current_category')) ? $this->getMagentoRootCategoryId() : $this->registry->registry('current_category')->getId();
                     self::$bxClient->addRequestContextParameter('current_category_id', $categoryId);
 
                     if ($widgetType === 'basket' && is_array($context)) {

@@ -871,6 +871,29 @@ class Data
         return $sortFields;
     }
 
+    public function getSortOptionsMapping()
+    {
+        $sortMapping = array_filter(explode(";", $this->config->getValue('bxSearch/advanced/sort_options_mapping', $this->scopeStore)));
+        $sortFields = [
+            'name'      => ['products_bx_parent_title' => 'asc'],
+            'price'     => ['products_bx_grouped_price'=>'asc'],
+            'entity_id' => ['products_group_id' => 'desc'],
+            'created_at'=> ['products_created_at' => 'desc']
+        ];
+
+        foreach ($sortMapping as $sortRule) {
+            if(empty($sortRule)){continue;}
+            $fieldRuleMapping = explode(':', $sortRule);
+            $fieldSortDir = explode('-',$fieldRuleMapping[1]);
+            if(isset($fieldSortDir[1]) && !empty($fieldSortDir[1]))
+            {
+                $sortFields[strtolower($fieldRuleMapping[0])] = [strtolower($fieldSortDir[0]) => strtolower($fieldSortDir[1])];
+            }
+        }
+
+        return $sortFields;
+    }
+
     /**
      * @return string
      */
