@@ -301,7 +301,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      * @return mixed|string
      */
     public function getRecommendationTitle(){
-        return isset($this->_data['title']) ? $this->_data['title'] : 'Recommendation';
+        return isset($this->_data['title']) ? __($this->_data['title']) : __('Recommendation');
     }
 
     /**
