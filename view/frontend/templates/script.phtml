@@ -1,6 +1,7 @@
 <?php
 /**
  * Boxalino Script Block
+ * @block \Boxalino\Intelligence\Block\Script
  */
 
 $_helper = $this->getBxHelperData();
@@ -107,7 +108,7 @@ $script = $this->getBaScriptServerPath();
     _bxq.push(['trackPageView']);
 
     <?php if ($this->isSearch()): ?>
-        <?php echo $_helper->reportSearch($this->getRequest()->getParam('q'), $_helper->getFiltersValues($this->getRequest()->getParams())); ?>
+        <?php echo $_helper->reportSearch($this->getRequest()->getParam($this->getQueryParamName()), $_helper->getFiltersValues($this->getRequest()->getParams())); ?>
     <?php endif; ?>
     (function () {
         var s = document.createElement('script');

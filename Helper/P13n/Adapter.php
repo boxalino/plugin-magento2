@@ -86,6 +86,11 @@ class Adapter
     protected $isNavigation = false;
 
     /**
+     * @var bool
+     */
+    protected $isSearch = false;
+
+    /**
      * @var \Magento\Eav\Model\Config
      */
     protected $_modelConfig;
@@ -255,7 +260,7 @@ class Adapter
         }
 
         $choice = $this->scopeConfig->getValue('bxSearch/advanced/search_choice_id', $this->scopeStore);
-        if ($choice == null && !empty($queryText)) {
+        if (($choice == null && !empty($queryText)) || ($choice==null && $this->isSearch)) {
             $choice = "search";
         }
         $this->currentSearchChoice = $choice;
@@ -528,8 +533,7 @@ class Adapter
             return;
         }
         $isFinder = $this->bxHelperData->getIsFinder();
-        $query = $this->queryFactory->get();
-        $queryText = $query->getQueryText();
+        $queryText = $this->getQueryText();
         $choice = $this->getSearchChoice($queryText);
         if(is_null($choice) && !$isFinder && !$addFinder)
         {
@@ -548,7 +552,7 @@ class Adapter
         $categoryId = $this->registry->registry('current_category') != null ? $this->registry->registry('current_category')->getId() : null;
         $hitCount = isset($requestParams['product_list_limit'])&&is_numeric($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
         $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p'])&&is_numeric($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
-        
+
         $this->search($queryText, $pageOffset, $hitCount, $sortFields, $categoryId, $addFinder);
     }
 
@@ -685,6 +689,22 @@ class Adapter
             $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
             return $dependencies;
         }
+    }
+
+    /**
+     * Query string pre-validator
+     * @return string
+     */
+    public function getQueryText()
+    {
+        $query = $this->queryFactory->get();
+        $queryText = $query->getQueryText();
+        if($queryText === $this->bxHelperData->getEmptySearchQueryReplacement())
+        {
+            return "";
+        }
+
+        return $queryText;
     }
 
     /**
@@ -1267,5 +1287,15 @@ class Adapter
     {
         self::$bxClient->flushResponses();
         self::$bxClient->resetRequests();
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setIsSearch($value)
+    {
+        $this->isSearch = $value;
+        return $this;
     }
 }

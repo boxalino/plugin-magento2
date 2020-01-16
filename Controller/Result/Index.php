@@ -80,6 +80,15 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
             try{
                 $start = microtime(true);
                 $this->p13Helper->addNotification('debug', "request start at " . $start);
+
+                $this->p13Helper->setIsSearch(true);
+                $query = $this->_queryFactory->get();
+                $queryText = $query->getQueryText();
+                if(empty($queryText) && $this->bxHelperData->isEmptySearchEnabled())
+                {
+                    $query->setQueryText($this->bxHelperData->getEmptySearchQueryReplacement());
+                }
+
                 $redirect_link = $this->p13Helper->getResponse()->getRedirectLink();
                 $this->p13Helper->addNotification('debug',
                     "request end, time: " . (microtime(true) - $start) * 1000 . "ms" .
@@ -92,8 +101,8 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
                 $query = $this->_queryFactory->get();
                 if($this->p13Helper->areThereSubPhrases()){
                     $queries = $this->p13Helper->getSubPhrasesQueries();
-                    if(count($queries) == 1){
-                        $this->_redirect('*/*/*', array('_current'=> true, '_query' => array('q' => $queries[0])));
+                    if(count($queries) == 1) {
+                        $this->_redirect('*/*/*', array('_current'=> true, '_query' => array(QueryFactory::QUERY_VAR_NAME => $queries[0])));
                     }
                 }
                 if($this->p13Helper->areResultsCorrected()) {

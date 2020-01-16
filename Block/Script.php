@@ -33,6 +33,11 @@ class Script extends \Magento\Framework\View\Element\Template
     protected $bxAutoCompleteHelper;
 
     /**
+     * @var \Magento\Search\Helper\Data
+     */
+    protected $searchHelper;
+
+    /**
      * Script constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Customer\Model\Session $customerSession
@@ -44,10 +49,12 @@ class Script extends \Magento\Framework\View\Element\Template
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Customer\Model\Session $customerSession,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
+        \Magento\Search\Helper\Data $searchHelper,
         \Boxalino\Intelligence\Helper\Autocomplete $bxAutoCompleteHelper,
         array $data = []
     )
     {
+        $this->searchHelper = $searchHelper;
         $this->customerSession = $customerSession;
         $this->bxHelperData = $bxHelperData;
         $this->bxAutoCompleteHelper = $bxAutoCompleteHelper;
@@ -84,6 +91,11 @@ class Script extends \Magento\Framework\View\Element\Template
     public function isSearch()
     {
         return 'catalogsearch/result' == $this->getRequest()->getRouteName() . '/' . $this->getRequest()->getControllerName();
+    }
+
+    public function getQueryParamName()
+    {
+        return $this->searchHelper->getQueryParamName();
     }
 
     /**

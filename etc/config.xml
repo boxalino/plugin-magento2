@@ -52,6 +52,9 @@
                     <limit>7</limit>
                     <products_limit>1</products_limit>
                 </autocomplete>
+                <empty_search>
+                    <enabled>0</enabled>
+                </empty_search>
                 <advanced>
                     <search_sub_phrases_limit>3</search_sub_phrases_limit>
                     <thrift_timeout>2</thrift_timeout>

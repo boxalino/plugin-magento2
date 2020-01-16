@@ -298,7 +298,24 @@
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="empty_search" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Empty Search</label>
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable empty search</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>By enabling it, the user will be allowed to search by an empty string. This will return your entire product collection.</comment>
+                </field>
+                <field id="page_title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Page Title</label>
+                    <comment>Page Title to replace the "Search results for" segment;  Default value is "All products".</comment>
+                </field>
+                <field id="query_replacement" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Query Replacement</label>
+                    <comment>Abstract (invisible to the user) combination of characters to be used as a query replacement in case of empty string; default is __bx_search_empty_string__;</comment>
+                </field>
+            </group>
+
+            <group id="advanced" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <field id="search_choice_id" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Search choice ID</label>

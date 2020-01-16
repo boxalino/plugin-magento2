@@ -109,15 +109,25 @@ class Result extends Mage_Result
         if($this->fallback){
             return parent::getSearchQueryText();
         }
-        if($this->bxHelperData->isSearchEnabled() && $this->p13nHelper->areResultsCorrected()){
 
-            $correctedQuery = $this->p13nHelper->getCorrectedQuery();
-            return __("Corrected search results for: '%1'", $correctedQuery);
-        } else if($this->hasSubPhrases()){
-            return "";
-        } else{
-            return parent::getSearchQueryText();
+        if($this->bxHelperData->isSearchEnabled())
+        {
+            $queryText = $this->p13nHelper->getQueryText();
+            if($this->p13nHelper->areResultsCorrected())
+            {
+                $correctedQuery = $this->p13nHelper->getCorrectedQuery();
+                return __("Corrected search results for: '%1'", $correctedQuery);
+            } else if($this->hasSubPhrases())
+            {
+                return "";
+            } else if($this->bxHelperData->isEmptySearchEnabled() && empty($queryText))
+            {
+                $pageTitle = $this->bxHelperData->getEmptySearchPageTitle();
+                return __($pageTitle);
+            }
         }
+
+        return parent::getSearchQueryText();
     }
 
     /**
@@ -126,7 +136,7 @@ class Result extends Mage_Result
      */
     public function getSearchQueryLink($index)
     {
-        return $this->getUrl('*/*', array('_current' => 'true', '_query' => array('q' => $this->queries[$index])));
+        return $this->getUrl('*/*', array('_current' => 'true', '_query' => array(QueryFactory::QUERY_VAR_NAME => $this->queries[$index])));
     }
 
     /**

@@ -8,6 +8,8 @@ namespace Boxalino\Intelligence\Helper;
 class Data
 {
 
+    CONST BOXALINO_SEARCH_EMPTY_STRING_REPLACEMENT = "__bx_search_empty_string__";
+
     /**
      * @var
      */
@@ -914,6 +916,45 @@ class Data
     public function getNoResultsWidgetConfig()
     {
         return $this->config->getValue('bxRecommendations/noresults',$this->scopeStore);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmptySearchEnabled()
+    {
+        if(!isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = $this->config->getValue('bxSearch', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['empty_search']['enabled']);
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmptySearchPageTitle()
+    {
+        $title = $this->config->getValue('bxSearch/empty_search/page_title', $this->scopeStore);
+        if(empty($title))
+        {
+            $title = "All products";
+        }
+
+        return $title;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmptySearchQueryReplacement()
+    {
+        $queryReplacement = $this->config->getValue('bxSearch/empty_search/query_replacement', $this->scopeStore);
+        if(empty($queryReplacement))
+        {
+            $queryReplacement = self::BOXALINO_SEARCH_EMPTY_STRING_REPLACEMENT;
+        }
+
+        return $queryReplacement;
     }
 
     /**

@@ -43,6 +43,11 @@ class AjaxPlugin{
     protected $logger;
 
     /**
+     * @var \Magento\Search\Helper\Data
+     */
+    protected $searchHelper;
+
+    /**
      * AjaxPlugin constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
@@ -55,9 +60,11 @@ class AjaxPlugin{
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
         \Psr\Log\LoggerInterface $logger,
+        \Magento\Search\Helper\Data $searchHelper,
         \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
     )
     {
+        $this->searchHelper = $searchHelper;
         $this->logger = $logger;
         $this->autocompleteHelper = $autocompleteHelper;
         $this->request = $context->getRequest();
@@ -73,7 +80,7 @@ class AjaxPlugin{
      */
     public function aroundExecute(\Magento\Search\Controller\Ajax\Suggest $subject, callable $proceed){
 
-        $query = $this->request->getParam('q', false);
+        $query = $this->request->getParam($this->searchHelper->getQueryParamName(), false);
         try{
             if($this->bxHelperData->isAutocompleteEnabled() && $query !== false){
                 $responseData = $this->p13nHelper->autocomplete($query, $this->autocompleteHelper);
