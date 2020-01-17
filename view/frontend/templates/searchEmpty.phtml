@@ -1,0 +1,17 @@
+<?php
+/**
+ * @see \Boxalino\Intelligence\Block\SearchEmpty
+ */
+?>
+<?php if ($this->isEnabled()):?>
+    <script type="text/x-magento-init">
+    {
+         "*":{
+            "bxSearchEmpty": {
+                "element":"#search",
+                "formSelector":"#search_mini_form"
+            }
+        }
+    }
+    </script>
+<?php endif; ?>

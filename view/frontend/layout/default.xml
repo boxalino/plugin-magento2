@@ -18,6 +18,7 @@
 
         <referenceContainer name="footer">
             <block class="Boxalino\Intelligence\Block\Overlay\Main" name="bxOverlay" template="Boxalino_Intelligence::overlay.phtml"/>
+            <block class="Boxalino\Intelligence\Block\SearchEmpty" name="bxEmptySearch" template="Boxalino_Intelligence::searchEmpty.phtml"/>
         </referenceContainer>
     </body>
 </page>
