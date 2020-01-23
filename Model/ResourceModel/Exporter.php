@@ -143,14 +143,27 @@ class Exporter implements ExporterResourceInterface
                 ['entity_id', 'parent_id']
             )
             ->joinInner(
-                ['c_v' => $this->adapter->getTableName('catalog_category_entity_varchar')],
-                'c_v.entity_id = c_t.entity_id',
-                ['c_v.value', 'c_v.store_id']
+                ['c_v_i' => $this->adapter->getTableName('catalog_category_entity_varchar')],
+                'c_v_i.entity_id = c_t.entity_id AND c_v_i.store_id = 0 AND c_v_i.attribute_id = ' . $attributeId,
+                ['value_default'=>'c_v_i.value']
             )
-            ->where('c_v.attribute_id = ?', $attributeId)
-            ->where('c_v.store_id = ? OR c_v.store_id = 0', $storeId);
+            ->joinLeft(
+                ['c_v_l' => $this->adapter->getTableName('catalog_category_entity_varchar')],
+                'c_v_l.entity_id = c_t.entity_id AND c_v_l.attribute_id = ' . $attributeId,
+                ['c_v_l.value', 'c_v_l.store_id']
+            );
 
-        return $this->adapter->fetchAll($select);
+        $selectSql = $this->adapter->select()
+            ->from(
+                array('joins' => new \Zend_Db_Expr("( " . $select->__toString() . ")")),
+                array(
+                    'entity_id' => 'joins.entity_id',
+                    'parent_id' => 'joins.parent_id',
+                    new \Zend_Db_Expr("IF (joins.value IS NULL OR joins.value='', joins.value_default, joins.value ) AS value")
+                )
+            );
+
+        return $this->adapter->fetchAll($selectSql);
     }
 
     public function getProductAttributes()
