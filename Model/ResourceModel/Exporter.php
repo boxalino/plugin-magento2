@@ -149,7 +149,7 @@ class Exporter implements ExporterResourceInterface
             )
             ->joinLeft(
                 ['c_v_l' => $this->adapter->getTableName('catalog_category_entity_varchar')],
-                'c_v_l.entity_id = c_t.entity_id AND c_v_l.attribute_id = ' . $attributeId,
+                'c_v_l.entity_id = c_t.entity_id AND c_v_l.attribute_id = ' . $attributeId . ' AND c_v_l.store_id = ' . $storeId,
                 ['c_v_l.value', 'c_v_l.store_id']
             );
 
