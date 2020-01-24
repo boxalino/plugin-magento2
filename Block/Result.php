@@ -123,7 +123,10 @@ class Result extends Mage_Result
             } else if($this->bxHelperData->isEmptySearchEnabled() && empty($queryText))
             {
                 $pageTitle = $this->bxHelperData->getEmptySearchPageTitle();
-                return __($pageTitle);
+                $pageTitle .= " (%1)";
+                $productCount = $this->getResultCount();
+
+                return __($pageTitle, $productCount);
             }
         }
 
