@@ -484,7 +484,7 @@ class Exporter implements ExporterResourceInterface
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
                             WHEN entity_select.entity_status = '2' THEN 2 
                             WHEN entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}) AND entity_select.parent_id IS NOT NULL AND parent_count.count IS NULL THEN 2
-                            ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND parent_count.count > 0, 1, 2))
+                            ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND (parent_count.count > 0 OR parent_count.count IS NOT NULL), 1, 2))
                          END
                         )"
                     )
