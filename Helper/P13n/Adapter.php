@@ -1298,4 +1298,74 @@ class Adapter
         $this->isSearch = $value;
         return $this;
     }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setIsNarrative($value)
+    {
+        $this->isNarrative = $value;
+        return $this;
+    }
+
+    /**
+     * Simple request on distinct narrative as array via configuration
+     *
+     * @param $choiceConfiguration
+     * @return $this
+     */
+    public function setNarrativeChoices($choiceConfiguration)
+    {
+        foreach($choiceConfiguration as $choice)
+        {
+            if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice->getName()))) {
+                $this->addSingleNarrativeRequest($choice->getName(), $choice->getHitCount(), $choice->getOffset(), $choice->getSort(), $choice->getOrder(), $choice->getWithFacets());
+            }
+        }
+
+        $requestParams = $this->request->getParams();
+        foreach ($requestParams as $key => $value) {
+            self::$bxClient->addRequestContextParameter($key, $value);
+        }
+
+        $narrativeContent = [];
+        foreach($choiceConfiguration as $choice)
+        {
+            $narrativeContent[$choice->getVariant()] = $this->getNarrativeResponse($choice);
+        }
+
+        return $narrativeContent;
+    }
+
+    public function getNarrativeResponse($choice)
+    {
+        return $this->getClientResponse()->getNarratives($choice->getName());
+    }
+
+    public function getNarrativeDependenciesResponse($choice)
+    {
+        return $this->getClientResponse()->getNarrativeDependencies($choice->getName());
+    }
+
+    public function addSingleNarrativeRequest($choice_id, $hitCount, $pageOffset, $orderBy=null, $direction=null, $withFacets = true)
+    {
+        $requestParams = $this->request->getParams();
+        $sortFields = $this->prepareSortFields($requestParams, $orderBy, $direction);
+        $language = $this->getLanguage();
+        $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
+        $bxRequest->setOffset($pageOffset);
+        $bxRequest->setSortFields($sortFields);
+        $bxRequest->setGroupBy('products_group_id');
+        $bxRequest->setHitsGroupsAsHits(true);
+        $bxRequest->setFilters($this->getSystemFilters());
+        if($withFacets) {
+            $facets = $this->prepareFacets();
+            $bxRequest->setFacets($facets);
+        }
+        $bxRequest->setGroupFacets(true);
+        self::$bxClient->addRequest($bxRequest);
+
+        return $this;
+    }
 }
