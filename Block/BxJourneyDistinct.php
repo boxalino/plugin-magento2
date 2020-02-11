@@ -114,14 +114,14 @@ class BxJourneyDistinct extends BxJourneyAbstract
         $object =  $this->objectFactory->create();
         $object->setData([
                 "name" => 'narrative',
-                "withFacets"=> true,
-                "hitCount" => NULL,
+                "with_facets"=> true,
+                "hit_count" => NULL,
                 "sort" => NULL,
                 "order" => NULL,
                 "offset" => 0,
                 "position" => 'main',
                 "variant" => 0,
-                "applyContextParams" => false,
+                "apply_context_params" => false,
                 "context" => "products"
             ]
         );
