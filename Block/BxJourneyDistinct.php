@@ -118,7 +118,7 @@ class BxJourneyDistinct extends BxJourneyAbstract
                 "hit_count" => NULL,
                 "sort" => NULL,
                 "order" => NULL,
-                "offset" => 0,
+                "offset" => NULL,
                 "position" => 'main',
                 "variant" => 0,
                 "apply_context_params" => false,
