@@ -683,6 +683,7 @@ class Exporter implements ExporterResourceInterface
             ->from(
                 array('order' => $sales_order_table),
                 array(
+                    'increment_id',
                     'entity_id',
                     'status',
                     'updated_at',
