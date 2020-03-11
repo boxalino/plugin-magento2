@@ -369,6 +369,14 @@
                                 ]]>
                     </comment>
                 </field>
+                <field id="products_custom_properties" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Custom properties (DI)</label>
+                    <comment><![CDATA[Optional: When using custom created properties that start with "products_" -- for SEO reasons.
+                                Add the properties here divided by comma (,).
+                                Use the SEO property/parameter view (ex: for "products_custom_field" write "custom_field");
+                                ]]>
+                    </comment>
+                </field>
             </group>
         </section>
 

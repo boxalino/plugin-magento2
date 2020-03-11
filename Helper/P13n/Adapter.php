@@ -824,6 +824,10 @@ class Adapter
                 }
             }
 
+            if(in_array($key, $this->bxHelperData->getCustomPropertiesAsSystem()))
+            {
+                $bxSelectedValues['products_' . $key] = explode($separator, $values);
+            }
         }
         if(sizeof($systemParamValues) > 0) {
             foreach ($systemParamValues as $key => $systemParam) {

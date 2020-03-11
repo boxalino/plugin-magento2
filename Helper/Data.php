@@ -835,6 +835,11 @@ class Data
         return $this->systemParams;
     }
 
+    public function getCustomPropertiesAsSystem()
+    {
+        return explode(",", $this->config->getValue('bxSearch/advanced/products_custom_properties', $this->scopeStore))
+    }
+
     public function getSeparator() {
         $separator = $this->config->getValue('bxSearch/advanced/parameter_separator', $this->scopeStore);
         if($separator == '') {
