@@ -772,7 +772,7 @@ class Data
     /**
      * @return string
      */
-    private function getProductAttributePrefix(){
+    public function getProductAttributePrefix(){
         return 'products_';
     }
 
@@ -837,7 +837,7 @@ class Data
 
     public function getCustomPropertiesAsSystem()
     {
-        return explode(",", $this->config->getValue('bxSearch/advanced/products_custom_properties', $this->scopeStore))
+        return explode(",", $this->config->getValue('bxSearch/advanced/products_custom_properties', $this->scopeStore));
     }
 
     public function getSeparator() {
