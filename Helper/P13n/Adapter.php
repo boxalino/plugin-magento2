@@ -535,7 +535,7 @@ class Adapter
         $isFinder = $this->bxHelperData->getIsFinder();
         $queryText = $this->getQueryText();
         $choice = $this->getSearchChoice($queryText);
-        if(is_null($choice) && !$isFinder && !$addFinder)
+        if(is_null($choice) && !$isFinder && !$addFinder && !$this->bxHelperData->isOverlayEnabled())
         {
             throw new \Exception("Invalid request context: missing choice. Please contact Boxalino with your specific project scenario.");
         }
