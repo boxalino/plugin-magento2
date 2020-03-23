@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.6.3 : 2020-03-23](#v2.6.3)**<br>
 **[v2.6 : 2020-02-11](#v2.6)**<br>
 **[v2.0.0 : 2020-01-15](#v2.0.0)**<br>
 **[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
@@ -14,6 +15,14 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+
+<a name="v2.6.3"></a>
+### v2.6.3 - 2020-03-23
+* *test* : facets on navigation, search, narratives
+##### 1. API DI for the Boxalino Adapter
+* *description* : Allows easily extensibility of default plugin behavior.
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/437579fdadef9f6bc1f18e84cf53b9a94a61b6a7
 
 
 <a name="v2.6"></a>
