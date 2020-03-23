@@ -28,7 +28,7 @@ class ProductView extends ListProduct implements CPOJourney{
     protected $_product = null;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -50,7 +50,7 @@ class ProductView extends ListProduct implements CPOJourney{
      * @param CategoryRepositoryInterface $categoryRepository
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
      * @param \Boxalino\Intelligence\Block\BxJourney $journey
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param array $data
@@ -62,7 +62,7 @@ class ProductView extends ListProduct implements CPOJourney{
         CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Block\BxJourney $journey,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []

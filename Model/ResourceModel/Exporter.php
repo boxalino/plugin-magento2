@@ -440,7 +440,7 @@ class Exporter implements ExporterResourceInterface
     {
         $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
         $visibilityId = $this->getAttributeIdByAttributeCodeAndEntityType('visibility', \Magento\Catalog\Setup\CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID);
-        
+
         $parentsCountSql = $this->getProductAttributeParentCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
         $childCountSql = $this->getParentProductAttributeChildCountSqlByAttrIdValueStoreId($statusId,  \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, $storeId);
 
@@ -479,10 +479,10 @@ class Exporter implements ExporterResourceInterface
                     "entity_select.parent_id",
                     "entity_select.store_id",
                     "value" => new \Zend_Db_Expr("
-                        (CASE 
+                        (CASE
                             WHEN (entity_select.type_id = '{$configurableType}' OR entity_select.type_id = '{$groupedType}') AND entity_select.entity_status = '1' THEN IF(child_count.child_count > 0, 1, 2)
                             WHEN entity_select.parent_id IS NULL THEN entity_select.entity_status
-                            WHEN entity_select.entity_status = '2' THEN 2 
+                            WHEN entity_select.entity_status = '2' THEN 2
                             WHEN entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}) AND entity_select.parent_id IS NOT NULL AND parent_count.count IS NULL THEN 2
                             ELSE IF(entity_select.entity_status = '1' AND entity_select.entity_visibility IN ({$visibilityOptions}), 1, IF(entity_select.entity_status = '1' AND (parent_count.count > 0 OR parent_count.count IS NOT NULL), 1, 2))
                          END
@@ -653,6 +653,26 @@ class Exporter implements ExporterResourceInterface
             )->where('a_o.attribute_id = ?', $key);
 
         return $this->adapter->fetchAll($select);
+        /**
+        if (empty($options) || count($options) == 1)
+        {
+            $sourceModel =  $this->adapter->fetchOne($this->adapter->select()->from('eav_attribute', ['source_model'])->where('eav_attribute.attribute_id = ?', $key));
+            if($sourceModel)
+            {
+                $om = \Magento\Framework\App\ObjectManager::getInstance();
+                $model = $om->get('\\' . $sourceModel);
+                if($model instanceof \Magento\Eav\Model\Entity\Attribute\Source\Boolean) {
+                    $this->logger->info("BxIndexLog: exporting options label from $sourceModel");
+                    $options = [];
+                    foreach($model->getOptionArray() as $optionId => $value)
+                    {
+                        $options[] = ['option_id'=>$optionId, 'value'=>$value];
+                    }
+                }
+            }
+        }
+
+        return $options; */
     }
 
     /**

@@ -1,24 +1,28 @@
 <?php
 namespace Boxalino\Intelligence\Helper\P13n;
+
+use Boxalino\Intelligence\Api\P13nAdapterInterface;
 use com\boxalino\bxclient\v1\BxClient;
 use com\boxalino\bxclient\v1\BxSearchRequest;
 use com\boxalino\bxclient\v1\BxFilter;
+use com\boxalino\bxclient\v1\BxSortFields;
+use Magento\Eav\Model\Entity\Attribute\Source\Boolean;
 
 /**
  * Class Adapter
  * @package Boxalino\Intelligence\Helper\P13n
  */
-class Adapter
+class Adapter implements P13nAdapterInterface
 {
     /**
      * @var null
      */
-    private static $bxClient = null;
+    protected static $bxClient = null;
 
     /**
      * @var array
      */
-    private static $choiceContexts = [];
+    protected static $choiceContexts = [];
 
     /**
      * @var string
@@ -189,7 +193,7 @@ class Adapter
      * @param string $queryText
      * @return array
      */
-    public function getSystemFilters($queryText = "", $type='product')
+    public function getSystemFilters($queryText = "", $type='product') : array
     {
         $filters = [];
         if($type == 'product') {
@@ -209,7 +213,7 @@ class Adapter
     /**
      * @return mixed|string
      */
-    public function getAutocompleteChoice()
+    public function getAutocompleteChoice() : string
     {
         $choice = $this->scopeConfig->getValue('bxSearch/advanced/autocomplete_choice_id', $this->scopeStore);
         if ($choice == null) {
@@ -218,14 +222,17 @@ class Adapter
         return $choice;
     }
 
-    public function setLandingPageChoiceId($choice = ''){
-
+    /**
+     * @param string $choice
+     * @return string
+     */
+    public function setLandingPageChoiceId($choice = '') : string
+    {
         if (!empty($choice)) {
             return $this->landingPageChoice = $choice;
         }
 
         return $choice;
-
     }
 
     /**
@@ -270,7 +277,7 @@ class Adapter
     /**
      * @return mixed|string
      */
-    public function getEntityIdFieldName()
+    public function getEntityIdFieldName() : string
     {
         $entityIdFieldName = $this->scopeConfig->getValue('bxGeneral/advanced/entity_id', $this->scopeStore);
         if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
@@ -467,7 +474,8 @@ class Adapter
     /**
      * @return string
      */
-    public function getFinderChoice() {
+    public function getFinderChoice() : string
+    {
         $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/finder_choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
             $choice_id = 'productfinder';
@@ -479,7 +487,8 @@ class Adapter
     /**
      * @return string
      */
-    public function getOverlayChoice() {
+    public function getOverlayChoice() : string
+    {
         $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
             $choice_id = 'extend';
@@ -491,7 +500,8 @@ class Adapter
     /**
      * @return string
      */
-    public function getOverlayBannerChoice() {
+    public function getOverlayBannerChoice() :string
+    {
         $choice_id = $this->scopeConfig->getValue('bxOverlay/overlay/banner_choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
             $choice_id = 'banner_overlay';
@@ -503,7 +513,8 @@ class Adapter
     /**
      * @return string
      */
-    public function getProfileChoice() {
+    public function getProfileChoice() : string
+    {
         $choice_id = $this->scopeConfig->getValue('bxSearch/advanced/profile_choice_id', $this->scopeStore);
         if(is_null($choice_id) || $choice_id == '') {
             $choice_id = 'profile';
@@ -629,7 +640,7 @@ class Adapter
      * @param $direction null | bool
      * @return \com\boxalino\bxclient\v1\BxSortFields
      */
-    protected function prepareSortFields($requestParams, $orderBy=null, $direction=null)
+    public function prepareSortFields($requestParams, $orderBy=null, $direction=null) : BxSortFields
     {
         $field = ''; $dir=false;
         if(is_null($orderBy)){
@@ -695,7 +706,7 @@ class Adapter
      * Query string pre-validator
      * @return string
      */
-    public function getQueryText()
+    public function getQueryText() : string
     {
         $query = $this->queryFactory->get();
         $queryText = $query->getQueryText();
@@ -710,7 +721,7 @@ class Adapter
     /**
      * @return int
      */
-    protected function getMagentoRootCategoryId()
+    public function getMagentoRootCategoryId()
     {
         return $this->storeManager->getStore()->getRootCategoryId();
     }
@@ -757,7 +768,7 @@ class Adapter
     /**
      * @return string
      */
-    public function getUrlParameterPrefix()
+    public function getUrlParameterPrefix() : string
     {
         return 'bx_';
     }
@@ -795,6 +806,7 @@ class Adapter
             if (isset($attributeCollection[$attributePrefix . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = $this->_modelConfig->getAttribute('catalog_product', $key)->getSource();
+                $isBoolean = $attributeModel instanceof Boolean ? true : false;
                 foreach ($paramValues as $paramValue)
                 {
                     $value = html_entity_decode($attributeModel->getOptionText($paramValue), ENT_QUOTES);
@@ -817,6 +829,9 @@ class Adapter
                         }
                         $value = is_array($value) ? $value : [$value];
                         foreach ($value as $v) {
+                            if($isBoolean){
+                                $v = $paramValue;
+                            }
                             $selectedValues[$attributePrefix . $key][] = $v;
                         }
                     }
@@ -1374,4 +1389,5 @@ class Adapter
 
         return $this;
     }
+
 }

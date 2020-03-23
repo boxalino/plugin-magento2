@@ -630,7 +630,6 @@
                     <comment>Set the height of the image that accompanies the blog.</comment>
                 </field>
             </group>
-
         </section>
     </system>
 </config>

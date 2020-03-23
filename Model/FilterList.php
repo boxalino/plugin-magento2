@@ -5,13 +5,14 @@ namespace Boxalino\Intelligence\Model;
  * Class FilterList
  * @package Boxalino\Intelligence\Model
  */
-class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
-    
+class FilterList extends \Magento\Catalog\Model\Layer\FilterList
+{
+
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     private $p13nHelper;
-    
+
     /**
      * @var \BOxalino\Intelligence\Helper\Data
      */
@@ -38,7 +39,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      * FilterList constructor.
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Catalog\Block\Category\View $categoryViewBlock
@@ -48,7 +49,7 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
     public function __construct(
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\FilterableAttributeListInterface $filterableAttributes,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Catalog\Block\Category\View $categoryViewBlock,
@@ -68,23 +69,23 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
      * @param \Magento\Catalog\Model\Layer $layer
      * @return array|\Magento\Catalog\Model\Layer\Filter\AbstractFilter[]
      */
-    public function getFilters(\Magento\Catalog\Model\Layer $layer){
-
+    public function getFilters(\Magento\Catalog\Model\Layer $layer)
+    {
         try {
-            if ($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()) {
-
+            if ($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled())
+            {
                 $filters = [];
-
                 if($layer instanceof \Magento\Catalog\Model\Layer\Category) {
-                    if (!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode()) {
+                    if (!is_null($this->categoryViewBlock->getCurrentCategory()) && $this->categoryViewBlock->isContentMode())
+                    {
                         $this->bxHelperData->setFallback(true);
                         return $filters;
                     }
                 }
                 $facets = $this->getBxFacets();
                 if ($facets) {
-                    foreach ($facets->getLeftFacets() as $fieldName) {
-
+                    foreach ($facets->getLeftFacets() as $fieldName)
+                    {
                         $attribute = $this->objectManager->create("Magento\Catalog\Model\ResourceModel\Eav\Attribute");
                         $filter = $this->objectManager->create(
                             "Boxalino\Intelligence\Model\Attribute",
@@ -97,25 +98,31 @@ class FilterList extends \Magento\Catalog\Model\Layer\FilterList {
                         $filter = null;
                     }
                 } else {
-                    $this->p13nHelper->notifyWarning(["message"=>"BxFacets is not defined in " . get_class($this),
-                        "stacktrace"=>$this->bxHelperData->notificationTrace()]);
+                    $this->p13nHelper->notifyWarning(
+                        ["message"=>"BxFacets is not defined in " . get_class($this),
+                        "stacktrace"=>$this->bxHelperData->notificationTrace()
+                        ]
+                    );
                 }
                 $this->bxFacetModel->setFacets($filters);
                 return $filters;
             }else{
                 return parent::getFilters($layer);
             }
-        } catch(\Exception $e){
+        } catch(\Exception $e)
+        {
             $this->bxHelperData->setFallback(true);
             $this->_logger->critical($e);
             return parent::getFilters($layer);
         }
     }
-    
-    private function getBxFacets(){
+
+    protected function getBxFacets()
+    {
         if($this->bxFacets == null){
             $this->bxFacets = $this->p13nHelper->getFacets();
         }
         return $this->bxFacets;
     }
+
 }

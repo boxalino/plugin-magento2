@@ -1,17 +1,18 @@
 <?php
-
 namespace Boxalino\Intelligence\Model;
+
 /**
  * Class LayerFilterItem
  * @package Boxalino\Intelligence\Model
  */
-class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
-    
+class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item
+{
+
     /**
      * @var \Magento\Framework\ObjectManagerInterface
      */
 	protected $objectManager;
-    
+
     /**
      * @var \Boxalino\Intelligence\Helper\Data
      */
@@ -48,8 +49,7 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         \Boxalino\Intelligence\Helper\Data $bxDataHelper,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         array $data = []
-    )
-    {
+    ){
         $this->_layer = $layerResolver->get();
         $this->bxDataHelper = $bxDataHelper;
         parent::__construct($url, $htmlPagerBlock, $data);
@@ -59,16 +59,16 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
     /**
      * @param $bxFacets
      */
-    public function setFacets($bxFacets) {
-        
+    public function setFacets($bxFacets)
+    {
         $this->bxFacets = $bxFacets;
     }
 
     /**
      * @param $fieldName
      */
-    public function setFieldName($fieldName) {
-        
+    public function setFieldName($fieldName)
+    {
         $this->fieldName = $fieldName;
     }
 
@@ -99,8 +99,8 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
 
     public function getUrl()
     {
-        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()) {
-
+        if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled())
+        {
             $removeParams = $this->bxDataHelper->getRemoveParams();
             $addParams = $this->bxDataHelper->getSystemParams();
             $requestVar = $this->getFilter()->getRequestVar();
@@ -121,4 +121,5 @@ class LayerFilterItem extends \Magento\Catalog\Model\Layer\Filter\Item {
         }
         return parent::getUrl();
     }
+
 }

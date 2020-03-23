@@ -22,7 +22,7 @@ class General extends \Magento\Framework\View\Element\Template
     protected $bxJourney;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -34,7 +34,7 @@ class General extends \Magento\Framework\View\Element\Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Block\BxJourney $journey,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         array $data = []
     )
     {

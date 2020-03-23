@@ -6,13 +6,33 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v2.0.0 : 2020-01-15](#v1.6.7)**<br>
+**[v2.6 : 2020-02-11](#v2.6)**<br>
+**[v2.0.0 : 2020-01-15](#v2.0.0)**<br>
 **[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
 **[v1.6.6 : 2019-06-10](#v1.6.6)**<br>
 **[v1.6.5 : 2019-06-24](#v1.6.5)**<br>
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+
+<a name="v2.6"></a>
+### v2.6 - 2020-02-11
+* *test* : navigation, search, overlay, banners, recommendations, product status
+##### 1. Allow empty search (returns full product collection)
+* *description* : Allows empty search requests. Enable via Magento Configurations.
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/0af2b6365ea3d1d1c98aabc9e4fca845d6577e3a
+https://github.com/boxalino/plugin-magento2/commit/984f347c949ef3a65b0668af7b492007df8b0fa1
+##### 2. Exporter updates (category, product status, transactions)
+* _description_ : Minor fixes for data exporter.
+* *commits* : https://github.com/boxalino/plugin-magento2/commit/5082081c0bea828613576ef40d9d30bdaf8379f6
+https://github.com/boxalino/plugin-magento2/commit/97b49c5498d63c164bd4e5e7da9fef0a31179db2
+https://github.com/boxalino/plugin-magento2/commit/3317167a712c7835710e1610cc0f9d12b3bce2e5
+https://github.com/boxalino/plugin-magento2/commit/3efdcecdc19c4a2606d9a75b277efc7509543a44
+##### 3. New narrative requests logic
+* _description_ : The new narrative origin block allows to group multiple narrative choices on a single page with isolated logic.
+* _commits_ : https://github.com/boxalino/plugin-magento2/commit/039774e688f15c07b9aa94438eaf7a6632fb0d3d
+
 
 <a name="v2.0.0"></a>
 ### v2.0.0 - 2020-01-15

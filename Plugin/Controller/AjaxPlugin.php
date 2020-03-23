@@ -23,7 +23,7 @@ class AjaxPlugin{
     protected $resultFactory;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+* @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -51,14 +51,14 @@ class AjaxPlugin{
      * AjaxPlugin constructor.
      * @param Context $context
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+* @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper
      */
     public function __construct(
         Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+ \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Search\Helper\Data $searchHelper,
         \Boxalino\Intelligence\Helper\Autocomplete $autocompleteHelper

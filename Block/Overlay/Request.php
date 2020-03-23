@@ -8,19 +8,19 @@ namespace Boxalino\Intelligence\Block\Overlay;
 class Request extends \Magento\Framework\View\Element\Template{
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     private $p13nHelper;
 
     /**
      * SearchMessage constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         array $data = []
     )
     {

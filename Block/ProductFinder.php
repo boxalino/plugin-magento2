@@ -30,7 +30,7 @@ class ProductFinder extends \Magento\Framework\View\Element\Template {
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Magento\Framework\Url $urlInterface,
         array $data = []
     )

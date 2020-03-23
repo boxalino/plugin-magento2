@@ -14,7 +14,7 @@ class Upsell extends MageUpsell{
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -37,7 +37,7 @@ class Upsell extends MageUpsell{
      * @param \Magento\Framework\Module\Manager $moduleManager
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param array $data
      */
     public function __construct(
@@ -48,7 +48,7 @@ class Upsell extends MageUpsell{
         \Magento\Framework\Module\Manager $moduleManager,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         array $data = []
     )
     {

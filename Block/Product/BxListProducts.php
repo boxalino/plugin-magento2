@@ -27,7 +27,7 @@ class BxListProducts extends ListProduct
     public static $number = 0;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -94,7 +94,7 @@ class BxListProducts extends ListProduct
      * @param CategoryRepositoryInterface $categoryRepository
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
      * @param Data $bxHelperData
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Magento\Framework\App\Action\Context $actionContext
      * @param \Magento\Framework\UrlFactory $urlFactory
      * @param \Magento\Catalog\Helper\Category $categoryHelper
@@ -109,7 +109,7 @@ class BxListProducts extends ListProduct
         CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Magento\Framework\App\Action\Context $actionContext,
         \Magento\Framework\UrlFactory $urlFactory,
         \Magento\Catalog\Helper\Category $categoryHelper,
@@ -175,16 +175,19 @@ class BxListProducts extends ListProduct
     /**
      * @param $entity_ids
      */
-    protected function _setupCollection($entity_ids){
+    protected function _setupCollection($entity_ids)
+    {
         $list = $this->_objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
         $list = $this->bxHelperData->prepareProductCollection($list, $entity_ids);
         $list->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
         $list->load();
 
         $list->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
-        $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
-        $totalHitCount = $this->p13nHelper->getTotalHitCount();
+        $limit = $this->getRequest()->getParam('product_list_limit')
+            ? $this->getRequest()->getParam('product_list_limit')
+            : $this->getToolbarBlock()->getDefaultPerPageValue();
 
+        $totalHitCount = $this->p13nHelper->getTotalHitCount();
         if((ceil($totalHitCount / $limit) < $list->getCurPage()) && $this->getRequest()->getParam('p')){
 
             $url = $this->_url->getCurrentUrl();
@@ -201,7 +204,8 @@ class BxListProducts extends ListProduct
     /**
      * @return $this
      */
-    protected function _beforeToHtml(){
+    protected function _beforeToHtml()
+    {
         $layer = $this->getLayer();
         if($this->bxHelperData->isEnabledOnLayer($layer) && $this->bxHelperData->isPluginEnabled()) {
             $toolbar = $this->getToolbarBlock();
@@ -240,4 +244,5 @@ class BxListProducts extends ListProduct
         }
         return parent::_beforeToHtml();
     }
+
 }

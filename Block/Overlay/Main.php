@@ -9,7 +9,7 @@ class Main extends \Magento\Framework\View\Element\Template
 {
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -41,7 +41,7 @@ class Main extends \Magento\Framework\View\Element\Template
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         array $data = []
     ){

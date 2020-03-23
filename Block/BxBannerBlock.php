@@ -19,7 +19,7 @@ Class BxBannerBlock extends BxRecommendationBlock
 
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,

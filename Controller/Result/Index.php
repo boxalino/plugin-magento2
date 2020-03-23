@@ -1,4 +1,5 @@
-<?php namespace Boxalino\Intelligence\Controller\Result;
+<?php
+namespace Boxalino\Intelligence\Controller\Result;
 
 use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Catalog\Model\Session;
@@ -14,26 +15,26 @@ use Magento\Search\Model\QueryFactory;
 class Index extends \Magento\CatalogSearch\Controller\Result\Index
 {
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
-    private $p13Helper;
+    protected $p13Helper;
 
     /**
      * @var \Boxalino\Intelligence\Helper\Data
      */
-    private $bxHelperData;
-    
+    protected $bxHelperData;
+
     /**
      * @var QueryFactory
      */
-    private $_queryFactory;
+    protected $_queryFactory;
 
     /**
      * Catalog Layer Resolver
      *
      * @var Resolver
      */
-    private $layerResolver;
+    protected $layerResolver;
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -43,7 +44,7 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
     /**
      * Index constructor.
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param Context $context
      * @param Session $catalogSession
      * @param StoreManagerInterface $storeManager
@@ -53,7 +54,7 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
      */
     public function __construct(
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         Context $context,
         Session $catalogSession,
         StoreManagerInterface $storeManager,
@@ -68,7 +69,7 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
         $this->_queryFactory = $queryFactory;
         $this->layerResolver = $layerResolver;
     }
-    
+
     /**
      * Display search result
      *
@@ -95,7 +96,7 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
                     ", memory: " . memory_get_usage(true));
 
                 if($redirect_link != "") {
-                        $this->getResponse()->setRedirect($this->p13Helper->getResponse()->getRedirectLink());
+                    $this->getResponse()->setRedirect($this->p13Helper->getResponse()->getRedirectLink());
                 }
 
                 $query = $this->_queryFactory->get();
@@ -118,4 +119,5 @@ class Index extends \Magento\CatalogSearch\Controller\Result\Index
             parent::execute();
         }
     }
+
 }

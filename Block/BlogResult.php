@@ -8,7 +8,7 @@ namespace Boxalino\Intelligence\Block;
 class BlogResult extends \Magento\Framework\View\Element\Template{
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     private $p13nHelper;
 
@@ -30,13 +30,13 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
     /**
      * Notification constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         array $data = []
     )
@@ -72,7 +72,7 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
               $excerpt = str_replace('[&hellip;]', '...', $excerpt);
               $blog['products_blog_excerpt'] = $excerpt;
             }
-            
+
             $blogs[$id] = $blog;
         }
         $this->blogCollection = $blogs;

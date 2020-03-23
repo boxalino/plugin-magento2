@@ -14,7 +14,7 @@ class Crosssell extends MageCrosssell{
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
     /**
@@ -29,14 +29,14 @@ class Crosssell extends MageCrosssell{
     /**
      * Crosssell constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
      * @param array $data
      */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         array $data=[]

@@ -9,7 +9,7 @@ abstract class BxJourneyAbstract extends \Magento\Framework\View\Element\Templat
 {
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -43,13 +43,13 @@ abstract class BxJourneyAbstract extends \Magento\Framework\View\Element\Templat
     /**
      * BxJourney constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\DataObjectFactory $objectFactory,
         array $data = []

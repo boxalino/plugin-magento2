@@ -13,7 +13,7 @@ class Facets extends \Magento\Framework\View\Element\Template
     private $objectManager;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     private $p13nHelper;
 
@@ -40,7 +40,7 @@ class Facets extends \Magento\Framework\View\Element\Template
     /**
      * Facets constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
@@ -48,7 +48,7 @@ class Facets extends \Magento\Framework\View\Element\Template
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,

@@ -1,13 +1,22 @@
 <?php
-
 namespace Boxalino\Intelligence\Controller\Category;
 
-class View extends \Magento\Catalog\Controller\Category\View{
+class View extends \Magento\Catalog\Controller\Category\View
+{
 
+    /**
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
+     */
     protected $p13nHelper;
 
+    /**
+     * @var \Boxalino\Intelligence\Helper\Data
+     */
     protected $bxHelperData;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
     protected $_logger;
 
     /**
@@ -22,7 +31,7 @@ class View extends \Magento\Catalog\Controller\Category\View{
      * @param \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Psr\Log\LoggerInterface $logger
      */
@@ -37,7 +46,7 @@ class View extends \Magento\Catalog\Controller\Category\View{
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
         \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Psr\Log\LoggerInterface $logger
     ) {
@@ -81,4 +90,5 @@ class View extends \Magento\Catalog\Controller\Category\View{
         $parent_return = isset($parent_return) ? $parent_return : parent::execute();
         return $parent_return;
     }
+
 }

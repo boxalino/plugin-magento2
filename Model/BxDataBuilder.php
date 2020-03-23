@@ -4,7 +4,8 @@ namespace Boxalino\Intelligence\Model;
  * Class BxDataBuilder
  * @package Boxalino\Intelligence\Model
  */
-class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder{
+class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
+{
 
     /**
      * @var \Boxalino\Intelligence\Helper\Data
@@ -36,8 +37,8 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
      * @param null $type
      * @param null $hidden
      */
-    public function addItemData($label, $value, $count, $selected = null, $type = null, $hidden = null){
-
+    public function addItemData($label, $value, $count, $selected = null, $type = null, $hidden = null)
+    {
         if($this->bxDataHelper->isEnabledOnLayer($this->_layer) && $this->bxDataHelper->isPluginEnabled()){
             $this->_itemsData[] = [
                 'label' => $label,
@@ -51,4 +52,5 @@ class BxDataBuilder extends \Magento\Catalog\Model\Layer\Filter\Item\DataBuilder
             parent::addItemData($label, $value, $count);
         }
     }
+
 }

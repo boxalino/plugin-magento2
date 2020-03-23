@@ -6,9 +6,9 @@ namespace Boxalino\Intelligence\Block;
  * @package Boxalino\Intelligence\Block
  */
 class Slider extends \Magento\Framework\View\Element\Template{
-    
+
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -20,13 +20,13 @@ class Slider extends \Magento\Framework\View\Element\Template{
     /**
      * Slider constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         array $data = []
     )
@@ -41,7 +41,6 @@ class Slider extends \Magento\Framework\View\Element\Template{
      * @return array
      */
     private function explodePrice($price){
-        
         return explode("-", $price);
     }
 
@@ -57,7 +56,7 @@ class Slider extends \Magento\Framework\View\Element\Template{
         $selectedPrice = $this->getRequest()->getParam('bx_discountedPrice') !== null ?
             $this->explodePrice($this->getRequest()->getParam('bx_discountedPrice')) : $priceRange;
         if (!isset($priceRange[1])) {
-          $priceRange[1] = 0;
+            $priceRange[1] = 0;
         }
         if($priceRange[0] == $priceRange[1]){
             $priceRange[1]++;

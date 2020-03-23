@@ -31,7 +31,7 @@ class ProductList extends General implements CPOJourney
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Boxalino\Intelligence\Block\BxJourney $journey
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param array $data
@@ -40,7 +40,7 @@ class ProductList extends General implements CPOJourney
         \Magento\Framework\View\Element\Template\Context $context,
         \Boxalino\Intelligence\Block\BxJourney $journey,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\ResourceManager $bxResourceManager,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []
@@ -80,7 +80,7 @@ class ProductList extends General implements CPOJourney
     {
         $entity_ids = $this->p13nHelper->getEntitiesIds($variant_index);
 
-        $collection = $this->objectManager->create('\\Boxalino\\Intelligence\\Model\\Collection');
+        $collection = $this->objectManager->create('\Boxalino\\Intelligence\\Model\\Collection');
         $collection = $this->bxHelperData->prepareProductCollection($collection, $entity_ids);
         $collection->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
         $collection->load();

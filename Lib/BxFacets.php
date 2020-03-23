@@ -691,7 +691,7 @@ class BxFacets
         return $selectedValues;
     }
 
-    protected function getFacetByFieldName($fieldName) {
+    public function getFacetByFieldName($fieldName) {
         foreach($this->facets as $fn => $facet) {
             if($fieldName == $fn) {
                 return $facet;

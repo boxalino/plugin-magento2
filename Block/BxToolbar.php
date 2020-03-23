@@ -12,7 +12,7 @@ class BxToolbar extends Toolbar
 {
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13Helper;
 
@@ -35,7 +35,7 @@ class BxToolbar extends Toolbar
      * @param \Magento\Framework\Url\EncoderInterface $urlEncoder
      * @param ProductList $productListHelper
      * @param \Magento\Framework\Data\Helper\PostHelper $postDataHelper
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param array $data
      */
@@ -47,7 +47,7 @@ class BxToolbar extends Toolbar
         \Magento\Framework\Url\EncoderInterface $urlEncoder,
         ProductList $productListHelper,
         \Magento\Framework\Data\Helper\PostHelper $postDataHelper,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         array $data = []
     )

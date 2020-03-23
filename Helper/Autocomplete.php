@@ -5,8 +5,9 @@ namespace Boxalino\Intelligence\Helper;
  * Class Autocomplete
  * @package Boxalino\Intelligence\Helper
  */
-class Autocomplete{
-	
+class Autocomplete
+{
+
 	/**
 	 * @var \Magento\Catalog\Block\Product\AbstractProduct
 	 */
@@ -53,8 +54,7 @@ class Autocomplete{
 		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency,
 		\Magento\Catalog\Helper\Image $imageHelper
-	)
-	{
+	){
 		$this->storeManager = $storeManager;
 		$this->_criteriaBuilder = $criteriaBuilder;
 		$this->abstractProduct = $abstractProduct;
@@ -67,8 +67,8 @@ class Autocomplete{
 	 * @param $string
 	 * @return mixed
 	 */
-	public function escapeHtml($string) {
-		
+	public function escapeHtml($string)
+    {
 		return $string;
 	}
 
@@ -76,7 +76,8 @@ class Autocomplete{
 	 * @param $products
 	 * @return array
 	 */
-	public function getListValues($ids) {
+	public function getListValues($ids)
+    {
 		$values = [];
 		$searchCriteria = $this->_criteriaBuilder->addFilter('entity_id', $ids, 'in')->create();
 		$products       = $this->_productRepository->getList($searchCriteria);
@@ -114,8 +115,8 @@ class Autocomplete{
 	/**
 	 * @return string
 	 */
-	public function getProductACTemplate() {
-
+	public function getProductACTemplate()
+    {
 		$template = '<a href="<%- data.product.url %>">';
 		$template .= '<li class="<%- data.row_class %>" class="text_suggest_<%- data.suggestion %>" role="option">';
 		$template .= '<span class="product-image"><img src="<%- data.product.image %>"></span>';
@@ -124,11 +125,12 @@ class Autocomplete{
 		$template .= '</li></a>';
 		return $template;
 	}
-    /**
+
+	/**
      * @return string
      */
-    public function getBlogACTemplate() {
-
+    public function getBlogACTemplate()
+    {
         $template = '<a href="<%- data.product.products_blog_link %>" >';
         $template .= '<li class="blog" role="option">';
         $template .= '<span class="product-image bxBlogAutocompleteProductImage"><img src="<%- data.product.products_blog_featured_media_url %>"></span>';
@@ -136,4 +138,5 @@ class Autocomplete{
         $template .= '</li></a>';
         return $template;
     }
+
 }

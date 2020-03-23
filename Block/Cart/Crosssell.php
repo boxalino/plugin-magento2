@@ -14,7 +14,7 @@ class Crosssell extends Mage_Crosssell{
     protected $scopeStore = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -36,7 +36,7 @@ class Crosssell extends Mage_Crosssell{
      * @param \Magento\Catalog\Model\Product\LinkFactory $productLinkFactory
      * @param \Magento\Quote\Model\Quote\Item\RelatedProducts $itemRelationsList
      * @param \Magento\CatalogInventory\Helper\Stock $stockHelper
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory
      * @param array $data
@@ -48,7 +48,7 @@ class Crosssell extends Mage_Crosssell{
         \Magento\Catalog\Model\Product\LinkFactory $productLinkFactory,
         \Magento\Quote\Model\Quote\Item\RelatedProducts $itemRelationsList,
         \Magento\CatalogInventory\Helper\Stock $stockHelper,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory $factory,
         array $data=[]

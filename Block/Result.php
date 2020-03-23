@@ -17,7 +17,7 @@ class Result extends Mage_Result
 {
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -52,7 +52,7 @@ class Result extends Mage_Result
      * @param LayerResolver $layerResolver
      * @param Data $catalogSearchData
      * @param QueryFactory $queryFactory
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param BxHelperData $bxHelperData
      * @param array $data
      */
@@ -61,7 +61,7 @@ class Result extends Mage_Result
         LayerResolver $layerResolver,
         Data $catalogSearchData,
         QueryFactory $queryFactory,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         array $data = []
     )

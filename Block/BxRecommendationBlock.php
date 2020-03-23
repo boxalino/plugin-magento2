@@ -20,7 +20,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     protected $factory;
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     protected $p13nHelper;
 
@@ -82,7 +82,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
     /**
      * BxRecommendationBlock constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
@@ -92,7 +92,7 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
      */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,

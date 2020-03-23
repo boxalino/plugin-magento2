@@ -4,6 +4,7 @@ namespace Boxalino\Intelligence\Block;
 use Magento\Catalog\Model\Layer\Filter\Item;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\DataObject;
+use Magento\Framework\Phrase;
 
 /**
  * Class State
@@ -13,7 +14,7 @@ class State extends \Magento\Catalog\Model\Layer\State
 {
 
     /**
-     * @var \Boxalino\Intelligence\Helper\P13n\Adapter
+     * @var \Boxalino\Intelligence\Api\P13nAdapterInterface
      */
     private $p13nHelper;
 
@@ -49,7 +50,7 @@ class State extends \Magento\Catalog\Model\Layer\State
 
     /**
      * State constructor.
-     * @param \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper
+     * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
      * @param \Boxalino\Intelligence\Helper\Data $bxHelperData
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
@@ -60,7 +61,7 @@ class State extends \Magento\Catalog\Model\Layer\State
      * @param array $data
      */
     public function __construct(
-        \Boxalino\Intelligence\Helper\P13n\Adapter $p13nHelper,
+        \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper,
         \Boxalino\Intelligence\Helper\Data $bxHelperData,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Catalog\Model\Layer\Resolver $layerResolver,
@@ -111,12 +112,14 @@ class State extends \Magento\Catalog\Model\Layer\State
                             $selectedValues = $facets->getSelectedValues($fieldName);
                             if(!empty($selectedValues)) {
                                 foreach ($selectedValues as $i => $v){
-                                    $value = $facets->getSelectedValueLabel($fieldName, $i);
+                                    $value = $filter->getFacetValueLabel($fieldName, $v);
+                                    if($value instanceof Phrase) { $value = $value->getText();}
                                     if($fieldName == 'discountedPrice' && substr($value, -3) == '- 0') {
                                         $values = explode(' - ', $value);
                                         $values[1] = '*';
                                         $value = implode(' - ', $values);
                                     }
+
                                     if(isset($items[$value])){
                                         $item =  $items[$value];
                                         $filters[] = $item;

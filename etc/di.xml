@@ -14,6 +14,7 @@
     <preference for="Magento\CatalogSearch\Controller\Result\Index" type="Boxalino\Intelligence\Controller\Result\Index" />
     <preference for="Magento\Catalog\Controller\Category\View" type="Boxalino\Intelligence\Controller\Category\View" />
 
+    <preference for="Boxalino\Intelligence\Api\P13nAdapterInterface" type="Boxalino\Intelligence\Helper\P13n\Adapter" />
     <preference for="Boxalino\Intelligence\Api\ExporterResourceInterface" type="Boxalino\Intelligence\Model\ResourceModel\Exporter" />
     <type name="Magento\Catalog\Model\Indexer\Product\Full">
         <arguments>
