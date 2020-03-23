@@ -113,7 +113,7 @@ class State extends \Magento\Catalog\Model\Layer\State
                             if(!empty($selectedValues)) {
                                 foreach ($selectedValues as $i => $v){
                                     $value = $filter->getFacetValueLabel($fieldName, $v);
-                                    if($value instanceof Phrase) { $value = $value->getText();}
+                                    if($value instanceof Phrase) { $value = $value->__toString();}
                                     if($fieldName == 'discountedPrice' && substr($value, -3) == '- 0') {
                                         $values = explode(' - ', $value);
                                         $values[1] = '*';
