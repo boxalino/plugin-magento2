@@ -809,7 +809,7 @@ class Adapter implements P13nAdapterInterface
                 $isBoolean = $attributeModel instanceof Boolean ? true : false;
                 foreach ($paramValues as $paramValue)
                 {
-                    $value = html_entity_decode($attributeModel->getOptionText($paramValue), ENT_QUOTES);
+                    $value = $attributeModel->getOptionText($paramValue);
                     if($additionalChecks && !$value) {
                         $systemParamValues[$key]['additional'] = $additionalChecks;
                         $paramValue = explode($separator, $paramValue);
@@ -832,7 +832,7 @@ class Adapter implements P13nAdapterInterface
                             if($isBoolean){
                                 $v = $paramValue;
                             }
-                            $selectedValues[$attributePrefix . $key][] = $v;
+                            $selectedValues[$attributePrefix . $key][] = html_entity_decode($v, ENT_QUOTES);
                         }
                     }
                 }
