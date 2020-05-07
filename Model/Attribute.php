@@ -100,7 +100,6 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute
     ){
         $this->objectManager = $objectManager;
         $this->_locale = substr($locale->getLocale(), 0, 2);
-        $this->_locale = 'de';
         $this->_logger = $logger;
         $this->_config = $config;
         $this->_layer = $layer;
