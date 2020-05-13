@@ -1,11 +1,8 @@
 <?php
 use Magento\Framework\App\Action\Action;
-$_product = $this->bxProduct();
-$image = 'category_page_grid';
-$pos = null;
-$viewMode = 'grid';
+$_product = $this->getProduct();
+$image = 'category_page_grid'; $pos = null; $viewMode = 'grid'; $showDescription = false;
 $_helper = $this->helper('Magento\Catalog\Helper\Output');
-$showDescription = false;
 $templateType = \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VIEW;
 ?>
 <?php if($_product) :?>

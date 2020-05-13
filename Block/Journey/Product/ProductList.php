@@ -53,18 +53,7 @@ class ProductList extends General implements CPOJourney
         $this->prepareCollection();
     }
 
-    public function getVariantIndex()
-    {
-        $visualElement = $this->getData('bxVisualElement');
-        $variant_index = 0;
-        foreach ($visualElement['parameters'] as $parameter) {
-            if($parameter['name'] == 'variant') {
-                $variant_index = reset($parameter['values']);
-                break;
-            }
-        }
-        return $variant_index;
-    }
+
 
     public function prepareCollection()
     {
@@ -95,6 +84,72 @@ class ProductList extends General implements CPOJourney
         return $collection;
     }
 
+    /**
+     * Setting properties for the product element in the list
+     *
+     * @param $visualElement
+     * @param $index int
+     * @return array
+     */
+    public function getAdditionalParameters($visualElement, $index)
+    {
+        if($this->checkVisualElementParam($visualElement, 'format', 'product'))
+        {
+            return [
+                'bx_id' => $this->getProductId($visualElement, $index),
+                'bx_collection_id' => $this->getCollectionId(),
+                'bx_index' => $index
+            ];
+        }
+
+        return [];
+    }
+
+    /**
+     * Used in the template in order to access the product ID from the once-loaded collection
+     *
+     * @param $visualElement
+     * @param $index
+     * @return |null
+     */
+    public function getProductId($visualElement, $index)
+    {
+        $id = null;
+        foreach ($visualElement['parameters'] as $parameter)
+        {
+            if($parameter['name'] == 'product_id') {
+                $id = reset($parameter['values']);
+                break;
+            }
+        }
+
+        if(!$id)
+        {
+            $ids = $this->p13nHelper->getEntitiesIds($this->getVariantIndex());
+            $id = isset($ids[$index]) ? $ids[$index] : null;
+        }
+
+        return $id;
+    }
+
+    public function getCollectionId()
+    {
+        return $this->getVariantIndex();
+    }
+
+    public function getVariantIndex()
+    {
+        $visualElement = $this->getData('bxVisualElement');
+        $variant_index = 0;
+        foreach ($visualElement['parameters'] as $parameter) {
+            if($parameter['name'] == 'variant') {
+                $variant_index = reset($parameter['values']);
+                break;
+            }
+        }
+        return $variant_index;
+    }
+
     public function checkVisualElementParam($visualElement, $key, $value)
     {
         $parameters = $visualElement['parameters'];
@@ -107,4 +162,5 @@ class ProductList extends General implements CPOJourney
         }
         return false;
     }
+
 }

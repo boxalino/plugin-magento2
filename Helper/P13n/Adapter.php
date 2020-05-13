@@ -1338,6 +1338,7 @@ class Adapter implements P13nAdapterInterface
      */
     public function setNarrativeChoices($choiceConfiguration)
     {
+        $this->setIsNarrative(true);
         foreach($choiceConfiguration as $choice)
         {
             if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice->getName()))) {

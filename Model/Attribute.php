@@ -294,7 +294,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Attribute
             }
         } else {
             $attributeSource = $this->_getSource();
-            if ($order == '2') {
+            if ($order == 'custom') {
                 $values = $attributeSource->getAllOptions();
                 $responseValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($this->fieldName));
                 $selectedValues = $this->bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($this->fieldName));

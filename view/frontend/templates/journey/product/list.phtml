@@ -7,9 +7,10 @@ $viewMode = $this->getData('list_grid');
     <ol class="products list items product-items">
         <?php foreach ($subRenderings as  $subRendering): ?>
             <?php
-            $additional_parameter = $this->checkVisualElementParam($subRendering['visualElement'], 'format', 'product') ? ['bx_index' => $index++] : null;
+            $additional_parameter = $this->getAdditionalParameters($subRendering['visualElement'], $index);
             echo $this->renderVisualElement($subRendering['visualElement'], $additional_parameter);
+            $index++;
             ?>
-        <?php endforeach ?>
+        <?php endforeach; ?>
     </ol>
 </div>
