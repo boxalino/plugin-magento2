@@ -6,7 +6,8 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v2.6.3 : 2020-03-23](#v2.6.3)**<br>
+**[v2.7.0: 2020-05-13](#v2.7.0)**<br>
+**[v2.6.4 : 2020-03-23](#v2.6.4)**<br>
 **[v2.6 : 2020-02-11](#v2.6)**<br>
 **[v2.0.0 : 2020-01-15](#v2.0.0)**<br>
 **[v1.6.7 : 2019-10-10](#v1.6.7)**<br>
@@ -16,9 +17,17 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
 
+<a name="v2.7.0"></a>
+### v2.7.0 - 2020-05-33
+* *integration steps* : check out the templates rendering product collection; 
+adapt them in your own theme if your project uses Boxalino blocks as visual element model
+* *test* : narratives, product listing visual elements, simple product visual element
+##### 1. Narrative blocks update (ProductList & ProductView)
+* *description* : Allows easily extensibility of default plugin behavior.
+* *commit* : https://github.com/boxalino/plugin-magento2/commit/33a4cd2908fc949a0160720a0b10c00bcfad00d2
 
-<a name="v2.6.3"></a>
-### v2.6.3 - 2020-03-23
+<a name="v2.6.4"></a>
+### v2.6.4 - 2020-03-23
 * *test* : facets on navigation, search, narratives
 ##### 1. API DI for the Boxalino Adapter
 * *description* : Allows easily extensibility of default plugin behavior.
