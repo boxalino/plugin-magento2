@@ -27,6 +27,11 @@ class Crosssell extends MageCrosssell{
     protected $bxHelperData;
 
     /**
+     * @var string
+     */
+    protected $choiceId;
+
+    /**
      * Crosssell constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Boxalino\Intelligence\Api\P13nAdapterInterface $p13nHelper
@@ -59,6 +64,7 @@ class Crosssell extends MageCrosssell{
             $product = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/cart',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
+            $this->choiceId = $choiceId;
             $entity_ids = [];
 
             try{
@@ -108,7 +114,9 @@ class Crosssell extends MageCrosssell{
     {
         if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestUuid();
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestUuid($this->choiceId);
+            }
         }
 
         return null;
@@ -121,7 +129,9 @@ class Crosssell extends MageCrosssell{
     {
         if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestGroupBy();
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestGroupBy($this->choiceId);
+            }
         }
 
         return null;

@@ -29,6 +29,11 @@ class Related extends MageRelated{
     protected $bxHelperData;
 
     /**
+     * @var string
+     */
+    protected $choiceId;
+
+    /**
      * Related constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart
@@ -69,6 +74,7 @@ class Related extends MageRelated{
             $product = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/related',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
+            $this->choiceId = $choiceId;
             $entity_ids = [];
 
             try{
@@ -121,7 +127,9 @@ class Related extends MageRelated{
     {
         if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestUuid();
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestUuid($this->choiceId);
+            }
         }
 
         return null;
@@ -134,7 +142,9 @@ class Related extends MageRelated{
     {
         if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestGroupBy();
+            if(!is_null($this->_itemCollection)){
+                return $this->p13nHelper->getRequestGroupBy($this->choiceId);
+            }
         }
 
         return null;

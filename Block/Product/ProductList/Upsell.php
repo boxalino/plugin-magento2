@@ -29,6 +29,11 @@ class Upsell extends MageUpsell{
     protected $bxHelperData;
 
     /**
+     * @var string
+     */
+    protected $choiceId;
+
+    /**
      * Upsell constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
      * @param \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart
@@ -70,6 +75,7 @@ class Upsell extends MageUpsell{
             $product = $this->_coreRegistry->registry('product');
             $config = $this->_scopeConfig->getValue('bxRecommendations/upsell',$this->scopeStore);
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'complementary';
+            $this->choiceId = $choiceId;
             $entity_ids = [];
 
             try{
@@ -119,7 +125,9 @@ class Upsell extends MageUpsell{
     {
         if($this->bxHelperData->isUpsellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-                return $this->p13nHelper->getRequestUuid();
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestUuid($this->choiceId);
+            }
         }
 
         return null;
@@ -132,7 +140,9 @@ class Upsell extends MageUpsell{
     {
         if($this->bxHelperData->isUpsellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-                return $this->p13nHelper->getRequestGroupBy();
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestGroupBy($this->choiceId);
+            }
         }
 
         return null;

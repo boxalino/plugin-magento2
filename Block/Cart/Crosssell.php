@@ -6,7 +6,8 @@ use Magento\Checkout\Block\Cart\Crosssell as Mage_Crosssell;
  * Class Crosssell
  * @package Boxalino\Intelligence\Block\Cart
  */
-class Crosssell extends Mage_Crosssell{
+class Crosssell extends Mage_Crosssell
+{
 
     /**
      * @var string
@@ -27,6 +28,12 @@ class Crosssell extends Mage_Crosssell{
      * @var \Magento\Catalog\Model\ResourceModel\Product\Link\Product\CollectionFactory
      */
     protected $factory;
+
+    /** @var string */
+    protected $choiceId;
+
+    /** @var array  */
+    protected $entity_ids = [];
 
     /**
      * Crosssell constructor.
@@ -76,10 +83,10 @@ class Crosssell extends Mage_Crosssell{
                 }
             }
 
-            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
+            $this->choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
             try{
-                $entity_ids = $this->p13nHelper->getRecommendation(
-                    $choiceId,
+                $this->entity_ids = $this->p13nHelper->getRecommendation(
+                    $this->choiceId,
                     $products,
                     'basket',
                     $config['min'],
@@ -96,12 +103,12 @@ class Crosssell extends Mage_Crosssell{
                 return null;
             }
 
-            if (empty($entity_ids)) {
-                $entity_ids = [0];
+            if (empty($this->entity_ids)) {
+                $this->entity_ids = [0];
             }
 
             $items = $this->factory->create()
-                ->addFieldToFilter('entity_id', $entity_ids)->addAttributeToSelect('*');
+                ->addFieldToFilter('entity_id', $this->entity_ids)->addAttributeToSelect('*');
             $items->load();
 
             foreach ($items as $product) {
@@ -121,7 +128,9 @@ class Crosssell extends Mage_Crosssell{
     {
         if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestUuid();
+            if(!empty($this->entity_ids)) {
+                return $this->p13nHelper->getRequestUuid($this->choiceId);
+            }
         }
 
         return null;
@@ -134,7 +143,9 @@ class Crosssell extends Mage_Crosssell{
     {
         if($this->bxHelperData->isCrosssellEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestGroupBy();
+            if(!empty($this->entity_ids)) {
+                return $this->p13nHelper->getRequestGroupBy($this->choiceId);
+            }
         }
 
         return null;

@@ -1396,7 +1396,7 @@ class Adapter implements P13nAdapterInterface
      */
     public function getRequestGroupBy($choiceId=null)
     {
-        return $this->getResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
+        return $this->getClientResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
     }
 
 
@@ -1408,7 +1408,7 @@ class Adapter implements P13nAdapterInterface
         $requestId = self::$bxClient->getRequestId();
         if($requestId == "undefined")
         {
-            $requestId = $this->getResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
+            $requestId = $this->getClientResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
         }
 
         return $requestId;

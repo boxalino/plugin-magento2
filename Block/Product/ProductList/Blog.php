@@ -136,7 +136,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock
     {
         if($this->bxHelperData->isBlogEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestUuid();
+            return $this->p13nHelper->getRequestUuid($this->getChoiceId());
         }
 
         return null;
@@ -149,7 +149,7 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock
     {
         if($this->bxHelperData->isBlogEnabled() && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestGroupBy();
+            return $this->p13nHelper->getRequestGroupBy($this->getChoiceId());
         }
 
         return null;
