@@ -245,4 +245,30 @@ class BxListProducts extends ListProduct
         return parent::_beforeToHtml();
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->bxHelperData->isEnabledOnLayer($this->getLayer()) && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->bxHelperData->isEnabledOnLayer($this->getLayer()) && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

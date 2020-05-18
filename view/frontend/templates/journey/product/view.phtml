@@ -8,7 +8,7 @@ $templateType = \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VI
 <?php if($_product) :?>
     <li class="item product product-item">
 
-        <div class="product-item-info" data-container="product-grid">
+        <div class="product-item-info bx-narrative-item" data-bx-item-id="<?php echo $_product->getId();?>" data-container="product-grid">
             <?php
             $productImage = $block->getImage($_product, $image);
             ?>

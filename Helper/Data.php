@@ -553,6 +553,17 @@ class Data
     /**
      * @return bool
      */
+    public function isNarrativeTrackerEnabled()
+    {
+        if(!isset($this->bxConfig['bxGeneral'])) {
+            $this->bxConfig['bxGeneral'] = $this->config->getValue('bxGeneral', $this->scopeStore);
+        }
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxGeneral']['narrative_tracker']['enabled']);
+    }
+
+    /**
+     * @return bool
+     */
     public function isCrosssellEnabled()
     {
         if(!isset($this->bxConfig['bxRecommendations'])) {

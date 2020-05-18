@@ -3,7 +3,10 @@ $subRenderings = $this->getSubRenderings();
 $index = 0;
 $viewMode = $this->getData('list_grid');
 ?>
-<div class="products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?> products-<?php /* @escapeNotVerified */ echo $viewMode; ?>">
+<div class="products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?> products-<?php /* @escapeNotVerified */ echo $viewMode; ?> bx-narrative"
+     data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list"
+     data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>"
+    >
     <ol class="products list items product-items">
         <?php foreach ($subRenderings as  $subRendering): ?>
             <?php

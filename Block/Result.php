@@ -258,4 +258,21 @@ class Result extends Mage_Result
     {
         return $this->bxHelperData->getNoResultsWidgetName();
     }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        return $this->p13nHelper->getRequestUuid();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        return $this->p13nHelper->getRequestGroupBy();
+    }
+
 }

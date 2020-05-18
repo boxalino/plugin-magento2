@@ -59,7 +59,17 @@
                 </field>
             </group>
 
-            <group id="advanced" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="narrative_tracker" translate="label" type="text"  sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Narrative Tracker</label>
+                <!-- create text type field -->
+                <field id="enabled" translate="label" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable narrative tracker</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Is the Narrative JavaScript tracker enabled?</comment>
+                </field>
+            </group>
+
+            <group id="advanced" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Advanced</label>
                 <!-- create text type field -->
                 <field id="host" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" >

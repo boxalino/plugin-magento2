@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.8.0: 2020-05-18](#v2.8.0)**<br>
 **[v2.7.0: 2020-05-13](#v2.7.0)**<br>
 **[v2.6.4 : 2020-03-23](#v2.6.4)**<br>
 **[v2.6 : 2020-02-11](#v2.6)**<br>
@@ -16,6 +17,48 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+
+<a name="v2.8.0"></a>
+### v2.8.0 : 2020-05-18
+_post-deployment integration test_: test the custom XML/CMS recommendations sliders/blocks; 
+enable the narrative tracker (as described in the integration steps); 
+update your custom narrative templates
+
+* _description_ : A new tracker system can be enabled which will allow Boxalino to track the actions of your user on predefined response blocks (navigation, search, recommendations). 
+*Manual integration required in your e-shop theme.*
+
+* _integration steps_ : 
+
+*1*. Follow the sample markup showcasing 1 container with 1 item:
+```
+<div class="bx-narrative" data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
+    <div class="bx-narrative-item" data-bx-item-id="<?php echo $product->getId();?>">
+        /** product item **/ 
+    </div>
+</div>
+```
+
+The following theme templates require to include the above sample (bx-narrative/bx-narrative-item classes & data-attributes):
+- Magento_Catalog::product/list.phtml (search, navigation)
+- Magento_Catalog::product/list/items.phtml (cross-sell/up-sell/related/etc)
+
+>Sample as done on _recommendation.phtml_:
+https://github.com/boxalino/plugin-magento2/blob/master/view/frontend/templates/product/recommendation.phtml#L10
+https://github.com/boxalino/plugin-magento2/blob/master/view/frontend/templates/product/recommendation.phtml#L15
+
+>Sample as done on a _narrative_:
+https://github.com/boxalino/plugin-magento2/blob/master/view/frontend/templates/journey/product/list.phtml#L7
+https://github.com/boxalino/plugin-magento2/blob/master/view/frontend/templates/journey/product/view.phtml#L11
+
+*2*. *Enable* the narrative tracker via configuration: Boxalino Extension->General->Narrative Tracker->Enable. Save, clear cache and test.
+
+*3*. *Test*: Once the tracker is presumably set up correctly the testing process can be simplified by entering debug-mode.
+Run the following script in your browser's console to enter debug-mode for the duration of the session.
+         
+ ```_bxq.push(['debugCookie', true]); ```        
+
+*4*. Deploy your theme updates.
 
 <a name="v2.7.0"></a>
 ### v2.7.0 - 2020-05-33

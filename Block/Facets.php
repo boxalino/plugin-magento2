@@ -97,4 +97,31 @@ class Facets extends \Magento\Framework\View\Element\Template
         }
         return [];
     }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->bxHelperData->isEnabledOnLayer($this->layer) && $this->bxHelperData->isPluginEnabled() && !$this->bxHelperData->getFallback())
+        {
+            return $this->p13nHelper->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->bxHelperData->isEnabledOnLayer($this->layer) && $this->bxHelperData->isPluginEnabled() && !$this->bxHelperData->getFallback())
+        {
+            return $this->p13nHelper->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

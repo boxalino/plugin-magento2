@@ -63,7 +63,18 @@ class General extends \Magento\Framework\View\Element\Template
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
     }
 
-    public function getp13nHelper(){
+    public function getp13nHelper()
+    {
         return $this->p13nHelper;
+    }
+
+    public function getRequestUuid()
+    {
+        return $this->getp13nHelper()->getRequestUuid();
+    }
+
+    public function getRequestGroupBy()
+    {
+        $this->getp13nHelper()->getRequestGroupBy();
     }
 }

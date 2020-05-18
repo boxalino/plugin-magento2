@@ -10,6 +10,9 @@
             <tracker>
                 <enabled>0</enabled>
             </tracker>
+            <narrative_tracker>
+                <enabled>0</enabled>
+            </narrative_tracker>
             <advanced>
                 <send_request_id>0</send_request_id>
             </advanced>

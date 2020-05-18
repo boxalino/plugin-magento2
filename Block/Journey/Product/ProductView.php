@@ -196,4 +196,14 @@ class ProductView extends ItemBlock implements
         return $this;
     }
 
+    public function getRequestUuid()
+    {
+        return $this->p13nHelper->getRequestUuid();
+    }
+
+    public function getRequestGroupBy()
+    {
+        $this->p13nHelper->getRequestGroupBy();
+    }
+
 }

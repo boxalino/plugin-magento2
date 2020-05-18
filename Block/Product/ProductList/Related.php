@@ -114,4 +114,30 @@ class Related extends MageRelated{
         return parent::_prepareData();
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->bxHelperData->isRelatedEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

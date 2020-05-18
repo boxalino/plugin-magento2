@@ -129,4 +129,30 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock
         return $articles;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->bxHelperData->isBlogEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->bxHelperData->isBlogEnabled() && $this->bxHelperData->isPluginEnabled())
+        {
+            return $this->p13nHelper->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

@@ -100,7 +100,7 @@ $script = $this->getBaScriptServerPath();
             }
         <?php endif; ?>
     });
-<?php if($_helper->isTrackerEnabled()): ?>
+<?php if($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
     var _bxq = _bxq || [];
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
