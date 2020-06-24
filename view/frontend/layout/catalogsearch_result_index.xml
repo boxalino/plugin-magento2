@@ -15,7 +15,8 @@
     <body>
         <attribute name="class" value="page-products"/>
         <referenceContainer name="content">
-            <block class="Boxalino\Intelligence\Block\Facets" name="search.filter.top" template="Boxalino_Intelligence::top_filters.phtml"  before="toolbar"/>
+            <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage" template="Boxalino_Intelligence::searchMessage.phtml" before="search.filter.top"/>
+            <block class="Boxalino\Intelligence\Block\Facets" name="search.filter.top" template="Boxalino_Intelligence::top_filters.phtml"  before="search.result"/>
         </referenceContainer>
 
         <referenceBlock name="catalogsearch.navigation.renderer">
@@ -23,10 +24,6 @@
                 <argument name="template" xsi:type="string">Boxalino_Intelligence::layer/filter.phtml</argument>
             </action>
         </referenceBlock>
-
-        <referenceContainer name="content">
-            <block class="Boxalino\Intelligence\Block\SearchMessage" name="bxSearchMessage" template="Boxalino_Intelligence::searchMessage.phtml" />
-        </referenceContainer>
 
         <referenceBlock name="catalogsearch.leftnav">
             <action method="setTemplate">
