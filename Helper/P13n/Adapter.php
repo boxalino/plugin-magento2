@@ -1180,7 +1180,7 @@ class Adapter implements P13nAdapterInterface
                         foreach ($context as $product) {
                             $basketProducts[] = array('id' => $product->getId(), 'price' => $product->getPrice());
                         }
-                        $bxRequest->setBasketProductWithPrices($this->getEntityIdFieldName(), $basketProducts);
+                        $bxRequest->setBasketProductWithPrices("id", $basketProducts);
                     } elseif (($widgetType === 'product' || $widgetType === 'blog') && !is_array($context)) {
                         $product = $context;
                         $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
