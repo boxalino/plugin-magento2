@@ -714,7 +714,10 @@ class Exporter implements ExporterResourceInterface
                     'shipping_method',
                     'customer_is_guest',
                     'customer_email',
-                    'order_currency_code'
+                    'order_currency_code',
+                    'coupon_code',
+                    'grand_total',
+                    'shipping_description'
                 )
             )
             ->joinLeft(
@@ -727,6 +730,9 @@ class Exporter implements ExporterResourceInterface
                     'original_price',
                     'product_type',
                     'qty_ordered',
+                    'discount_amount',
+                    'discount_percent',
+                    'tax_amount'
                 )
             )
             ->joinLeft(
