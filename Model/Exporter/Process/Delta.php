@@ -18,10 +18,6 @@ class Delta extends ProcessManager
      */
     const SERVER_TIMEOUT_DEFAULT = 60;
 
-    /**
-     * @var array
-     */
-    protected $ids = [];
 
     /**
      * stop execution if there are no deltas
@@ -118,19 +114,22 @@ class Delta extends ProcessManager
     /**
      * @return array
      */
-    public function getIds()
+    public function getIds() : array
     {
-        $lastUpdateDate = $this->getLatestRun();
-        $directProductUpdates = $this->processResource->getProductIdsByUpdatedAt($lastUpdateDate);
-        $categoryProductUpdates = $this->processResource->getAffectedEntityIds(self::INDEXER_ID);
-
-        $ids = array_filter(array_unique(array_merge($directProductUpdates, explode(",", $categoryProductUpdates))));
-        if(empty($ids))
+        if(is_null($this->ids))
         {
-            return [];
+            $lastUpdateDate = $this->getLatestRun();
+            $directProductUpdates = $this->processResource->getProductIdsByUpdatedAt($lastUpdateDate);
+            $categoryProductUpdates = $this->processResource->getAffectedEntityIds(self::INDEXER_ID);
+
+            $ids = array_filter(array_unique(array_merge($directProductUpdates, explode(",", $categoryProductUpdates))));
+            if(empty($ids))
+            {
+                $this->ids = [];
+            }
         }
-        
-        return $ids;
+
+        return $this->ids;
     }
 
     /**

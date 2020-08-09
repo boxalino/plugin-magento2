@@ -5,7 +5,7 @@
             <schedule>0 0 * * *</schedule>
         </job>
         <job name="boxalino_indexer_delta" instance="Boxalino\Intelligence\Model\Indexer\BxDeltaExporter" method="execute">
-            <schedule>0 0 * * *</schedule>
+            <schedule>*/30 6-23 * * *</schedule>
         </job>
     </group>
 </config>

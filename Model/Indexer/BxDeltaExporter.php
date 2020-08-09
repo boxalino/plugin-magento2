@@ -40,12 +40,35 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
     public function executeList(array $ids){}
 
     /**
-     * In case of a scheduled update, it will be run
+     * Run when the MVIEW is in use (Update by Schedule)
      *
-     * @param \int[] $ids
-     * @throws \Exception
+     * @param int[] $ids
+     * @return bool|void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function execute($ids){}
+    public function execute($ids)
+    {
+        $startExportDate = $this->processManager->getUtcTime();
+        if(!$this->processManager->processCanRun())
+        {
+            return true;
+        }
+
+        if(!is_array($ids))
+        {
+            $ids = [];
+        }
+        try{
+            $this->processManager->setIds($ids);
+            $status = $this->processManager->run();
+            if($status) {
+                $this->processManager->updateProcessRunDate($startExportDate);
+                $this->processManager->updateAffectedProductIds();
+            }
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
 
     /**
      * Run on execute full command

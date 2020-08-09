@@ -2,7 +2,6 @@
 namespace Boxalino\Intelligence\Model\Exporter;
 
 use Boxalino\Intelligence\Model\ResourceModel\ProcessManager as ProcessManagerResource;
-use Boxalino\Intelligence\Helper\BxFiles;
 use Boxalino\Intelligence\Helper\BxIndexConfig;
 use Boxalino\Intelligence\Model\Indexer\BxDeltaExporter;
 use Boxalino\Intelligence\Model\Indexer\BxExporter;
@@ -52,6 +51,10 @@ abstract class ProcessManager
      */
     protected $timezone;
 
+    /**
+     * @var array | null
+     */
+    protected $ids = null;
 
     /**
      * ProcessManager constructor.
@@ -195,6 +198,16 @@ abstract class ProcessManager
         }
 
         return $this->timezone->convertConfigTimeToUtc($time);
+    }
+
+    /**
+     * @param array $ids
+     * @return \Boxalino\Exporter\Model\ProcessManager
+     */
+    public function setIds(array $ids)
+    {
+        $this->ids = array_unique($ids) ?? [];
+        return $this;
     }
 
     abstract function getTimeout($account);
