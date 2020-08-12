@@ -264,7 +264,7 @@ class Result extends Mage_Result
      */
     public function getRequestUuid()
     {
-        return $this->p13nHelper->getRequestUuid();
+        return $this->p13nHelper->getRequestUuid("search");
     }
 
     /**

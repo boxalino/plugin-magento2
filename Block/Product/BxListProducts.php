@@ -252,7 +252,14 @@ class BxListProducts extends ListProduct
     {
         if($this->bxHelperData->isEnabledOnLayer($this->getLayer()) && $this->bxHelperData->isPluginEnabled())
         {
-            return $this->p13nHelper->getRequestUuid();
+            if(in_array(
+                get_class($this->getLayer()),
+                ['Magento\Catalog\Model\Layer\Search\Interceptor', 'Magento\Catalog\Model\Layer\Search'])
+            ){
+                return $this->p13nHelper->getRequestUuid("search");
+            }
+
+            return $this->p13nHelper->getRequestUuid("navigation");
         }
 
         return null;

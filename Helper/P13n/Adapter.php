@@ -1399,19 +1399,12 @@ class Adapter implements P13nAdapterInterface
         return $this->getClientResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
     }
 
-
     /**
      * @return string
      */
     public function getRequestUuid($choiceId=null)
     {
-        $requestId = self::$bxClient->getRequestId();
-        if($requestId == "undefined")
-        {
-            $requestId = $this->getClientResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
-        }
-
-        return $requestId;
+        return $this->getClientResponse()->getExtraInfo("_bx_variant_uuid", "undefined", $choiceId);
     }
 
 }

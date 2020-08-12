@@ -350,4 +350,36 @@ class BxRecommendationBlock extends \Magento\Catalog\Block\Product\AbstractProdu
         }
         return false;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->bxHelperData->isPluginEnabled())
+        {
+            if(!is_null($this->_itemCollection)) {
+                return $this->p13nHelper->getRequestUuid($this->getData("widget"));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->bxHelperData->isPluginEnabled())
+        {
+            if(!is_null($this->_itemCollection)){
+                return $this->p13nHelper->getRequestGroupBy($this->getData("widget"));
+            }
+        }
+
+        return null;
+    }
+    
+    
 }
