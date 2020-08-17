@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.8.8: 2020-08-14](#v2.8.7)**<br>
 **[v2.8.0: 2020-05-18](#v2.8.0)**<br>
 **[v2.7.0: 2020-05-13](#v2.7.0)**<br>
 **[v2.6.4 : 2020-03-23](#v2.6.4)**<br>
@@ -18,6 +19,45 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
 
+
+<a name="v2.8.7"></a>
+### v2.8.7 : 2020-08-14
+_post-deployment integration test_: test for the addToBasket event to be triggered from all the templates that display products; 
+
+* _description_ : Improvements on how the addToBasket is tracked within/outside Boxalino response templates.  Manual integration required in your e-shop theme. The addToBasket event has to be integrated by the client.
+* _integration steps_ : _the list block and add-to-basket button requires to be updated_
+
+1. Follow the sample markup showcasing 1 container with 1 item. If prior integration was done, update the _add to basket button_:
+```
+<div class="bx-narrative" data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
+    <div class="bx-narrative-item" data-bx-item-id="<?php echo $product->getId();?>">
+        /** product item **/ 
+        /** product add to basket **/
+        <div>
+            <input type="text" class="bx-basket-quantity">
+            <span class="bx-basket-currency">CHF</span>
+            <span class="bx-basket-price">77</span>
+            <button class="bx-basket-add">+</button>
+        </div>
+    </div>
+</div>
+```
+
+If not all product blocks (recommendations, listing, etc) are returning Boxalino content, the following markup must be used for *detached* product items:
+
+```
+<div class="bx-narrative-item" data-bx-item-id="D">
+    <a href="https://example.org/detached">
+        <img src="https://placeimg.com/180/400/animals/detached">
+        <p>Detached item</p>
+    </a>
+    <div>
+        <input type="text" class="bx-basket-quantity">
+        <span class="bx-basket-price">CHF 32</span>
+        <button class="bx-basket-add">+</button>
+    </div>
+</div>
+```
 
 <a name="v2.8.0"></a>
 ### v2.8.0 : 2020-05-18
