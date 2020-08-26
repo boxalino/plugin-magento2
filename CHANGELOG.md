@@ -26,10 +26,14 @@ _post-deployment integration test_: test for the addToBasket event to be trigger
 
 1. Disable the "addToBasket" server-side event when the Narrative JS is enabled
 * _description_ : The "addToBasket" event is no longer triggered server-side for the Narrative JS.  Manual integration required in the e-shop theme. The addToBasket event has to be integrated by the client.
-* _integration steps_ : _trigger the JS event when the products are "added to cart"_
 * _commit_ :  https://github.com/boxalino/plugin-magento2/commit/086997d8d39484754adccf21895963fbf7d0befc
 
-2. Delta exporter fix for the batch size
+2. *addToBasket* track event for Narrative JS
+* _description_ : The script.phtml template has _guideline logic_ on how the **addToBasket** event can be fired; 
+* _integration_ : If your theme allows to buy configurable/grouped-products from the listing - the JS trigger requires updates.
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/6639086043b2d5d8c0653e8227296d7c3980cab0
+
+3. Delta exporter fix for the batch size
 * _description_ : The batch size for delta set to 100.000; can be rewritten by the client.
 * _commit_ : https://github.com/boxalino/plugin-magento2/commit/a897f8a5fd1625cea7c6472fa8760415eb81e852
 
