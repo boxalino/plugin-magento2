@@ -18,20 +18,27 @@ $script = $this->getBaScriptServerPath();
     ], function ($) {
         'use strict';
 
+        /** add to cart for main product on PDP **/
         $('#product_addtocart_form').mage('validation', {
             radioCheckboxClosest: '.nested',
             submitHandler: function (form) {
-                _bxq.push(['trackAddToBasket', $(form).find('input[name="product"]').val(), $(form).find('input[name="qty"]').val(),"", ""]);
+                let productId = $(form).find('input[name="product"]').val(),
+                    priceBox = $('[data-role=priceBox][data-product-id='+productId+']');
+
+                _bxq.push(['trackAddToBasket',
+                    productId,
+                    $(form).find('input[name="qty"]').val(),
+                    $(priceBox).find('meta[itemprop="price"]')[0].content,
+                    $(priceBox).find('meta[itemprop="priceCurrency"]')[0].content,
+                ]);
 
                 var widget = $(form).catalogAddToCart({
                     bindSubmit: false
                 });
 
                 widget.catalogAddToCart('submitForm', $(form));
-
                 return false;
             }
-
         });
         $("div.top_filters>ol.items>li.item>a>span.count").text(function () {
             var text = $(this).clone().children().remove().end().text(); //get text without children
