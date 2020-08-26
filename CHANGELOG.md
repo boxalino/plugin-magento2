@@ -6,7 +6,8 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v2.8.8: 2020-08-14](#v2.8.7)**<br>
+**[v2.8.8: 2020-08-26](#v2.8.8)**<br>
+**[v2.8.7: 2020-08-14](#v2.8.7)**<br>
 **[v2.8.0: 2020-05-18](#v2.8.0)**<br>
 **[v2.7.0: 2020-05-13](#v2.7.0)**<br>
 **[v2.6.4 : 2020-03-23](#v2.6.4)**<br>
@@ -19,6 +20,18 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
 
+<a name="v2.8.8"></a>
+### v2.8.8 : 2020-08-26
+_post-deployment integration test_: test for the addToBasket event to be triggered from all the templates that display products; 
+
+1. Disable the "addToBasket" server-side event when the Narrative JS is enabled
+* _description_ : The "addToBasket" event is no longer triggered server-side for the Narrative JS.  Manual integration required in the e-shop theme. The addToBasket event has to be integrated by the client.
+* _integration steps_ : _trigger the JS event when the products are "added to cart"_
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/086997d8d39484754adccf21895963fbf7d0befc
+
+2. Delta exporter fix for the batch size
+* _description_ : The batch size for delta set to 100.000; can be rewritten by the client.
+* _commit_ : https://github.com/boxalino/plugin-magento2/commit/a897f8a5fd1625cea7c6472fa8760415eb81e852
 
 <a name="v2.8.7"></a>
 ### v2.8.7 : 2020-08-14
