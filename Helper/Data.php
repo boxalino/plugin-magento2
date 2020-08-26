@@ -111,7 +111,13 @@ class Data
     protected $systemParams = [];
 
     /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
      * Data constructor.
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\CatalogSearch\Helper\Data $catalogSearch
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Customer\Model\Session $customerSession
@@ -122,6 +128,7 @@ class Data
      * @param \Magento\Framework\App\FrontControllerInterface $controllerInterface
      */
     public function __construct(
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\CatalogSearch\Helper\Data $catalogSearch,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
@@ -131,6 +138,7 @@ class Data
         \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $factory,
         \Magento\Framework\App\FrontControllerInterface $controllerInterface
     ){
+        $this->_storeManager = $storeManager;
         $this->controllerInterface = $controllerInterface;
         $this->catalogCategory = $catalogProduct;
         $this->config = $scopeConfig;
@@ -139,6 +147,15 @@ class Data
         $this->customerSession = $customerSession;
         $this->factory = $factory;
         $this->catalogSearch = $catalogSearch;
+    }
+
+    /**
+     * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function getCurrencyCode() : string
+    {
+        return $this->_storeManager->getStore()->getCurrentCurrency()->getCode();
     }
 
     /**

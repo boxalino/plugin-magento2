@@ -40,88 +40,106 @@ $script = $this->getBaScriptServerPath();
                 return false;
             }
         });
+
+        <?php if($_helper->isNarrativeTrackerEnabled()):?>
+        /** add to cart for products on listing  -- should be updated if the theme allows quick buy for configurable/grouped products **/
+        $('[data-role=tocart-form]').mage('validation', {
+            submitHandler: function (form) {
+                let productId = $(form).find('input[name="product"]').val(),
+                    price = $('#product-price-'+ productId).data("price-amount");
+
+                _bxq.push(['trackAddToBasket', productId, 1, price, "<?php echo $_helper->getCurrencyCode();?>"]);
+            }
+        });
+        <?php endif;?>
+
         $("div.top_filters>ol.items>li.item>a>span.count").text(function () {
             var text = $(this).clone().children().remove().end().text(); //get text without children
             return "(" + text + ")" ;
         });
 
         <?php if($_helper->isAutocompleteEnabled()): ?>
-            if(document.getElementById('search_autocomplete')){
-                var timer,
-                    observer = new MutationObserver(function(mutations){
-                        mutations.forEach(function(mutation) {
-                            if(mutation.type === 'childList'){
-                                jQuery('.sub_product_suggestions').hide();
-                            }
-                        });
-                    });
-                var config = {childList: true};
-                observer.observe(document.getElementById('search_autocomplete'), config);
-                $("body").on('mouseenter', '.acsuggestions', function () {
-                    var $this = $(this);
-                    timer = setTimeout(function () {
-                        $('.global_product_suggestions').hide();
-                        $('.sub_product_suggestions').hide();
-                        $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
-                    }, 1000);
-                }).on('mouseleave', '.acsuggestions', function () {
-                    clearTimeout(timer);
-                    $(this).removeClass("selected");
-                });
-
-                $("body").on('mouseleave', '#search_autocomplete', function () {
-                    $('.global_product_suggestions').show();
-                    $('.sub_product_suggestions').hide();
-                });
-
-                $( "#search" ).click(function(e){
-                    $("#search_autocomplete").show();
-                });
-
-                $( "#search" ).keydown(function(e) {
-                    if(e.key == "Enter"){
-                        window.stop();
-                    }else{
-                        if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
-                            $("#search").data().mageQuickSearch.options.template =
-                                '<% if(data.type == "suggestion" ){ %>' +
-                                    $("#search").data().mageQuickSearch.options.template +
-                                '<% }else{ %>' +
-
-                                    '<% if(data.type == "blog" ){ %>' +
-                                        '<% if(data.first){ %>'+
-                                            '<h4 class="product-title"><?php echo __('Blog-Articles'); ?></h4>'+
-                                        '<% }; %>'+
-                                        '<?php echo $_autocompleteHelper->getBlogACTemplate(); ?>'+
-                                    '<% } else { %>'+
-                                        '<% if(data.first){ %>'+
-                                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
-                                        '<% }; %>'+
-                                        '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
-                                    '<% }; %>'+
-                                '<% }; %>'
-                                ;
+        if(document.getElementById('search_autocomplete')){
+            var timer,
+                observer = new MutationObserver(function(mutations){
+                    mutations.forEach(function(mutation) {
+                        if(mutation.type === 'childList'){
+                            jQuery('.sub_product_suggestions').hide();
                         }
-                    }
+                    });
                 });
-            }
+            var config = {childList: true};
+            observer.observe(document.getElementById('search_autocomplete'), config);
+            $("body").on('mouseenter', '.acsuggestions', function () {
+                var $this = $(this);
+                timer = setTimeout(function () {
+                    $('.global_product_suggestions').hide();
+                    $('.sub_product_suggestions').hide();
+                    $('.sub_id_' + $this.attr('id').substr($this.attr('id').length - 1)).show();
+                }, 1000);
+            }).on('mouseleave', '.acsuggestions', function () {
+                clearTimeout(timer);
+                $(this).removeClass("selected");
+            });
+
+            $("body").on('mouseleave', '#search_autocomplete', function () {
+                $('.global_product_suggestions').show();
+                $('.sub_product_suggestions').hide();
+            });
+
+            $( "#search" ).click(function(e){
+                $("#search_autocomplete").show();
+            });
+
+            $( "#search" ).keydown(function(e) {
+                if(e.key == "Enter"){
+                    window.stop();
+                }else{
+                    if ($("#search").data().mageQuickSearch.options.template.indexOf("data.type") == -1) {
+                        $("#search").data().mageQuickSearch.options.template =
+                            '<% if(data.type == "suggestion" ){ %>' +
+                            $("#search").data().mageQuickSearch.options.template +
+                            '<% }else{ %>' +
+
+                            '<% if(data.type == "blog" ){ %>' +
+                            '<% if(data.first){ %>'+
+                            '<h4 class="product-title"><?php echo __('Blog-Articles'); ?></h4>'+
+                            '<% }; %>'+
+                            '<?php echo $_autocompleteHelper->getBlogACTemplate(); ?>'+
+                            '<% } else { %>'+
+                            '<% if(data.first){ %>'+
+                            '<h4 class="product-title"><?php echo __("Products"); ?></h4>'+
+                            '<% }; %>'+
+                            '<?php echo $_autocompleteHelper->getProductACTemplate(); ?>'+
+                            '<% }; %>'+
+                            '<% }; %>'
+                        ;
+                    }
+                }
+            });
+        }
         <?php endif; ?>
     });
-<?php if($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
+
+    <?php if($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
     var _bxq = _bxq || [];
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
-    
+
     _bxq.push(['trackPageView']);
 
     <?php if ($this->isSearch()): ?>
-        <?php echo $_helper->reportSearch($this->getRequest()->getParam($this->getQueryParamName()), $_helper->getFiltersValues($this->getRequest()->getParams())); ?>
+    <?php echo $_helper->reportSearch(
+        $this->getRequest()->getParam($this->getQueryParamName()),
+        $_helper->getFiltersValues($this->getRequest()->getParams())
+    ); ?>
     <?php endif; ?>
+
     (function () {
         var s = document.createElement('script');
         s.async = 1;
         s.src = '<?php echo $script;?>';
         document.getElementsByTagName('head')[0].appendChild(s);
     })();
-<?php endif; ?>
+    <?php endif; ?>
 </script>
