@@ -23,5 +23,12 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Framework\Mview\View">
+        <arguments>
+            <argument name="changelogBatchSize" xsi:type="array">
+                <item name="boxalino_indexer_delta" xsi:type="number">100000</item>
+            </argument>
+        </arguments>
+    </type>
 
 </config>
