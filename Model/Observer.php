@@ -86,8 +86,18 @@ class Observer implements ObserverInterface{
         }
     }
 
+    /**
+     * The "addToBasket" event is not being tracked server-side when the narrative JS is active
+     *
+     * @param $event
+     */
     protected function onAddToBasket($event)
     {
+        if($this->bxHelperData->isNarrativeTrackerEnabled())
+        {
+            return;
+        }
+
         try {
             $product = $event->getProduct();
             $count = $event->getRequest()->getPost('qty');
