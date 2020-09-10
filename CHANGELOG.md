@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.8.9: 2020-09-10](#v2.8.9)**<br>
 **[v2.8.8: 2020-08-26](#v2.8.8)**<br>
 **[v2.8.7: 2020-08-14](#v2.8.7)**<br>
 **[v2.8.0: 2020-05-18](#v2.8.0)**<br>
@@ -19,6 +20,15 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+<a name="v2.8.9"></a>
+### v2.8.9 : 2020-09-10
+_post-deployment integration test_: test for the discountedPrice and system price values for different products types; 
+
+1. Extended price export logic
+* _description_ : 2 new fields added for price export which reflect the Magento2 indexed content (min_price and final_price). The logic for discountedPrice has been changed as well to reflect the use of min_price when set.
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/f0336a9836b2678ec398c4a561504f8072e4d6e5
+
 
 <a name="v2.8.8"></a>
 ### v2.8.8 : 2020-08-26
