@@ -381,6 +381,27 @@ class Exporter implements ExporterResourceInterface
     }
 
     /**
+     * @param string $type
+     * @return array
+     */
+    public function getIndexedPrice(string $type) : array
+    {
+        $select = $this->adapter->select()
+            ->from(
+                array('c_p_i' => $this->adapter->getTableName('catalog_product_index_price')),
+                ['entity_id', 'value'=>$type . "_price"]
+            )
+            ->group(['entity_id']);
+
+        if(!empty($this->exportIds) && $this->isDelta)
+        {
+            $select->where('c_p_i.entity_id IN(?)', $this->exportIds);
+        }
+
+        return $this->adapter->fetchAll($select);
+    }
+
+    /**
      * Get child product attribute value based on the parent product attribute value
      *
      * @param $attributeCode string

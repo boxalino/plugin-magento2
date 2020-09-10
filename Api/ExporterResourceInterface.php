@@ -158,6 +158,12 @@ interface ExporterResourceInterface
     public function getPriceSqlByType($type, $key);
 
     /**
+     * @param string $type
+     * @return array
+     */
+    public function getIndexedPrice(string $type) : array;
+
+    /**
      * C U S T O M E R   E X P O R T   F U N C T I O N A L I T Y
      */
 

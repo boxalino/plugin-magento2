@@ -1073,8 +1073,8 @@ class Service
                                 $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", $paramSpecialPriceLabel);
                             }
 
-                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$paramSpecialPriceLabel.' IS NULL OR price.'.$paramSpecialPriceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$paramSpecialPriceLabel.' END as price_value');
-                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id');
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$paramSpecialPriceLabel.' IS NULL OR price.'.$paramSpecialPriceLabel.' <= 0 OR min_price.'.$paramSpecialPriceLabel.' IS NULL) AND ref.value IS NOT NULL THEN ref.value WHEN (price.'.$paramSpecialPriceLabel.' IS NULL OR price.'.$paramSpecialPriceLabel.' <=0) THEN min_price.'.$paramSpecialPriceLabel.' ELSE LEAST(price.'.$paramSpecialPriceLabel.', min_price.'.$paramSpecialPriceLabel.') END as price_value');
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_min_price_index` as min_price ON t.entity_id = min_price.entity_id');
                             $this->bxData->addResourceFile($this->bxFiles->getPath($type['attribute_code'] . '.csv'), 'parent_id', "value");
 
                             break;
@@ -1104,7 +1104,32 @@ class Service
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.group_id = ref.parent_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as sprice ON t.entity_id = sprice.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as sref ON t.group_id = sref.parent_id');
         $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'multiValued', 'false');
 
+        $this->exportIndexedPrices("final", $mainSourceKey);
+        $this->exportIndexedPrices("min", $mainSourceKey);
+
         $this->bxFiles->clearEmptyFiles("product_");
+    }
+
+    /**
+     * Export content as is defined in the Magento2 price index event
+     * This is to be used in case of
+     * @param string $type
+     * @param string $mainSourceKey
+     */
+    public function exportIndexedPrices(string $type, string $mainSourceKey) : void
+    {
+        $attributeCode = $type."_price_index";
+        $filename = "product_{$attributeCode}.csv";
+
+        $data = $this->exporterResource->getIndexedPrice($type);
+        $data = array_merge([array_keys(end($data))], $data);
+        $this->bxFiles->savepartToCsv($filename, $data);
+
+        $fieldId = $this->bxGeneral->sanitizeFieldName($attributeCode);
+        $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath($filename), "entity_id");
+        $this->bxData->addSourceNumberField($attributeSourceKey, $attributeCode, "value");
+        $this->bxData->addFieldParameter($attributeSourceKey, $attributeCode, 'multiValued', 'false');
+        $this->bxData->addResourceFile($this->bxFiles->getPath($filename), "entity_id", "value");
     }
 
     /**
