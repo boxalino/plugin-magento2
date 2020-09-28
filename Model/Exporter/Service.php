@@ -321,7 +321,7 @@ class Service
         $attrsFromDb = ['int'=>[], 'static'=>[], 'varchar'=>[], 'datetime'=>[]];
 
         $this->logger->info('BxIndexLog: get final customer attributes for account: ' . $this->account);
-        $customer_attributes = $this->getCustomerAttributes($this->account);
+        $customer_attributes = $this->getCustomerAttributes();
         $this->logger->info('BxIndexLog: get customer attributes backend types for account: ' . $this->account);
 
         $result = $this->exporterResource->getCustomerAttributesByCodes($customer_attributes);
@@ -346,23 +346,19 @@ class Service
             {
                 $this->logger->info('BxIndexLog: Customers - retrieve data for side queries page $page for account: ' . $this->account);
                 foreach ($customerAttributesValues as $r) {
-                    $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
+                    $customers[array_search($r['entity_id'], $ids)][$r['attribute_code']] = $r['value'];
                 }
             }
 
             $this->logger->info('BxIndexLog: Customers - load data per customer for page $page for account: ' . $this->account);
-            foreach ($customers as $customer) {
-                $id = $customer['entity_id'];
+            foreach ($customers as $customer)
+            {
                 $countryCode = $customer['country_id'];
                 if (array_key_exists('gender', $customer)) {
-                    if ($customer['gender'] % 2 == 0) {
-                        $customer['gender'] = 'female';
-                    } else {
-                        $customer['gender'] = 'male';
-                    }
+                    $customer['gender'] = is_null($customer['gender']) ? null : ($customer['gender'] % 2 == 0 ? 'female' : 'male');
                 }
                 $customer_to_save = array(
-                    'customer_id' => $id,
+                    'customer_id' => $customer['entity_id'],
                     'country' => !empty($countryCode) ? $countryHelper->loadByCode($countryCode)->getName() : '',
                     'zip' => array_key_exists('postcode', $customer) ? $customer['postcode'] : '',
                 );
@@ -373,9 +369,7 @@ class Service
             }
             $data = $customers_to_save;
 
-            if (count($customers) == 0 && $header) {
-                return null;
-            }
+            if (count($customers) == 0 && $header) {  return null;  }
 
             if ($header) {
                 $data = array_merge(array(array_keys(end($customers_to_save))), $customers_to_save);
