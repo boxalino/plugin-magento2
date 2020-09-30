@@ -223,7 +223,7 @@ class Exporter implements ExporterResourceInterface
                 $this->adapter->getTableName('customer_entity'),
                 $attributeGroups
             )
-            ->join(
+            ->joinLeft(
                 $this->adapter->getTableName('customer_address_entity'),
                 'customer_entity.entity_id = customer_address_entity.parent_id',
                 ['country_id', 'postcode']

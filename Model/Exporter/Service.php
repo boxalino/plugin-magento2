@@ -314,7 +314,7 @@ class Service
 
         $this->logger->info('BxIndexLog: starting exporting customers for account: ' . $this->account);
         $countryHelper = $this->countryFactory->create();
-        $limit = 1000;
+        $limit = 1;
         $count = $limit;
         $page = 1;
         $header = true;
@@ -340,7 +340,7 @@ class Service
             $customers = $this->exporterResource->getCustomerAddressByFieldsAndLimit($limit, $page, $fieldsForCustomerSelect);
 
             $this->logger->info('BxIndexLog: Customers - prepare side queries page $page for account: ' . $this->account);
-            $ids = array_keys($customers);
+            $ids = array_column($customers, 'entity_id');
             $customerAttributesValues = $this->exporterResource->getUnionCustomerAttributesByAttributesAndIds($attrsFromDb, $ids);
             if(!empty($customerAttributesValues))
             {
@@ -359,8 +359,8 @@ class Service
                 }
                 $customer_to_save = array(
                     'customer_id' => $customer['entity_id'],
-                    'country' => !empty($countryCode) ? $countryHelper->loadByCode($countryCode)->getName() : '',
-                    'zip' => array_key_exists('postcode', $customer) ? $customer['postcode'] : '',
+                    'country' => empty($countryCode) ? '' : $countryHelper->loadByCode($countryCode)->getName(),
+                    'zip' => $customer['postcode'],
                 );
                 foreach($customer_attributes as $attr) {
                     $customer_to_save[$attr] = array_key_exists($attr, $customer) ? $customer[$attr] : '';
