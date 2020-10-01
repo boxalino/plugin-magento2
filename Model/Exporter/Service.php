@@ -314,7 +314,7 @@ class Service
 
         $this->logger->info('BxIndexLog: starting exporting customers for account: ' . $this->account);
         $countryHelper = $this->countryFactory->create();
-        $limit = 1;
+        $limit =5000;
         $count = $limit;
         $page = 1;
         $header = true;
