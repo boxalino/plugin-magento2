@@ -224,9 +224,14 @@ class Exporter implements ExporterResourceInterface
                 $attributeGroups
             )
             ->joinLeft(
-                $this->adapter->getTableName('customer_address_entity'),
-                'customer_entity.entity_id = customer_address_entity.parent_id',
+                ['c_a_e_b'=>$this->adapter->getTableName('customer_address_entity')],
+                'customer_entity.entity_id = c_a_e_b.parent_id AND customer_entity.default_billing = c_a_e_b.entity_id',
                 ['country_id', 'postcode']
+            )
+            ->joinLeft(
+                ['c_a_e_s'=>$this->adapter->getTableName('customer_address_entity')],
+                'customer_entity.entity_id = c_a_e_s.parent_id AND customer_entity.default_shipping = c_a_e_s.entity_id',
+                ['country_id_shipping'=>'country_id', 'postcode_shipping'=>'postcode']
             )
             ->group('customer_entity.entity_id')
             ->limit($limit, ($page - 1) * $limit);

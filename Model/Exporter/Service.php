@@ -314,7 +314,7 @@ class Service
 
         $this->logger->info('BxIndexLog: starting exporting customers for account: ' . $this->account);
         $countryHelper = $this->countryFactory->create();
-        $limit =5000;
+        $limit = 1000;
         $count = $limit;
         $page = 1;
         $header = true;
@@ -361,6 +361,8 @@ class Service
                     'customer_id' => $customer['entity_id'],
                     'country' => empty($countryCode) ? '' : $countryHelper->loadByCode($countryCode)->getName(),
                     'zip' => $customer['postcode'],
+                    'country_shipping' => empty($customer['country_id_shipping']) ? '' : $countryHelper->loadByCode($customer['country_id_shipping'])->getName(),
+                    'zip_shipping' => $customer['postcode_shipping'],
                 );
                 foreach($customer_attributes as $attr) {
                     $customer_to_save[$attr] = array_key_exists($attr, $customer) ? $customer[$attr] : '';
