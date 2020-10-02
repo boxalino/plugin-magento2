@@ -56,7 +56,7 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
 
         if(!is_array($ids))
         {
-            $ids = [];
+            return true;
         }
         try{
             $this->processManager->setIds($ids);
@@ -92,4 +92,6 @@ class BxDeltaExporter implements \Magento\Framework\Indexer\ActionInterface, \Ma
             throw $exception;
         }
     }
+    
+    
 }
