@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v3.0.0: 2020-10-02](#v3.0.0)**<br>
 **[v2.8.9: 2020-09-10](#v2.8.9)**<br>
 **[v2.8.8: 2020-08-26](#v2.8.8)**<br>
 **[v2.8.7: 2020-08-14](#v2.8.7)**<br>
@@ -20,6 +21,24 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.6.4 : 2019-06-14](#v1.6.4)**<br>
 **[v1.6.3 : 2019-06-12](#v1.6.3)**<br>
 **[v1.6.2 : 2019-04-26](#v1.6.2)**<br>
+
+<a name="v3.0.0"></a>
+### v3.0.0 : 2020-10-02
+_post-deployment integration test_: test for the addToBasket TEMPLATE event; test for overlays; delta export test;
+
+1. Delta Export Updates
+* _description_ : The delta can be run either via Magento2 mview, cronjob or cli. When exported via cronjob/cli - the updated_at field is the base for check. The product parent & children are exported alike.
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/11d07bba091ccdfeb916f0926c13a70d80ac8d16
+https://github.com/boxalino/plugin-magento2/commit/42b532bec217e50ac51d87b673c7c8930d629107
+https://github.com/boxalino/plugin-magento2/commit/a9a46a1ceac572586cffdb45c795fc30e19c7e38
+
+2. Tracker Updates
+* _description_ : The server-side addToBasket event is always tracked; JS addToBasket track via template Boxalino_Intelligence::script.phtml
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/51046812970ba45e011ec43e85efca4ac0ac1e73 
+
+3. Customer Export Fixes
+* _commit_ :  https://github.com/boxalino/plugin-magento2/commit/85d5ee91863e0022f54703e720f171f782f86668
+
 
 <a name="v2.8.9"></a>
 ### v2.8.9 : 2020-09-10
