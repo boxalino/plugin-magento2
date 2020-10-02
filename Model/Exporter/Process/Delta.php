@@ -31,7 +31,7 @@ class Delta extends ProcessManager
         {
             $latestRun = $this->getLatestRun();
             $this->logger->info("BxIndexLog: The delta export is empty at {$this->getUtcTime()} (UTC) / {$this->getCurrentStoreTime()} (store time). Latest update at {$latestRun} (UTC)  / {$this->getStoreTime($latestRun)} (store time). Closing request.");
-            return true;
+            return false;
         }
 
         $this->logger->info("BxIndexLog: The delta export has " . count($ids) . " products to update in stack.");
