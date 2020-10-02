@@ -28,8 +28,8 @@ $script = $this->getBaScriptServerPath();
                 _bxq.push(['trackAddToBasket',
                     productId,
                     $(form).find('input[name="qty"]').val(),
-                    $(priceBox).find('meta[itemprop="price"]')[0].content,
-                    $(priceBox).find('meta[itemprop="priceCurrency"]')[0].content,
+                    $(priceBox).find('[itemprop="price"]')[0].content,
+                    $(priceBox).find('[itemprop="priceCurrency"]')[0].content,
                 ]);
 
                 var widget = $(form).catalogAddToCart({

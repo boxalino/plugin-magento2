@@ -93,17 +93,12 @@ class Observer implements ObserverInterface{
      */
     protected function onAddToBasket($event)
     {
-        if($this->bxHelperData->isNarrativeTrackerEnabled())
-        {
-            return;
-        }
-
         try {
             $product = $event->getProduct();
             $count = $event->getRequest()->getPost('qty');
             $price = $product->getPrice();
             $currency = $this->storeManager->getStore()->getCurrentCurrencyCode();
-            
+
             $script = $this->bxHelperData->reportAddToBasket($product->getId(), $count, $price, $currency);
             $this->addScript($script);
         } catch (\Exception $e) {
