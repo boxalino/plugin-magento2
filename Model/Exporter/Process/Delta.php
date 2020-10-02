@@ -123,6 +123,7 @@ class Delta extends ProcessManager
             $categoryProductUpdates = $this->processResource->getAffectedEntityIds(self::INDEXER_ID);
 
             $this->ids = array_filter(array_unique(array_merge($directProductUpdates, explode(",", $categoryProductUpdates))));
+            $this->ids = $this->addParentChildMatchToIds($this->ids);
         }
 
         return $this->ids;

@@ -53,21 +53,19 @@ class ProductList extends General implements CPOJourney
         $this->prepareCollection();
     }
 
-
-
     public function prepareCollection()
     {
-        $variant_index = $this->getVariantIndex();
-        $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
+        $variantIndex = $this->getVariantIndex();
+        $collection = $this->bxResourceManager->getResource($variantIndex, 'collection');
         if(is_null($collection)) {
-            $collection = $this->createCollection($variant_index);
-            $this->bxResourceManager->setResource($collection, $variant_index, 'collection');
+            $collection = $this->createCollection($variantIndex);
+            $this->bxResourceManager->setResource($collection, $variantIndex, 'collection');
         }
     }
 
-    public function createCollection($variant_index)
+    public function createCollection($variantIndex)
     {
-        $entity_ids = $this->p13nHelper->getEntitiesIds($variant_index);
+        $entity_ids = $this->p13nHelper->getEntitiesIds($variantIndex);
 
         $collection = $this->objectManager->create('\Boxalino\\Intelligence\\Model\\Collection');
         $collection = $this->bxHelperData->prepareProductCollection($collection, $entity_ids);
@@ -77,11 +75,21 @@ class ProductList extends General implements CPOJourney
         $page = is_null($this->getRequest()->getParam('p')) ? 1 : $this->getRequest()->getParam('p');
         $collection->setCurBxPage($page);
         $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->p13nHelper->getMagentoStoreConfigPageSize();
-        $totalHitCount = $this->p13nHelper->getTotalHitCount($variant_index);
+        $totalHitCount = $this->p13nHelper->getTotalHitCount($variantIndex);
         $lastPage = ceil($totalHitCount /$limit);
         $collection->setLastBxPage($lastPage);
         $collection->setBxTotal($totalHitCount);
         return $collection;
+    }
+
+    /**
+     * Created resource for the listing required
+     *
+     * @return mixed|null
+     */
+    public function getCollection()
+    {
+        return $this->bxResourceManager->getResource($this->getVariantIndex(), 'collection');
     }
 
     /**
@@ -132,24 +140,39 @@ class ProductList extends General implements CPOJourney
         return $id;
     }
 
+    /**
+     * @return int
+     */
     public function getCollectionId()
     {
         return $this->getVariantIndex();
     }
 
+    /**
+     * Access request variant order (index)
+     *
+     * @return int
+     */
     public function getVariantIndex()
     {
         $visualElement = $this->getData('bxVisualElement');
-        $variant_index = 0;
+        $variantIndex = 0;
         foreach ($visualElement['parameters'] as $parameter) {
             if($parameter['name'] == 'variant') {
-                $variant_index = reset($parameter['values']);
+                $variantIndex = reset($parameter['values']);
                 break;
             }
         }
-        return $variant_index;
+
+        return $variantIndex;
     }
 
+    /**
+     * @param $visualElement
+     * @param $key
+     * @param $value
+     * @return bool
+     */
     public function checkVisualElementParam($visualElement, $key, $value)
     {
         $parameters = $visualElement['parameters'];
@@ -160,6 +183,7 @@ class ProductList extends General implements CPOJourney
                 }
             }
         }
+
         return false;
     }
 

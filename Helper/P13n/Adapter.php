@@ -546,12 +546,16 @@ class Adapter implements P13nAdapterInterface
         $isFinder = $this->bxHelperData->getIsFinder();
         $queryText = $this->getQueryText();
         $choice = $this->getSearchChoice($queryText);
-        if(is_null($choice) && !$isFinder && !$addFinder && !$this->bxHelperData->isOverlayEnabled())
+        if(is_null($choice) && !$isFinder && !$addFinder && !$this->isOverlyActive())
         {
             throw new \Exception("Invalid request context: missing choice. Please contact Boxalino with your specific project scenario.");
         }
         if (self::$bxClient->getChoiceIdRecommendationRequest($choice) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
+            return;
+        }
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getOverlayChoice()) != null && $this->isOverlyActive()) {
+            $this->currentSearchChoice = $this->getOverlayChoice();
             return;
         }
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getFinderChoice()) != null && ($addFinder || $isFinder)) {

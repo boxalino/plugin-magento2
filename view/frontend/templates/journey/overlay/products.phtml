@@ -1,3 +1,8 @@
+<?php
+/**
+ * @block Boxalino\Intelligence\Block\Journey\Product\ProductList
+ */
+?>
 <div class="bxOverlay bxOverlay-content" style="display: none;">
     <div class="bxOverlayProductsMain">
         <div class="bxOverlayProducts">
@@ -8,37 +13,36 @@
                     $jsonParams = json_decode($parameter['values'][0], true);
                 }
             }
-            $template_path = $jsonParams['bx-extend-products-template'];
-            $productTitle = $this->getLocalizedValue($jsonParams['bx-extend-products-title']);
-            $variant_id = $this->getVariantIndex();
-            $product_collection = $this->bxResourceManager->getResource($variant_id, 'collection');
-            $this->bxResourceManager->setResource($product_collection, $variant_id, 'collection');
-
-            $parameter = ['name' => 'variant', 'values' => [$variant_id]];
+            $itemTemplate = $jsonParams['bx-extend-products-template'];
+            $listTitle = $this->getLocalizedValue($jsonParams['bx-extend-products-title']);
+            $parameter = ['name' => 'variant', 'values' => [$block->getVariantIndex()]];
             ?>
             <button id="bxOverlayExitButton" type="button">
                 &#x2715;
             </button>
             <div class="bxProductsBlock">
                 <div class="block-title title">
-                    <strong id="block-overlay-heading"><?php echo $block->escapeHtml($productTitle); ?></strong>
+                    <strong id="block-overlay-heading"><?php echo $block->escapeHtml($listTitle); ?></strong>
                 </div>
                 <div class="block-content content">
-                    <div class="products wrapper grid products-grid products">
-                        <ol class="products list items product-items">
-                            <?php
-                            $index = 0;
-                            foreach ($product_collection as $product) { ?>
+                    <div class="products wrapper grid products-grid products bx-narrative"
+                         data-bx-variant-uuid="<?php echo $block->getRequestUuid($this->getData("widget"));?>" data-bx-narrative-name="products-list"
+                         data-bx-narrative-group-by="<?php echo $block->getRequestGroupBy();?>">
+                        <?php $index = 0;?>
+                        <?php foreach($block->getCollection() as $product) :?>
+                            <ol class="products list items product-items bx-narrative-item" data-bx-item-id="<?php echo $product->getId();?>" data-container="product-grid">
                                 <span>
-                                 <?php $block = $this->getLayout()->createBlock(
-                                     'Boxalino\Intelligence\Block\Journey\Product\ProductView',
-                                     'product_view'. $index,
-                                     ['data' => ['bx_index' => $index++, 'bxVisualElement' => ['parameters' => [$parameter]]]]
-                                 )->setTemplate($template_path);
-                                 echo $block->toHtml(); ?>
+                                     <?php echo $this->getLayout()->createBlock(
+                                         'Boxalino\Intelligence\Block\Journey\Product\ProductView',
+                                         'product_view_'. $index,
+                                         ['data' => [
+                                             'bx_index' => $index++,
+                                             'bx_id' => $product->getId(),
+                                             'bxVisualElement' => ['parameters' => [$parameter]],
+                                             'bx_collection_id'=> $block->getCollectionId()]
+                                         ])->setTemplate($itemTemplate)->toHtml();?>
                                 </span>
-                            <?php }
-                            ?>
+                            <?php endforeach; ?>
                         </ol>
                     </div>
                 </div>

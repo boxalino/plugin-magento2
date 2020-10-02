@@ -55,7 +55,6 @@ class Main extends \Magento\Framework\View\Element\Template
     /**
      * Render the block containing the overlay
      *
-     *
      * @return mixed
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -66,7 +65,7 @@ class Main extends \Magento\Framework\View\Element\Template
         $block = $this->getLayout()->createBlock(
             $this->getBlockPathFromResponse(),
             'bx_overlay',
-            ['data' => ['bxVisualElement' => ['parameters' => $parameters]]]
+            ['data' => ['bxVisualElement' => ['parameters' => $parameters], "widget"=> $this->overlayWidgetChoice]]
         )->setTemplate($this->getTemplatePathFromResponse());
 
 

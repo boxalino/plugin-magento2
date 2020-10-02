@@ -60,7 +60,7 @@ class General extends \Magento\Framework\View\Element\Template
     }
 
     public function getLocalizedValue($values) {
-        return $this->p13nHelper->getResponse()->getLocalizedValue($values);
+        return $this->p13nHelper->getClientResponse()->getLocalizedValue($values);
     }
 
     public function getp13nHelper()
@@ -68,9 +68,9 @@ class General extends \Magento\Framework\View\Element\Template
         return $this->p13nHelper;
     }
 
-    public function getRequestUuid()
+    public function getRequestUuid(string $choice = null)
     {
-        return $this->getp13nHelper()->getRequestUuid();
+        return $this->getp13nHelper()->getRequestUuid($choice);
     }
 
     public function getRequestGroupBy()
