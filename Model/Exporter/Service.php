@@ -529,7 +529,6 @@ class Service
                 if ($transaction['updated_at'] != $transaction['created_at']) {
                     switch ($transaction['status']) {
                         case 'canceled':
-                            continue;
                             break;
                         case 'processing':
                             $status = 1;
