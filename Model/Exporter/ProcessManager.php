@@ -103,7 +103,6 @@ abstract class ProcessManager
             try{
                 if($this->exportAllowedByAccount($account))
                 {
-                    $exporterHasRun = true;
                     $this->exporterService
                         ->setAccount($account)
                         ->setDeltaIds($this->getIds())
@@ -112,6 +111,8 @@ abstract class ProcessManager
                         ->setExportFull($this->getExportFull())
                         ->setTimeoutForExporter($this->getTimeout($account))
                         ->export();
+
+                    $exporterHasRun = true;
                 }
             } catch (\Exception $exception) {
                 $errorMessages[] = $exception->getMessage();
