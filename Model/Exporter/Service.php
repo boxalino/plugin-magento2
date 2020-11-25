@@ -529,8 +529,7 @@ class Service
                 if ($transaction['updated_at'] != $transaction['created_at']) {
                     switch ($transaction['status']) {
                         case 'canceled':
-                            # cancelled transactions are not exported
-                            continue 2;
+                            break;
                         case 'processing':
                             $status = 1;
                             break;
