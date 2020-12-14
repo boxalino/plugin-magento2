@@ -6,7 +6,7 @@
         </div>
         <div class="block-content content">
             <div class="products wrapper grid products-grid products-blog bx-narrative"
-                 data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="productss-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
+                 data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="id">
                 <ol class="blogArticleOrderedListPDP">
                     <?php foreach ($this->getBlogArticles() as $blogArticle): ?>
                         <?php echo $this->getLayout()->createBlock("Boxalino\Intelligence\Block\Product\ProductList\Blog")
