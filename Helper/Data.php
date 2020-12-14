@@ -486,8 +486,8 @@ class Data
     public function getExtraFieldNames()
     {
         $config = $this->config->getValue('bxBlog/field',$this->scopeStore);
-        if (isset($config['extraFieldNamesFieldName'])) {
-            return explode(',', $config['extraFieldNamesFieldName']);
+        if (isset($config['extraFieldNames'])) {
+            return explode(',', $config['extraFieldNames']);
         }
 
         return [];
