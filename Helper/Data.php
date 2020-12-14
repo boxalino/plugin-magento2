@@ -432,7 +432,8 @@ class Data
     public function getBlogReturnFields()
     {
         $fields = array(
-            'title',
+            "title",
+            "id",
             $this->getExcerptFieldName(),
             $this->getLinkFieldName(),
             $this->getMediaUrlFieldName(),

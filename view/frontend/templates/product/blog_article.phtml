@@ -1,24 +1,27 @@
-<li class="item product product-item blogArticlePostPDP">
+<?php
+/**
+ * @var $block \Boxalino\Intelligence\Block\Product\ProductList\Blog
+ */
+?>
+<?php $blogArticle = $block->getBlogArticle();?>
+<li class="item product product-item blogArticlePostPDP bx-narrative-item" data-bx-item-id="<?php echo $blogArticle[$this->getIdFieldName()];?>">
+    <figure>
+        <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
+            <img
+                    width="<?php echo $this->getBlogArticleImageWidth() ?>"
+                    height="<?php echo $this->getBlogArticleImageHeight() ?>"
+                    src="<?php echo $blogArticle[$this->getMediaUrlFieldName()] ?>"
+            >
+        </a>
+    </figure>
 
-  <?php $blogArticle = $block->getBlogArticle();?>
+    <div class="blogArticleTextAreaPDP">
 
-  <figure>
-    <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
-      <img
-        width="<?php echo $this->getBlogArticleImageWidth() ?>"
-        height="<?php echo $this->getBlogArticleImageHeight() ?>"
-        src="<?php echo $blogArticle[$this->getMediaUrlFieldName()] ?>"
-       >
-    </a>
-  </figure>
+        <h4 class="blogArticleHeaderPDP">
+            <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
+                <?php echo $this->escapeHtml($blogArticle['title']); ?>
+            </a>
+        </h4>
 
-  <div class="blogArticleTextAreaPDP">
-
-  <h4 class="blogArticleHeaderPDP">
-    <a href="<?php echo $blogArticle[$this->getLinkFieldName()] ?>">
-      <?php echo $this->escapeHtml($blogArticle['title']); ?>
-    </a>
-  </h4>
-
-  </div>
+    </div>
 </li>

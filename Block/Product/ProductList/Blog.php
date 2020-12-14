@@ -81,6 +81,10 @@ class Blog extends \Boxalino\Intelligence\Block\BxRecommendationBlock
         return $this->bxHelperData->getLinkFieldName();
     }
 
+    public function getIdFieldName() {
+        return "id";
+    }
+
     public function getMediaUrlFieldName() {
         return $this->bxHelperData->getMediaUrlFieldName();
     }
