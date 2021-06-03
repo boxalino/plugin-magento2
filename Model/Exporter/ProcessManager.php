@@ -119,17 +119,20 @@ abstract class ProcessManager
                 continue;
             }
         }
-        
-        if(!$exporterHasRun)
+
+        if(empty($errorMessages))
         {
-            return false;
+            if($exporterHasRun)
+            {
+                return true;
+            }
+
+            if(!$exporterHasRun)
+            {
+                return false;
+            }
         }
-        
-        if(empty($errorMessages) && $exporterHasRun)
-        {
-            return true;
-        }
-        
+
         throw new \Exception(__("BxIndexLog: Boxalino Export failed with messages: " . implode(",", $errorMessages)));
     }
 

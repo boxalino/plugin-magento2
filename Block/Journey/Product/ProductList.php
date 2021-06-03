@@ -66,20 +66,25 @@ class ProductList extends General implements CPOJourney
     public function createCollection($variantIndex)
     {
         $entity_ids = $this->p13nHelper->getEntitiesIds($variantIndex);
+        if(count($entity_ids))
+        {
+            $collection = $this->objectManager->create('\Boxalino\\Intelligence\\Model\\Collection');
+            $collection = $this->bxHelperData->prepareProductCollection($collection, $entity_ids);
+            $collection->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
+            $collection->load();
 
-        $collection = $this->objectManager->create('\Boxalino\\Intelligence\\Model\\Collection');
-        $collection = $this->bxHelperData->prepareProductCollection($collection, $entity_ids);
-        $collection->setStoreId($this->_storeManager->getStore()->getId())->addAttributeToSelect('*');
-        $collection->load();
+            $page = is_null($this->getRequest()->getParam('p')) ? 1 : $this->getRequest()->getParam('p');
+            $collection->setCurBxPage($page);
+            $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->p13nHelper->getMagentoStoreConfigPageSize();
+            $totalHitCount = $this->p13nHelper->getTotalHitCount($variantIndex);
+            $lastPage = ceil($totalHitCount /$limit);
+            $collection->setLastBxPage($lastPage);
+            $collection->setBxTotal($totalHitCount);
 
-        $page = is_null($this->getRequest()->getParam('p')) ? 1 : $this->getRequest()->getParam('p');
-        $collection->setCurBxPage($page);
-        $limit = $this->getRequest()->getParam('product_list_limit') ? $this->getRequest()->getParam('product_list_limit') : $this->p13nHelper->getMagentoStoreConfigPageSize();
-        $totalHitCount = $this->p13nHelper->getTotalHitCount($variantIndex);
-        $lastPage = ceil($totalHitCount /$limit);
-        $collection->setLastBxPage($lastPage);
-        $collection->setBxTotal($totalHitCount);
-        return $collection;
+            return $collection;
+        }
+
+        return null;
     }
 
     /**
@@ -89,7 +94,13 @@ class ProductList extends General implements CPOJourney
      */
     public function getCollection()
     {
-        return $this->bxResourceManager->getResource($this->getVariantIndex(), 'collection');
+        $collection = $this->bxResourceManager->getResource($this->getVariantIndex(), 'collection');
+        if($collection)
+        {
+            return $collection;
+        }
+
+        return [];
     }
 
     /**
