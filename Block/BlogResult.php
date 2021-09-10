@@ -191,4 +191,20 @@ class BlogResult extends \Magento\Framework\View\Element\Template{
         return $this->p13nHelper->getBlogTotalHitCount();
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        return $this->p13nHelper->getRequestUuid($this->p13nHelper->getSearchChoice("", true));
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        return $this->p13nHelper->getRequestGroupBy($this->p13nHelper->getSearchChoice("", true));
+    }
+
 }

@@ -12,9 +12,10 @@
         </span>
     </p>
     <br>
-     <ul class="bxBlogResultsUnorderedList">
+     <ul class="bxBlogResultsUnorderedList bx-narrative"  data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list"
+         data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
         <?php foreach ($collection as $blog):?>
-            <li class="item product product-item blogArticlePost">
+            <li class="item product product-item blogArticlePost bx-narrative-item" data-bx-item-id="<?php echo $blog["id"] ;?>">
 
                 <figure>
                     <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
