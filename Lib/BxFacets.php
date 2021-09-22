@@ -491,6 +491,9 @@ class BxFacets
         if($selectedCategoryId == null) {
             return $tree;
         }
+        if(is_null($tree)){
+            return null;
+        }
         if(!$tree['node']){
             return null;
         }
