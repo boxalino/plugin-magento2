@@ -164,6 +164,19 @@ interface ExporterResourceInterface
     public function getIndexedPrice(string $type) : array;
 
     /**
+     * @param int $ratingId
+     * @param int $storeId
+     * @return array
+     */
+    public function getRatingPercentByRatingTypeStoreId(int $ratingId, int $storeId) : array;
+
+    /**
+     * @param array $storeIds
+     * @return array
+     */
+    public function getEnabledRatingTitlesByStoreIds(array $storeIds) : array;
+
+    /**
      * C U S T O M E R   E X P O R T   F U N C T I O N A L I T Y
      */
 

@@ -1103,6 +1103,7 @@ class Service
 
         $this->exportIndexedPrices("final", $mainSourceKey);
         $this->exportIndexedPrices("min", $mainSourceKey);
+        $this->exportRatingsPercent($languages);
 
         $this->bxFiles->clearEmptyFiles("product_");
     }
@@ -1324,6 +1325,55 @@ class Service
         $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath('product_bx_parent_title.csv'), 'entity_id');
         $this->bxData->addSourceLocalizedTextField($attributeSourceKey, 'bx_parent_title', $lvh);
         $this->bxData->addFieldParameter($attributeSourceKey,'bx_parent_title', 'multiValued', 'false');
+    }
+
+    /**
+     * Exports configured rating codes on the eshop
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function exportRatingsPercent(array $languages) : void
+    {
+        $storeIds = array_map(function($language) { return (int)$this->config->getStore($this->account, $language)->getId(); }, $languages);
+        $enabledRatingsOnStores = $this->exporterResource->getEnabledRatingTitlesByStoreIds($storeIds);
+        foreach($enabledRatingsOnStores as $ratingId => $ratingCode)
+        {
+            $attrCode = "rating_". strtolower($ratingCode) . "_percent";
+            $fileName = "products_{$attrCode}.csv";
+            $lvh = [];
+
+            foreach ($languages as $language)
+            {
+                $store = $this->config->getStore($this->account, $language);
+                $storeId = $store->getId(); $store = null;
+                $lvh[$language] = 'value_'.$language;
+
+                $fetchedResult = $this->exporterResource->getRatingPercentByRatingTypeStoreId((int)$ratingId, $storeId);
+                if (sizeof($fetchedResult))
+                {
+                    foreach ($fetchedResult as $r)
+                    {
+                        if (isset($data[$r['entity_id']]))
+                        {
+                            $data[$r['entity_id']]['value_' . $language] = $r['value'];
+                            continue;
+                        }
+                        $data[$r['entity_id']] = [
+                            'entity_id' => $r['entity_id'],
+                            'value_' . $language => $r['value']
+                        ];
+                    }
+                }
+            }
+
+            $data = array_merge(array(array_keys(end($data))), $data);
+            $this->bxFiles->savePartToCsv($fileName, $data);
+
+            $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath($fileName), 'entity_id');
+            $this->bxData->addSourceLocalizedNumberField($attributeSourceKey, $attrCode, $lvh);
+            $this->bxData->addFieldParameter($attributeSourceKey,$attrCode, 'multiValued', 'false');
+        }
     }
 
     /**
