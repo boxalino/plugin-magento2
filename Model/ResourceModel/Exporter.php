@@ -6,6 +6,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use \Psr\Log\LoggerInterface;
 use \Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Framework\DB\Select;
 
 /**
  * Keeps most of db access for the exporter class
@@ -1046,7 +1047,7 @@ class Exporter implements ExporterResourceInterface
     /**
      * @param int $ratingId
      * @param int $storeId
-     * @return Select
+     * @return \Magento\Framework\DB\Select
      */
     protected function _getRatingSelectByRatingTypeStoreId(int $ratingId, int $storeId) : Select
     {
@@ -1060,10 +1061,11 @@ class Exporter implements ExporterResourceInterface
             )
             ->joinLeft(
                 ['r_o_v_a_s' => $this->adapter->getTableName('rating_option_vote_aggregated')],
-                "r_o_v_a_s.entity_pk_value = r_o_v_a.entity_pk_value AND r_o_v_a_s.store_id=$storeId",
+                "r_o_v_a_s.entity_pk_value = r_o_v_a.entity_pk_value AND r_o_v_a_s.store_id=$storeId AND r_o_v_a_s.rating_id=r_o_v_a.rating_id",
                 []
             )
-            ->where('r_o_v_a.store_id = 0');
+            ->where('r_o_v_a.store_id = 0')
+            ->where('r_o_v_a.rating_id= ?', $ratingId);
     }
 
     /**
