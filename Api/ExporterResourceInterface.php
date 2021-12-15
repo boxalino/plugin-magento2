@@ -1,6 +1,8 @@
 <?php
 namespace Boxalino\Intelligence\Api;
 
+use \Magento\Framework\DB\Select;
+
 /**
  * Interface ExporterResourceInterface
  * Used by the Boxalino indexers to store db logic
@@ -175,6 +177,11 @@ interface ExporterResourceInterface
      * @return array
      */
     public function getEnabledRatingTitlesByStoreIds(array $storeIds) : array;
+
+    /**
+     * @return \Magento\Framework\DB\Select
+     */
+    public function getParentSeoUrlInformationByStoreId(int $storeId) : Select;
 
     /**
      * C U S T O M E R   E X P O R T   F U N C T I O N A L I T Y

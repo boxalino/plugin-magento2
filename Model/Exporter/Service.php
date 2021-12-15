@@ -1104,6 +1104,7 @@ class Service
         $this->exportIndexedPrices("final", $mainSourceKey);
         $this->exportIndexedPrices("min", $mainSourceKey);
         $this->exportRatingsPercent($languages);
+        $this->exportParentSeoUrlInformation($languages, $duplicateIds);
 
         $this->bxFiles->clearEmptyFiles("product_");
     }
@@ -1259,7 +1260,7 @@ class Service
                 array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
                 array(
-                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
+                    new \Zend_Db_Expr('t_d.value as value'),
                     't_d.store_id'
                 )
             );
@@ -1267,7 +1268,7 @@ class Service
                 array('t_d' => $this->rs->getTableName('catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_r.parent_id',
                 array(
-                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
+                    new \Zend_Db_Expr('t_d.value as value'),
                     't_d.store_id'
                 )
             );
@@ -1296,7 +1297,7 @@ class Service
                 $select = $db->select()
                     ->from(
                         array('c_p_e' => $this->rs->getTableName('catalog_product_entity')),
-                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN LOWER(c_p_e_v_a.value) ELSE LOWER(c_p_e_v_b.value) END as value"))
+                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
                     )->joinLeft(
                         array('c_p_e_v_a' => $this->rs->getTableName('catalog_product_entity_varchar')),
                         '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
@@ -1374,6 +1375,57 @@ class Service
             $this->bxData->addSourceLocalizedNumberField($attributeSourceKey, $attrCode, $lvh);
             $this->bxData->addFieldParameter($attributeSourceKey,$attrCode, 'multiValued', 'false');
         }
+    }
+
+    /**
+     * @param array $languages
+     * @param array $duplicateIds
+     * @throws \Exception
+     */
+    protected function exportParentSeoUrlInformation(array $languages, array $duplicateIds) : void
+    {
+        $db = $this->rs->getConnection();
+        $lvh = [];
+        foreach ($languages as $language)
+        {
+            $storeId = (int)$this->config->getStore($this->account, $language)->getId();
+            $lvh[$language] = 'value_'.$language;
+
+            $query = $this->exporterResource->getParentSeoUrlInformationByStoreId($storeId);
+            $fetchedResult = $db->fetchAll($query);
+            if (sizeof($fetchedResult))
+            {
+                foreach ($fetchedResult as $r)
+                {
+                    if (isset($data[$r['entity_id']]))
+                    {
+                        $data[$r['entity_id']]['value_' . $language] = $r['value'];
+                    } else {
+                        $data[$r['entity_id']] = ['entity_id' => $r['entity_id'], 'value_' . $language => $r['value']];
+                    }
+
+                    if(in_array($r['entity_id'], $duplicateIds))
+                    {
+                        $entityId = "duplicate".$r["entity_id"];
+                        if(isset($data[$entityId]))
+                        {
+                            $data[$entityId]['value_' . $language] = $r['value'];
+                        } else {
+                            $data[$entityId] = ['entity_id' => $entityId, 'value_' . $language => $r['value']];
+                        }
+                    }
+                }
+
+                $fetchedResult = null;
+            }
+        }
+
+        $data = array_merge(array(array_keys(end($data))), $data);
+        $this->bxFiles->savePartToCsv("product_di_parent_url_key.csv", $data);
+
+        $attributeSourceKey = $this->bxData->addCSVItemFile($this->bxFiles->getPath("product_di_parent_url_key.csv"), 'entity_id');
+        $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "di_parent_url_key", $lvh);
+        $this->bxData->addFieldParameter($attributeSourceKey, "di_parent_url_key", 'multiValued', 'false');
     }
 
     /**
